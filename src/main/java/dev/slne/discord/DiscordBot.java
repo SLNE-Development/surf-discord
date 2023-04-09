@@ -1,5 +1,10 @@
 package dev.slne.discord;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import dev.slne.discord.datasource.BotConnectionFile;
+import dev.slne.discord.datasource.BotConnectionSettings;
 import dev.slne.discord.interaction.command.DiscordCommandManager;
 import dev.slne.discord.interaction.modal.DiscordModalManager;
 import dev.slne.discord.listeners.ListenerManager;
@@ -13,9 +18,10 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 public class DiscordBot {
 
-    private static final String BOT_TOKEN = "MTA4MDUyNjI4MzQ2MjY3NjU4NA.G-SAns.53VX5Ljdya7d4HoifYOAlBDklxfRo8TNn7GevY";
+    private static String BOT_TOKEN;
 
     private static DiscordBot instance;
+    private BotConnectionFile botConnectionFile;
     private JDA jda;
 
     private ListenerManager listenerManager;
@@ -26,6 +32,19 @@ public class DiscordBot {
     public void onLoad() {
         instance = this;
 
+        try {
+            botConnectionFile = new BotConnectionFile();
+        } catch (FileNotFoundException exception) {
+            exception.printStackTrace();
+        }
+
+        try {
+            BotConnectionSettings settings = botConnectionFile.readObject(BotConnectionSettings.class);
+            BOT_TOKEN = settings.getBotToken();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         commandManager = new DiscordCommandManager();
         listenerManager = new ListenerManager();
         modalManager = new DiscordModalManager();
@@ -35,6 +54,12 @@ public class DiscordBot {
     }
 
     public void onEnable() {
+        if (BOT_TOKEN == null) {
+            System.err.println("Bot token is null. Please check your bot-connection.json file.");
+            System.exit(1000);
+            return;
+        }
+
         JDABuilder builder = JDABuilder.createDefault(BOT_TOKEN);
 
         builder.setAutoReconnect(true);
@@ -73,5 +98,9 @@ public class DiscordBot {
 
     public JDA getJda() {
         return jda;
+    }
+
+    public BotConnectionFile getBotConnectionFile() {
+        return botConnectionFile;
     }
 }
