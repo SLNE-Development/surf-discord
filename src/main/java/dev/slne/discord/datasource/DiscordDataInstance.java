@@ -3,6 +3,7 @@ package dev.slne.discord.datasource;
 import java.nio.file.Path;
 
 import dev.slne.data.core.instance.CoreDataInstance;
+import dev.slne.discord.Launcher;
 
 public class DiscordDataInstance extends CoreDataInstance {
 
@@ -21,7 +22,7 @@ public class DiscordDataInstance extends CoreDataInstance {
         StringBuilder builder = new StringBuilder();
         builder.append("[").append(caller.getSimpleName() + ",ERROR").append("] ").append(message);
 
-        System.err.println(builder.toString());
+        Launcher.getLogger().logError(builder.toString());
         for (Throwable throwable : throwables) {
             throwable.printStackTrace();
         }
@@ -32,7 +33,7 @@ public class DiscordDataInstance extends CoreDataInstance {
         StringBuilder builder = new StringBuilder();
         builder.append("[").append(caller.getSimpleName() + ",INFO").append("] ").append(message);
 
-        System.out.println(builder.toString());
+        Launcher.getLogger().logInfo(builder.toString());
     }
 
 }

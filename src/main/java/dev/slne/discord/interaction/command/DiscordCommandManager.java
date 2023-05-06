@@ -3,6 +3,7 @@ package dev.slne.discord.interaction.command;
 import java.util.ArrayList;
 import java.util.List;
 
+import dev.slne.discord.ticket.commands.TicketCloseCommand;
 import dev.slne.discord.ticket.commands.TicketCommand;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.requests.restaction.CommandCreateAction;
@@ -15,6 +16,7 @@ public class DiscordCommandManager {
         this.commands = new ArrayList<>();
 
         this.commands.add(new TicketCommand());
+        this.commands.add(new TicketCloseCommand());
     }
 
     public DiscordCommand findCommand(String name) {

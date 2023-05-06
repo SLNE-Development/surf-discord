@@ -7,8 +7,11 @@ import dev.slne.data.core.database.worker.ConnectionWorkers;
 import dev.slne.discord.interaction.modal.DiscordModal;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketType;
-import dev.slne.discord.ticket.Tickets;
 import dev.slne.discord.ticket.result.TicketCreateResult;
+import dev.slne.discord.ticket.tickets.BugReportTicket;
+import dev.slne.discord.ticket.tickets.DiscordSupportTicket;
+import dev.slne.discord.ticket.tickets.ServerSupportTicket;
+import dev.slne.discord.ticket.tickets.WhitelistApplicationTicket;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
@@ -79,7 +82,7 @@ public abstract class TicketModal extends DiscordModal {
                             .queue();
                     return;
                 } else {
-                    ticket = new Tickets.Whitelist(modalInteraction.getGuild(),
+                    ticket = new WhitelistApplicationTicket(modalInteraction.getGuild(),
                             modalInteraction.getUser(), minecraftName);
                 }
             } else if (ticketType.equals(TicketType.SERVER_SUPPORT) || ticketType.equals(TicketType.DISCORD_SUPPORT)
@@ -87,13 +90,13 @@ public abstract class TicketModal extends DiscordModal {
                 String description = modalInteraction.getValue("body").getAsString();
 
                 if (ticketType.equals(TicketType.SERVER_SUPPORT)) {
-                    ticket = new Tickets.ServerSupport(modalInteraction.getGuild(),
+                    ticket = new ServerSupportTicket(modalInteraction.getGuild(),
                             modalInteraction.getUser(), description);
                 } else if (ticketType.equals(TicketType.DISCORD_SUPPORT)) {
-                    ticket = new Tickets.DiscordSupport(modalInteraction.getGuild(),
+                    ticket = new DiscordSupportTicket(modalInteraction.getGuild(),
                             modalInteraction.getUser(), description);
                 } else if (ticketType.equals(TicketType.BUGREPORT)) {
-                    ticket = new Tickets.BugReport(modalInteraction.getGuild(),
+                    ticket = new BugReportTicket(modalInteraction.getGuild(),
                             modalInteraction.getUser(), description);
                 }
             }

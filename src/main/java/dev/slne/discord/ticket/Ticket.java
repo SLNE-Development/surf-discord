@@ -6,7 +6,9 @@ import java.util.concurrent.CompletableFuture;
 import org.javalite.activejdbc.Model;
 import org.javalite.activejdbc.annotations.Table;
 
+import dev.slne.data.core.database.worker.ConnectionWorkers;
 import dev.slne.discord.DiscordBot;
+import dev.slne.discord.Launcher;
 import dev.slne.discord.datasource.DiscordTables;
 import dev.slne.discord.guild.DiscordGuild;
 import dev.slne.discord.guild.DiscordGuilds;
@@ -18,7 +20,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 @Table(DiscordTables.TICKETS)
-public abstract class Ticket extends Model {
+public class Ticket extends Model {
 
     private String ticketId;
     private LocalDateTime openedAt;
@@ -41,6 +43,10 @@ public abstract class Ticket extends Model {
     private String closedReason;
     private LocalDateTime closedAt;
 
+    public Ticket() {
+
+    }
+
     public Ticket(Guild guild, User ticketAuthor, TicketType ticketType) {
         this.ticketId = getRandomTicketId();
         this.openedAt = LocalDateTime.now();
@@ -61,7 +67,21 @@ public abstract class Ticket extends Model {
         this.closedAt = null;
     }
 
-    public abstract void afterOpen();
+    public void afterOpen() {
+
+    }
+
+    public static <T extends Ticket> CompletableFuture<T> getTicketByChannel(TextChannel channel) {
+        return ConnectionWorkers.async(() -> {
+            T ticket = T.findFirst("channel_id = ?", channel.getId());
+
+            if (ticket == null) {
+                return null;
+            }
+
+            return ticket;
+        });
+    }
 
     public CompletableFuture<TicketCreateResult> createTicketChannel(Guild guild) {
         CompletableFuture<TicketCreateResult> future = new CompletableFuture<>();
@@ -92,13 +112,26 @@ public abstract class Ticket extends Model {
             this.channelId = ticketChannel.getId();
             this.channel = ticketChannel;
 
-            future.completeAsync(() -> TicketCreateResult.SUCCESS);
+            ConnectionWorkers.async(this::saveIt).thenAcceptAsync(success -> {
+                future.completeAsync(() -> success ? TicketCreateResult.SUCCESS : TicketCreateResult.ERROR);
+
+                if (!success) {
+                    Launcher.getLogger().logError("Error while saving ticket: " + getChannelId());
+                }
+            }).exceptionally(error -> {
+                Launcher.getLogger().logError("Error while saving ticket: " + error.getMessage());
+                error.printStackTrace();
+
+                future.completeExceptionally(error);
+
+                return null;
+            });
         });
 
         return future;
     }
 
-    public CompletableFuture<TicketCloseResult> closeTicket() {
+    public CompletableFuture<TicketCloseResult> closeTicket(User user, String reason) {
         CompletableFuture<TicketCloseResult> future = new CompletableFuture<>();
 
         if (channel == null) {
@@ -106,8 +139,15 @@ public abstract class Ticket extends Model {
             return future;
         }
 
+        this.closedById = user.getId();
+        this.closedBy = user;
+
+        this.closedReason = reason;
+
         channel.delete().queue(success -> {
             future.complete(TicketCloseResult.SUCCESS);
+
+            ConnectionWorkers.asyncVoid(this::saveIt);
         }, error -> {
             future.complete(TicketCloseResult.ERROR);
 
@@ -121,7 +161,10 @@ public abstract class Ticket extends Model {
     @Override
     protected void beforeSave() {
         setString("ticket_id", ticketId);
-        setTimestamp("opened_at", openedAt);
+
+        System.out.println(openedAt.toString());
+
+        setString("opened_at", openedAt);
 
         setString("guild_id", guildId);
         setString("channel_id", channelId);
@@ -132,7 +175,8 @@ public abstract class Ticket extends Model {
         setString("closed_by_id", closedById);
 
         setString("closed_reason", closedReason);
-        setTimestamp("closed_at", closedAt);
+        setString("closed_at", closedAt);
+        System.out.println(closedAt.toString());
     }
 
     @Override

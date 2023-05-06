@@ -5,6 +5,6 @@ public enum TicketCreateResult {
     SUCCESS,
     ALREADY_EXISTS,
 
-    GUILD_NOT_FOUND, CATEGORY_NOT_FOUND;
+    GUILD_NOT_FOUND, CATEGORY_NOT_FOUND, ERROR;
 
 }

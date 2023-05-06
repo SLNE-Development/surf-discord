@@ -1,6 +1,7 @@
 package dev.slne.discord.listeners.setup;
 
 import dev.slne.discord.DiscordBot;
+import dev.slne.discord.Launcher;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
@@ -10,7 +11,7 @@ public class ReadyListener extends ListenerAdapter {
 
     @Override
     public void onReady(ReadyEvent event) {
-        System.out.println("Bot is ready!");
+        Launcher.getLogger().logInfo("Bot is ready!");
 
         // Register commands to guilds
         JDA jda = event.getJDA();

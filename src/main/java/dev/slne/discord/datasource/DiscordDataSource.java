@@ -11,6 +11,7 @@ import java.nio.file.Path;
 
 import dev.slne.data.core.DataSource;
 import dev.slne.data.core.instance.DataApi;
+import dev.slne.discord.Launcher;
 
 public class DiscordDataSource extends DataSource {
 
@@ -45,7 +46,7 @@ public class DiscordDataSource extends DataSource {
                 if (path.toString().endsWith(".jar")) {
                     attachLibraryToClassPath(path.toFile());
 
-                    System.out.println("Injected " + path.getFileName());
+                    Launcher.getLogger().logInfo("Injected " + path.getFileName());
                 }
             }
         } catch (IOException | ClassNotFoundException exception) {
