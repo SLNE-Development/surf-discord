@@ -56,18 +56,20 @@ public class DiscordDataSource extends DataSource {
 
     private void attachLibraryToClassPath(File toAdd) throws MalformedURLException, ClassNotFoundException {
         // Load all classes which are contained in the given jar file
-        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { toAdd.toURI().toURL() },
-                getClass().getClassLoader());
+        try (URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { toAdd.toURI().toURL() },
+                getClass().getClassLoader())) {
+            for (File file : toAdd.listFiles()) {
+                if (file.isDirectory()) {
+                    attachLibraryToClassPath(file);
+                } else if (file.getName().endsWith(".class")) {
+                    String className = file.getName().substring(0, file.getName().length() - 6);
+                    className = className.replace(File.separatorChar, '.');
 
-        for (File file : toAdd.listFiles()) {
-            if (file.isDirectory()) {
-                attachLibraryToClassPath(file);
-            } else if (file.getName().endsWith(".class")) {
-                String className = file.getName().substring(0, file.getName().length() - 6);
-                className = className.replace(File.separatorChar, '.');
-
-                classLoader.loadClass(className);
+                    classLoader.loadClass(className);
+                }
             }
+        } catch (Exception exception) {
+            exception.printStackTrace();
         }
     }
 
