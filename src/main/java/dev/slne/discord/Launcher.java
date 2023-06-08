@@ -1,10 +1,9 @@
 package dev.slne.discord;
 
-import java.lang.reflect.Method;
+import java.util.Random;
 
 import com.mysql.cj.log.Slf4JLogger;
 
-import dev.slne.data.core.database.worker.ConnectionWorkers;
 import dev.slne.discord.datasource.DiscordDataSource;
 
 public class Launcher {
@@ -12,13 +11,25 @@ public class Launcher {
     private DiscordBot discordBot;
     private DiscordDataSource dataSource;
 
+    private static Random random;
     private static final Slf4JLogger LOGGER = new Slf4JLogger("Launcher");
 
+    /**
+     * Constructor for the launcher
+     */
+    @SuppressWarnings("java:S3010")
     public Launcher() {
         discordBot = new DiscordBot();
         dataSource = new DiscordDataSource();
+
+        random = new Random();
     }
 
+    /**
+     * Main method
+     *
+     * @param args The arguments
+     */
     public static void main(String[] args) {
         Launcher launcher = new Launcher();
 
@@ -26,48 +37,62 @@ public class Launcher {
         launcher.onEnable();
     }
 
+    /**
+     * Method called when the launcher is loaded
+     */
     public void onLoad() {
         dataSource.onLoad();
         discordBot.onLoad();
     }
 
+    /**
+     * Method called when the launcher is enabled
+     */
     public void onEnable() {
         dataSource.onEnable();
-        ConnectionWorkers.asyncVoid(() -> reinitializeDatabaseRegistry());
-
         discordBot.onEnable();
     }
 
+    /**
+     * Method called when the launcher is disabled
+     */
     public void onDisable() {
         dataSource.onDisable();
         discordBot.onDisable();
     }
 
-    public void reinitializeDatabaseRegistry() {
-        try {
-            Class<?> registryClass = Class.forName("org.javalite.activejdbc.Registry");
-
-            Object registryInstanceObject = registryClass.getField("INSTANCE").get(registryClass);
-            Method registryInstanceInitMethod = registryClass.getDeclaredMethod("init", String.class);
-
-            registryInstanceInitMethod.setAccessible(true);
-            registryInstanceInitMethod.invoke(registryInstanceObject, "default");
-            registryInstanceInitMethod.setAccessible(false);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-    }
-
+    /**
+     * Retuns the data source
+     *
+     * @return The data source
+     */
     public DiscordDataSource getDataSource() {
         return dataSource;
     }
 
+    /**
+     * Returns the discord bot
+     *
+     * @return The discord bot
+     */
     public DiscordBot getDiscordBot() {
         return discordBot;
     }
 
+    /**
+     * Returns the logger
+     *
+     * @return The logger
+     */
     public static final Slf4JLogger getLogger() {
         return LOGGER;
+    }
+
+    /**
+     * @return the random
+     */
+    public static Random getRandom() {
+        return random;
     }
 
 }

@@ -1,22 +1,16 @@
 package dev.slne.discord.ticket.message;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.javalite.activejdbc.Model;
-import org.javalite.activejdbc.annotations.HasMany;
-import org.javalite.activejdbc.annotations.Table;
-
-import dev.slne.discord.datasource.DiscordTables;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Message.Attachment;
 import net.dv8tion.jda.api.entities.MessageReference;
 import net.dv8tion.jda.api.entities.User;
 
-@Table(DiscordTables.MESSAGES)
-@HasMany(child = TicketMessageAttachement.class, foreignKeyName = "message_id")
-public class TicketMessage extends Model {
+public class TicketMessage {
 
     private Message message;
     private String messageId;
@@ -32,10 +26,11 @@ public class TicketMessage extends Model {
 
     private List<TicketMessageAttachement> attachments;
 
-    public TicketMessage() {
-
-    }
-
+    /**
+     * Constructor for a ticket message
+     *
+     * @param message The message to create the ticket message from
+     */
     public TicketMessage(Message message) {
         this.message = message;
         this.messageId = message.getId();
@@ -44,12 +39,14 @@ public class TicketMessage extends Model {
         this.authorId = this.author.getId();
 
         this.messageCreatedAt = message.getTimeCreated().toLocalDateTime();
-        this.messageEditedAt = message.isEdited() ? message.getTimeEdited().toLocalDateTime() : null;
+
+        OffsetDateTime timeEdited = message.getTimeEdited();
+        this.messageEditedAt = message.isEdited() && timeEdited != null ? timeEdited.toLocalDateTime() : null;
 
         MessageReference reference = message.getMessageReference();
-        reference.resolve().queue(referencedMessage -> {
-            this.referencesMessageId = referencedMessage.getId();
-        });
+        if (reference != null) {
+            reference.resolve().queue(referencedMessage -> this.referencesMessageId = referencedMessage.getId());
+        }
 
         this.attachments = new ArrayList<>();
         for (Attachment attachment : message.getAttachments()) {
@@ -63,94 +60,110 @@ public class TicketMessage extends Model {
             TicketMessageAttachement attachement = new TicketMessageAttachement(this, name, url, extension, size,
                     description);
             this.attachments.add(attachement);
-            add(attachement);
         }
     }
 
-    @Override
-    protected void beforeSave() {
-        setString("message_id", messageId);
-
-        setString("author_id", authorId);
-
-        setTimestamp("message_created_at", messageCreatedAt);
-        setTimestamp("message_edited_at", messageEditedAt);
-        setTimestamp("message_deleted_at", messageDeletedAt);
-
-        setString("references_message_id", referencesMessageId);
-    }
-
-    @Override
-    protected void afterLoad() {
-        this.messageId = getString("message_id");
-
-        this.authorId = getString("author_id");
-
-        this.messageCreatedAt = getTimestamp("message_created_at").toLocalDateTime();
-        this.messageEditedAt = getTimestamp("message_edited_at").toLocalDateTime();
-        this.messageDeletedAt = getTimestamp("message_deleted_at").toLocalDateTime();
-
-        this.referencesMessageId = getString("references_message_id");
-
-        this.attachments = getAll(TicketMessageAttachement.class);
-    }
-
+    /**
+     * Returns the message of the ticket message
+     *
+     * @return The message of the ticket message
+     */
     public Message getMessage() {
         return message;
     }
 
+    /**
+     * Returns the id of the ticket message
+     *
+     * @return The id of the ticket message
+     */
     public String getMessageId() {
         return messageId;
     }
 
+    /**
+     * Returns the id of the author of the ticket message
+     *
+     * @return The id of the author of the ticket message
+     */
     public String getAuthorId() {
         return authorId;
     }
 
+    /**
+     * Returns the author of the ticket message
+     *
+     * @return The author of the ticket message
+     */
     public User getAuthor() {
         return author;
     }
 
+    /**
+     * Returns the creation date of the ticket message
+     *
+     * @return The creation date of the ticket message
+     */
     public LocalDateTime getMessageCreatedAt() {
         return messageCreatedAt;
     }
 
+    /**
+     * Returns the date of the last edit of the ticket message
+     *
+     * @return The date of the last edit of the ticket message
+     */
     public LocalDateTime getMessageEditedAt() {
         return messageEditedAt;
     }
 
+    /**
+     * Returns the date of the deletion of the ticket message
+     *
+     * @return The date of the deletion of the ticket message
+     */
     public LocalDateTime getMessageDeletedAt() {
         return messageDeletedAt;
     }
 
+    /**
+     * Returns the id of the referenced message of the ticket message
+     *
+     * @return The id of the referenced message of the ticket message
+     */
     public String getReferencesMessageId() {
         return referencesMessageId;
     }
 
+    /**
+     * Returns the attachments of the ticket message
+     *
+     * @return The attachments of the ticket message
+     */
     public List<TicketMessageAttachement> getAttachments() {
         return attachments;
     }
 
-    @Override
-    public boolean save() {
-        boolean result = super.save();
+    // @Override
+    // public boolean save() {
+    // boolean result = super.save();
 
-        for (TicketMessageAttachement attachment : attachments) {
-            result &= attachment.saveIt();
-        }
+    // for (TicketMessageAttachement attachment : attachments) {
+    // result &= attachment.saveIt();
+    // }
 
-        return result;
-    }
+    // return result;
+    // }
 
-    @Override
-    public boolean saveIt() {
-        boolean result = super.saveIt();
+    // @Override
+    // public boolean saveIt() {
+    // boolean result = super.saveIt();
 
-        for (TicketMessageAttachement attachment : attachments) {
-            result &= attachment.saveIt();
-        }
+    // for (TicketMessageAttachement attachment : attachments) {
+    // result &= attachment.saveIt();
+    // }
 
-        return result;
-    }
+    // return result;
+    // }
 
 }

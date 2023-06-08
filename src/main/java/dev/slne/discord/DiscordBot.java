@@ -3,12 +3,12 @@ package dev.slne.discord;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import dev.slne.discord.datasource.BotConnectionFile;
-import dev.slne.discord.datasource.BotConnectionSettings;
-import dev.slne.discord.interaction.command.DiscordCommandManager;
-import dev.slne.discord.interaction.modal.DiscordModalManager;
-import dev.slne.discord.listeners.ListenerManager;
-import dev.slne.discord.settings.GatewayIntents;
+import dev.slne.discord.discord.interaction.command.DiscordCommandManager;
+import dev.slne.discord.discord.interaction.modal.DiscordModalManager;
+import dev.slne.discord.discord.settings.BotConnectionFile;
+import dev.slne.discord.discord.settings.BotConnectionSettings;
+import dev.slne.discord.discord.settings.GatewayIntents;
+import dev.slne.discord.listener.ListenerManager;
 import dev.slne.discord.ticket.TicketManager;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -18,7 +18,7 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 public class DiscordBot {
 
-    private static String BOT_TOKEN;
+    private static String botToken;
 
     private static DiscordBot instance;
     private BotConnectionFile botConnectionFile;
@@ -29,6 +29,10 @@ public class DiscordBot {
     private DiscordCommandManager commandManager;
     private TicketManager ticketManager;
 
+    /**
+     * Called when the bot is loaded.
+     */
+    @SuppressWarnings({ "java:S2696" })
     public void onLoad() {
         instance = this;
 
@@ -40,7 +44,7 @@ public class DiscordBot {
 
         try {
             BotConnectionSettings settings = botConnectionFile.readObject(BotConnectionSettings.class);
-            BOT_TOKEN = settings.getBotToken();
+            botToken = settings.getBotToken();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -50,17 +54,21 @@ public class DiscordBot {
         modalManager = new DiscordModalManager();
         ticketManager = new TicketManager();
 
+        listenerManager.registerDiscordListeners();
         listenerManager.registerListeners();
     }
 
+    /**
+     * Called when the bot is enabled.
+     */
     public void onEnable() {
-        if (BOT_TOKEN == null) {
-            System.err.println("Bot token is null. Please check your bot-connection.json file.");
+        if (botToken == null) {
+            Launcher.getLogger().logError("Bot token is null. Please check your bot-connection.json file.");
             System.exit(1000);
             return;
         }
 
-        JDABuilder builder = JDABuilder.createDefault(BOT_TOKEN);
+        JDABuilder builder = JDABuilder.createDefault(botToken);
 
         builder.setAutoReconnect(true);
         builder.disableCache(CacheFlag.VOICE_STATE, CacheFlag.EMOJI, CacheFlag.STICKER, CacheFlag.SCHEDULED_EVENTS);
@@ -72,34 +80,72 @@ public class DiscordBot {
         listenerManager.registerListenersToJda(this.jda);
     }
 
+    /**
+     * Called when the bot is disabled.
+     */
     public void onDisable() {
-
+        // Currently empty
     }
 
+    /**
+     * Gets the instance of the discord bot.
+     *
+     * @return the instance
+     */
     public static DiscordBot getInstance() {
         return instance;
     }
 
+    /**
+     * Gets the command manager.
+     *
+     * @return the command manager
+     */
     public DiscordCommandManager getCommandManager() {
         return commandManager;
     }
 
+    /**
+     * Gets the listener manager.
+     *
+     * @return the listener manager
+     */
     public ListenerManager getListenerManager() {
         return listenerManager;
     }
 
+    /**
+     * Gets the modal manager.
+     *
+     * @return the modal manager
+     */
     public DiscordModalManager getModalManager() {
         return modalManager;
     }
 
+    /**
+     * Gets the ticket manager.
+     *
+     * @return the ticket manager
+     */
     public TicketManager getTicketManager() {
         return ticketManager;
     }
 
+    /**
+     * Gets the jda.
+     *
+     * @return the jda
+     */
     public JDA getJda() {
         return jda;
     }
 
+    /**
+     * Gets the bot connection file.
+     *
+     * @return the bot connection file
+     */
     public BotConnectionFile getBotConnectionFile() {
         return botConnectionFile;
     }

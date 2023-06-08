@@ -2,12 +2,27 @@ package dev.slne.discord.message;
 
 import java.time.Instant;
 
+import javax.annotation.Nonnull;
+
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 
 public class MessageManager {
 
-    public static MessageEmbed getErrorEmbed(String title, String description) {
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private MessageManager() {
+    }
+
+    /**
+     * Returns an error MessageEmbed with the given title and description.
+     *
+     * @param title       The title of the embed.
+     * @param description The description of the embed.
+     * @return The MessageEmbed.
+     */
+    public static @Nonnull MessageEmbed getErrorEmbed(String title, String description) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
 
         embedBuilder.setTitle(title);

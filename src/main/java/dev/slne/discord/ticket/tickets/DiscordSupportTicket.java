@@ -1,19 +1,19 @@
 package dev.slne.discord.ticket.tickets;
 
-import org.javalite.activejdbc.annotations.Table;
-
-import dev.slne.discord.datasource.DiscordTables;
 import dev.slne.discord.ticket.TicketType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
-@Table(DiscordTables.TICKETS)
 public class DiscordSupportTicket extends DescriptionTicket {
 
-    public DiscordSupportTicket() {
-    }
-
+    /**
+     * Constructor for a discord support ticket
+     *
+     * @param guild        The guild the ticket is created in
+     * @param ticketAuthor The author of the ticket
+     * @param description  The description of the ticket
+     */
     public DiscordSupportTicket(Guild guild, User ticketAuthor, String description) {
         super(guild, ticketAuthor, TicketType.DISCORD_SUPPORT, description);
     }
@@ -32,8 +32,6 @@ public class DiscordSupportTicket extends DescriptionTicket {
             message = this.getTicketAuthor().getAsMention() + " | " + message;
         }
 
-        channel.sendMessage(message).queue(v -> {
-            this.printDescription();
-        });
+        channel.sendMessage(message).queue(msg -> this.printDescription());
     }
 }

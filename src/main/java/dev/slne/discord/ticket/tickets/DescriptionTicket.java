@@ -10,20 +10,32 @@ public abstract class DescriptionTicket extends Ticket {
 
     private String description;
 
-    public DescriptionTicket() {
-
-    }
-
-    public DescriptionTicket(Guild guild, User ticketAuthor, TicketType ticketType, String description) {
+    /**
+     * Constructor for a description ticket
+     *
+     * @param guild        The guild the ticket is created in
+     * @param ticketAuthor The author of the ticket
+     * @param ticketType   The type of the ticket
+     * @param description  The description of the ticket
+     */
+    protected DescriptionTicket(Guild guild, User ticketAuthor, TicketType ticketType, String description) {
         super(guild, ticketAuthor, ticketType);
 
         this.description = description;
     }
 
+    /**
+     * Returns the description of the ticket
+     *
+     * @return The description of the ticket
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Prints the description of the ticket
+     */
     public void printDescription() {
         TextChannel channel = getChannel();
 

@@ -1,17 +1,15 @@
 package dev.slne.discord.ticket;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
-import org.javalite.activejdbc.Model;
-import org.javalite.activejdbc.annotations.Table;
-
-import dev.slne.data.core.database.worker.ConnectionWorkers;
-import dev.slne.discord.DiscordBot;
+import dev.slne.data.core.database.future.SurfFutureResult;
+import dev.slne.data.core.instance.DataApi;
 import dev.slne.discord.Launcher;
-import dev.slne.discord.datasource.DiscordTables;
-import dev.slne.discord.guild.DiscordGuild;
-import dev.slne.discord.guild.DiscordGuilds;
+import dev.slne.discord.discord.guild.DiscordGuild;
+import dev.slne.discord.discord.guild.DiscordGuilds;
 import dev.slne.discord.ticket.result.TicketCloseResult;
 import dev.slne.discord.ticket.result.TicketCreateResult;
 import net.dv8tion.jda.api.entities.Guild;
@@ -19,8 +17,7 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
-@Table(DiscordTables.TICKETS)
-public class Ticket extends Model {
+public class Ticket {
 
     private String ticketId;
     private LocalDateTime openedAt;
@@ -43,10 +40,13 @@ public class Ticket extends Model {
     private String closedReason;
     private LocalDateTime closedAt;
 
-    public Ticket() {
-
-    }
-
+    /**
+     * Constructor for a ticket
+     *
+     * @param guild        The guild the ticket is created in
+     * @param ticketAuthor The author of the ticket
+     * @param ticketType   The type of the ticket
+     */
     public Ticket(Guild guild, User ticketAuthor, TicketType ticketType) {
         this.ticketId = getRandomTicketId();
         this.openedAt = LocalDateTime.now();
@@ -68,21 +68,28 @@ public class Ticket extends Model {
     }
 
     public void afterOpen() {
-
+        // Implemented by subclasses
     }
 
     public static <T extends Ticket> CompletableFuture<T> getTicketByChannel(TextChannel channel) {
-        return ConnectionWorkers.async(() -> {
-            T ticket = T.findFirst("channel_id = ?", channel.getId());
+        return null;
+        // return ConnectionWorkers.async(() -> {
+        // T ticket = T.findFirst("channel_id = ?", channel.getId());
 
-            if (ticket == null) {
-                return null;
-            }
+        // if (ticket == null) {
+        // return null;
+        // }
 
-            return ticket;
-        });
+        // return ticket;
+        // });
     }
 
+    /**
+     * Create the ticket channel
+     *
+     * @param guild The guild the ticket should be created in
+     * @return The result of the ticket creation
+     */
     public CompletableFuture<TicketCreateResult> createTicketChannel(Guild guild) {
         CompletableFuture<TicketCreateResult> future = new CompletableFuture<>();
         DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
@@ -92,7 +99,13 @@ public class Ticket extends Model {
             return future;
         }
 
-        Category channelCategory = guild.getCategoryById(discordGuild.getCategoryId());
+        String categoryId = discordGuild.getCategoryId();
+        if (categoryId == null) {
+            future.complete(TicketCreateResult.CATEGORY_NOT_FOUND);
+            return future;
+        }
+
+        Category channelCategory = guild.getCategoryById(categoryId);
 
         if (channelCategory == null) {
             future.completeAsync(() -> TicketCreateResult.CATEGORY_NOT_FOUND);
@@ -101,7 +114,7 @@ public class Ticket extends Model {
 
         String ticketName = ticketType.name().toLowerCase() + "-" + ticketAuthor.getName().toLowerCase();
         boolean ticketExists = channelCategory.getChannels().stream()
-                .anyMatch(channel -> channel.getName().equalsIgnoreCase(ticketName));
+                .anyMatch(categoryChannel -> categoryChannel.getName().equalsIgnoreCase(ticketName));
 
         if (ticketExists) {
             future.completeAsync(() -> TicketCreateResult.ALREADY_EXISTS);
@@ -112,23 +125,35 @@ public class Ticket extends Model {
             this.channelId = ticketChannel.getId();
             this.channel = ticketChannel;
 
-            ConnectionWorkers.async(this::saveIt).thenAcceptAsync(success -> {
+            saveIt().whenComplete(successOptional -> {
+                if (successOptional.isEmpty()) {
+                    successOptional = Optional.of(false);
+                }
+
+                boolean success = successOptional.get();
                 future.completeAsync(() -> success ? TicketCreateResult.SUCCESS : TicketCreateResult.ERROR);
 
                 if (!success) {
                     Launcher.getLogger().logError("Error while saving ticket: " + getChannelId());
                 }
-            }).exceptionally(error -> {
-                Launcher.getLogger().logError("Error while saving ticket: " + error.getMessage());
-                error.printStackTrace();
+            }, throwable -> {
+                Launcher.getLogger().logError("Error while saving ticket: " + throwable.getMessage());
+                throwable.printStackTrace();
 
-                future.completeExceptionally(error);
-
-                return null;
+                future.completeExceptionally(throwable);
             });
         });
 
         return future;
+    }
+
+    /**
+     * Save the ticket to the database
+     *
+     * @return The result of the saving
+     */
+    public SurfFutureResult<Optional<Boolean>> saveIt() {
+        return DataApi.getDataInstance().supplyAsync(() -> Optional.of(true));
     }
 
     public CompletableFuture<TicketCloseResult> closeTicket(User user, String reason) {
@@ -147,127 +172,155 @@ public class Ticket extends Model {
         channel.delete().queue(success -> {
             future.complete(TicketCloseResult.SUCCESS);
 
-            ConnectionWorkers.asyncVoid(this::saveIt);
+            saveIt();
         }, error -> {
             future.complete(TicketCloseResult.ERROR);
 
-            System.err.println("Error while closing ticket: " + error.getMessage());
+            Launcher.getLogger().logError("Error while closing ticket: " + error.getMessage());
             error.printStackTrace();
         });
 
         return future;
     }
 
-    @Override
-    protected void beforeSave() {
-        setString("ticket_id", ticketId);
-
-        System.out.println(openedAt.toString());
-
-        setString("opened_at", openedAt);
-
-        setString("guild_id", guildId);
-        setString("channel_id", channelId);
-
-        setString("type", ticketTypeString);
-
-        setString("author_id", ticketAuthorId);
-        setString("closed_by_id", closedById);
-
-        setString("closed_reason", closedReason);
-        setString("closed_at", closedAt);
-        System.out.println(closedAt.toString());
-    }
-
-    @Override
-    protected void afterLoad() {
-        this.ticketId = getString("ticket_id");
-        this.openedAt = getTimestamp("opened_at").toLocalDateTime();
-
-        this.guildId = getString("guild_id");
-        this.guild = DiscordBot.getInstance().getJda().getGuildById(guildId);
-        this.channelId = getString("channel_id");
-        this.channel = guild != null ? guild.getTextChannelById(channelId) : null;
-
-        this.ticketTypeString = getString("type");
-        try {
-            this.ticketType = TicketType.valueOf(ticketTypeString);
-        } catch (IllegalArgumentException e) {
-            this.ticketType = TicketType.SERVER_SUPPORT;
-        }
-
-        this.ticketAuthorId = getString("author_id");
-        this.ticketAuthor = guild != null ? guild.getMemberById(ticketAuthorId).getUser() : null;
-
-        this.closedById = getString("closed_by_id");
-        this.closedBy = guild != null ? guild.getMemberById(closedById).getUser() : null;
-
-        this.closedReason = getString("closed_reason");
-        this.closedAt = getTimestamp("closed_at").toLocalDateTime();
-    }
-
+    /**
+     * Get a random ticket id
+     *
+     * @return The random ticket id
+     */
     private String getRandomTicketId() {
-        String randomId = "";
+        StringBuilder randomIdBuilder = new StringBuilder();
+        Random random = Launcher.getRandom();
 
         for (int i = 0; i < 10; i++) {
-            randomId += (int) (Math.random() * 10);
+            randomIdBuilder.append(random.nextInt(10));
         }
 
-        return randomId;
+        return randomIdBuilder.toString();
     }
 
+    /**
+     * Get the ticket id
+     *
+     * @return The ticket id
+     */
     public String getTicketId() {
         return ticketId;
     }
 
+    /**
+     * Get the author of the ticket
+     *
+     * @return The author of the ticket
+     */
     public User getTicketAuthor() {
         return ticketAuthor;
     }
 
+    /**
+     * Get the id of the author of the ticket
+     *
+     * @return The id of the author of the ticket
+     */
     public String getTicketAuthorId() {
         return ticketAuthorId;
     }
 
+    /**
+     * Get the type of the ticket
+     *
+     * @return The type of the ticket
+     */
     public TicketType getTicketType() {
         return ticketType;
     }
 
+    /**
+     * Get the type of the ticket as a string
+     *
+     * @return The type of the ticket as a string
+     */
     public String getTicketTypeString() {
         return ticketTypeString;
     }
 
+    /**
+     * Get the opened at date of the ticket
+     *
+     * @return The opened at date of the ticket
+     */
     public LocalDateTime getOpenedAt() {
         return openedAt;
     }
 
+    /**
+     * Get the id of the guild the ticket is created in
+     *
+     * @return The id of the guild the ticket is created in
+     */
     public String getGuildId() {
         return guildId;
     }
 
+    /**
+     * Get the guild the ticket is created in
+     *
+     * @return The guild the ticket is created in
+     */
     public Guild getGuild() {
         return guild;
     }
 
+    /**
+     * Get the id of the channel the ticket is created in
+     *
+     * @return The id of the channel the ticket is created in
+     */
     public String getChannelId() {
         return channelId;
     }
 
+    /**
+     * Get the channel the ticket is created in
+     *
+     * @return The channel the ticket is created in
+     */
     public TextChannel getChannel() {
         return channel;
     }
 
+    /**
+     * Get the id of the user that closed the ticket
+     *
+     * @return The id of the user that closed the ticket
+     */
     public String getClosedById() {
         return closedById;
     }
 
+    /**
+     * Get the user that closed the ticket
+     *
+     * @return The user that closed the ticket
+     */
     public User getClosedBy() {
         return closedBy;
     }
 
+    /**
+     * Get the reason the ticket was closed
+     *
+     * @return The reason the ticket was closed
+     */
     public String getClosedReason() {
         return closedReason;
     }
 
+    /**
+     * Get the date the ticket was closed
+     *
+     * @return The date the ticket was closed
+     */
     public LocalDateTime getClosedAt() {
         return closedAt;
     }

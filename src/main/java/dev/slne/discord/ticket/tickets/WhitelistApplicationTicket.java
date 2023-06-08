@@ -1,22 +1,22 @@
 package dev.slne.discord.ticket.tickets;
 
-import org.javalite.activejdbc.annotations.Table;
-
-import dev.slne.discord.datasource.DiscordTables;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
-@Table(DiscordTables.TICKETS)
 public class WhitelistApplicationTicket extends Ticket {
 
     private String minecraftName;
 
-    public WhitelistApplicationTicket() {
-    }
-
+    /**
+     * Constructor for a whitelist application ticket
+     *
+     * @param guild         The guild the ticket is created in
+     * @param ticketAuthor  The author of the ticket
+     * @param minecraftName The minecraft name of the ticket
+     */
     public WhitelistApplicationTicket(Guild guild, User ticketAuthor, String minecraftName) {
         super(guild, ticketAuthor, TicketType.WHITELIST);
 
