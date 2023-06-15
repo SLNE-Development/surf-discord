@@ -136,7 +136,15 @@ public abstract class TicketModal extends DiscordModal {
         if (ticket != null) {
             final Ticket finalTicket = ticket;
 
-            ticket.createTicketChannel(event.getGuild()).thenAcceptAsync(result -> {
+            ticket.createTicketChannel(event.getGuild()).whenComplete(resultOptional -> {
+                if (resultOptional.isEmpty()) {
+                    hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
+                    Launcher.getLogger().logError("Error while creating ticket: resultOptional is empty");
+                    return;
+                }
+
+                TicketCreateResult result = resultOptional.get();
+
                 if (result.equals(TicketCreateResult.SUCCESS)) {
                     finalTicket.afterOpen();
 
@@ -145,7 +153,9 @@ public abstract class TicketModal extends DiscordModal {
                     message.append(this.ticketType.getName());
                     message.append("\"-Ticket wurde erfolgreich erstellt! ");
 
-                    message.append(finalTicket.getChannel().getAsMention());
+                    if (finalTicket.getChannel().isPresent()) {
+                        message.append(finalTicket.getChannel().get().getAsMention());
+                    }
 
                     hook.editOriginal(message.toString() + "").queue();
                     return;

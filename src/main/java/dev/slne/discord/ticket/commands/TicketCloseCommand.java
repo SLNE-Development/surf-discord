@@ -2,6 +2,7 @@ package dev.slne.discord.ticket.commands;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.Nonnull;
 
@@ -52,29 +53,26 @@ public class TicketCloseCommand extends DiscordCommand {
         }
 
         TextChannel channel = (TextChannel) interaction.getChannel();
+        Optional<Ticket> ticketOptional = Ticket.getTicketByChannel(channel.getId());
 
-        interaction.deferReply(true)
-                .queue(deferedReply -> Ticket.getTicketByChannel(channel).thenAcceptAsync(ticket -> {
-                    if (ticket == null) {
+        interaction.reply("Schließe Ticket...")
+                .queue(deferedReply -> {
+                    if (ticketOptional.isEmpty()) {
                         deferedReply.editOriginal("Dieser Kanal ist kein Ticket.").queue();
                         return;
                     }
 
-                    ticket.closeTicket(closer, reason).thenAcceptAsync(result -> {
-                        if (result == TicketCloseResult.SUCCESS) {
-                            deferedReply.editOriginal("Ticket erfolgreich geschlossen.").queue();
-                        } else {
+                    Ticket ticket = ticketOptional.get();
+
+                    ticket.closeTicketChannel(closer, reason).whenComplete(result -> {
+                        if (result != TicketCloseResult.SUCCESS) {
                             deferedReply.editOriginal("Fehler beim Schließen des Tickets.").queue();
                         }
-                    }).exceptionally(failure -> {
+                    }, throwable -> {
                         deferedReply.editOriginal("Fehler beim Schließen des Tickets.").queue();
-                        Launcher.getLogger().logError("Error while closing ticket: " + failure.getMessage());
-                        failure.printStackTrace();
-                        return null;
+                        Launcher.getLogger().logError("Error while closing ticket: " + throwable.getMessage());
+                        throwable.printStackTrace();
                     });
-                }), failure -> {
-                    Launcher.getLogger().logError("Error while closing ticket: " + failure.getMessage());
-                    failure.printStackTrace();
                 });
     }
 

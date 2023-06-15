@@ -8,6 +8,9 @@ import dev.slne.discord.listener.event.Event;
 import dev.slne.discord.listener.event.EventHandler;
 import dev.slne.discord.listener.interaction.command.CommandReceivedListener;
 import dev.slne.discord.listener.interaction.modal.DiscordModalListener;
+import dev.slne.discord.listener.message.MessageCreatedListener;
+import dev.slne.discord.listener.message.MessageDeletedListener;
+import dev.slne.discord.listener.message.MessageUpdatedListener;
 import dev.slne.discord.listener.setup.ReadyListener;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.hooks.EventListener;
@@ -26,7 +29,7 @@ public class ListenerManager {
     }
 
     public void registerListeners() {
-
+        // Currently not needed
     }
 
     /**
@@ -37,6 +40,10 @@ public class ListenerManager {
 
         discordListeners.add(new CommandReceivedListener());
         discordListeners.add(new DiscordModalListener());
+
+        discordListeners.add(new MessageCreatedListener());
+        discordListeners.add(new MessageUpdatedListener());
+        discordListeners.add(new MessageDeletedListener());
     }
 
     /**

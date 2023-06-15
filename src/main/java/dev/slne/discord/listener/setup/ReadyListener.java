@@ -21,6 +21,8 @@ public class ReadyListener extends ListenerAdapter {
         for (Guild guild : jda.getGuilds()) {
             DiscordBot.getInstance().getCommandManager().registerToGuild(guild);
         }
+
+        DiscordBot.getInstance().getTicketManager().fetchActiveTickets();
     }
 
 }

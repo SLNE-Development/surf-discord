@@ -1,5 +1,7 @@
 package dev.slne.discord.ticket.tickets;
 
+import java.util.Optional;
+
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketType;
 import net.dv8tion.jda.api.entities.Guild;
@@ -37,7 +39,13 @@ public abstract class DescriptionTicket extends Ticket {
      * Prints the description of the ticket
      */
     public void printDescription() {
-        TextChannel channel = getChannel();
+        Optional<TextChannel> channelOptional = getChannel();
+
+        if (channelOptional.isEmpty()) {
+            return;
+        }
+
+        TextChannel channel = channelOptional.get();
 
         if (channel == null) {
             return;

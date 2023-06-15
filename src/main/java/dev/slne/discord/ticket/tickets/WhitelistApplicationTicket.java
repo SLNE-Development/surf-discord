@@ -1,5 +1,7 @@
 package dev.slne.discord.ticket.tickets;
 
+import java.util.Optional;
+
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketType;
 import net.dv8tion.jda.api.entities.Guild;
@@ -25,7 +27,13 @@ public class WhitelistApplicationTicket extends Ticket {
 
     @Override
     public void afterOpen() {
-        TextChannel channel = getChannel();
+        Optional<TextChannel> channelOptional = getChannel();
+
+        if (channelOptional.isEmpty()) {
+            return;
+        }
+
+        TextChannel channel = channelOptional.get();
 
         if (channel == null) {
             return;
