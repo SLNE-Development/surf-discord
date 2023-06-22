@@ -51,8 +51,8 @@ public abstract class TicketModal extends DiscordModal {
         } else if (ticketType.equals(TicketType.SERVER_SUPPORT) || ticketType.equals(TicketType.DISCORD_SUPPORT)
                 || ticketType.equals(TicketType.BUGREPORT)) {
             TextInput description = TextInput.create("body",
-                    "Beschreibung", TextInputStyle.PARAGRAPH).setMinLength(20)
-                    .setPlaceholder("Ich wurde gebannt, weil...").setRequired(true).build();
+                    "Beschreibung", TextInputStyle.PARAGRAPH).setMinLength(0)
+                    .setPlaceholder("Ich wurde gebannt, weil...").setRequired(false).build();
 
             components.add(description);
         }

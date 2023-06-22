@@ -2,6 +2,7 @@ package dev.slne.discord.ticket;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,14 +25,20 @@ import dev.slne.discord.datasource.API;
 import dev.slne.discord.datasource.database.future.DiscordFutureResult;
 import dev.slne.discord.discord.guild.DiscordGuild;
 import dev.slne.discord.discord.guild.DiscordGuilds;
+import dev.slne.discord.discord.guild.GuildRole;
+import dev.slne.discord.ticket.member.TicketMember;
 import dev.slne.discord.ticket.message.TicketMessage;
 import dev.slne.discord.ticket.result.TicketCloseResult;
 import dev.slne.discord.ticket.result.TicketCreateResult;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.managers.channel.concrete.TextChannelManager;
 
 public class Ticket {
 
@@ -49,6 +56,8 @@ public class Ticket {
     private TicketType ticketType;
 
     private String ticketAuthorId;
+    private String ticketAuthorName;
+    private String ticketAuthorAvatarUrl;
     private User ticketAuthor;
 
     private Optional<String> closedById;
@@ -58,6 +67,7 @@ public class Ticket {
     private Optional<LocalDateTime> closedAt;
 
     private List<TicketMessage> messages;
+    private List<TicketMember> members;
 
     /**
      * Constructor for a ticket
@@ -80,8 +90,10 @@ public class Ticket {
         this.ticketTypeString = ticketType.name();
         this.ticketType = ticketType;
 
+        this.ticketAuthorName = ticketAuthor.getName();
         this.ticketAuthorId = ticketAuthor.getId();
         this.ticketAuthor = ticketAuthor;
+        this.ticketAuthorAvatarUrl = ticketAuthor.getAvatarUrl();
 
         this.closedById = Optional.empty();
         this.closedBy = Optional.empty();
@@ -90,34 +102,41 @@ public class Ticket {
         this.closedAt = Optional.empty();
 
         this.messages = new ArrayList<>();
+        this.members = new ArrayList<>();
     }
 
     /**
      * Constructor for a ticket
      *
-     * @param id               The id of the ticket
-     * @param ticketId         The ticket id
-     * @param openedAt         The date the ticket was opened
-     * @param guildId          The id of the guild the ticket is created in
-     * @param guild            The guild the ticket is created in
-     * @param channelId        The id of the channel the ticket is created in
-     * @param channel          The channel the ticket is created in
-     * @param ticketTypeString The type of the ticket as a string
-     * @param ticketType       The type of the ticket
-     * @param ticketAuthorId   The id of the author of the ticket
-     * @param ticketAuthor     The author of the ticket
-     * @param closedById       The id of the user that closed the ticket
-     * @param closedBy         The user that closed the ticket
-     * @param closedReason     The reason the ticket was closed
-     * @param closedAt         The date the ticket was closed
+     * @param id                    The id of the ticket
+     * @param ticketId              The ticket id
+     * @param openedAt              The date the ticket was opened
+     * @param guildId               The id of the guild the ticket is created in
+     * @param guild                 The guild the ticket is created in
+     * @param channelId             The id of the channel the ticket is created in
+     * @param channel               The channel the ticket is created in
+     * @param ticketTypeString      The type of the ticket as a string
+     * @param ticketType            The type of the ticket
+     * @param ticketAuthorName      The name of the author of the ticket
+     * @param ticketAuthorId        The id of the author of the ticket
+     * @param ticketAuthorAvatarUrl The avatar url of the author of the ticket
+     * @param ticketAuthor          The author of the ticket
+     * @param closedById            The id of the user that closed the ticket
+     * @param closedBy              The user that closed the ticket
+     * @param closedReason          The reason the ticket was closed
+     * @param closedAt              The date the ticket was closed
+     * @param messages              The messages of the ticket
+     * @param members               The members of the ticket
      */
     @SuppressWarnings("java:S107")
     public Ticket(
             Optional<Long> id, Optional<String> ticketId, LocalDateTime openedAt, Optional<String> guildId,
             Optional<Guild> guild, Optional<String> channelId, Optional<TextChannel> channel, String ticketTypeString,
-            TicketType ticketType, String ticketAuthorId, User ticketAuthor, Optional<String> closedById,
+            TicketType ticketType, String ticketAuthorName, String ticketAuthorId, String ticketAuthorAvatarUrl,
+            User ticketAuthor,
+            Optional<String> closedById,
             Optional<User> closedBy, Optional<String> closedReason, Optional<LocalDateTime> closedAt,
-            List<TicketMessage> messages) {
+            List<TicketMessage> messages, List<TicketMember> members) {
         this.id = id;
         this.ticketId = ticketId;
         this.openedAt = openedAt;
@@ -127,6 +146,8 @@ public class Ticket {
         this.channel = channel;
         this.ticketTypeString = ticketTypeString;
         this.ticketType = ticketType;
+        this.ticketAuthorAvatarUrl = ticketAuthorAvatarUrl;
+        this.ticketAuthorName = ticketAuthorName;
         this.ticketAuthorId = ticketAuthorId;
         this.ticketAuthor = ticketAuthor;
         this.closedById = closedById;
@@ -134,6 +155,7 @@ public class Ticket {
         this.closedReason = closedReason;
         this.closedAt = closedAt;
         this.messages = messages;
+        this.members = members;
     }
 
     public void afterOpen() {
@@ -173,6 +195,67 @@ public class Ticket {
         });
 
         return futureResult;
+    }
+
+    /**
+     * Adds a ticket member to the ticket
+     *
+     * @param ticketMember The ticket member
+     * @return The result of the ticket member adding
+     */
+    public SurfFutureResult<Optional<TicketMember>> addTicketMember(TicketMember ticketMember) {
+        CompletableFuture<Optional<TicketMember>> future = new CompletableFuture<>();
+        DiscordFutureResult<Optional<TicketMember>> futureResult = new DiscordFutureResult<>(future);
+
+        User user = ticketMember.getMember().orElse(null);
+
+        if (user == null || memberExists(user)) {
+            future.complete(Optional.empty());
+            return futureResult;
+        }
+
+        ticketMember.create().whenComplete(ticketMemberCallback -> {
+            if (ticketMemberCallback.isEmpty()) {
+                future.complete(Optional.empty());
+                return;
+            }
+
+            addRawTicketMember(ticketMember);
+            future.complete(ticketMemberCallback);
+        });
+
+        return futureResult;
+    }
+
+    /**
+     * Removes a ticket member from the ticket
+     *
+     * @param ticketMember The ticket member
+     * @return The result of the ticket member removing
+     */
+    public SurfFutureResult<Optional<TicketMember>> removeTicketMember(TicketMember ticketMember) {
+        CompletableFuture<Optional<TicketMember>> future = new CompletableFuture<>();
+        DiscordFutureResult<Optional<TicketMember>> futureResult = new DiscordFutureResult<>(future);
+
+        ticketMember.delete().whenComplete(ticketMemberCallback -> {
+            if (ticketMemberCallback.isEmpty()) {
+                future.complete(Optional.empty());
+                return;
+            }
+
+            future.complete(ticketMemberCallback);
+        });
+
+        return futureResult;
+    }
+
+    /**
+     * Adds a raw ticket member to the ticket
+     *
+     * @param ticketMember The ticket member
+     */
+    public void addRawTicketMember(TicketMember ticketMember) {
+        members.add(ticketMember);
     }
 
     /**
@@ -273,12 +356,24 @@ public class Ticket {
             ticketType = TicketType.getByName(ticketTypeString);
         }
 
+        String ticketAuthorName = null;
         String ticketAuthorId = null;
+        String ticketAuthorAvatarUrl = null;
         User ticketAuthor = null;
         if (jsonObject.has("author_id") && jsonObject.get("author_id") != null && !(jsonObject
                 .get("author_id") instanceof JsonNull)) {
             ticketAuthorId = jsonObject.get("author_id").getAsString() + "";
             ticketAuthor = DiscordBot.getInstance().getJda().getUserById(ticketAuthorId);
+        }
+
+        if (jsonObject.has("author_name") && jsonObject.get("author_name") != null && !(jsonObject
+                .get("author_name") instanceof JsonNull)) {
+            ticketAuthorName = jsonObject.get("author_name").getAsString() + "";
+        }
+
+        if (jsonObject.has("author_avatar_url") && jsonObject.get("author_avatar_url") != null && !(jsonObject
+                .get("author_avatar_url") instanceof JsonNull)) {
+            ticketAuthorAvatarUrl = jsonObject.get("author_avatar_url").getAsString() + "";
         }
 
         Optional<String> closedById = Optional.empty();
@@ -303,9 +398,13 @@ public class Ticket {
         }
 
         List<TicketMessage> messages = new ArrayList<>();
+        List<TicketMember> members = new ArrayList<>();
 
         Ticket ticket = new Ticket(id, ticketId, openedAt, guildId, guild, channelId, channel, ticketTypeString,
-                ticketType, ticketAuthorId, ticketAuthor, closedById, closedBy, closedReason, closedAt, messages);
+                ticketType, ticketAuthorName, ticketAuthorId, ticketAuthorAvatarUrl, ticketAuthor, closedById, closedBy,
+                closedReason,
+                closedAt, messages,
+                members);
 
         if (jsonObject.has("messages")) {
             JsonArray messagesArray = jsonObject.get("messages").getAsJsonArray();
@@ -322,7 +421,23 @@ public class Ticket {
             }
         }
 
+        if (jsonObject.has("members")) {
+            JsonArray membersArray = jsonObject.get("members").getAsJsonArray();
+
+            for (JsonElement memberElement : membersArray) {
+                if (!memberElement.isJsonObject()) {
+                    continue;
+                }
+
+                JsonObject memberObject = memberElement.getAsJsonObject();
+                TicketMember member = TicketMember.fromJsonObject(ticket, memberObject);
+
+                members.add(member);
+            }
+        }
+
         ticket.messages = messages;
+        ticket.members = members;
 
         return ticket;
     }
@@ -336,6 +451,8 @@ public class Ticket {
         Map<String, String> parameters = new HashMap<>();
 
         parameters.put("author_id", ticketAuthorId);
+        parameters.put("author_name", ticketAuthorName);
+        parameters.put("author_avatar_url", ticketAuthorAvatarUrl);
         parameters.put("type", ticketTypeString);
         parameters.put("channel_id", channelId.orElse(""));
         parameters.put("guild_id", guildId.orElse(""));
@@ -353,7 +470,7 @@ public class Ticket {
      */
     public SurfFutureResult<Optional<Ticket>> createTicket() {
         return DataApi.getDataInstance().supplyAsync(() -> {
-            WebRequest request = WebRequest.builder().url(API.TICKETS).parameters(toParameters()).build();
+            WebRequest request = WebRequest.builder().url(API.TICKETS).json(true).parameters(toParameters()).build();
             WebResponse response = request.executePost().join();
 
             if (response.getStatusCode() != 201) {
@@ -408,21 +525,33 @@ public class Ticket {
             if (channelCategory == null) {
                 return Optional.of(TicketCreateResult.CATEGORY_NOT_FOUND);
             }
+            String ticketTypeName = ticketType.name().toLowerCase();
+            String authorName = ticketAuthor.getName().toLowerCase().trim().replace(" ", "-");
 
-            String ticketName = ticketType.name().toLowerCase() + "-" + ticketAuthor.getName().toLowerCase();
-            boolean ticketExists = channelCategory.getChannels().stream()
-                    .anyMatch(categoryChannel -> categoryChannel.getName().equalsIgnoreCase(ticketName));
+            int maxLength = Channel.MAX_NAME_LENGTH;
+            String ticketName = ticketTypeName + "-" + authorName;
+
+            if (ticketName.length() > maxLength) {
+                ticketName = ticketName.substring(0, maxLength);
+            }
+
+            boolean ticketExists = checkTicketExists(ticketName, channelCategory);
 
             if (ticketExists) {
                 return Optional.of(TicketCreateResult.ALREADY_EXISTS);
             }
 
-            TextChannel ticketChannel = channelCategory.createTextChannel(ticketName).complete();
+            TextChannel ticketChannel = channelCategory.createTextChannel(ticketName + "").complete();
 
             this.channelId = Optional.of(ticketChannel.getId());
             this.channel = Optional.of(ticketChannel);
 
             Optional<Ticket> newTicket = createTicket().join();
+            TicketMember author = new TicketMember(this, ticketAuthor, DiscordBot.getInstance().getJda().getSelfUser());
+            addTicketMember(author).join();
+
+            updateMembers();
+            updatePermissions();
 
             if (newTicket.isEmpty()) {
                 return Optional.of(TicketCreateResult.ERROR);
@@ -432,11 +561,203 @@ public class Ticket {
         });
     }
 
-    public SurfFutureResult<Optional<Ticket>> closeTicket() {
-        return DataApi.getDataInstance().supplyAsync(() -> {
-            String url = String.format(API.TICKETS, getTicketId().orElse(null));
+    /**
+     * Update the members of the ticket
+     */
+    public void updateMembers() {
+        if (guild.isEmpty()) {
+            return;
+        }
 
-            WebRequest request = WebRequest.builder().url(url).parameters(toParameters()).build();
+        DiscordGuild discordGuild = DiscordGuilds.getGuild(guild.get());
+
+        for (User user : discordGuild.getAllUsers()) {
+            TicketMember member = new TicketMember(this, user, DiscordBot.getInstance().getJda().getSelfUser());
+            addTicketMember(member).join();
+        }
+    }
+
+    /**
+     * Check if the member exists
+     *
+     * @param user The user to check
+     * @return If the member exists
+     */
+    private boolean memberExists(User user) {
+        return members.stream().anyMatch(member -> member.getMemberId().equals(user.getId()));
+    }
+
+    @SuppressWarnings({ "java:S3776", "java:S135" })
+    public void updatePermissions() {
+        if (channel.isEmpty() || guild.isEmpty()) {
+            return;
+        }
+
+        Guild guildItem = guild.get();
+        DiscordGuild discordGuild = DiscordGuilds.getGuild(guildItem);
+
+        if (discordGuild == null) {
+            return;
+        }
+
+        TextChannel textChannel = channel.get();
+        TextChannelManager manager = textChannel.getManager();
+
+        User botUser = DiscordBot.getInstance().getJda().getSelfUser();
+        manager.putMemberPermissionOverride(botUser.getIdLong(), Permission.ALL_PERMISSIONS, 0);
+
+        for (Role role : guildItem.getRoles()) {
+            try {
+                manager.putRolePermissionOverride(role.getIdLong(), 0, Permission.ALL_PERMISSIONS);
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
+        }
+
+        for (TicketMember member : members) {
+            User user = member.getMember().orElse(null);
+
+            if (user == null) {
+                continue;
+            }
+
+            if (member.isRemoved()) {
+                try {
+                    manager.putMemberPermissionOverride(Long.valueOf(member.getMemberId()), 0,
+                            Permission.ALL_PERMISSIONS);
+                } catch (Exception exception) {
+                    exception.printStackTrace();
+                }
+
+                continue;
+            }
+
+            Collection<Permission> permissions = new ArrayList<>();
+            List<GuildRole> roles = discordGuild.getGuildRoles(user.getId());
+
+            boolean adminAdded = false;
+            boolean moderatorAdded = false;
+
+            if (roles.isEmpty()) {
+                permissions.addAll(getMemberPermissions());
+            }
+
+            for (GuildRole role : roles) {
+                switch (role) {
+                    case DISCORD_ADMINISTRATOR:
+                    case SERVER_ADMINISTRATOR:
+                        if (!adminAdded) {
+                            permissions.addAll(getAdminPermissions());
+                            adminAdded = true;
+                        }
+                        break;
+
+                    case DISCORD_MODERATOR:
+                    case SERVER_MODERATOR:
+                        if (!moderatorAdded) {
+                            permissions.addAll(getModeratorPermissions());
+                            moderatorAdded = true;
+                        }
+                        break;
+                }
+            }
+
+            manager.putMemberPermissionOverride(user.getIdLong(), permissions, new ArrayList<>());
+        }
+
+        manager.complete();
+    }
+
+    /**
+     * Returns the permissions for the ticket for the channel admin
+     *
+     * @return The permissions for the ticket
+     */
+    private Collection<Permission> getAdminPermissions() {
+        Collection<Permission> adminPermissions = new ArrayList<>();
+
+        for (Permission permission : Permission.values()) {
+            if (permission.isChannel()) {
+                adminPermissions.add(permission);
+            }
+        }
+
+        return adminPermissions;
+    }
+
+    /**
+     * Returns the permissions for the ticket for the channel moderator
+     *
+     * @return The permissions for the ticket
+     */
+    private Collection<Permission> getModeratorPermissions() {
+        Collection<Permission> modPermissions = new ArrayList<>();
+
+        for (Permission permission : Permission.values()) {
+            if (permission.isChannel()) {
+                modPermissions.add(permission);
+            }
+        }
+
+        return modPermissions;
+    }
+
+    /**
+     * Returns the permissions for the ticket for the channel member
+     *
+     * @return The permissions for the ticket
+     */
+    private Collection<Permission> getMemberPermissions() {
+        Collection<Permission> permissions = new ArrayList<>();
+
+        permissions.add(Permission.VIEW_CHANNEL);
+        permissions.add(Permission.MESSAGE_ADD_REACTION);
+        permissions.add(Permission.MESSAGE_SEND);
+        permissions.add(Permission.MESSAGE_EMBED_LINKS);
+        permissions.add(Permission.MESSAGE_HISTORY);
+        permissions.add(Permission.MESSAGE_EXT_EMOJI);
+        permissions.add(Permission.MESSAGE_EXT_STICKER);
+        permissions.add(Permission.MESSAGE_ATTACH_FILES);
+        permissions.add(Permission.USE_APPLICATION_COMMANDS);
+
+        return permissions;
+    }
+
+    /**
+     * Check if the ticket exists
+     *
+     * @param newTicketName   The name of the ticket
+     * @param channelCategory The category the ticket should be created in
+     * @return If the ticket exists
+     */
+    private boolean checkTicketExists(String newTicketName, Category channelCategory) {
+        boolean channelExists = channelCategory.getChannels().stream()
+                .anyMatch(categoryChannel -> categoryChannel.getName().equalsIgnoreCase(newTicketName));
+
+        boolean ticketExists = DiscordBot.getInstance().getTicketManager().getTickets().stream()
+                .anyMatch(ticket -> ticket.getChannel().isPresent()
+                        && ticket.getChannel().get().getName().equalsIgnoreCase(newTicketName));
+
+        return channelExists || ticketExists;
+    }
+
+    /**
+     * Close the ticket
+     *
+     * @return The result of the ticket closing
+     */
+    public SurfFutureResult<Optional<Ticket>> closeTicket() {
+        Optional<String> ticketIdOptional = getTicketId();
+        if (ticketIdOptional.isEmpty()) {
+            return DataApi.getDataInstance().supplyAsync(Optional::empty);
+        }
+
+        String checkedTicketId = ticketIdOptional.get();
+
+        return DataApi.getDataInstance().supplyAsync(() -> {
+            String url = String.format(API.TICKET, checkedTicketId);
+
+            WebRequest request = WebRequest.builder().url(url).json(true).parameters(toParameters()).build();
             WebResponse response = request.executeDelete().join();
 
             if (response.getStatusCode() != 200) {
@@ -486,19 +807,28 @@ public class Ticket {
 
             TextChannel textChannel = channel.get();
 
-            textChannel.delete().queue(success -> closeTicket().whenComplete(newTicketOptional -> {
+            closeTicket().whenComplete(newTicketOptional -> {
                 if (newTicketOptional.isEmpty()) {
                     future.complete(TicketCloseResult.ERROR);
                     return;
                 }
 
-                future.complete(TicketCloseResult.SUCCESS);
-            }), error -> {
+                textChannel.delete().queue(v -> {
+                    future.complete(TicketCloseResult.SUCCESS);
+                    DiscordBot.getInstance().getTicketManager().removeTicket(this);
+                }, error -> {
+                    future.complete(TicketCloseResult.ERROR);
+
+                    Launcher.getLogger().logError("Error while closing ticket: " + error.getMessage());
+                    error.printStackTrace();
+                });
+            }, throwable -> {
                 future.complete(TicketCloseResult.ERROR);
 
-                Launcher.getLogger().logError("Error while closing ticket: " + error.getMessage());
-                error.printStackTrace();
+                Launcher.getLogger().logError("Error while closing ticket: " + throwable.getMessage());
+                throwable.printStackTrace();
             });
+
         });
 
         return futureResult;
@@ -523,6 +853,26 @@ public class Ticket {
      */
     public Optional<TicketMessage> getTicketMessage(String messageId) {
         return messages.stream().filter(ticketMessage -> ticketMessage.getMessageId().equals(messageId)).findFirst();
+    }
+
+    /**
+     * Returns the ticket member by the member
+     *
+     * @param user The member
+     * @return The ticket member
+     */
+    public Optional<TicketMember> getTicketMember(User user) {
+        return members.stream().filter(ticketMember -> ticketMember.getMemberId().equals(user.getId())).findFirst();
+    }
+
+    /**
+     * Returns the ticket member by the member id
+     *
+     * @param userId The member id
+     * @return The ticket member
+     */
+    public Optional<TicketMember> getTicketMember(String userId) {
+        return members.stream().filter(ticketMember -> ticketMember.getMemberId().equals(userId)).findFirst();
     }
 
     /**
@@ -665,6 +1015,27 @@ public class Ticket {
      */
     public List<TicketMessage> getMessages() {
         return messages;
+    }
+
+    /**
+     * @return the members
+     */
+    public List<TicketMember> getMembers() {
+        return members;
+    }
+
+    /**
+     * @return the ticketAuthorAvatarUrl
+     */
+    public String getTicketAuthorAvatarUrl() {
+        return ticketAuthorAvatarUrl;
+    }
+
+    /**
+     * @return the ticketAuthorName
+     */
+    public String getTicketAuthorName() {
+        return ticketAuthorName;
     }
 
 }

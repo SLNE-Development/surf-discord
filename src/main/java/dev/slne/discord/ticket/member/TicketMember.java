@@ -1,0 +1,397 @@
+package dev.slne.discord.ticket.member;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
+import dev.slne.data.core.database.future.SurfFutureResult;
+import dev.slne.data.core.gson.GsonConverter;
+import dev.slne.data.core.instance.DataApi;
+import dev.slne.data.core.web.WebRequest;
+import dev.slne.data.core.web.WebResponse;
+import dev.slne.discord.DiscordBot;
+import dev.slne.discord.Launcher;
+import dev.slne.discord.datasource.API;
+import dev.slne.discord.ticket.Ticket;
+import net.dv8tion.jda.api.entities.User;
+
+public class TicketMember {
+
+    private Optional<Long> id;
+
+    private Optional<User> member;
+    private String memberId;
+    private String memberName;
+    private String memberAvatarUrl;
+
+    private Optional<User> addedBy;
+    private String addedById;
+    private String addedByName;
+    private String addedByAvatarUrl;
+
+    private Optional<User> removedBy;
+    private String removedById;
+    private String removedByName;
+    private String removedByAvatarUrl;
+
+    private Ticket ticket;
+
+    /**
+     * Constructor for a ticket member
+     *
+     * @param member The member of the ticket
+     */
+    public TicketMember(Ticket ticket, User member, User addedBy) {
+        this.id = Optional.empty();
+
+        this.member = Optional.of(member);
+        this.memberId = member.getId();
+        this.memberName = member.getName();
+        this.memberAvatarUrl = member.getAvatarUrl();
+
+        this.addedBy = Optional.of(addedBy);
+        this.addedById = addedBy.getId();
+        this.addedByName = addedBy.getName();
+        this.addedByAvatarUrl = addedBy.getAvatarUrl();
+
+        this.removedBy = Optional.empty();
+        this.removedById = null;
+        this.removedByName = null;
+        this.removedByAvatarUrl = null;
+
+        this.ticket = ticket;
+    }
+
+    /**
+     * Constructor for a ticket member
+     *
+     * @param id       the id
+     * @param memberId the member id
+     * @param member   the member
+     */
+    @SuppressWarnings({ "java:S107" })
+    private TicketMember(Ticket ticket, Optional<Long> id, Optional<User> member, String memberId, String memberName,
+            String memberAvatarUrl, Optional<User> addedBy, String addedById, String addedByName,
+            String addedByAvatarUrl, Optional<User> removedBy, String removedById, String removedByName,
+            String removedByAvatarUrl) {
+        this.id = id;
+
+        this.member = member;
+        this.memberId = memberId;
+        this.memberName = memberName;
+        this.memberAvatarUrl = memberAvatarUrl;
+
+        this.addedBy = addedBy;
+        this.addedById = addedById;
+        this.addedByName = addedByName;
+        this.addedByAvatarUrl = addedByAvatarUrl;
+
+        this.removedBy = removedBy;
+        this.removedById = removedById;
+        this.removedByName = removedByName;
+        this.removedByAvatarUrl = removedByAvatarUrl;
+
+        this.ticket = ticket;
+    }
+
+    /**
+     * Deletes the ticket member
+     *
+     * @return The result of the deletion
+     */
+    public SurfFutureResult<Optional<TicketMember>> delete() {
+        Optional<String> ticketIdOptional = getTicket().getTicketId();
+        if (ticketIdOptional.isEmpty()) {
+            return DataApi.getDataInstance().supplyAsync(Optional::empty);
+        }
+        String ticketId = ticketIdOptional.get();
+
+        return DataApi.getDataInstance().supplyAsync(() -> {
+            String url = String.format(API.TICKET_MEMBER, ticketId, memberId);
+            WebRequest request = WebRequest.builder().parameters(toDeleteParameters()).url(url).build();
+            WebResponse response = request.executeDelete().join();
+
+            if (response.getStatusCode() == 200) {
+                return Optional.of(this);
+            }
+
+            return Optional.empty();
+        });
+    }
+
+    /**
+     * Converts the ticket member to a map of parameters
+     *
+     * @return The map of parameters
+     */
+    public Map<String, String> toParameters() {
+        Map<String, String> parameters = new HashMap<>();
+
+        parameters.put("member_id", memberId);
+        parameters.put("member_name", memberName);
+        parameters.put("member_avatar_url", memberAvatarUrl);
+
+        parameters.put("added_by_id", addedById);
+        parameters.put("added_by_name", addedByName);
+        parameters.put("added_by_avatar_url", addedByAvatarUrl);
+
+        return parameters;
+    }
+
+    /**
+     * Converts the ticket member to a map of delete parameters
+     *
+     * @return The map of parameters
+     */
+    public Map<String, String> toDeleteParameters() {
+        Map<String, String> parameters = new HashMap<>();
+
+        parameters.put("removed_by_id", removedById);
+        parameters.put("removed_by_name", removedByName);
+        parameters.put("removed_by_avatar_url", removedByAvatarUrl);
+
+        return parameters;
+    }
+
+    /**
+     * Converts a json object to a ticket member
+     *
+     * @param ticket     The ticket
+     * @param jsonObject The json object
+     * @return The ticket member
+     */
+    @SuppressWarnings({ "java:S3776" })
+    public static TicketMember fromJsonObject(Ticket ticket, JsonObject jsonObject) {
+        Optional<Long> id = Optional.empty();
+
+        Optional<User> member = Optional.empty();
+        String memberId = null;
+        String memberName = null;
+        String memberAvatarUrl = null;
+
+        Optional<User> addedBy = Optional.empty();
+        String addedById = null;
+        String addedByName = null;
+        String addedByAvatarUrl = null;
+
+        Optional<User> removedBy = Optional.empty();
+        String removedById = null;
+        String removedByName = null;
+        String removedByAvatarUrl = null;
+
+        if (jsonObject.has("id")) {
+            JsonElement idElement = jsonObject.get("id");
+            if (!idElement.isJsonNull()) {
+                id = Optional.of(idElement.getAsLong());
+            }
+        }
+
+        if (jsonObject.has("member_id")) {
+            JsonElement memberIdElement = jsonObject.get("member_id");
+            if (!memberIdElement.isJsonNull()) {
+                memberId = memberIdElement.getAsString();
+                member = Optional.ofNullable(DiscordBot.getInstance().getJda().getUserById(memberId + ""));
+            }
+        }
+
+        if (jsonObject.has("added_by_id") && jsonObject.get("added_by_id") != null
+                && !jsonObject.get("added_by_id").isJsonNull()) {
+            addedById = jsonObject.get("added_by_id").getAsString();
+            addedBy = Optional.ofNullable(DiscordBot.getInstance().getJda().getUserById(addedById + ""));
+        }
+
+        if (jsonObject.has("member_name") && jsonObject.get("member_name") != null
+                && !jsonObject.get("member_name").isJsonNull()) {
+            memberName = jsonObject.get("member_name").getAsString();
+        }
+
+        if (jsonObject.has("member_avatar_url") && jsonObject.get("member_avatar_url") != null
+                && !jsonObject.get("member_avatar_url").isJsonNull()) {
+            memberAvatarUrl = jsonObject.get("member_avatar_url").getAsString();
+        }
+
+        if (jsonObject.has("added_by_name") && jsonObject.get("added_by_name") != null
+                && !jsonObject.get("added_by_name").isJsonNull()) {
+            addedByName = jsonObject.get("added_by_name").getAsString();
+        }
+
+        if (jsonObject.has("added_by_avatar_url") && jsonObject.get("added_by_avatar_url") != null
+                && !jsonObject.get("added_by_avatar_url").isJsonNull()) {
+            addedByAvatarUrl = jsonObject.get("added_by_avatar_url").getAsString();
+        }
+
+        if (jsonObject.has("removed_by_id") && jsonObject.get("removed_by_id") != null
+                && !jsonObject.get("removed_by_id").isJsonNull()) {
+            removedById = jsonObject.get("removed_by_id").getAsString();
+
+            if (removedById != null) {
+                removedBy = Optional.ofNullable(DiscordBot.getInstance().getJda().getUserById(removedById + ""));
+            }
+        }
+
+        if (jsonObject.has("removed_by_name") && jsonObject.get("removed_by_name") != null
+                && !jsonObject.get("removed_by_name").isJsonNull()) {
+            removedByName = jsonObject.get("removed_by_name").getAsString();
+        }
+
+        if (jsonObject.has("removed_by_avatar_url") && jsonObject.get("removed_by_avatar_url") != null
+                && !jsonObject.get("removed_by_avatar_url").isJsonNull()) {
+            removedByAvatarUrl = jsonObject.get("removed_by_avatar_url").getAsString();
+        }
+
+        return new TicketMember(ticket, id, member, memberId, memberName, memberAvatarUrl, addedBy, addedById,
+                addedByName, addedByAvatarUrl, removedBy, removedById, removedByName, removedByAvatarUrl);
+    }
+
+    /**
+     * Creates the ticket member
+     *
+     * @return The result of the creation
+     */
+    public SurfFutureResult<Optional<TicketMember>> create() {
+        Optional<String> ticketIdOptional = getTicket().getTicketId();
+        if (ticketIdOptional.isEmpty()) {
+            return DataApi.getDataInstance().supplyAsync(Optional::empty);
+        }
+        String ticketId = ticketIdOptional.get();
+
+        return DataApi.getDataInstance().supplyAsync(() -> {
+            String url = String.format(API.TICKET_MEMBERS, ticketId);
+            WebRequest request = WebRequest.builder().url(url).json(true).parameters(toParameters()).build();
+            WebResponse response = request.executePost().join();
+
+            Object responseBody = response.getBody();
+            String bodyString = responseBody.toString();
+
+            if (!(response.getStatusCode() == 201 || response.getStatusCode() == 200)) {
+                Launcher.getLogger().logError("Ticket member could not be created: " + bodyString);
+                return Optional.empty();
+            }
+
+            GsonConverter gson = new GsonConverter();
+            JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
+
+            if (!bodyElement.has("data") || !bodyElement.get("data").isJsonObject()) {
+                return Optional.empty();
+            }
+
+            JsonObject jsonObject = (JsonObject) bodyElement.get("data");
+
+            TicketMember tempMember = fromJsonObject(ticket, jsonObject);
+            id = tempMember.id;
+
+            return Optional.of(this);
+        });
+    }
+
+    /**
+     * Returns if the ticket member is removed
+     *
+     * @return If the ticket member is removed
+     */
+    public boolean isRemoved() {
+        return removedBy.isPresent() || removedById != null || removedByName != null || removedByAvatarUrl != null;
+    }
+
+    /**
+     * @return the id
+     */
+    public Optional<Long> getId() {
+        return id;
+    }
+
+    /**
+     * @return the member
+     */
+    public Optional<User> getMember() {
+        return member;
+    }
+
+    /**
+     * @return the memberId
+     */
+    public String getMemberId() {
+        return memberId;
+    }
+
+    /**
+     * @return the ticket
+     */
+    public Ticket getTicket() {
+        return ticket;
+    }
+
+    /**
+     * @return the addedBy
+     */
+    public Optional<User> getAddedBy() {
+        return addedBy;
+    }
+
+    /**
+     * @return the addedById
+     */
+    public String getAddedById() {
+        return addedById;
+    }
+
+    /**
+     * @return the addedByAvatarUrl
+     */
+    public String getAddedByAvatarUrl() {
+        return addedByAvatarUrl;
+    }
+
+    /**
+     * @return the addedByName
+     */
+    public String getAddedByName() {
+        return addedByName;
+    }
+
+    /**
+     * @return the memberAvatarUrl
+     */
+    public String getMemberAvatarUrl() {
+        return memberAvatarUrl;
+    }
+
+    /**
+     * @return the memberName
+     */
+    public String getMemberName() {
+        return memberName;
+    }
+
+    /**
+     * @return the removedBy
+     */
+    public Optional<User> getRemovedBy() {
+        return removedBy;
+    }
+
+    /**
+     * @return the removedByAvatarUrl
+     */
+    public String getRemovedByAvatarUrl() {
+        return removedByAvatarUrl;
+    }
+
+    /**
+     * @return the removedById
+     */
+    public String getRemovedById() {
+        return removedById;
+    }
+
+    /**
+     * @return the removedByName
+     */
+    public String getRemovedByName() {
+        return removedByName;
+    }
+
+}

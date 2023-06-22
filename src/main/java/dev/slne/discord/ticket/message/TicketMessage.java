@@ -39,6 +39,8 @@ public class TicketMessage {
     private String messageId;
 
     private String authorId;
+    private String authorName;
+    private String authorAvatarUrl;
     private User author;
 
     private LocalDateTime messageCreatedAt;
@@ -63,6 +65,8 @@ public class TicketMessage {
         this.messageId = clone.messageId;
 
         this.authorId = clone.authorId;
+        this.authorName = clone.authorName;
+        this.authorAvatarUrl = clone.authorAvatarUrl;
         this.author = clone.author;
 
         this.messageCreatedAt = clone.messageCreatedAt;
@@ -89,6 +93,8 @@ public class TicketMessage {
 
         this.author = message.getAuthor();
         this.authorId = this.author.getId();
+        this.authorName = this.author.getName();
+        this.authorAvatarUrl = this.author.getAvatarUrl();
 
         this.messageCreatedAt = message.getTimeCreated().toLocalDateTime();
 
@@ -144,7 +150,7 @@ public class TicketMessage {
      */
     @SuppressWarnings("java:S107")
     private TicketMessage(Optional<Long> id, Ticket ticket, Optional<Message> message, String messageId,
-            String authorId,
+            String authorId, String authorName, String authorAvatarUrl,
             User author, LocalDateTime messageCreatedAt, Optional<LocalDateTime> messageEditedAt,
             Optional<LocalDateTime> messageDeletedAt, Optional<String> referencesMessageId,
             Optional<Message> referencesMessage, List<TicketMessageAttachement> attachments, boolean botMessage) {
@@ -153,6 +159,8 @@ public class TicketMessage {
         this.message = message;
         this.messageId = messageId;
         this.authorId = authorId;
+        this.authorName = authorName;
+        this.authorAvatarUrl = authorAvatarUrl;
         this.author = author;
         this.messageCreatedAt = messageCreatedAt;
         this.messageEditedAt = messageEditedAt;
@@ -194,6 +202,8 @@ public class TicketMessage {
 
         parameters.put("message_id", messageId);
         parameters.put("author_id", authorId);
+        parameters.put("author_name", authorName);
+        parameters.put("author_avatar_url", authorAvatarUrl);
         parameters.put("bot_message", String.valueOf(botMessage ? 1 : 0));
 
         if (referencesMessageId.isPresent()) {
@@ -264,10 +274,22 @@ public class TicketMessage {
         }
 
         String authorId = null;
+        String authorName = null;
+        String authorAvatarUrl = null;
         User author = null;
         if (jsonObject.has("author_id")) {
             authorId = jsonObject.get("author_id").getAsString() + "";
             author = DiscordBot.getInstance().getJda().getUserById(authorId);
+        }
+
+        if (jsonObject.has("author_name") && jsonObject.get("author_name") != null && !(jsonObject
+                .get("author_name") instanceof JsonNull)) {
+            authorName = jsonObject.get("author_name").getAsString() + "";
+        }
+
+        if (jsonObject.has("author_avatar_url") && jsonObject.get("author_avatar_url") != null && !(jsonObject
+                .get("author_avatar_url") instanceof JsonNull)) {
+            authorAvatarUrl = jsonObject.get("author_avatar_url").getAsString() + "";
         }
 
         LocalDateTime messageCreatedAt = null;
@@ -309,7 +331,8 @@ public class TicketMessage {
         }
 
         List<TicketMessageAttachement> attachments = new ArrayList<>();
-        TicketMessage ticketMessage = new TicketMessage(id, ticket, message, messageId, authorId, author,
+        TicketMessage ticketMessage = new TicketMessage(id, ticket, message, messageId, authorId, authorName,
+                authorAvatarUrl, author,
                 messageCreatedAt, messageEditedAt,
                 messageDeletedAt, referencesMessageId, referencesMessage, attachments, botMessage);
 
@@ -359,7 +382,7 @@ public class TicketMessage {
             String bodyString = responseBody.toString();
 
             if (!(response.getStatusCode() == 201 || response.getStatusCode() == 200)) {
-                Launcher.getLogger().logWarn("Ticket message could not be created: " + bodyString);
+                Launcher.getLogger().logError("Ticket message could not be created: " + bodyString);
                 return Optional.empty();
             }
 
