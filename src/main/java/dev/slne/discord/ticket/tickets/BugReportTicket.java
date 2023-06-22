@@ -34,7 +34,7 @@ public class BugReportTicket extends DescriptionTicket {
             return;
         }
 
-        String message = "Wir freuen uns, dass du einen Fehler melden möchtest. Bitte beschreibe das Problem so genau wie möglich**. Wann? Wie? Wo? Screenshots und Videos des Fehlers sind gerne gesehen.";
+        String message = "Wir freuen uns, dass du einen Fehler melden möchtest. **Bitte beschreibe das Problem so genau wie möglich**. Wann? Wie? Wo? Screenshots und Videos des Fehlers sind gerne gesehen.";
 
         if (this.getTicketAuthor() != null) {
             message = this.getTicketAuthor().getAsMention() + " | " + message;
