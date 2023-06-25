@@ -326,6 +326,11 @@ public class Ticket {
         return members.stream().anyMatch(member -> member.getMemberId().equals(user.getId()) && !member.isRemoved());
     }
 
+    /**
+     * Opens the ticket from the button
+     *
+     * @return The result of the ticket opening
+     */
     public SurfFutureResult<TicketCreateResult> openFromButton() {
         CompletableFuture<TicketCreateResult> future = new CompletableFuture<>();
         DiscordFutureResult<TicketCreateResult> futureResult = new DiscordFutureResult<>(future);
@@ -364,6 +369,11 @@ public class Ticket {
         return futureResult;
     }
 
+    /**
+     * Open the ticket channel from pusher
+     *
+     * @return The result of the ticket opening
+     */
     public SurfFutureResult<TicketCreateResult> openFromPusher() {
         CompletableFuture<TicketCreateResult> future = new CompletableFuture<>();
         DiscordFutureResult<TicketCreateResult> futureResult = new DiscordFutureResult<>(future);
@@ -393,6 +403,9 @@ public class Ticket {
         return futureResult;
     }
 
+    /**
+     * Print all previous messages
+     */
     private void printAllPreviousMessages() {
         for (TicketMessage message : messages) {
             message.printMessage();
