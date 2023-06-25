@@ -14,7 +14,7 @@ public class API {
         throw new IllegalStateException("Utility class");
     }
 
-    private static final String ENVIRONMENT = "dev";
+    private static final String ENVIRONMENT = System.getProperty("environment", "prod");
 
     private static final String API_VERSION = "v1";
     private static final String API_PREFIX = (ENVIRONMENT.equals("prod") ? "https://admin.slne.dev/api/"
