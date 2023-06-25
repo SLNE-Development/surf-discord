@@ -3,9 +3,11 @@ package dev.slne.discord.discord.interaction.button.buttons.ticket;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import dev.slne.discord.Launcher;
 import dev.slne.discord.discord.interaction.button.DiscordButton;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketType;
+import dev.slne.discord.ticket.result.TicketCreateResult;
 import dev.slne.discord.ticket.tickets.BugReportTicket;
 import dev.slne.discord.ticket.tickets.DiscordSupportTicket;
 import dev.slne.discord.ticket.tickets.ServerSupportTicket;
@@ -75,42 +77,33 @@ public abstract class TicketButton extends DiscordButton {
         if (ticket != null) {
             final Ticket finalTicket = ticket;
 
-            // ticket.createTicketChannel(guild).whenComplete(resultOptional -> {
-            // if (resultOptional.isEmpty()) {
-            // hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
-            // Launcher.getLogger().logError("Error while creating ticket: resultOptional is
-            // empty");
-            // return;
-            // }
+            ticket.openFromButton().whenComplete(result -> {
+                if (result.equals(TicketCreateResult.SUCCESS)) {
+                    StringBuilder message = new StringBuilder();
+                    message.append("Dein \"");
+                    message.append(this.ticketType.getName());
+                    message.append("\"-Ticket wurde erfolgreich erstellt! ");
 
-            // TicketCreateResult result = resultOptional.get();
+                    if (finalTicket.getChannel().isPresent()) {
+                        message.append(finalTicket.getChannel().get().getAsMention());
+                    }
 
-            // if (result.equals(TicketCreateResult.SUCCESS)) {
-            // finalTicket.afterOpen();
-
-            // StringBuilder message = new StringBuilder();
-            // message.append("Dein \"");
-            // message.append(this.ticketType.getName());
-            // message.append("\"-Ticket wurde erfolgreich erstellt! ");
-
-            // if (finalTicket.getChannel().isPresent()) {
-            // message.append(finalTicket.getChannel().get().getAsMention());
-            // }
-
-            // hook.editOriginal(message.toString() + "").queue();
-            // return;
-            // } else if (result.equals(TicketCreateResult.ALREADY_EXISTS)) {
-            // hook.editOriginal(
-            // "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht
-            // der Fall sein, wende dich per Ping an @notammo")
-            // .queue();
-            // return;
-            // } else {
-            // hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
-            // Launcher.getLogger().logError("Error while creating ticket: " + result);
-            // return;
-            // }
-            // });
+                    String messageString = message.toString();
+                    if (messageString != null) {
+                        hook.editOriginal(messageString).queue();
+                    }
+                    return;
+                } else if (result.equals(TicketCreateResult.ALREADY_EXISTS)) {
+                    hook.editOriginal(
+                            "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo")
+                            .queue();
+                    return;
+                } else {
+                    hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
+                    Launcher.getLogger().logError("Error while creating ticket: " + result);
+                    return;
+                }
+            });
         } else {
             hook.editOriginal("Es konnte kein Ticket mit dem angegebenen Ticket-Typen erstellt werden!")
                     .queue();

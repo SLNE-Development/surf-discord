@@ -23,6 +23,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.Webhook;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.requests.RestAction;
 
 public class Ticket {
 
@@ -42,10 +43,10 @@ public class Ticket {
     private String ticketAuthorId;
     private String ticketAuthorName;
     private String ticketAuthorAvatarUrl;
-    private User ticketAuthor;
+    private RestAction<User> ticketAuthor;
 
     private Optional<String> closedById;
-    private Optional<User> closedBy;
+    private Optional<RestAction<User>> closedBy;
 
     private Optional<String> closedReason;
     private Optional<LocalDateTime> closedAt;
@@ -82,7 +83,7 @@ public class Ticket {
 
         this.ticketAuthorName = ticketAuthor.getName();
         this.ticketAuthorId = ticketAuthor.getId();
-        this.ticketAuthor = ticketAuthor;
+        this.ticketAuthor = DiscordBot.getInstance().getJda().retrieveUserById(ticketAuthor.getId());
         this.ticketAuthorAvatarUrl = ticketAuthor.getAvatarUrl();
 
         this.closedById = Optional.empty();
@@ -146,9 +147,21 @@ public class Ticket {
         this.ticketAuthorAvatarUrl = ticketAuthorAvatarUrl;
         this.ticketAuthorName = ticketAuthorName;
         this.ticketAuthorId = ticketAuthorId;
-        this.ticketAuthor = ticketAuthor;
+
+        if (ticketAuthorId != null) {
+            this.ticketAuthor = DiscordBot.getInstance().getJda().retrieveUserById(ticketAuthorId);
+        }
+
         this.closedById = closedById;
-        this.closedBy = closedBy;
+
+        if (closedById.isPresent()) {
+            String closedId = closedById.get();
+
+            if (closedId != null) {
+                this.closedBy = Optional.of(DiscordBot.getInstance().getJda().retrieveUserById(closedId));
+            }
+        }
+
         this.closedReason = closedReason;
         this.closedAt = closedAt;
         this.messages = messages;
@@ -198,23 +211,30 @@ public class Ticket {
         CompletableFuture<Optional<TicketMember>> future = new CompletableFuture<>();
         DiscordFutureResult<Optional<TicketMember>> futureResult = new DiscordFutureResult<>(future);
 
-        User user = ticketMember.getMember().orElse(null);
+        RestAction<User> userRest = ticketMember.getMember().orElse(null);
 
-        if (user == null || memberExists(user)) {
+        if (userRest == null) {
             future.complete(Optional.empty());
             return futureResult;
         }
 
-        ticketMember.create().whenComplete(ticketMemberCallback -> {
-            if (ticketMemberCallback.isEmpty()) {
+        userRest.queue(user -> {
+            if (user == null || memberExists(user)) {
                 future.complete(Optional.empty());
                 return;
             }
 
-            addRawTicketMember(ticketMember);
-            TicketChannel.updateChannelPermissions(this);
+            ticketMember.create().whenComplete(ticketMemberCallback -> {
+                if (ticketMemberCallback.isEmpty()) {
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            future.complete(ticketMemberCallback);
+                addRawTicketMember(ticketMember);
+                TicketChannel.updateChannelPermissions(this);
+
+                future.complete(ticketMemberCallback);
+            });
         });
 
         return futureResult;
@@ -284,8 +304,9 @@ public class Ticket {
         User artyUser = DiscordBot.getInstance().getJda().getSelfUser();
         addTicketMember(new TicketMember(this, artyUser, artyUser)).join();
 
-        TicketMember author = new TicketMember(this, ticketAuthor, DiscordBot.getInstance().getJda().getSelfUser());
-        addTicketMember(author).join();
+        User author = ticketAuthor.complete();
+        TicketMember authorMember = new TicketMember(this, author, DiscordBot.getInstance().getJda().getSelfUser());
+        addTicketMember(authorMember).join();
 
         DiscordGuild discordGuild = DiscordGuilds.getGuild(guild.get());
 
@@ -306,12 +327,39 @@ public class Ticket {
     }
 
     public SurfFutureResult<TicketCreateResult> openFromButton() {
-        CompletableFuture<TicketCloseResult> future = new CompletableFuture<>();
-        DiscordFutureResult<TicketCloseResult> futureResult = new DiscordFutureResult<>(future);
+        CompletableFuture<TicketCreateResult> future = new CompletableFuture<>();
+        DiscordFutureResult<TicketCreateResult> futureResult = new DiscordFutureResult<>(future);
 
-        DataApi.getDataInstance().runAsync(() -> {
+        DataApi.getDataInstance()
+                .runAsync(() -> TicketChannel.createTicketChannel(this)
+                        .whenComplete(ticketChannelCreateResultOptional -> {
+                            if (ticketChannelCreateResultOptional.isEmpty()) {
+                                future.complete(TicketCreateResult.ERROR);
+                                return;
+                            }
 
-        });
+                            TicketCreateResult ticketChannelCreateResult = ticketChannelCreateResultOptional.get();
+
+                            if (ticketChannelCreateResult != TicketCreateResult.SUCCESS) {
+                                future.complete(ticketChannelCreateResult);
+                                return;
+                            }
+
+                            TicketRepository.createTicket(this).whenComplete(ticketCreateResultOptional -> {
+                                if (ticketCreateResultOptional.isEmpty()) {
+                                    future.complete(TicketCreateResult.ERROR);
+                                    return;
+                                }
+
+                                initialMembers();
+                                TicketChannel.updateChannelPermissions(this);
+                                afterOpen();
+
+                                future.complete(TicketCreateResult.SUCCESS);
+
+                                DiscordBot.getInstance().getTicketManager().addTicket(this);
+                            });
+                        }));
 
         return futureResult;
     }
@@ -330,7 +378,6 @@ public class Ticket {
                     TicketCreateResult ticketCreateResult = ticketCreateResultOptional.get();
 
                     if (ticketCreateResult != TicketCreateResult.SUCCESS) {
-                        System.out.println("TicketCreateResult: " + ticketCreateResult);
                         future.complete(ticketCreateResult);
                         return;
                     }
@@ -338,6 +385,9 @@ public class Ticket {
                     TicketChannel.updateChannelPermissions(this);
                     afterOpen();
                     printAllPreviousMessages();
+
+                    DiscordBot.getInstance().getTicketManager().addTicket(this);
+                    future.complete(ticketCreateResult);
                 }));
 
         return futureResult;
@@ -367,7 +417,7 @@ public class Ticket {
             }
 
             this.closedById = Optional.of(user.getId());
-            this.closedBy = Optional.of(user);
+            this.closedBy = Optional.of(DiscordBot.getInstance().getJda().retrieveUserById(user.getId()));
 
             this.closedReason = Optional.of(reason);
 
@@ -459,11 +509,9 @@ public class Ticket {
     }
 
     /**
-     * Get the author of the ticket
-     *
-     * @return The author of the ticket
+     * @return the ticketAuthor
      */
-    public User getTicketAuthor() {
+    public RestAction<User> getTicketAuthor() {
         return ticketAuthor;
     }
 
@@ -549,11 +597,9 @@ public class Ticket {
     }
 
     /**
-     * Get the user that closed the ticket
-     *
-     * @return The user that closed the ticket
+     * @return the closedBy
      */
-    public Optional<User> getClosedBy() {
+    public Optional<RestAction<User>> getClosedBy() {
         return closedBy;
     }
 
@@ -717,6 +763,111 @@ public class Ticket {
         this.webhookId = Optional.of(webhookItem.getId());
         this.webhookName = Optional.of(webhookItem.getName());
         this.webhookUrl = Optional.of(webhookItem.getUrl());
+    }
+
+    /**
+     * @param closedBy the closedBy to set
+     */
+    public void setClosedBy(Optional<RestAction<User>> closedBy) {
+        this.closedBy = closedBy;
+    }
+
+    /**
+     * @param closedById the closedById to set
+     */
+    public void setClosedById(Optional<String> closedById) {
+        this.closedById = closedById;
+    }
+
+    /**
+     * @param closedReason the closedReason to set
+     */
+    public void setClosedReason(Optional<String> closedReason) {
+        this.closedReason = closedReason;
+    }
+
+    /**
+     * @param guild the guild to set
+     */
+    public void setGuild(Optional<Guild> guild) {
+        this.guild = guild;
+    }
+
+    /**
+     * @param guildId the guildId to set
+     */
+    public void setGuildId(Optional<String> guildId) {
+        this.guildId = guildId;
+    }
+
+    /**
+     * @param removedMembers the removedMembers to set
+     */
+    public void setRemovedMembers(List<TicketMember> removedMembers) {
+        this.removedMembers = removedMembers;
+    }
+
+    /**
+     * @param ticketAuthor the ticketAuthor to set
+     */
+    public void setTicketAuthor(RestAction<User> ticketAuthor) {
+        this.ticketAuthor = ticketAuthor;
+    }
+
+    /**
+     * @param ticketAuthorAvatarUrl the ticketAuthorAvatarUrl to set
+     */
+    public void setTicketAuthorAvatarUrl(String ticketAuthorAvatarUrl) {
+        this.ticketAuthorAvatarUrl = ticketAuthorAvatarUrl;
+    }
+
+    /**
+     * @param ticketAuthorId the ticketAuthorId to set
+     */
+    public void setTicketAuthorId(String ticketAuthorId) {
+        this.ticketAuthorId = ticketAuthorId;
+    }
+
+    /**
+     * @param ticketAuthorName the ticketAuthorName to set
+     */
+    public void setTicketAuthorName(String ticketAuthorName) {
+        this.ticketAuthorName = ticketAuthorName;
+    }
+
+    /**
+     * @param ticketType the ticketType to set
+     */
+    public void setTicketType(TicketType ticketType) {
+        this.ticketType = ticketType;
+    }
+
+    /**
+     * @param ticketTypeString the ticketTypeString to set
+     */
+    public void setTicketTypeString(String ticketTypeString) {
+        this.ticketTypeString = ticketTypeString;
+    }
+
+    /**
+     * @param webhookId the webhookId to set
+     */
+    public void setWebhookId(Optional<String> webhookId) {
+        this.webhookId = webhookId;
+    }
+
+    /**
+     * @param webhookName the webhookName to set
+     */
+    public void setWebhookName(Optional<String> webhookName) {
+        this.webhookName = webhookName;
+    }
+
+    /**
+     * @param webhookUrl the webhookUrl to set
+     */
+    public void setWebhookUrl(Optional<String> webhookUrl) {
+        this.webhookUrl = webhookUrl;
     }
 
 }

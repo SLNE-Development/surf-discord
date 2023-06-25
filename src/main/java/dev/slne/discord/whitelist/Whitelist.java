@@ -148,24 +148,32 @@ public class Whitelist {
         Optional<User> discordUser = whitelist.getDiscordUser();
         Optional<User> addedBy = whitelist.getAddedBy();
 
-        if (minecraftName.isPresent()) {
-            builder.addField("Minecraft Name", minecraftName.get() + "", true);
+        String minecraftNameString = minecraftName.orElse(null);
+        String twitchLinkString = twitchLink.orElse(null);
+        UUID uuidObject = uuid.orElse(null);
+        String uuidString = null;
+        if (uuidObject != null) {
+            uuidString = uuidObject.toString();
         }
 
-        if (twitchLink.isPresent()) {
-            builder.addField("Twitch Link", twitchLink.get() + "", true);
+        if (minecraftName.isPresent() && minecraftNameString != null) {
+            builder.addField("Minecraft Name", minecraftNameString, true);
+        }
+
+        if (twitchLink.isPresent() && twitchLinkString != null) {
+            builder.addField("Twitch Link", twitchLinkString, true);
         }
 
         if (discordUser.isPresent()) {
-            builder.addField("Discord User", discordUser.get().getAsMention() + "", true);
+            builder.addField("Discord User", discordUser.get().getAsMention(), true);
         }
 
         if (addedBy.isPresent()) {
-            builder.addField("Added By", addedBy.get().getAsMention() + "", true);
+            builder.addField("Added By", addedBy.get().getAsMention(), true);
         }
 
-        if (uuid.isPresent()) {
-            builder.addField("UUID", uuid.get().toString() + "", false);
+        if (uuid.isPresent() && uuidString != null) {
+            builder.addField("UUID", uuidString, false);
         }
 
         return builder.build();
@@ -185,9 +193,9 @@ public class Whitelist {
             List<Whitelist> whitelists = new ArrayList<>();
 
             Map<String, String> parameters = new HashMap<>();
-            parameters.put("uuid", uuid != null ? uuid.toString() + "" : "");
-            parameters.put("discord_id", discordId + "");
-            parameters.put("twitch_link", twitchLink + "");
+            parameters.put("uuid", uuid != null ? uuid.toString() : "");
+            parameters.put("discord_id", discordId);
+            parameters.put("twitch_link", twitchLink);
 
             WebRequest request = WebRequest.builder().json(true).url(API.WHITELIST_CHECK).parameters(parameters)
                     .build();
@@ -350,9 +358,10 @@ public class Whitelist {
                 && !jsonObject.get("discord_id").isJsonNull()) {
             discordId = Optional.of(jsonObject.get("discord_id").getAsString());
 
-            if (discordId.isPresent()) {
+            String discordIdString = discordId.orElse(null);
+            if (discordId.isPresent() && discordIdString != null) {
                 discordUser = Optional.ofNullable(
-                        DiscordBot.getInstance().getJda().retrieveUserById(discordId.get() + "").complete());
+                        DiscordBot.getInstance().getJda().retrieveUserById(discordIdString).complete());
             }
         }
 
@@ -360,9 +369,10 @@ public class Whitelist {
                 && !jsonObject.get("added_by_id").isJsonNull()) {
             addedById = Optional.of(jsonObject.get("added_by_id").getAsString());
 
-            if (addedById.isPresent()) {
+            String addedByIdString = addedById.orElse(null);
+            if (addedById.isPresent() && addedByIdString != null) {
                 addedBy = Optional.ofNullable(
-                        DiscordBot.getInstance().getJda().retrieveUserById(addedById.get() + "").complete());
+                        DiscordBot.getInstance().getJda().retrieveUserById(addedByIdString).complete());
             }
         }
 

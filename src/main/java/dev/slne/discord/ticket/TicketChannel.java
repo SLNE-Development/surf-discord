@@ -23,6 +23,7 @@ import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.managers.channel.concrete.TextChannelManager;
+import net.dv8tion.jda.api.requests.RestAction;
 
 public class TicketChannel {
 
@@ -80,7 +81,12 @@ public class TicketChannel {
                 continue;
             }
 
-            User user = member.getMember().orElse(null);
+            RestAction<User> userRest = member.getMember().orElse(null);
+            if (userRest == null) {
+                continue;
+            }
+
+            User user = userRest.complete();
             if (user == null) {
                 continue;
             }
@@ -127,10 +133,11 @@ public class TicketChannel {
      * @param ticket The ticket to create the channel for
      * @return The result of the ticket creation
      */
+    @SuppressWarnings({ "java:S3776", "java:S135", "java:S1192" })
     public static SurfFutureResult<Optional<TicketCreateResult>> createTicketChannel(Ticket ticket) {
         Optional<Guild> guildOptional = ticket.getGuild();
         TicketType ticketType = ticket.getTicketType();
-        User ticketAuthor = ticket.getTicketAuthor();
+        User ticketAuthor = ticket.getTicketAuthor().complete();
 
         if (guildOptional.isEmpty()) {
             return new DiscordFutureResult<>(
@@ -178,7 +185,11 @@ public class TicketChannel {
                 return Optional.of(TicketCreateResult.ALREADY_EXISTS);
             }
 
-            TextChannel ticketChannel = channelCategory.createTextChannel(ticketName + "").complete();
+            if (ticketName == null) {
+                return Optional.of(TicketCreateResult.ERROR);
+            }
+
+            TextChannel ticketChannel = channelCategory.createTextChannel(ticketName).complete();
 
             ticket.setChannel(Optional.of(ticketChannel));
             ticket.setChannelId(Optional.of(ticketChannel.getId()));
@@ -204,9 +215,7 @@ public class TicketChannel {
             }
 
             TextChannel textChannel = channel.get();
-            textChannel.createWebhook("Ticket Webhook").queue(webhook -> {
-                ticket.setWebhook(Optional.of(webhook));
-            });
+            textChannel.createWebhook("Ticket Webhook").queue(webhook -> ticket.setWebhook(Optional.of(webhook)));
 
             return null;
         });

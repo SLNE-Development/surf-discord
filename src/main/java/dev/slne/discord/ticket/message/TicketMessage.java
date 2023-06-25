@@ -33,27 +33,27 @@ import net.dv8tion.jda.api.entities.MessageReference;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.Webhook;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.exceptions.ErrorResponseException;
+import net.dv8tion.jda.api.requests.RestAction;
 
 public class TicketMessage {
 
     private Optional<Long> id;
     private Ticket ticket;
-    private Optional<Message> message;
-    private Optional<String> content;
+    private Optional<RestAction<Message>> message;
+    private Optional<String> jsonContent;
     private String messageId;
 
     private String authorId;
     private String authorName;
     private String authorAvatarUrl;
-    private User author;
+    private RestAction<User> author;
 
     private LocalDateTime messageCreatedAt;
     private Optional<LocalDateTime> messageEditedAt;
     private Optional<LocalDateTime> messageDeletedAt;
 
     private Optional<String> referencesMessageId;
-    private Optional<Message> referencesMessage;
+    private Optional<RestAction<Message>> referencesMessage;
 
     private List<TicketMessageAttachement> attachments;
     private boolean botMessage;
@@ -66,9 +66,9 @@ public class TicketMessage {
     public TicketMessage(TicketMessage clone) {
         this.id = clone.id;
         this.ticket = clone.ticket;
-        this.content = clone.content;
         this.message = clone.message;
         this.messageId = clone.messageId;
+        this.jsonContent = clone.jsonContent;
 
         this.authorId = clone.authorId;
         this.authorName = clone.authorName;
@@ -94,14 +94,19 @@ public class TicketMessage {
     public TicketMessage(Ticket ticket, Message message) {
         this.id = Optional.empty();
         this.ticket = ticket;
-        this.content = Optional.of(message.getContentDisplay());
-        this.message = Optional.of(message);
-        this.messageId = message.getId();
 
-        this.author = message.getAuthor();
-        this.authorId = this.author.getId();
-        this.authorName = this.author.getName();
-        this.authorAvatarUrl = this.author.getAvatarUrl();
+        Optional<TextChannel> channelOptional = ticket.getChannel();
+        if (channelOptional.isPresent()) {
+            TextChannel channel = channelOptional.get();
+            this.message = Optional.of(channel.retrieveMessageById(message.getId()));
+        }
+        this.messageId = message.getId();
+        this.jsonContent = Optional.ofNullable(message.getContentDisplay());
+
+        this.author = DiscordBot.getInstance().getJda().retrieveUserById(message.getAuthor().getId());
+        this.authorId = message.getAuthor().getId();
+        this.authorName = message.getAuthor().getName();
+        this.authorAvatarUrl = message.getAuthor().getAvatarUrl();
 
         this.messageCreatedAt = message.getTimeCreated().toLocalDateTime();
 
@@ -114,11 +119,12 @@ public class TicketMessage {
         MessageReference reference = message.getMessageReference();
         this.referencesMessage = Optional.empty();
         this.referencesMessageId = Optional.empty();
-        if (reference != null) {
+        if (reference != null && channelOptional.isPresent()) {
+            TextChannel channel = channelOptional.get();
             reference.resolve().queue(referencedMessage -> this.referencesMessageId = Optional.of(
                     referencedMessage.getId()));
 
-            this.referencesMessage = Optional.ofNullable(reference.getMessage());
+            this.referencesMessage = Optional.ofNullable(channel.retrieveMessageById(reference.getMessageId()));
             this.referencesMessageId = Optional.ofNullable(reference.getMessageId());
         }
 
@@ -154,17 +160,20 @@ public class TicketMessage {
      * @param referencesMessageId the referenced message id
      * @param referencesMessage   the referenced message
      * @param attachments         the message attachements
+     * @param botMessage          if the message is a bot message
+     * @param jsonContent         the json content
      */
     @SuppressWarnings("java:S107")
-    private TicketMessage(Optional<Long> id, Ticket ticket, Optional<String> content, Optional<Message> message,
+    private TicketMessage(Optional<Long> id, Ticket ticket,
+            Optional<RestAction<Message>> message,
             String messageId,
             String authorId, String authorName, String authorAvatarUrl,
-            User author, LocalDateTime messageCreatedAt, Optional<LocalDateTime> messageEditedAt,
+            RestAction<User> author, LocalDateTime messageCreatedAt, Optional<LocalDateTime> messageEditedAt,
             Optional<LocalDateTime> messageDeletedAt, Optional<String> referencesMessageId,
-            Optional<Message> referencesMessage, List<TicketMessageAttachement> attachments, boolean botMessage) {
+            Optional<RestAction<Message>> referencesMessage, List<TicketMessageAttachement> attachments,
+            boolean botMessage, Optional<String> jsonContent) {
         this.id = id;
         this.ticket = ticket;
-        this.content = content;
         this.message = message;
         this.messageId = messageId;
         this.authorId = authorId;
@@ -178,6 +187,7 @@ public class TicketMessage {
         this.referencesMessage = referencesMessage;
         this.attachments = attachments;
         this.botMessage = botMessage;
+        this.jsonContent = jsonContent;
     }
 
     /**
@@ -229,16 +239,9 @@ public class TicketMessage {
             parameters.put("references_message_id", referencesMessageId.get());
         }
 
-        if (content.isPresent() || message.isPresent()) {
-            String contentTemp = null;
-
-            if (this.content.isPresent()) {
-                contentTemp = this.content.get();
-            } else if (message.isPresent()) {
-                contentTemp = message.get().getContentDisplay();
-            }
-
-            parameters.put("content", contentTemp);
+        Optional<String> contentOptional = getContent().join();
+        if (contentOptional.isPresent()) {
+            parameters.put("content", contentOptional.get());
         }
 
         if (messageCreatedAt != null) {
@@ -252,6 +255,8 @@ public class TicketMessage {
         if (messageDeletedAt.isPresent()) {
             parameters.put("message_deleted_at", messageDeletedAt.get().toString());
         }
+
+        parameters.put("bot_message", botMessage ? "1" : "0");
 
         JsonArray attachmentsArray = new JsonArray();
 
@@ -276,100 +281,118 @@ public class TicketMessage {
     public static TicketMessage fromJsonObject(Ticket ticket, JsonObject jsonObject) {
         Optional<String> channelIdOptional = ticket.getChannelId();
         Optional<TextChannel> channelOptional = Optional.empty();
-
-        if (channelIdOptional.isPresent()) {
-            String channelId = channelIdOptional.get();
-            channelOptional = Optional.ofNullable(DiscordBot.getInstance().getJda().getTextChannelById(channelId + ""));
-        }
-
         Optional<Long> id = Optional.empty();
-        if (jsonObject.has("id")) {
-            id = Optional.of(jsonObject.get("id").getAsLong());
-        }
-
         String messageId = null;
-        Optional<Message> message = Optional.empty();
-        if (jsonObject.has("message_id") && channelOptional.isPresent()) {
-            TextChannel channel = channelOptional.get();
-            messageId = jsonObject.get("message_id").getAsString() + "";
-
-            try {
-                message = Optional.ofNullable(channel.retrieveMessageById(messageId).complete());
-            } catch (ErrorResponseException exception) {
-                // IGNORE
-            } catch (Exception exception) {
-                Launcher.getLogger().logError(exception);
-            }
-        }
-
-        Optional<String> content = Optional.empty();
-        if (jsonObject.has("content") && jsonObject.get("content") != null
-                && !(jsonObject.get("content") instanceof JsonNull)) {
-            content = Optional.of(jsonObject.get("content").getAsString() + "");
-        }
-
+        Optional<RestAction<Message>> message = Optional.empty();
         String authorId = null;
         String authorName = null;
         String authorAvatarUrl = null;
-        User author = null;
+        RestAction<User> author = null;
+        LocalDateTime messageCreatedAt = null;
+        Optional<LocalDateTime> messageEditedAt = Optional.empty();
+        Optional<LocalDateTime> messageDeletedAt = Optional.empty();
+        Optional<String> referencesMessageId = Optional.empty();
+        Optional<RestAction<Message>> referencesMessage = Optional.empty();
+        boolean botMessage = false;
+        List<TicketMessageAttachement> attachments = new ArrayList<>();
+        Optional<String> jsonContent = Optional.empty();
+
+        TicketMessage ticketMessage = new TicketMessage(id, ticket, message, messageId, authorId, authorName,
+                authorAvatarUrl, author,
+                messageCreatedAt, messageEditedAt,
+                messageDeletedAt, referencesMessageId, referencesMessage, attachments, botMessage, jsonContent);
+
+        if (channelIdOptional.isPresent()) {
+            String channelId = channelIdOptional.get();
+
+            if (channelId != null) {
+                channelOptional = Optional.ofNullable(DiscordBot.getInstance().getJda().getTextChannelById(channelId));
+            }
+        }
+
+        if (jsonObject.has("id")) {
+            id = Optional.of(jsonObject.get("id").getAsLong());
+            ticketMessage.setId(id);
+        }
+
+        if (jsonObject.has("message_id") && channelOptional.isPresent()) {
+            TextChannel channel = channelOptional.get();
+            messageId = jsonObject.get("message_id").getAsString();
+
+            if (messageId != null) {
+                message = Optional.of(channel.retrieveMessageById(messageId));
+                ticketMessage.setMessage(message);
+            }
+
+            ticketMessage.setMessageId(messageId);
+        }
+
         if (jsonObject.has("author_id")) {
-            authorId = jsonObject.get("author_id").getAsString() + "";
-            author = DiscordBot.getInstance().getJda().retrieveUserById(authorId).complete();
+            authorId = jsonObject.get("author_id").getAsString();
+            if (authorId != null) {
+                author = DiscordBot.getInstance().getJda().retrieveUserById(authorId);
+                ticketMessage.setAuthor(author);
+            }
+
+            ticketMessage.setAuthorId(authorId);
         }
 
         if (jsonObject.has("author_name") && jsonObject.get("author_name") != null && !(jsonObject
                 .get("author_name") instanceof JsonNull)) {
-            authorName = jsonObject.get("author_name").getAsString() + "";
+            authorName = jsonObject.get("author_name").getAsString();
+            ticketMessage.setAuthorName(authorName);
         }
 
         if (jsonObject.has("author_avatar_url") && jsonObject.get("author_avatar_url") != null && !(jsonObject
                 .get("author_avatar_url") instanceof JsonNull)) {
-            authorAvatarUrl = jsonObject.get("author_avatar_url").getAsString() + "";
+            authorAvatarUrl = jsonObject.get("author_avatar_url").getAsString();
+            ticketMessage.setAuthorAvatarUrl(authorAvatarUrl);
         }
 
-        LocalDateTime messageCreatedAt = null;
+        if (jsonObject.has("content") && jsonObject.get("content") != null && !(jsonObject
+                .get("content") instanceof JsonNull)) {
+            String content = jsonObject.get("content").getAsString();
+            ticketMessage.setJsonContent(Optional.of(content));
+        }
+
         if (jsonObject.has("message_created_at")) {
             messageCreatedAt = LocalDateTime.parse(jsonObject.get("message_created_at").getAsString().split("\\.")[0]);
+            ticketMessage.setMessageCreatedAt(messageCreatedAt);
         }
 
-        Optional<LocalDateTime> messageEditedAt = Optional.empty();
         if (jsonObject.has("message_edited_at") && jsonObject.get("message_edited_at") != null && !(jsonObject
                 .get("message_edited_at") instanceof JsonNull)) {
             messageEditedAt = Optional
                     .of(LocalDateTime.parse(jsonObject.get("message_edited_at").getAsString().split("\\.")[0]));
+            ticketMessage.setMessageEditedAt(messageEditedAt);
         }
 
-        Optional<LocalDateTime> messageDeletedAt = Optional.empty();
         if (jsonObject.has("message_deleted_at") && jsonObject.get("message_deleted_at") != null && !(jsonObject
                 .get("message_deleted_at") instanceof JsonNull)) {
             messageDeletedAt = Optional
                     .of(LocalDateTime.parse(jsonObject.get("message_deleted_at").getAsString().split("\\.")[0]));
+            ticketMessage.setMessageDeletedAt(messageDeletedAt);
         }
 
-        Optional<String> referencesMessageId = Optional.empty();
-        Optional<Message> referencesMessage = Optional.empty();
         if (jsonObject.has("references_message_id") && channelOptional.isPresent()
                 && jsonObject.get("references_message_id") != null && !(jsonObject
                         .get("references_message_id") instanceof JsonNull)) {
             TextChannel channel = channelOptional.get();
-            String referencesMessageIdString = jsonObject.get("references_message_id").getAsString() + "";
+            String referencesMessageIdString = jsonObject.get("references_message_id").getAsString();
             referencesMessageId = Optional.ofNullable(referencesMessageIdString);
-            if (referencesMessageId.isPresent()) {
+            if (referencesMessageId.isPresent() && referencesMessageIdString != null) {
                 referencesMessage = Optional
-                        .ofNullable(channel.retrieveMessageById(referencesMessageIdString).complete());
+                        .ofNullable(channel.retrieveMessageById(referencesMessageIdString));
+                ticketMessage.setReferencesMessage(referencesMessage);
             }
+
+            ticketMessage.setReferencesMessageId(referencesMessageId);
         }
 
-        boolean botMessage = false;
         if (jsonObject.has("bot_message")) {
             botMessage = jsonObject.get("bot_message").getAsBoolean();
+            ticketMessage.setBotMessage(botMessage);
         }
-
-        List<TicketMessageAttachement> attachments = new ArrayList<>();
-        TicketMessage ticketMessage = new TicketMessage(id, ticket, content, message, messageId, authorId, authorName,
-                authorAvatarUrl, author,
-                messageCreatedAt, messageEditedAt,
-                messageDeletedAt, referencesMessageId, referencesMessage, attachments, botMessage);
 
         if (jsonObject.has("attachments")) {
             JsonElement attachmentsElement = jsonObject.get("attachments");
@@ -389,9 +412,9 @@ public class TicketMessage {
                         attachementObject);
                 attachments.add(attachement);
             }
-        }
 
-        ticketMessage.attachments = attachments;
+            ticketMessage.setAttachments(attachments);
+        }
 
         return ticketMessage;
     }
@@ -400,6 +423,8 @@ public class TicketMessage {
      * Prints the ticket message
      */
     public void printMessage() {
+        Optional<String> content = getContent().join();
+
         if (getTicket().getChannel().isEmpty() || content.isEmpty()) {
             return;
         }
@@ -409,16 +434,9 @@ public class TicketMessage {
             return;
         }
 
-        if (content.isEmpty()) {
-            return;
-        }
-
         Webhook webhook = webhookOptional.get();
 
         String avatarUrl = authorAvatarUrl;
-        if (avatarUrl == null && author != null) {
-            avatarUrl = author.getAvatarUrl();
-        }
 
         try (JDAWebhookClient client = JDAWebhookClient.from(webhook)) {
             WebhookMessageBuilder builder = new WebhookMessageBuilder();
@@ -482,25 +500,19 @@ public class TicketMessage {
         DiscordFutureResult<Optional<TicketMessage>> result = new DiscordFutureResult<>(future);
 
         TicketMessage newTicketMessage = new TicketMessage(this);
-        newTicketMessage.message = Optional.of(updatedMessage);
-        newTicketMessage.messageId = updatedMessage.getId();
 
-        newTicketMessage.author = updatedMessage.getAuthor();
-        newTicketMessage.authorId = newTicketMessage.author.getId();
+        Optional<TextChannel> channelOptional = ticket.getChannel();
+        if (channelOptional.isPresent()) {
+            TextChannel channel = channelOptional.get();
+            newTicketMessage.message = Optional.of(channel.retrieveMessageById(updatedMessage.getId()));
+        }
 
+        newTicketMessage.jsonContent = Optional.ofNullable(updatedMessage.getContentDisplay());
         newTicketMessage.messageCreatedAt = updatedMessage.getTimeCreated().toLocalDateTime();
 
         OffsetDateTime timeEdited = updatedMessage.getTimeEdited();
         newTicketMessage.messageEditedAt = Optional.ofNullable(
                 updatedMessage.isEdited() && timeEdited != null ? timeEdited.toLocalDateTime() : null);
-
-        MessageReference reference = updatedMessage.getMessageReference();
-        if (reference != null) {
-            reference.resolve().queue(referencedMessage -> newTicketMessage.referencesMessageId = Optional
-                    .of(referencedMessage.getId()));
-
-            newTicketMessage.referencesMessage = Optional.ofNullable(reference.getMessage());
-        }
 
         newTicketMessage.attachments = new ArrayList<>();
 
@@ -517,8 +529,6 @@ public class TicketMessage {
             newTicketMessage.attachments.add(attachement);
         }
 
-        newTicketMessage.botMessage = updatedMessage.getAuthor().isBot();
-
         newTicketMessage.create().whenComplete(createdTicketMessageOptional -> {
             if (createdTicketMessageOptional.isEmpty()) {
                 future.complete(Optional.empty());
@@ -533,11 +543,9 @@ public class TicketMessage {
     }
 
     /**
-     * Returns the message of the ticket message
-     *
-     * @return The message of the ticket message
+     * @return the message
      */
-    public Optional<Message> getMessage() {
+    public Optional<RestAction<Message>> getMessage() {
         return message;
     }
 
@@ -560,11 +568,9 @@ public class TicketMessage {
     }
 
     /**
-     * Returns the author of the ticket message
-     *
-     * @return The author of the ticket message
+     * @return the author
      */
-    public User getAuthor() {
+    public RestAction<User> getAuthor() {
         return author;
     }
 
@@ -605,11 +611,9 @@ public class TicketMessage {
     }
 
     /**
-     * Returns the referenced message of the ticket message
-     *
      * @return the referencesMessage
      */
-    public Optional<Message> getReferencesMessage() {
+    public Optional<RestAction<Message>> getReferencesMessage() {
         return referencesMessage;
     }
 
@@ -641,6 +645,150 @@ public class TicketMessage {
      */
     public Optional<Long> getId() {
         return id;
+    }
+
+    /**
+     * @return the authorAvatarUrl
+     */
+    public String getAuthorAvatarUrl() {
+        return authorAvatarUrl;
+    }
+
+    /**
+     * @return the authorName
+     */
+    public String getAuthorName() {
+        return authorName;
+    }
+
+    /**
+     * @return the content
+     */
+    public SurfFutureResult<Optional<String>> getContent() {
+        CompletableFuture<Optional<String>> future = new CompletableFuture<>();
+        DiscordFutureResult<Optional<String>> result = new DiscordFutureResult<>(future);
+
+        if (jsonContent.isPresent()) {
+            future.complete(jsonContent);
+            return result;
+        }
+
+        if (message.isEmpty()) {
+            future.complete(Optional.empty());
+            return result;
+        }
+
+        message.get().queue(msg -> {
+            String content = msg.getContentDisplay();
+            future.complete(Optional.of(content));
+        });
+
+        return result;
+    }
+
+    /**
+     * @param author the author to set
+     */
+    public void setAuthor(RestAction<User> author) {
+        this.author = author;
+    }
+
+    /**
+     * @param authorAvatarUrl the authorAvatarUrl to set
+     */
+    public void setAuthorAvatarUrl(String authorAvatarUrl) {
+        this.authorAvatarUrl = authorAvatarUrl;
+    }
+
+    /**
+     * @param authorId the authorId to set
+     */
+    public void setAuthorId(String authorId) {
+        this.authorId = authorId;
+    }
+
+    /**
+     * @param authorName the authorName to set
+     */
+    public void setAuthorName(String authorName) {
+        this.authorName = authorName;
+    }
+
+    /**
+     * @param botMessage the botMessage to set
+     */
+    public void setBotMessage(boolean botMessage) {
+        this.botMessage = botMessage;
+    }
+
+    /**
+     * @param jsonContent the jsonContent to set
+     */
+    public void setJsonContent(Optional<String> jsonContent) {
+        this.jsonContent = jsonContent;
+    }
+
+    /**
+     * @param id the id to set
+     */
+    public void setId(Optional<Long> id) {
+        this.id = id;
+    }
+
+    /**
+     * @param message the message to set
+     */
+    public void setMessage(Optional<RestAction<Message>> message) {
+        this.message = message;
+    }
+
+    /**
+     * @param messageCreatedAt the messageCreatedAt to set
+     */
+    public void setMessageCreatedAt(LocalDateTime messageCreatedAt) {
+        this.messageCreatedAt = messageCreatedAt;
+    }
+
+    /**
+     * @param messageDeletedAt the messageDeletedAt to set
+     */
+    public void setMessageDeletedAt(Optional<LocalDateTime> messageDeletedAt) {
+        this.messageDeletedAt = messageDeletedAt;
+    }
+
+    /**
+     * @param messageEditedAt the messageEditedAt to set
+     */
+    public void setMessageEditedAt(Optional<LocalDateTime> messageEditedAt) {
+        this.messageEditedAt = messageEditedAt;
+    }
+
+    /**
+     * @param messageId the messageId to set
+     */
+    public void setMessageId(String messageId) {
+        this.messageId = messageId;
+    }
+
+    /**
+     * @param referencesMessage the referencesMessage to set
+     */
+    public void setReferencesMessage(Optional<RestAction<Message>> referencesMessage) {
+        this.referencesMessage = referencesMessage;
+    }
+
+    /**
+     * @param referencesMessageId the referencesMessageId to set
+     */
+    public void setReferencesMessageId(Optional<String> referencesMessageId) {
+        this.referencesMessageId = referencesMessageId;
+    }
+
+    /**
+     * @param ticket the ticket to set
+     */
+    public void setTicket(Ticket ticket) {
+        this.ticket = ticket;
     }
 
 }

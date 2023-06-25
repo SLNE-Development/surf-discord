@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent;
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.requests.RestAction;
 
 public class MessageDeletedListener extends ListenerAdapter {
 
@@ -63,23 +64,26 @@ public class MessageDeletedListener extends ListenerAdapter {
             }
 
             TicketMessage ticketMessage = ticketMessageOptional.get();
-            Optional<Message> messageOptional = ticketMessage.getMessage();
+            Optional<RestAction<Message>> messageOptional = ticketMessage.getMessage();
 
-            if (messageOptional.isPresent()) {
-                Message message = messageOptional.get();
+            if (!messageOptional.isPresent()) {
+                continue;
+            }
 
+            RestAction<Message> messageRest = messageOptional.get();
+            messageRest.queue(message -> {
                 if (message.isWebhookMessage()) {
                     return;
                 }
-            }
 
-            ticketMessage.delete().whenComplete(deletedTicketMessageCallback -> {
-                if (deletedTicketMessageCallback.isEmpty()) {
-                    return;
-                }
+                ticketMessage.delete().whenComplete(deletedTicketMessageCallback -> {
+                    if (deletedTicketMessageCallback.isEmpty()) {
+                        return;
+                    }
 
-                TicketMessage deletedTicketMessage = deletedTicketMessageCallback.get();
-                ticket.addRawTicketMessage(deletedTicketMessage);
+                    TicketMessage deletedTicketMessage = deletedTicketMessageCallback.get();
+                    ticket.addRawTicketMessage(deletedTicketMessage);
+                });
             });
         }
     }

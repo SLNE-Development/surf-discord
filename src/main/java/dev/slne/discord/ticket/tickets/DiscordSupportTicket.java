@@ -34,12 +34,14 @@ public class DiscordSupportTicket extends Ticket {
             return;
         }
 
-        String message = "Willkommen beim Discord Server-Support!";
+        getTicketAuthor().queue(author -> {
+            String message = "Willkommen beim Discord Server-Support!";
 
-        if (this.getTicketAuthor() != null) {
-            message = this.getTicketAuthor().getAsMention() + " | " + message;
-        }
+            if (author != null) {
+                message = author.getAsMention() + " | " + message;
+            }
 
-        channel.sendMessage(message).queue();
+            channel.sendMessage(message).queue();
+        });
     }
 }

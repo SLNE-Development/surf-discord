@@ -34,12 +34,14 @@ public class ServerSupportTicket extends Ticket {
             return;
         }
 
-        String message = "Willkommen beim Minecraft Server-Support!";
+        getTicketAuthor().queue(author -> {
+            String message = "Willkommen beim Minecraft Server-Support!";
 
-        if (this.getTicketAuthor() != null) {
-            message = this.getTicketAuthor().getAsMention() + " | " + message;
-        }
+            if (author != null) {
+                message = author.getAsMention() + " | " + message;
+            }
 
-        channel.sendMessage(message).queue();
+            channel.sendMessage(message).queue();
+        });
     }
 }

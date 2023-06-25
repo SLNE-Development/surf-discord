@@ -117,12 +117,12 @@ public class TicketMessageAttachement {
     public JsonObject toJsonObject() {
         JsonObject jsonObject = new JsonObject();
 
-        id.ifPresent(value -> jsonObject.addProperty("id", value + ""));
-        name.ifPresent(value -> jsonObject.addProperty("name", value + ""));
-        url.ifPresent(value -> jsonObject.addProperty("url", value + ""));
-        extension.ifPresent(value -> jsonObject.addProperty("extension", value + ""));
-        size.ifPresent(value -> jsonObject.addProperty("size", value + ""));
-        description.ifPresent(value -> jsonObject.addProperty("description", value + ""));
+        id.ifPresent(value -> jsonObject.addProperty("id", value));
+        name.ifPresent(value -> jsonObject.addProperty("name", value));
+        url.ifPresent(value -> jsonObject.addProperty("url", value));
+        extension.ifPresent(value -> jsonObject.addProperty("extension", value));
+        size.ifPresent(value -> jsonObject.addProperty("size", value));
+        description.ifPresent(value -> jsonObject.addProperty("description", value));
 
         return jsonObject;
     }

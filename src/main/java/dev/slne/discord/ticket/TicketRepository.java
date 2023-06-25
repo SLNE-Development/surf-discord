@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -21,6 +22,7 @@ import dev.slne.discord.DiscordBot;
 import dev.slne.discord.Launcher;
 import dev.slne.discord.datasource.API;
 import dev.slne.discord.datasource.WebhookHelper;
+import dev.slne.discord.datasource.database.future.DiscordFutureResult;
 import dev.slne.discord.ticket.member.TicketMember;
 import dev.slne.discord.ticket.message.TicketMessage;
 import net.dv8tion.jda.api.entities.Guild;
@@ -42,13 +44,18 @@ public class TicketRepository {
      * @return The active tickets
      */
     public static SurfFutureResult<Optional<List<Ticket>>> getActiveTickets() {
-        return DataApi.getDataInstance().supplyAsync(() -> {
+        CompletableFuture<Optional<List<Ticket>>> future = new CompletableFuture<>();
+        DiscordFutureResult<Optional<List<Ticket>>> futureResult = new DiscordFutureResult<>(future);
+
+        DataApi.getDataInstance().runAsync(() -> {
             WebRequest request = WebRequest.builder().url(API.ACTIVE_TICKETS).build();
             WebResponse response = request.executeGet().join();
             List<Ticket> tickets = new ArrayList<>();
 
             if (response.getStatusCode() != 200) {
-                return Optional.of(tickets);
+                Launcher.getLogger().logError(response.getBody());
+                future.complete(Optional.of(tickets));
+                return;
             }
 
             Object body = response.getBody();
@@ -58,7 +65,8 @@ public class TicketRepository {
             JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
 
             if (!bodyElement.has("data") || !bodyElement.get("data").isJsonArray()) {
-                return Optional.of(tickets);
+                future.complete(Optional.of(tickets));
+                return;
             }
 
             JsonArray dataArray = (JsonArray) bodyElement.get("data");
@@ -73,8 +81,11 @@ public class TicketRepository {
 
                 tickets.add(ticket);
             }
-            return Optional.of(tickets);
+
+            future.complete(Optional.of(tickets));
         });
+
+        return futureResult;
     }
 
     /**
@@ -217,87 +228,22 @@ public class TicketRepository {
     @SuppressWarnings("java:S3776")
     public static Ticket ticketByJson(JsonObject jsonObject) {
         Optional<Long> id = Optional.empty();
-        if (jsonObject.has("id")) {
-            id = Optional.of(jsonObject.get("id").getAsLong());
-        }
-
         Optional<String> ticketId = Optional.empty();
-        if (jsonObject.has("ticket_id")) {
-            ticketId = Optional.of(jsonObject.get("ticket_id").getAsString());
-        }
-
         LocalDateTime openedAt = null;
-        if (jsonObject.has("opened_at")) {
-            openedAt = LocalDateTime.parse(jsonObject.get("opened_at").getAsString().split("\\.")[0]);
-        }
-
         Optional<String> guildId = Optional.empty();
         Optional<Guild> guild = Optional.empty();
-        if (jsonObject.has("guild_id") && jsonObject.get("guild_id") != null && !(jsonObject
-                .get("guild_id") instanceof JsonNull)) {
-            String guildIdString = jsonObject.get("guild_id").getAsString() + "";
-            guildId = Optional.of(guildIdString);
-            guild = Optional.ofNullable(DiscordBot.getInstance().getJda().getGuildById(guildIdString));
-        }
-
         Optional<String> channelId = Optional.empty();
         Optional<TextChannel> channel = Optional.empty();
-        if (jsonObject.has("channel_id") && jsonObject.get("channel_id") != null && !(jsonObject
-                .get("channel_id") instanceof JsonNull)) {
-            String channelIdString = jsonObject.get("channel_id").getAsString() + "";
-            channelId = Optional.of(channelIdString);
-            channel = Optional.ofNullable(DiscordBot.getInstance().getJda().getTextChannelById(channelIdString));
-        }
-
         String ticketTypeString = null;
         TicketType ticketType = null;
-        if (jsonObject.has("type")) {
-            ticketTypeString = jsonObject.get("type").getAsString();
-            ticketType = TicketType.getByName(ticketTypeString);
-        }
-
         String ticketAuthorName = null;
         String ticketAuthorId = null;
         String ticketAuthorAvatarUrl = null;
         User ticketAuthor = null;
-        if (jsonObject.has("author_id") && jsonObject.get("author_id") != null && !(jsonObject
-                .get("author_id") instanceof JsonNull)) {
-            ticketAuthorId = jsonObject.get("author_id").getAsString() + "";
-            ticketAuthor = DiscordBot.getInstance().getJda().retrieveUserById(ticketAuthorId).complete();
-        }
-
-        if (jsonObject.has("author_name") && jsonObject.get("author_name") != null && !(jsonObject
-                .get("author_name") instanceof JsonNull)) {
-            ticketAuthorName = jsonObject.get("author_name").getAsString() + "";
-        }
-
-        if (jsonObject.has("author_avatar_url") && jsonObject.get("author_avatar_url") != null && !(jsonObject
-                .get("author_avatar_url") instanceof JsonNull)) {
-            ticketAuthorAvatarUrl = jsonObject.get("author_avatar_url").getAsString() + "";
-        }
-
         Optional<String> closedById = Optional.empty();
         Optional<User> closedBy = Optional.empty();
-        if (jsonObject.has("closed_by_id") && jsonObject.get("closed_by_id") != null && !(jsonObject
-                .get("closed_by_id") instanceof JsonNull)) {
-            String closedByIdString = jsonObject.get("closed_by_id").getAsString() + "";
-            closedById = Optional.of(closedByIdString);
-            closedBy = Optional
-                    .ofNullable(DiscordBot.getInstance().getJda().retrieveUserById(closedByIdString).complete());
-        }
-
         Optional<String> closedReason = Optional.empty();
-        if (jsonObject.has("closed_reason") && jsonObject.get("closed_reason") != null && !(jsonObject
-                .get("closed_reason") instanceof JsonNull)) {
-            closedReason = Optional.of(jsonObject.get("closed_reason").getAsString());
-        }
-
         Optional<LocalDateTime> closedAt = Optional.empty();
-        if (jsonObject.has("closed_at") && jsonObject.get("closed_at") != null && !(jsonObject
-                .get("closed_at") instanceof JsonNull)) {
-            closedAt = Optional.of(LocalDateTime.parse(jsonObject.get("closed_at").getAsString().split("\\.")[0]));
-        }
-
         List<TicketMessage> messages = new ArrayList<>();
         List<TicketMember> members = new ArrayList<>();
 
@@ -306,29 +252,131 @@ public class TicketRepository {
         Optional<String> webhookName = Optional.empty();
         Optional<String> webhookUrl = Optional.empty();
 
+        Ticket ticket = new Ticket(id, ticketId, openedAt, guildId, guild, channelId, channel, ticketTypeString,
+                ticketType, ticketAuthorName, ticketAuthorId, ticketAuthorAvatarUrl, ticketAuthor, closedById, closedBy,
+                closedReason, closedAt, messages, members, webhook, webhookId, webhookName, webhookUrl);
+
+        if (jsonObject.has("id")) {
+            id = Optional.of(jsonObject.get("id").getAsLong());
+            ticket.setId(id);
+        }
+
+        if (jsonObject.has("ticket_id")) {
+            ticketId = Optional.of(jsonObject.get("ticket_id").getAsString());
+            ticket.setTicketId(ticketId);
+        }
+
+        if (jsonObject.has("opened_at")) {
+            openedAt = LocalDateTime.parse(jsonObject.get("opened_at").getAsString().split("\\.")[0]);
+            ticket.setOpenedAt(openedAt);
+        }
+
+        if (jsonObject.has("guild_id") && jsonObject.get("guild_id") != null && !(jsonObject
+                .get("guild_id") instanceof JsonNull)) {
+            String guildIdString = jsonObject.get("guild_id").getAsString();
+            guildId = Optional.of(guildIdString);
+
+            if (guildIdString != null) {
+                guild = Optional.ofNullable(DiscordBot.getInstance().getJda().getGuildById(guildIdString));
+                ticket.setGuild(guild);
+            }
+
+            ticket.setGuildId(guildId);
+        }
+
+        if (jsonObject.has("channel_id") && jsonObject.get("channel_id") != null && !(jsonObject
+                .get("channel_id") instanceof JsonNull)) {
+            String channelIdString = jsonObject.get("channel_id").getAsString();
+            channelId = Optional.of(channelIdString);
+
+            if (channelIdString != null) {
+                channel = Optional.ofNullable(DiscordBot.getInstance().getJda().getTextChannelById(channelIdString));
+                ticket.setChannel(channel);
+            }
+
+            ticket.setChannelId(channelId);
+        }
+
+        if (jsonObject.has("type")) {
+            ticketTypeString = jsonObject.get("type").getAsString();
+            ticketType = TicketType.getByName(ticketTypeString);
+
+            ticket.setTicketType(ticketType);
+            ticket.setTicketTypeString(ticketTypeString);
+        }
+
+        if (jsonObject.has("author_id") && jsonObject.get("author_id") != null && !(jsonObject
+                .get("author_id") instanceof JsonNull)) {
+            ticketAuthorId = jsonObject.get("author_id").getAsString();
+
+            if (ticketAuthorId != null) {
+                ticket.setTicketAuthor(DiscordBot.getInstance().getJda().retrieveUserById(ticketAuthorId));
+            }
+
+            ticket.setTicketAuthorId(ticketAuthorId);
+        }
+
+        if (jsonObject.has("author_name") && jsonObject.get("author_name") != null && !(jsonObject
+                .get("author_name") instanceof JsonNull)) {
+            ticketAuthorName = jsonObject.get("author_name").getAsString();
+            ticket.setTicketAuthorName(ticketAuthorName);
+        }
+
+        if (jsonObject.has("author_avatar_url") && jsonObject.get("author_avatar_url") != null && !(jsonObject
+                .get("author_avatar_url") instanceof JsonNull)) {
+            ticketAuthorAvatarUrl = jsonObject.get("author_avatar_url").getAsString();
+            ticket.setTicketAuthorAvatarUrl(ticketAuthorAvatarUrl);
+        }
+
+        if (jsonObject.has("closed_by_id") && jsonObject.get("closed_by_id") != null && !(jsonObject
+                .get("closed_by_id") instanceof JsonNull)) {
+            String closedByIdString = jsonObject.get("closed_by_id").getAsString();
+            closedById = Optional.of(closedByIdString);
+
+            if (closedByIdString != null) {
+                ticket.setClosedBy(Optional.of(DiscordBot.getInstance().getJda().retrieveUserById(closedByIdString)));
+            }
+
+            ticket.setClosedById(closedById);
+        }
+
+        if (jsonObject.has("closed_reason") && jsonObject.get("closed_reason") != null && !(jsonObject
+                .get("closed_reason") instanceof JsonNull)) {
+            closedReason = Optional.of(jsonObject.get("closed_reason").getAsString());
+            ticket.setClosedReason(closedReason);
+        }
+
+        if (jsonObject.has("closed_at") && jsonObject.get("closed_at") != null && !(jsonObject
+                .get("closed_at") instanceof JsonNull)) {
+            closedAt = Optional.of(LocalDateTime.parse(jsonObject.get("closed_at").getAsString().split("\\.")[0]));
+            ticket.setClosedAt(closedAt);
+        }
+
         if (jsonObject.has("webhook_id") && jsonObject.get("webhook_id") != null && !(jsonObject
                 .get("webhook_id") instanceof JsonNull)) {
             webhookId = Optional.of(jsonObject.get("webhook_id").getAsString());
 
             if (channel.isPresent() && webhookId.isPresent()) {
                 TextChannel textChannel = channel.get();
-                webhook = WebhookHelper.getWebhook(textChannel, webhookId.get()).join();
+
+                WebhookHelper.getWebhook(textChannel, webhookId.get())
+                        .whenComplete(ticket::setWebhook);
             }
+
+            ticket.setWebhookId(webhookId);
         }
 
         if (jsonObject.has("webhook_name") && jsonObject.get("webhook_name") != null && !(jsonObject
                 .get("webhook_name") instanceof JsonNull)) {
             webhookName = Optional.of(jsonObject.get("webhook_name").getAsString());
+            ticket.setWebhookName(webhookName);
         }
 
         if (jsonObject.has("webhook_url") && jsonObject.get("webhook_url") != null && !(jsonObject
                 .get("webhook_url") instanceof JsonNull)) {
             webhookUrl = Optional.of(jsonObject.get("webhook_url").getAsString());
+            ticket.setWebhookUrl(webhookUrl);
         }
-
-        Ticket ticket = new Ticket(id, ticketId, openedAt, guildId, guild, channelId, channel, ticketTypeString,
-                ticketType, ticketAuthorName, ticketAuthorId, ticketAuthorAvatarUrl, ticketAuthor, closedById, closedBy,
-                closedReason, closedAt, messages, members, webhook, webhookId, webhookName, webhookUrl);
 
         if (jsonObject.has("messages")) {
             JsonArray messagesArray = jsonObject.get("messages").getAsJsonArray();
@@ -343,6 +391,8 @@ public class TicketRepository {
 
                 messages.add(message);
             }
+
+            ticket.setMessages(messages);
         }
 
         if (jsonObject.has("members")) {
@@ -358,10 +408,9 @@ public class TicketRepository {
 
                 members.add(member);
             }
-        }
 
-        ticket.setMessages(messages);
-        ticket.setMembers(members);
+            ticket.setMembers(members);
+        }
 
         return ticket;
     }

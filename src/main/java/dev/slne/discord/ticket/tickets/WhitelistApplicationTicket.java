@@ -34,13 +34,15 @@ public class WhitelistApplicationTicket extends Ticket {
             return;
         }
 
-        String message = "Du möchtest dich auf dem Server whitelisten lassen? Bitte beachte die Vorrausetzungen in <#983479094983397406>.";
+        getTicketAuthor().queue(author -> {
+            String message = "Du möchtest dich auf dem Server whitelisten lassen? Bitte beachte die Vorrausetzungen in <#983479094983397406>.";
 
-        if (this.getTicketAuthor() != null) {
-            message = this.getTicketAuthor().getAsMention() + " | " + message;
-        }
+            if (author != null) {
+                message = author.getAsMention() + " | " + message;
+            }
 
-        channel.sendMessage(message).queue();
+            channel.sendMessage(message).queue();
+        });
     }
 
 }

@@ -3,6 +3,8 @@ package dev.slne.discord.discord.guild;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import dev.slne.discord.DiscordBot;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -10,7 +12,7 @@ import net.dv8tion.jda.api.entities.User;
 
 public class DiscordGuild {
 
-    private String guildId;
+    private @Nonnull String guildId;
     private String categoryId;
 
     private List<String> discordSupportAdmins;
@@ -28,7 +30,7 @@ public class DiscordGuild {
      * @param discordSupportModerators The discord support moderators.
      * @param serverSupportModerators  The server support moderators.
      */
-    public DiscordGuild(String guildId, String categoryId, List<String> discordSupportAdmins,
+    public DiscordGuild(@Nonnull String guildId, String categoryId, List<String> discordSupportAdmins,
             List<String> serverSupportAdmins, List<String> discordSupportModerators,
             List<String> serverSupportModerators) {
         this.guildId = guildId;
@@ -54,7 +56,7 @@ public class DiscordGuild {
         userIds.addAll(discordSupportModerators);
         userIds.addAll(serverSupportModerators);
 
-        Guild guild = DiscordBot.getInstance().getJda().getGuildById(guildId + "");
+        Guild guild = DiscordBot.getInstance().getJda().getGuildById(guildId);
 
         if (guild == null) {
             return users;
@@ -62,7 +64,11 @@ public class DiscordGuild {
 
         userIds
                 .forEach(userId -> {
-                    Member member = guild.retrieveMemberById(userId + "").complete();
+                    if (userId == null) {
+                        return;
+                    }
+
+                    Member member = guild.retrieveMemberById(userId).complete();
 
                     if (member != null) {
                         addIfNotExists(users, member.getUser());

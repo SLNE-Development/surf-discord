@@ -24,6 +24,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 public class DiscordBot {
@@ -44,7 +45,7 @@ public class DiscordBot {
     /**
      * Called when the bot is loaded.
      */
-    @SuppressWarnings({ "java:S2696" })
+    @SuppressWarnings({ "java:S2696", "java:S2142" })
     public void onLoad() {
         instance = this;
 
@@ -61,6 +62,23 @@ public class DiscordBot {
             e.printStackTrace();
         }
 
+        JDABuilder builder = JDABuilder.createDefault(botToken);
+
+        builder.setAutoReconnect(true);
+        builder.disableCache(CacheFlag.VOICE_STATE, CacheFlag.STICKER, CacheFlag.SCHEDULED_EVENTS);
+        builder.setEnabledIntents(GatewayIntents.getGatewayIntents());
+        builder.setActivity(Activity.watching("Keviro struggle"));
+        builder.setStatus(OnlineStatus.DO_NOT_DISTURB);
+
+        this.jda = builder.build();
+        try {
+            this.jda.awaitReady();
+        } catch (InterruptedException exception) {
+            exception.printStackTrace();
+        }
+
+        Launcher.getLogger().logInfo("Bot is ready!");
+
         uuidCache = new UUIDCache();
         commandManager = new DiscordCommandManager();
         listenerManager = new ListenerManager();
@@ -69,6 +87,12 @@ public class DiscordBot {
 
         listenerManager.registerDiscordListeners();
         listenerManager.registerListeners();
+
+        for (Guild guild : jda.getGuilds()) {
+            DiscordBot.getInstance().getCommandManager().registerToGuild(guild);
+        }
+
+        DiscordBot.getInstance().getTicketManager().fetchActiveTickets();
     }
 
     /**
@@ -95,15 +119,6 @@ public class DiscordBot {
         pusherModule.bindEvents("surf-communication",
                 packets.keySet().toArray(new String[packets.keySet().size()]));
 
-        JDABuilder builder = JDABuilder.createDefault(botToken);
-
-        builder.setAutoReconnect(true);
-        builder.disableCache(CacheFlag.VOICE_STATE, CacheFlag.STICKER, CacheFlag.SCHEDULED_EVENTS);
-        builder.setEnabledIntents(GatewayIntents.getGatewayIntents());
-        builder.setActivity(Activity.watching("Keviro struggle"));
-        builder.setStatus(OnlineStatus.DO_NOT_DISTURB);
-
-        this.jda = builder.build();
         listenerManager.registerListenersToJda(this.jda);
 
         buttonManager = new DiscordButtonManager();

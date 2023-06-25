@@ -88,7 +88,12 @@ public class TicketMemberRemoveCommand extends DiscordCommand {
                 return;
             }
 
-            ticketMember.setRemovedBy(Optional.of(interaction.getUser()));
+            ticketMember
+                    .setRemovedBy(Optional
+                            .of(DiscordBot.getInstance().getJda().retrieveUserById(interaction.getUser().getId())));
+            ticketMember.setRemovedByAvatarUrl(interaction.getUser().getAvatarUrl());
+            ticketMember.setRemovedById(interaction.getUser().getId());
+            ticketMember.setRemovedByName(interaction.getUser().getName());
             ticket.removeTicketMember(ticketMember).whenComplete(ticketMemberRemovedOptional -> {
                 if (ticketMemberRemovedOptional.isEmpty()) {
                     hook.editOriginal("Der Nutzer konnte nicht entfernt werden.").queue();

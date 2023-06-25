@@ -17,22 +17,23 @@ import dev.slne.discord.Launcher;
 import dev.slne.discord.datasource.API;
 import dev.slne.discord.ticket.Ticket;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.requests.RestAction;
 
 public class TicketMember {
 
     private Optional<Long> id;
 
-    private Optional<User> member;
+    private Optional<RestAction<User>> member;
     private String memberId;
     private String memberName;
     private String memberAvatarUrl;
 
-    private Optional<User> addedBy;
+    private Optional<RestAction<User>> addedBy;
     private String addedById;
     private String addedByName;
     private String addedByAvatarUrl;
 
-    private Optional<User> removedBy;
+    private Optional<RestAction<User>> removedBy;
     private String removedById;
     private String removedByName;
     private String removedByAvatarUrl;
@@ -47,12 +48,12 @@ public class TicketMember {
     public TicketMember(Ticket ticket, User member, User addedBy) {
         this.id = Optional.empty();
 
-        this.member = Optional.of(member);
+        this.member = Optional.of(DiscordBot.getInstance().getJda().retrieveUserById(member.getIdLong()));
         this.memberId = member.getId();
         this.memberName = member.getName();
         this.memberAvatarUrl = member.getAvatarUrl();
 
-        this.addedBy = Optional.of(addedBy);
+        this.addedBy = Optional.of(DiscordBot.getInstance().getJda().retrieveUserById(addedBy.getIdLong()));
         this.addedById = addedBy.getId();
         this.addedByName = addedBy.getName();
         this.addedByAvatarUrl = addedBy.getAvatarUrl();
@@ -73,9 +74,10 @@ public class TicketMember {
      * @param member   the member
      */
     @SuppressWarnings({ "java:S107" })
-    private TicketMember(Ticket ticket, Optional<Long> id, Optional<User> member, String memberId, String memberName,
-            String memberAvatarUrl, Optional<User> addedBy, String addedById, String addedByName,
-            String addedByAvatarUrl, Optional<User> removedBy, String removedById, String removedByName,
+    private TicketMember(Ticket ticket, Optional<Long> id, Optional<RestAction<User>> member, String memberId,
+            String memberName,
+            String memberAvatarUrl, Optional<RestAction<User>> addedBy, String addedById, String addedByName,
+            String addedByAvatarUrl, Optional<RestAction<User>> removedBy, String removedById, String removedByName,
             String removedByAvatarUrl) {
         this.id = id;
 
@@ -115,7 +117,7 @@ public class TicketMember {
         long idGet = this.id.get();
 
         return DataApi.getDataInstance().supplyAsync(() -> {
-            String url = String.format(API.TICKET_MEMBER, ticketId, idGet + "");
+            String url = String.format(API.TICKET_MEMBER, ticketId, idGet);
             WebRequest request = WebRequest.builder().json(true).parameters(toDeleteParameters()).url(url).build();
             WebResponse response = request.executeDelete().join();
 
@@ -196,17 +198,17 @@ public class TicketMember {
     public static TicketMember fromJsonObject(Ticket ticket, JsonObject jsonObject) {
         Optional<Long> id = Optional.empty();
 
-        Optional<User> member = Optional.empty();
+        Optional<RestAction<User>> member = Optional.empty();
         String memberId = null;
         String memberName = null;
         String memberAvatarUrl = null;
 
-        Optional<User> addedBy = Optional.empty();
+        Optional<RestAction<User>> addedBy = Optional.empty();
         String addedById = null;
         String addedByName = null;
         String addedByAvatarUrl = null;
 
-        Optional<User> removedBy = Optional.empty();
+        Optional<RestAction<User>> removedBy = Optional.empty();
         String removedById = null;
         String removedByName = null;
         String removedByAvatarUrl = null;
@@ -222,16 +224,22 @@ public class TicketMember {
             JsonElement memberIdElement = jsonObject.get("member_id");
             if (!memberIdElement.isJsonNull()) {
                 memberId = memberIdElement.getAsString();
-                member = Optional
-                        .ofNullable(DiscordBot.getInstance().getJda().retrieveUserById(memberId + "").complete());
+
+                if (memberId != null) {
+                    member = Optional
+                            .ofNullable(DiscordBot.getInstance().getJda().retrieveUserById(memberId));
+                }
             }
         }
 
         if (jsonObject.has("added_by_id") && jsonObject.get("added_by_id") != null
                 && !jsonObject.get("added_by_id").isJsonNull()) {
             addedById = jsonObject.get("added_by_id").getAsString();
-            addedBy = Optional
-                    .ofNullable(DiscordBot.getInstance().getJda().retrieveUserById(addedById + "").complete());
+
+            if (addedById != null) {
+                addedBy = Optional
+                        .ofNullable(DiscordBot.getInstance().getJda().retrieveUserById(addedById));
+            }
         }
 
         if (jsonObject.has("member_name") && jsonObject.get("member_name") != null
@@ -260,7 +268,7 @@ public class TicketMember {
 
             if (removedById != null) {
                 removedBy = Optional
-                        .ofNullable(DiscordBot.getInstance().getJda().retrieveUserById(removedById + "").complete());
+                        .ofNullable(DiscordBot.getInstance().getJda().retrieveUserById(removedById));
             }
         }
 
@@ -338,7 +346,7 @@ public class TicketMember {
     /**
      * @return the member
      */
-    public Optional<User> getMember() {
+    public Optional<RestAction<User>> getMember() {
         return member;
     }
 
@@ -359,7 +367,7 @@ public class TicketMember {
     /**
      * @return the addedBy
      */
-    public Optional<User> getAddedBy() {
+    public Optional<RestAction<User>> getAddedBy() {
         return addedBy;
     }
 
@@ -401,7 +409,7 @@ public class TicketMember {
     /**
      * @return the removedBy
      */
-    public Optional<User> getRemovedBy() {
+    public Optional<RestAction<User>> getRemovedBy() {
         return removedBy;
     }
 
@@ -429,15 +437,8 @@ public class TicketMember {
     /**
      * @param removedBy the removedBy to set
      */
-    public void setRemovedBy(Optional<User> removedBy) {
+    public void setRemovedBy(Optional<RestAction<User>> removedBy) {
         this.removedBy = removedBy;
-
-        if (removedBy.isPresent()) {
-            User removedByUser = removedBy.get();
-            setRemovedByAvatarUrl(removedByUser.getAvatarUrl());
-            setRemovedById(removedByUser.getId());
-            setRemovedByName(removedByUser.getName());
-        }
     }
 
     /**
