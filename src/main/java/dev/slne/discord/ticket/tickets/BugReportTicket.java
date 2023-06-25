@@ -2,22 +2,22 @@ package dev.slne.discord.ticket.tickets;
 
 import java.util.Optional;
 
+import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
-public class BugReportTicket extends DescriptionTicket {
+public class BugReportTicket extends Ticket {
 
     /**
      * Constructor for a bug report ticket
      *
      * @param guild        The guild the ticket is created in
      * @param ticketAuthor The author of the ticket
-     * @param description  The description of the ticket
      */
-    public BugReportTicket(Guild guild, User ticketAuthor, String description) {
-        super(guild, ticketAuthor, TicketType.BUGREPORT, description);
+    public BugReportTicket(Guild guild, User ticketAuthor) {
+        super(guild, ticketAuthor, TicketType.BUGREPORT);
     }
 
     @Override
@@ -40,6 +40,6 @@ public class BugReportTicket extends DescriptionTicket {
             message = this.getTicketAuthor().getAsMention() + " | " + message;
         }
 
-        channel.sendMessage(message).queue(msg -> this.printDescription());
+        channel.sendMessage(message).queue();
     }
 }

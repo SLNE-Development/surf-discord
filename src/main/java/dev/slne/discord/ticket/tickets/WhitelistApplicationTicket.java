@@ -10,19 +10,14 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 public class WhitelistApplicationTicket extends Ticket {
 
-    private String minecraftName;
-
     /**
      * Constructor for a whitelist application ticket
      *
-     * @param guild         The guild the ticket is created in
-     * @param ticketAuthor  The author of the ticket
-     * @param minecraftName The minecraft name of the ticket
+     * @param guild        The guild the ticket is created in
+     * @param ticketAuthor The author of the ticket
      */
-    public WhitelistApplicationTicket(Guild guild, User ticketAuthor, String minecraftName) {
+    public WhitelistApplicationTicket(Guild guild, User ticketAuthor) {
         super(guild, ticketAuthor, TicketType.WHITELIST);
-
-        this.minecraftName = minecraftName;
     }
 
     @Override
@@ -46,10 +41,6 @@ public class WhitelistApplicationTicket extends Ticket {
         }
 
         channel.sendMessage(message).queue();
-    }
-
-    public String getMinecraftName() {
-        return minecraftName;
     }
 
 }

@@ -6,12 +6,17 @@ import java.util.List;
 
 import dev.slne.discord.listener.event.Event;
 import dev.slne.discord.listener.event.EventHandler;
+import dev.slne.discord.listener.interaction.button.DiscordButtonListener;
 import dev.slne.discord.listener.interaction.command.CommandReceivedListener;
 import dev.slne.discord.listener.interaction.modal.DiscordModalListener;
 import dev.slne.discord.listener.message.MessageCreatedListener;
 import dev.slne.discord.listener.message.MessageDeletedListener;
 import dev.slne.discord.listener.message.MessageUpdatedListener;
+import dev.slne.discord.listener.pusher.ticket.TicketCloseListener;
+import dev.slne.discord.listener.pusher.ticket.TicketOpenListener;
+import dev.slne.discord.listener.pusher.ticket.TicketReOpenListener;
 import dev.slne.discord.listener.setup.ReadyListener;
+import dev.slne.discord.listener.user.UserQuitListener;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.hooks.EventListener;
 
@@ -28,8 +33,13 @@ public class ListenerManager {
         this.discordListeners = new ArrayList<>();
     }
 
+    /**
+     * Registers all listeners.
+     */
     public void registerListeners() {
-        // Currently not needed
+        listeners.add(new TicketCloseListener());
+        listeners.add(new TicketOpenListener());
+        listeners.add(new TicketReOpenListener());
     }
 
     /**
@@ -37,9 +47,11 @@ public class ListenerManager {
      */
     public void registerDiscordListeners() {
         discordListeners.add(new ReadyListener());
+        discordListeners.add(new UserQuitListener());
 
         discordListeners.add(new CommandReceivedListener());
         discordListeners.add(new DiscordModalListener());
+        discordListeners.add(new DiscordButtonListener());
 
         discordListeners.add(new MessageCreatedListener());
         discordListeners.add(new MessageUpdatedListener());

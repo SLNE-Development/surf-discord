@@ -27,7 +27,7 @@ public class TicketManager {
     public void fetchActiveTickets() {
         fetched = false;
 
-        Ticket.getActiveTickets().whenComplete(ticketListOptional -> {
+        TicketRepository.getActiveTickets().whenComplete(ticketListOptional -> {
             if (ticketListOptional.isPresent()) {
                 this.tickets = ticketListOptional.get();
             }

@@ -31,6 +31,11 @@ public class API {
     public static final String TICKET_MEMBERS = API_PREFIX + "tickets/%s/members";
     public static final String TICKET_MEMBER = API_PREFIX + "tickets/%s/members/%s";
 
+    public static final String WHITELISTS = API_PREFIX + "whitelist";
+    public static final String WHITELIST = API_PREFIX + "whitelist/%s";
+    public static final String WHITELIST_CHECK = API_PREFIX + "whitelist/check";
+    public static final String WHITELIST_BY_DISCORD_ID = API_PREFIX + "whitelist/discord/%s";
+
     private static final Pattern NONLATIN = Pattern.compile("[^\\w-]");
     private static final Pattern WHITESPACE = Pattern.compile("[\\s]");
 

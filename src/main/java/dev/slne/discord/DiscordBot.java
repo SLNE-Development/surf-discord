@@ -2,7 +2,16 @@ package dev.slne.discord;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
+import dev.slne.data.core.instance.DataApi;
+import dev.slne.data.core.pusher.PusherModule;
+import dev.slne.data.core.pusher.packet.PusherPacket;
+import dev.slne.discord.datasource.pusher.packets.TicketClosePacket;
+import dev.slne.discord.datasource.pusher.packets.TicketOpenPacket;
+import dev.slne.discord.datasource.pusher.packets.TicketReOpenPacket;
+import dev.slne.discord.discord.interaction.button.DiscordButtonManager;
 import dev.slne.discord.discord.interaction.command.DiscordCommandManager;
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager;
 import dev.slne.discord.discord.settings.BotConnectionFile;
@@ -10,6 +19,7 @@ import dev.slne.discord.discord.settings.BotConnectionSettings;
 import dev.slne.discord.discord.settings.GatewayIntents;
 import dev.slne.discord.listener.ListenerManager;
 import dev.slne.discord.ticket.TicketManager;
+import dev.slne.discord.whitelist.UUIDCache;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -28,6 +38,8 @@ public class DiscordBot {
     private DiscordModalManager modalManager;
     private DiscordCommandManager commandManager;
     private TicketManager ticketManager;
+    private DiscordButtonManager buttonManager;
+    private UUIDCache uuidCache;
 
     /**
      * Called when the bot is loaded.
@@ -49,6 +61,7 @@ public class DiscordBot {
             e.printStackTrace();
         }
 
+        uuidCache = new UUIDCache();
         commandManager = new DiscordCommandManager();
         listenerManager = new ListenerManager();
         modalManager = new DiscordModalManager();
@@ -68,16 +81,32 @@ public class DiscordBot {
             return;
         }
 
+        PusherModule pusherModule = DataApi.getDataInstance().getDataModule("pusher");
+        Map<String, Class<? extends PusherPacket>> packets = new HashMap<>();
+
+        packets.put("App\\Events\\Ticket\\CloseTicketEvent", TicketClosePacket.class);
+        packets.put("App\\Events\\Ticket\\OpenTicketEvent", TicketOpenPacket.class);
+        packets.put("App\\Events\\Ticket\\ReOpenTicketEvent", TicketReOpenPacket.class);
+
+        for (Map.Entry<String, Class<? extends PusherPacket>> entry : packets.entrySet()) {
+            pusherModule.getPacketManager().registerPacket(entry.getKey(), entry.getValue());
+        }
+
+        pusherModule.bindEvents("surf-communication",
+                packets.keySet().toArray(new String[packets.keySet().size()]));
+
         JDABuilder builder = JDABuilder.createDefault(botToken);
 
         builder.setAutoReconnect(true);
-        builder.disableCache(CacheFlag.VOICE_STATE, CacheFlag.EMOJI, CacheFlag.STICKER, CacheFlag.SCHEDULED_EVENTS);
+        builder.disableCache(CacheFlag.VOICE_STATE, CacheFlag.STICKER, CacheFlag.SCHEDULED_EVENTS);
         builder.setEnabledIntents(GatewayIntents.getGatewayIntents());
         builder.setActivity(Activity.watching("Keviro struggle"));
         builder.setStatus(OnlineStatus.DO_NOT_DISTURB);
 
         this.jda = builder.build();
         listenerManager.registerListenersToJda(this.jda);
+
+        buttonManager = new DiscordButtonManager();
     }
 
     /**
@@ -148,5 +177,26 @@ public class DiscordBot {
      */
     public BotConnectionFile getBotConnectionFile() {
         return botConnectionFile;
+    }
+
+    /**
+     * @return the buttonManager
+     */
+    public DiscordButtonManager getButtonManager() {
+        return buttonManager;
+    }
+
+    /**
+     * @return the botToken
+     */
+    public String getBotToken() {
+        return botToken;
+    }
+
+    /**
+     * @return the uuidCache
+     */
+    public UUIDCache getUuidCache() {
+        return uuidCache;
     }
 }

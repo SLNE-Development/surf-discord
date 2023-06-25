@@ -20,6 +20,10 @@ public class GatewayIntents {
      */
     public static final Collection<GatewayIntent> getGatewayIntents() {
         return List.of(
+                // Emoji
+                GatewayIntent.GUILD_EMOJIS_AND_STICKERS,
+
+                // Guild
                 GatewayIntent.GUILD_MEMBERS,
                 GatewayIntent.GUILD_PRESENCES,
 

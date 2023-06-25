@@ -59,55 +59,15 @@
       <artifactId>surf-data</artifactId>
       <version>2.0-SNAPSHOT</version>
     </dependency>
+    <dependency>
+      <groupId>club.minnced</groupId>
+      <artifactId>discord-webhooks</artifactId>
+      <version>0.8.2</version>
+    </dependency>
   </dependencies>
 
   <build>
-    <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to
-      parent pom) -->
-      <plugins>
-        <plugin>
-          <groupId>org.eclipse.m2e</groupId>
-          <artifactId>lifecycle-mapping</artifactId>
-          <version>1.0.0</version>
-          <configuration>
-            <lifecycleMappingMetadata>
-              <pluginExecutions>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>
-                      org.javalite</groupId>
-                    <artifactId>activejdbc-instrumentation</artifactId>
-                    <versionRange>[1.4.11,)</versionRange>
-                    <goals>
-                      <goal>
-                        instrument</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore />
-                  </action>
-                </pluginExecution>
-              </pluginExecutions>
-            </lifecycleMappingMetadata>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
     <plugins>
-      <plugin>
-        <groupId>org.javalite</groupId>
-        <artifactId>activejdbc-instrumentation</artifactId>
-        <version>3.1-j11-SNAPSHOT</version>
-        <executions>
-          <execution>
-            <?m2e execute onConfiguration?>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>instrument</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
       <!-- Add the assemble plugin with standard configuration -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>

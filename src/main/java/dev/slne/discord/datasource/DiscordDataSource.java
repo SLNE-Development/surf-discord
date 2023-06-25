@@ -2,6 +2,7 @@ package dev.slne.discord.datasource;
 
 import dev.slne.data.core.DataSource;
 import dev.slne.data.core.instance.DataApi;
+import dev.slne.data.core.pusher.PusherModule;
 
 public class DiscordDataSource extends DataSource {
 
@@ -17,6 +18,7 @@ public class DiscordDataSource extends DataSource {
         dataInstance = new DiscordDataInstance();
         dataApi = new DataApi(dataInstance);
 
+        dataInstance.getDataModuleLoader().registerModule(new PusherModule());
         dataInstance.getDataModuleLoader().loadModules();
     }
 

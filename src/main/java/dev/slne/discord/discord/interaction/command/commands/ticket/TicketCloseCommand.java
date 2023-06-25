@@ -1,4 +1,4 @@
-package dev.slne.discord.ticket.commands;
+package dev.slne.discord.discord.interaction.command.commands.ticket;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 import dev.slne.discord.Launcher;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.ticket.Ticket;
+import dev.slne.discord.ticket.TicketRepository;
 import dev.slne.discord.ticket.result.TicketCloseResult;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -53,7 +54,7 @@ public class TicketCloseCommand extends DiscordCommand {
         }
 
         TextChannel channel = (TextChannel) interaction.getChannel();
-        Optional<Ticket> ticketOptional = Ticket.getTicketByChannel(channel.getId());
+        Optional<Ticket> ticketOptional = TicketRepository.getTicketByChannel(channel.getId());
 
         interaction.reply("Schließe Ticket...")
                 .queue(deferedReply -> {
@@ -64,7 +65,7 @@ public class TicketCloseCommand extends DiscordCommand {
 
                     Ticket ticket = ticketOptional.get();
 
-                    ticket.closeTicketChannel(closer, reason).whenComplete(result -> {
+                    ticket.close(closer, reason).whenComplete(result -> {
                         if (result != TicketCloseResult.SUCCESS) {
                             deferedReply.editOriginal("Fehler beim Schließen des Tickets.").queue();
                         }

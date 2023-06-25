@@ -38,9 +38,9 @@ public class DiscordGuilds {
         List<String> discordSupportModerators = new ArrayList<>();
         List<String> serverSupportModerators = new ArrayList<>();
 
-        serverSupportAdmins.add("201843528618213376");
+        // serverSupportAdmins.add("201843528618213376");
 
-        serverSupportModerators.add("570544431174778881");
+        // serverSupportModerators.add("570544431174778881");
 
         return new DiscordGuild("449314616628084758", "983429475649876029", discordSupportAdmins,
                 serverSupportAdmins, discordSupportModerators, serverSupportModerators);

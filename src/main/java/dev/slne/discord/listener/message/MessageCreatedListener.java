@@ -30,6 +30,10 @@ public class MessageCreatedListener extends ListenerAdapter {
             return;
         }
 
+        if (event.getMessage().isWebhookMessage()) {
+            return;
+        }
+
         Ticket ticket = ticketOptional.get();
         TicketMessage ticketMessage = new TicketMessage(ticket, message);
 

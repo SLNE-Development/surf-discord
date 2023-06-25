@@ -109,9 +109,14 @@ public class TicketMember {
         }
         String ticketId = ticketIdOptional.get();
 
+        if (id.isEmpty()) {
+            return DataApi.getDataInstance().supplyAsync(Optional::empty);
+        }
+        long idGet = this.id.get();
+
         return DataApi.getDataInstance().supplyAsync(() -> {
-            String url = String.format(API.TICKET_MEMBER, ticketId, memberId);
-            WebRequest request = WebRequest.builder().parameters(toDeleteParameters()).url(url).build();
+            String url = String.format(API.TICKET_MEMBER, ticketId, idGet + "");
+            WebRequest request = WebRequest.builder().json(true).parameters(toDeleteParameters()).url(url).build();
             WebResponse response = request.executeDelete().join();
 
             if (response.getStatusCode() == 200) {
@@ -130,13 +135,29 @@ public class TicketMember {
     public Map<String, String> toParameters() {
         Map<String, String> parameters = new HashMap<>();
 
-        parameters.put("member_id", memberId);
-        parameters.put("member_name", memberName);
-        parameters.put("member_avatar_url", memberAvatarUrl);
+        if (memberId != null) {
+            parameters.put("member_id", memberId);
+        }
 
-        parameters.put("added_by_id", addedById);
-        parameters.put("added_by_name", addedByName);
-        parameters.put("added_by_avatar_url", addedByAvatarUrl);
+        if (memberName != null) {
+            parameters.put("member_name", memberName);
+        }
+
+        if (memberAvatarUrl != null) {
+            parameters.put("member_avatar_url", memberAvatarUrl);
+        }
+
+        if (addedById != null) {
+            parameters.put("added_by_id", addedById);
+        }
+
+        if (addedByName != null) {
+            parameters.put("added_by_name", addedByName);
+        }
+
+        if (addedByAvatarUrl != null) {
+            parameters.put("added_by_avatar_url", addedByAvatarUrl);
+        }
 
         return parameters;
     }
@@ -149,9 +170,17 @@ public class TicketMember {
     public Map<String, String> toDeleteParameters() {
         Map<String, String> parameters = new HashMap<>();
 
-        parameters.put("removed_by_id", removedById);
-        parameters.put("removed_by_name", removedByName);
-        parameters.put("removed_by_avatar_url", removedByAvatarUrl);
+        if (removedById != null) {
+            parameters.put("removed_by_id", removedById);
+        }
+
+        if (removedByName != null) {
+            parameters.put("removed_by_name", removedByName);
+        }
+
+        if (removedByAvatarUrl != null) {
+            parameters.put("removed_by_avatar_url", removedByAvatarUrl);
+        }
 
         return parameters;
     }
@@ -193,14 +222,16 @@ public class TicketMember {
             JsonElement memberIdElement = jsonObject.get("member_id");
             if (!memberIdElement.isJsonNull()) {
                 memberId = memberIdElement.getAsString();
-                member = Optional.ofNullable(DiscordBot.getInstance().getJda().getUserById(memberId + ""));
+                member = Optional
+                        .ofNullable(DiscordBot.getInstance().getJda().retrieveUserById(memberId + "").complete());
             }
         }
 
         if (jsonObject.has("added_by_id") && jsonObject.get("added_by_id") != null
                 && !jsonObject.get("added_by_id").isJsonNull()) {
             addedById = jsonObject.get("added_by_id").getAsString();
-            addedBy = Optional.ofNullable(DiscordBot.getInstance().getJda().getUserById(addedById + ""));
+            addedBy = Optional
+                    .ofNullable(DiscordBot.getInstance().getJda().retrieveUserById(addedById + "").complete());
         }
 
         if (jsonObject.has("member_name") && jsonObject.get("member_name") != null
@@ -228,7 +259,8 @@ public class TicketMember {
             removedById = jsonObject.get("removed_by_id").getAsString();
 
             if (removedById != null) {
-                removedBy = Optional.ofNullable(DiscordBot.getInstance().getJda().getUserById(removedById + ""));
+                removedBy = Optional
+                        .ofNullable(DiscordBot.getInstance().getJda().retrieveUserById(removedById + "").complete());
             }
         }
 
@@ -392,6 +424,41 @@ public class TicketMember {
      */
     public String getRemovedByName() {
         return removedByName;
+    }
+
+    /**
+     * @param removedBy the removedBy to set
+     */
+    public void setRemovedBy(Optional<User> removedBy) {
+        this.removedBy = removedBy;
+
+        if (removedBy.isPresent()) {
+            User removedByUser = removedBy.get();
+            setRemovedByAvatarUrl(removedByUser.getAvatarUrl());
+            setRemovedById(removedByUser.getId());
+            setRemovedByName(removedByUser.getName());
+        }
+    }
+
+    /**
+     * @param removedByAvatarUrl the removedByAvatarUrl to set
+     */
+    public void setRemovedByAvatarUrl(String removedByAvatarUrl) {
+        this.removedByAvatarUrl = removedByAvatarUrl;
+    }
+
+    /**
+     * @param removedById the removedById to set
+     */
+    public void setRemovedById(String removedById) {
+        this.removedById = removedById;
+    }
+
+    /**
+     * @param removedByName the removedByName to set
+     */
+    public void setRemovedByName(String removedByName) {
+        this.removedByName = removedByName;
     }
 
 }

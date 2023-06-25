@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import dev.slne.data.bukkit.pusher.event.BukkitPusherPacketEvent;
 import dev.slne.data.core.pusher.event.PusherPacketEvent;
 import dev.slne.data.core.pusher.packet.PusherPacket;
+import dev.slne.discord.datasource.Times;
 import dev.slne.discord.listener.event.Event;
 
 public class DiscordPusherEvent<T extends PusherPacket> extends Event implements PusherPacketEvent<T> {
@@ -52,7 +53,7 @@ public class DiscordPusherEvent<T extends PusherPacket> extends Event implements
         this.channelName = channelName;
         this.pusherEventName = pusherEventName;
         this.userId = userId;
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = Times.now();
     }
 
     @Override

@@ -24,6 +24,10 @@ public class MessageUpdatedListener extends ListenerAdapter {
             return;
         }
 
+        if (event.getMessage().isWebhookMessage()) {
+            return;
+        }
+
         Optional<Ticket> ticketOptional = DiscordBot.getInstance().getTicketManager().getTicket(channel.getId());
 
         if (ticketOptional.isEmpty()) {

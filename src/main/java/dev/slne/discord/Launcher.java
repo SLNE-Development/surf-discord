@@ -19,8 +19,8 @@ public class Launcher {
      */
     @SuppressWarnings("java:S3010")
     public Launcher() {
-        discordBot = new DiscordBot();
         dataSource = new DiscordDataSource();
+        discordBot = new DiscordBot();
 
         random = new Random();
     }

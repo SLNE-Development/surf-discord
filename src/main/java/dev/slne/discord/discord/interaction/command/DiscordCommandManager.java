@@ -3,8 +3,14 @@ package dev.slne.discord.discord.interaction.command;
 import java.util.ArrayList;
 import java.util.List;
 
-import dev.slne.discord.ticket.commands.TicketCloseCommand;
-import dev.slne.discord.ticket.commands.TicketCommand;
+import dev.slne.discord.discord.interaction.command.commands.ticket.TicketButtonCommand;
+import dev.slne.discord.discord.interaction.command.commands.ticket.TicketCloseCommand;
+import dev.slne.discord.discord.interaction.command.commands.ticket.members.TicketMemberAddCommand;
+import dev.slne.discord.discord.interaction.command.commands.ticket.members.TicketMemberRemoveCommand;
+import dev.slne.discord.discord.interaction.command.commands.ticket.utils.TwitchConnectCommand;
+import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistCommand;
+import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistQueryCommand;
+import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistedCommand;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.requests.restaction.CommandCreateAction;
 
@@ -18,8 +24,16 @@ public class DiscordCommandManager {
     public DiscordCommandManager() {
         this.commands = new ArrayList<>();
 
-        this.commands.add(new TicketCommand());
+        this.commands.add(new TicketButtonCommand());
         this.commands.add(new TicketCloseCommand());
+        this.commands.add(new TicketMemberAddCommand());
+        this.commands.add(new TicketMemberRemoveCommand());
+
+        this.commands.add(new TwitchConnectCommand());
+
+        this.commands.add(new WhitelistCommand());
+        this.commands.add(new WhitelistedCommand());
+        this.commands.add(new WhitelistQueryCommand());
     }
 
     /**

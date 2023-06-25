@@ -14,6 +14,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 
+import club.minnced.discord.webhook.external.JDAWebhookClient;
+import club.minnced.discord.webhook.send.WebhookMessageBuilder;
 import dev.slne.data.core.database.future.SurfFutureResult;
 import dev.slne.data.core.gson.GsonConverter;
 import dev.slne.data.core.instance.DataApi;
@@ -22,12 +24,14 @@ import dev.slne.data.core.web.WebResponse;
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.Launcher;
 import dev.slne.discord.datasource.API;
+import dev.slne.discord.datasource.Times;
 import dev.slne.discord.datasource.database.future.DiscordFutureResult;
 import dev.slne.discord.ticket.Ticket;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Message.Attachment;
 import net.dv8tion.jda.api.entities.MessageReference;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.Webhook;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
@@ -36,6 +40,7 @@ public class TicketMessage {
     private Optional<Long> id;
     private Ticket ticket;
     private Optional<Message> message;
+    private Optional<String> content;
     private String messageId;
 
     private String authorId;
@@ -61,6 +66,7 @@ public class TicketMessage {
     public TicketMessage(TicketMessage clone) {
         this.id = clone.id;
         this.ticket = clone.ticket;
+        this.content = clone.content;
         this.message = clone.message;
         this.messageId = clone.messageId;
 
@@ -88,6 +94,7 @@ public class TicketMessage {
     public TicketMessage(Ticket ticket, Message message) {
         this.id = Optional.empty();
         this.ticket = ticket;
+        this.content = Optional.of(message.getContentDisplay());
         this.message = Optional.of(message);
         this.messageId = message.getId();
 
@@ -149,13 +156,15 @@ public class TicketMessage {
      * @param attachments         the message attachements
      */
     @SuppressWarnings("java:S107")
-    private TicketMessage(Optional<Long> id, Ticket ticket, Optional<Message> message, String messageId,
+    private TicketMessage(Optional<Long> id, Ticket ticket, Optional<String> content, Optional<Message> message,
+            String messageId,
             String authorId, String authorName, String authorAvatarUrl,
             User author, LocalDateTime messageCreatedAt, Optional<LocalDateTime> messageEditedAt,
             Optional<LocalDateTime> messageDeletedAt, Optional<String> referencesMessageId,
             Optional<Message> referencesMessage, List<TicketMessageAttachement> attachments, boolean botMessage) {
         this.id = id;
         this.ticket = ticket;
+        this.content = content;
         this.message = message;
         this.messageId = messageId;
         this.authorId = authorId;
@@ -185,7 +194,7 @@ public class TicketMessage {
             }
 
             TicketMessage newMessage = new TicketMessage(this);
-            newMessage.messageDeletedAt = Optional.of(LocalDateTime.now());
+            newMessage.messageDeletedAt = Optional.of(Times.now());
 
             return newMessage.create().join();
         });
@@ -200,21 +209,41 @@ public class TicketMessage {
     public Map<String, String> toParameters() {
         Map<String, String> parameters = new HashMap<>();
 
-        parameters.put("message_id", messageId);
-        parameters.put("author_id", authorId);
-        parameters.put("author_name", authorName);
-        parameters.put("author_avatar_url", authorAvatarUrl);
-        parameters.put("bot_message", String.valueOf(botMessage ? 1 : 0));
+        if (messageId != null) {
+            parameters.put("message_id", messageId);
+        }
+
+        if (authorId != null) {
+            parameters.put("author_id", authorId);
+        }
+
+        if (authorName != null) {
+            parameters.put("author_name", authorName);
+        }
+
+        if (authorAvatarUrl != null) {
+            parameters.put("author_avatar_url", authorAvatarUrl);
+        }
 
         if (referencesMessageId.isPresent()) {
             parameters.put("references_message_id", referencesMessageId.get());
         }
 
-        if (message.isPresent()) {
-            parameters.put("content", message.get().getContentDisplay());
+        if (content.isPresent() || message.isPresent()) {
+            String contentTemp = null;
+
+            if (this.content.isPresent()) {
+                contentTemp = this.content.get();
+            } else if (message.isPresent()) {
+                contentTemp = message.get().getContentDisplay();
+            }
+
+            parameters.put("content", contentTemp);
         }
 
-        parameters.put("message_created_at", messageCreatedAt.toString());
+        if (messageCreatedAt != null) {
+            parameters.put("message_created_at", messageCreatedAt.toString());
+        }
 
         if (messageEditedAt.isPresent()) {
             parameters.put("message_edited_at", messageEditedAt.get().toString());
@@ -273,13 +302,19 @@ public class TicketMessage {
             }
         }
 
+        Optional<String> content = Optional.empty();
+        if (jsonObject.has("content") && jsonObject.get("content") != null
+                && !(jsonObject.get("content") instanceof JsonNull)) {
+            content = Optional.of(jsonObject.get("content").getAsString() + "");
+        }
+
         String authorId = null;
         String authorName = null;
         String authorAvatarUrl = null;
         User author = null;
         if (jsonObject.has("author_id")) {
             authorId = jsonObject.get("author_id").getAsString() + "";
-            author = DiscordBot.getInstance().getJda().getUserById(authorId);
+            author = DiscordBot.getInstance().getJda().retrieveUserById(authorId).complete();
         }
 
         if (jsonObject.has("author_name") && jsonObject.get("author_name") != null && !(jsonObject
@@ -331,7 +366,7 @@ public class TicketMessage {
         }
 
         List<TicketMessageAttachement> attachments = new ArrayList<>();
-        TicketMessage ticketMessage = new TicketMessage(id, ticket, message, messageId, authorId, authorName,
+        TicketMessage ticketMessage = new TicketMessage(id, ticket, content, message, messageId, authorId, authorName,
                 authorAvatarUrl, author,
                 messageCreatedAt, messageEditedAt,
                 messageDeletedAt, referencesMessageId, referencesMessage, attachments, botMessage);
@@ -359,6 +394,40 @@ public class TicketMessage {
         ticketMessage.attachments = attachments;
 
         return ticketMessage;
+    }
+
+    /**
+     * Prints the ticket message
+     */
+    public void printMessage() {
+        if (getTicket().getChannel().isEmpty() || content.isEmpty()) {
+            return;
+        }
+
+        Optional<Webhook> webhookOptional = getTicket().getWebhook();
+        if (webhookOptional.isEmpty()) {
+            return;
+        }
+
+        if (content.isEmpty()) {
+            return;
+        }
+
+        Webhook webhook = webhookOptional.get();
+
+        String avatarUrl = authorAvatarUrl;
+        if (avatarUrl == null && author != null) {
+            avatarUrl = author.getAvatarUrl();
+        }
+
+        try (JDAWebhookClient client = JDAWebhookClient.from(webhook)) {
+            WebhookMessageBuilder builder = new WebhookMessageBuilder();
+            builder.setUsername(authorName);
+            builder.setAvatarUrl(avatarUrl);
+            builder.setContent(content.get());
+
+            client.send(builder.build()).join();
+        }
     }
 
     /**

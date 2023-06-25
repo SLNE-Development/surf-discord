@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.message.TicketMessage;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.channel.unions.GuildMessageChannelUnion;
@@ -62,6 +63,16 @@ public class MessageDeletedListener extends ListenerAdapter {
             }
 
             TicketMessage ticketMessage = ticketMessageOptional.get();
+            Optional<Message> messageOptional = ticketMessage.getMessage();
+
+            if (messageOptional.isPresent()) {
+                Message message = messageOptional.get();
+
+                if (message.isWebhookMessage()) {
+                    return;
+                }
+            }
+
             ticketMessage.delete().whenComplete(deletedTicketMessageCallback -> {
                 if (deletedTicketMessageCallback.isEmpty()) {
                     return;
