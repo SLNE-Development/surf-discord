@@ -27,12 +27,17 @@ public class TicketManager {
     public void fetchActiveTickets() {
         fetched = false;
 
+        long start = System.currentTimeMillis();
+
         TicketRepository.getActiveTickets().whenComplete(ticketListOptional -> {
             if (ticketListOptional.isPresent()) {
                 this.tickets = ticketListOptional.get();
             }
 
-            Launcher.getLogger().logInfo("Fetched " + tickets.size() + " tickets from the database.");
+            long end = System.currentTimeMillis();
+            long time = end - start;
+
+            Launcher.getLogger().logInfo("Fetched " + tickets.size() + " tickets in " + time + "ms.");
 
             fetched = true;
             popQueue();
