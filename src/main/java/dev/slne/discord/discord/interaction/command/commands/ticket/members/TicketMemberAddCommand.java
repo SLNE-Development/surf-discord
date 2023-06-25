@@ -112,7 +112,7 @@ public class TicketMemberAddCommand extends DiscordCommand {
                 "Du wurdest zu einem Ticket hinzugefügt. Bitte sieh dir den Verlauf des Tickets an und warte auf eine Nachricht eines Teammitglieds.");
         builder.setTimestamp(Times.now());
         builder.setColor(Color.WHITE);
-        builder.setFooter("Hinzugefügt von " + adder.getAsMention(), adder.getAvatarUrl());
+        builder.setFooter("Hinzugefügt von " + adder.getName(), adder.getAvatarUrl());
 
         return builder.build();
     }
