@@ -1,6 +1,9 @@
 package dev.slne.discord.ticket;
 
+import java.awt.Color;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,8 +21,10 @@ import dev.slne.discord.ticket.member.TicketMember;
 import dev.slne.discord.ticket.message.TicketMessage;
 import dev.slne.discord.ticket.result.TicketCloseResult;
 import dev.slne.discord.ticket.result.TicketCreateResult;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.Webhook;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -173,8 +178,18 @@ public class Ticket {
         this.webhookUrl = webhookUrl;
     }
 
+    /**
+     * After the ticket is opened
+     */
     public void afterOpen() {
         // Implemented by subclasses
+    }
+
+    /**
+     * After the ticket is closed
+     */
+    public void afterClose() {
+        // Mainly mplemented by subclasses
     }
 
     /**
@@ -263,6 +278,150 @@ public class Ticket {
         });
 
         return futureResult;
+    }
+
+    /**
+     * Get the embed for the ticket closed message
+     *
+     * @return The embed for the ticket closed message
+     */
+    public SurfFutureResult<Optional<MessageEmbed>> getTicketClosedEmbed() {
+        CompletableFuture<Optional<MessageEmbed>> future = new CompletableFuture<>();
+        DiscordFutureResult<Optional<MessageEmbed>> futureResult = new DiscordFutureResult<>(future);
+
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+
+        TicketChannel.getTicketName(this).whenComplete(ticketNameOptional -> {
+            if (ticketNameOptional.isEmpty()) {
+                future.complete(Optional.empty());
+                return;
+            }
+
+            String ticketName = ticketNameOptional.get();
+
+            RestAction<User> authorRest = getTicketAuthor();
+            Optional<RestAction<User>> closedByRestOptional = getClosedBy();
+
+            List<CompletableFuture<?>> futures = new ArrayList<>();
+            futures.add(authorRest.submit());
+
+            if (closedByRestOptional.isPresent()) {
+                RestAction<User> closedByRest = closedByRestOptional.get();
+                futures.add(closedByRest.submit());
+            }
+
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[futures.size()])).thenAcceptAsync(v -> {
+                User author = authorRest.complete();
+                Optional<User> closedByOptional = closedByRestOptional.map(RestAction::complete);
+
+                embedBuilder.setTitle("Ticket \"" + ticketName + "\" geschlossen");
+
+                String reason = getClosedReason().orElse("Kein Grund angegeben");
+                String description = "Dein Ticket wurde ";
+                if (closedByOptional.isPresent()) {
+                    User closedUser = closedByOptional.get();
+                    description += "von " + closedUser.getAsMention() + " ";
+                }
+                description += "geschlossen.\n\nGrund:\n" + reason;
+                embedBuilder.setDescription(description);
+
+                embedBuilder.setColor(Color.decode("#ff6600"));
+
+                Optional<LocalDateTime> openedAtOptional = Optional.of(Times.now());
+                Optional<LocalDateTime> closedAtOptional = getClosedAt();
+
+                LocalDateTime openedAtDateTime = openedAtOptional.get();
+                LocalDateTime closedAtDateTime = closedAtOptional.orElse(Times.now());
+
+                long[] tempDifferences = toTempUnits(openedAtDateTime, closedAtDateTime);
+                long days = tempDifferences[2];
+                long hours = tempDifferences[3];
+                long minutes = tempDifferences[4];
+                long seconds = tempDifferences[5];
+
+                String differenceString = String.format("%d Tage, %d Stunden, %d Minuten, %d Sekunden", days, hours,
+                        minutes, seconds);
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+
+                embedBuilder.addField("Ticket-ID", getTicketId().orElse("") + "", true);
+                embedBuilder.addField("Ticket-Type", getTicketTypeString() + "", true);
+                embedBuilder.addField("Ticket-Author", author.getAsMention(), true);
+                embedBuilder.addField("Ticket-Eröffnungszeit", formatter.format(openedAtDateTime) + "", true);
+                embedBuilder.addField("Ticket-Schließzeit", formatter.format(closedAtDateTime) + "", true);
+                embedBuilder.addField("Ticket-Dauer", differenceString + "", true);
+
+                future.complete(Optional.of(embedBuilder.build()));
+            });
+        }, future::completeExceptionally);
+
+        return futureResult;
+    }
+
+    /**
+     * Send the ticket closed messages
+     */
+    @SuppressWarnings("java:S3776")
+    public void sendTicketClosedMessages() {
+        getTicketClosedEmbed().whenComplete(embedOptional -> {
+            if (embedOptional.isEmpty()) {
+                return;
+            }
+
+            MessageEmbed embed = embedOptional.get();
+
+            if (embed == null) {
+                return;
+            }
+
+            for (TicketMember member : members) {
+                if (member.isRemoved()) {
+                    continue;
+                }
+
+                member.getMember().ifPresent(userRest -> userRest.queue(user -> {
+                    if (user == null) {
+                        return;
+                    }
+
+                    if (user.equals(DiscordBot.getInstance().getJda().getSelfUser())) {
+                        return;
+                    }
+
+                    user.openPrivateChannel().queue(privateChannel -> privateChannel.sendMessageEmbeds(embed).queue());
+                }));
+            }
+        });
+    }
+
+    /**
+     * Get the time difference between two dates
+     *
+     * @param start The start date
+     * @param end   The end date
+     * @return The time difference between two dates
+     */
+    private long[] toTempUnits(LocalDateTime start, LocalDateTime end) {
+        LocalDateTime tempDateTime = LocalDateTime.from(start);
+
+        long years = tempDateTime.until(end, ChronoUnit.YEARS);
+        tempDateTime = tempDateTime.plusYears(years);
+
+        long months = tempDateTime.until(end, ChronoUnit.MONTHS);
+        tempDateTime = tempDateTime.plusMonths(months);
+
+        long days = tempDateTime.until(end, ChronoUnit.DAYS);
+        tempDateTime = tempDateTime.plusDays(days);
+
+        long hours = tempDateTime.until(end, ChronoUnit.HOURS);
+        tempDateTime = tempDateTime.plusHours(hours);
+
+        long minutes = tempDateTime.until(end, ChronoUnit.MINUTES);
+        tempDateTime = tempDateTime.plusMinutes(minutes);
+
+        long seconds = tempDateTime.until(end, ChronoUnit.SECONDS);
+
+        return new long[] { years, months, days, hours, minutes, seconds };
     }
 
     /**
@@ -442,6 +601,10 @@ public class Ticket {
 
                 TicketChannel.deleteTicketChannel(this).whenComplete(v -> {
                     future.complete(TicketCloseResult.SUCCESS);
+
+                    afterClose();
+                    sendTicketClosedMessages();
+
                     DiscordBot.getInstance().getTicketManager().removeTicket(this);
                 }, throwable -> {
                     future.complete(TicketCloseResult.ERROR);

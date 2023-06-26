@@ -135,34 +135,91 @@ public class TicketChannel {
      */
     @SuppressWarnings({ "java:S3776", "java:S135", "java:S1192" })
     public static SurfFutureResult<Optional<TicketCreateResult>> createTicketChannel(Ticket ticket) {
+        CompletableFuture<Optional<TicketCreateResult>> future = new CompletableFuture<>();
+        DiscordFutureResult<Optional<TicketCreateResult>> futureResult = new DiscordFutureResult<>(future);
+
         Optional<Guild> guildOptional = ticket.getGuild();
-        TicketType ticketType = ticket.getTicketType();
-        User ticketAuthor = ticket.getTicketAuthor().complete();
 
         if (guildOptional.isEmpty()) {
-            return new DiscordFutureResult<>(
-                    CompletableFuture.completedFuture(Optional.of(TicketCreateResult.GUILD_NOT_FOUND)));
+            future.complete(Optional.of(TicketCreateResult.GUILD_NOT_FOUND));
+            return futureResult;
         }
 
         Guild guild = guildOptional.get();
 
-        return DataApi.getDataInstance().supplyAsync(() -> {
+        DataApi.getDataInstance().runAsync(() -> {
             DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
 
             if (discordGuild == null) {
-                return Optional.of(TicketCreateResult.GUILD_NOT_FOUND);
+                future.complete(Optional.of(TicketCreateResult.GUILD_NOT_FOUND));
+                return;
             }
 
             String categoryId = discordGuild.getCategoryId();
             if (categoryId == null) {
-                return Optional.of(TicketCreateResult.CATEGORY_NOT_FOUND);
+                future.complete(Optional.of(TicketCreateResult.CATEGORY_NOT_FOUND));
+                return;
             }
 
             Category channelCategory = guild.getCategoryById(categoryId);
 
             if (channelCategory == null) {
-                return Optional.of(TicketCreateResult.CATEGORY_NOT_FOUND);
+                future.complete(Optional.of(TicketCreateResult.CATEGORY_NOT_FOUND));
+                return;
             }
+
+            getTicketName(ticket).whenComplete(ticketNameOptional -> {
+                if (ticketNameOptional.isEmpty()) {
+                    future.complete(Optional.of(TicketCreateResult.ERROR));
+                    return;
+                }
+
+                String ticketName = ticketNameOptional.get();
+
+                if (ticketName == null) {
+                    future.complete(Optional.of(TicketCreateResult.ERROR));
+                    return;
+                }
+
+                boolean ticketExists = checkTicketExists(ticketName, channelCategory);
+
+                if (ticketExists) {
+                    future.complete(Optional.of(TicketCreateResult.ALREADY_EXISTS));
+                    return;
+                }
+
+                TextChannel ticketChannel = channelCategory.createTextChannel(ticketName).complete();
+
+                ticket.setChannel(Optional.of(ticketChannel));
+                ticket.setChannelId(Optional.of(ticketChannel.getId()));
+
+                createWebhook(ticket).join();
+                TicketRepository.updateTicket(ticket).join();
+
+                future.complete(Optional.of(TicketCreateResult.SUCCESS));
+            }, future::completeExceptionally);
+        });
+
+        return futureResult;
+    }
+
+    /**
+     * Get the name for the ticket channel
+     *
+     * @param ticket The ticket to get the name for
+     * @return The name for the ticket channel
+     */
+    public static SurfFutureResult<Optional<String>> getTicketName(Ticket ticket) {
+        CompletableFuture<Optional<String>> future = new CompletableFuture<>();
+        DiscordFutureResult<Optional<String>> futureResult = new DiscordFutureResult<>(future);
+
+        TicketType ticketType = ticket.getTicketType();
+        ticket.getTicketAuthor().queue(ticketAuthor -> {
+            if (ticketType == null || ticketAuthor == null) {
+                future.complete(Optional.empty());
+                return;
+            }
+
             String ticketTypeName = ticketType.name().toLowerCase();
             String authorName = null;
 
@@ -179,26 +236,10 @@ public class TicketChannel {
                 ticketName = ticketName.substring(0, maxLength);
             }
 
-            boolean ticketExists = checkTicketExists(ticketName, channelCategory);
-
-            if (ticketExists) {
-                return Optional.of(TicketCreateResult.ALREADY_EXISTS);
-            }
-
-            if (ticketName == null) {
-                return Optional.of(TicketCreateResult.ERROR);
-            }
-
-            TextChannel ticketChannel = channelCategory.createTextChannel(ticketName).complete();
-
-            ticket.setChannel(Optional.of(ticketChannel));
-            ticket.setChannelId(Optional.of(ticketChannel.getId()));
-
-            createWebhook(ticket).join();
-            TicketRepository.updateTicket(ticket).join();
-
-            return Optional.of(TicketCreateResult.SUCCESS);
+            future.complete(Optional.of(ticketName));
         });
+
+        return futureResult;
     }
 
     /**
