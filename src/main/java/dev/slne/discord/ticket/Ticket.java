@@ -602,8 +602,8 @@ public class Ticket {
                 TicketChannel.deleteTicketChannel(this).whenComplete(v -> {
                     future.complete(TicketCloseResult.SUCCESS);
 
-                    afterClose();
                     sendTicketClosedMessages();
+                    afterClose();
 
                     DiscordBot.getInstance().getTicketManager().removeTicket(this);
                 }, throwable -> {
