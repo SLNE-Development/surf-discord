@@ -111,6 +111,9 @@ public class DiscordGuild {
             }
 
             future.complete(users);
+        }).exceptionally(throwable -> {
+            throwable.printStackTrace();
+            return null;
         });
 
         return futureResult;
