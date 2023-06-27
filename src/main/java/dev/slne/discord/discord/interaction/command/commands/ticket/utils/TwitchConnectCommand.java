@@ -8,6 +8,7 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 
 import dev.slne.discord.datasource.Times;
+import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketRepository;
@@ -44,6 +45,11 @@ public class TwitchConnectCommand extends DiscordCommand {
                 true, false));
 
         return options;
+    }
+
+    @Override
+    public @Nonnull DiscordPermission getPermission() {
+        return DiscordPermission.USE_COMMAND_TWITCH_CONNECT;
     }
 
     @Override

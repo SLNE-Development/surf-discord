@@ -4,7 +4,13 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import dev.slne.discord.discord.guild.DiscordGuild;
+import dev.slne.discord.discord.guild.DiscordGuilds;
+import dev.slne.discord.discord.guild.permission.DiscordPermission;
+import dev.slne.discord.discord.guild.role.DiscordRole;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -52,6 +58,47 @@ public abstract class DiscordCommand {
      * @return The options of the command.
      */
     public abstract @Nonnull List<OptionData> getOptions();
+
+    /**
+     * Returns the permission needed to run this command
+     *
+     * @return the permission
+     */
+    public abstract @Nonnull DiscordPermission getPermission();
+
+    /**
+     * Executes the command internally
+     *
+     * @param interaction the interaction event
+     */
+    public void internalExecute(SlashCommandInteractionEvent interaction) {
+        User user = interaction.getUser();
+        Guild guild = interaction.getGuild();
+
+        if (guild == null) {
+            interaction.reply("Es ist ein Fehler aufgetreten (dhwfm4nD)").setEphemeral(true).queue();
+            return;
+        }
+
+        DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
+        List<DiscordRole> userRoles = discordGuild.getGuildRoles(user.getId());
+
+        boolean hasPermission = false;
+
+        for (DiscordRole userRole : userRoles) {
+            if (userRole.hasRolePermission(getPermission())) {
+                hasPermission = true;
+                break;
+            }
+        }
+
+        if (!hasPermission) {
+            interaction.reply("Du besitzt keine Berechtigung diesen Befehl zu verwenden.").setEphemeral(true).queue();
+            return;
+        }
+
+        execute(interaction);
+    }
 
     /**
      * Executes the command.

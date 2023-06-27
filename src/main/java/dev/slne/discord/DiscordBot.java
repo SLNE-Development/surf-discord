@@ -11,6 +11,7 @@ import dev.slne.data.core.pusher.packet.PusherPacket;
 import dev.slne.discord.datasource.pusher.packets.TicketClosePacket;
 import dev.slne.discord.datasource.pusher.packets.TicketOpenPacket;
 import dev.slne.discord.datasource.pusher.packets.TicketReOpenPacket;
+import dev.slne.discord.discord.guild.role.DiscordRoleManager;
 import dev.slne.discord.discord.interaction.button.DiscordButtonManager;
 import dev.slne.discord.discord.interaction.command.DiscordCommandManager;
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager;
@@ -35,6 +36,7 @@ public class DiscordBot {
     private BotConnectionFile botConnectionFile;
     private JDA jda;
 
+    private DiscordRoleManager roleManager;
     private ListenerManager listenerManager;
     private DiscordModalManager modalManager;
     private DiscordCommandManager commandManager;
@@ -78,6 +80,8 @@ public class DiscordBot {
         }
 
         Launcher.getLogger().logInfo("Bot is ready!");
+
+        roleManager = new DiscordRoleManager();
 
         uuidCache = new UUIDCache();
         commandManager = new DiscordCommandManager();
@@ -213,5 +217,12 @@ public class DiscordBot {
      */
     public UUIDCache getUuidCache() {
         return uuidCache;
+    }
+
+    /**
+     * @return the roleManager
+     */
+    public DiscordRoleManager getRoleManager() {
+        return roleManager;
     }
 }

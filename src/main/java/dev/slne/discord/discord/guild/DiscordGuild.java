@@ -2,10 +2,16 @@ package dev.slne.discord.discord.guild;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import javax.annotation.Nonnull;
 
+import dev.slne.data.core.database.future.SurfFutureResult;
 import dev.slne.discord.DiscordBot;
+import dev.slne.discord.datasource.database.future.DiscordFutureResult;
+import dev.slne.discord.discord.guild.reactionrole.ReactionRoleConfig;
+import dev.slne.discord.discord.guild.role.DiscordRole;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
@@ -24,6 +30,8 @@ public class DiscordGuild {
     private List<String> discordSupportModerators;
     private List<String> serverSupportModerators;
 
+    private ReactionRoleConfig rrConfig;
+
     /**
      * Construct a new DiscordGuild.
      *
@@ -33,10 +41,13 @@ public class DiscordGuild {
      * @param serverSupportAdmins      The server support admins.
      * @param discordSupportModerators The discord support moderators.
      * @param serverSupportModerators  The server support moderators.
+     * @param whitelistedRoleId        The whitelisted role id.
+     * @param rrConfig                 The reaction role config.
      */
+    @SuppressWarnings("java:S107")
     public DiscordGuild(@Nonnull String guildId, @Nonnull String categoryId, List<String> discordSupportAdmins,
             List<String> serverSupportAdmins, List<String> discordSupportModerators,
-            List<String> serverSupportModerators, @Nonnull String whitelistedRoleId) {
+            List<String> serverSupportModerators, @Nonnull String whitelistedRoleId, ReactionRoleConfig rrConfig) {
         this.guildId = guildId;
         this.categoryId = categoryId;
 
@@ -47,6 +58,8 @@ public class DiscordGuild {
 
         this.whitelistedRoleId = whitelistedRoleId;
         this.whitelistedRole = DiscordBot.getInstance().getJda().getRoleById(whitelistedRoleId);
+
+        this.rrConfig = rrConfig;
     }
 
     /**
@@ -54,7 +67,10 @@ public class DiscordGuild {
      *
      * @return The users.
      */
-    public List<User> getAllUsers() {
+    public SurfFutureResult<List<User>> getAllUsers() {
+        CompletableFuture<List<User>> future = new CompletableFuture<>();
+        DiscordFutureResult<List<User>> futureResult = new DiscordFutureResult<>(future);
+
         List<String> userIds = new ArrayList<>();
         List<User> users = new ArrayList<>();
 
@@ -66,23 +82,31 @@ public class DiscordGuild {
         Guild guild = DiscordBot.getInstance().getJda().getGuildById(guildId);
 
         if (guild == null) {
-            return users;
+            future.complete(users);
+            return futureResult;
         }
 
-        userIds
-                .forEach(userId -> {
-                    if (userId == null) {
-                        return;
-                    }
+        List<CompletableFuture<Member>> memberFutures = new ArrayList<>();
 
-                    Member member = guild.retrieveMemberById(userId).complete();
+        userIds.forEach(userId -> {
+            if (userId == null) {
+                return;
+            }
 
-                    if (member != null) {
-                        addIfNotExists(users, member.getUser());
-                    }
-                });
+            memberFutures.add(guild.retrieveMemberById(userId).submit());
+        });
 
-        return users;
+        CompletableFuture.allOf(memberFutures.toArray(new CompletableFuture<?>[memberFutures.size()])).thenAccept(v -> {
+            List<Member> members = memberFutures.stream().map(CompletableFuture::join).toList();
+
+            for (Member member : members) {
+                addIfNotExists(users, member.getUser());
+            }
+
+            future.complete(users);
+        });
+
+        return futureResult;
     }
 
     /**
@@ -105,23 +129,32 @@ public class DiscordGuild {
      * @param userId The user id.
      * @return The guild roles.
      */
-    public List<GuildRole> getGuildRoles(String userId) {
-        List<GuildRole> roles = new ArrayList<>();
+    public List<DiscordRole> getGuildRoles(String userId) {
+        List<DiscordRole> roles = new ArrayList<>();
 
-        if (discordSupportAdmins.contains(userId)) {
-            roles.add(GuildRole.DISCORD_ADMINISTRATOR);
+        Optional<DiscordRole> discordAdminRoleOptional = DiscordBot.getInstance().getRoleManager()
+                .getRoleByName(DiscordRole.DISCORD_ADMIN_ROLE);
+        Optional<DiscordRole> discordModRoleOptional = DiscordBot.getInstance().getRoleManager()
+                .getRoleByName(DiscordRole.DISCORD_MOD_ROLE);
+        Optional<DiscordRole> serverAdminRoleOptional = DiscordBot.getInstance().getRoleManager()
+                .getRoleByName(DiscordRole.SERVER_ADMIN_ROLE);
+        Optional<DiscordRole> serverModRoleOptional = DiscordBot.getInstance().getRoleManager()
+                .getRoleByName(DiscordRole.SERVER_MOD_ROLE);
+
+        if (discordSupportAdmins.contains(userId) && discordAdminRoleOptional.isPresent()) {
+            roles.add(discordAdminRoleOptional.get());
         }
 
-        if (discordSupportModerators.contains(userId)) {
-            roles.add(GuildRole.DISCORD_MODERATOR);
+        if (discordSupportModerators.contains(userId) && discordModRoleOptional.isPresent()) {
+            roles.add(discordModRoleOptional.get());
         }
 
-        if (serverSupportAdmins.contains(userId)) {
-            roles.add(GuildRole.SERVER_ADMINISTRATOR);
+        if (serverSupportAdmins.contains(userId) && serverAdminRoleOptional.isPresent()) {
+            roles.add(serverAdminRoleOptional.get());
         }
 
-        if (serverSupportModerators.contains(userId)) {
-            roles.add(GuildRole.SERVER_MODERATOR);
+        if (serverSupportModerators.contains(userId) && serverModRoleOptional.isPresent()) {
+            roles.add(serverModRoleOptional.get());
         }
 
         return roles;
@@ -185,6 +218,13 @@ public class DiscordGuild {
      */
     public @Nonnull String getWhitelistedRoleId() {
         return whitelistedRoleId;
+    }
+
+    /**
+     * @return the rrConfig
+     */
+    public ReactionRoleConfig getReactionRoleConfig() {
+        return rrConfig;
     }
 
 }

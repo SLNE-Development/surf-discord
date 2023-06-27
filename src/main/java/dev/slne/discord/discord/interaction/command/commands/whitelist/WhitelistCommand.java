@@ -8,12 +8,17 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 
 import dev.slne.data.core.instance.DataApi;
+import dev.slne.discord.discord.guild.DiscordGuild;
+import dev.slne.discord.discord.guild.DiscordGuilds;
+import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketRepository;
 import dev.slne.discord.whitelist.UUIDResolver;
 import dev.slne.discord.whitelist.UuidMinecraftName;
 import dev.slne.discord.whitelist.Whitelist;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -50,6 +55,11 @@ public class WhitelistCommand extends DiscordCommand {
                 .setRequired(true));
 
         return options;
+    }
+
+    @Override
+    public @Nonnull DiscordPermission getPermission() {
+        return DiscordPermission.USE_COMMAND_WHITELIST;
     }
 
     @Override
@@ -138,6 +148,16 @@ public class WhitelistCommand extends DiscordCommand {
                         }
 
                         Whitelist whitelistCreate = whitelistCreateOptional.get();
+
+                        Guild guild = interaction.getGuild();
+                        if (guild != null) {
+                            DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
+                            Role whitelistedRole = discordGuild.getWhitelistedRole();
+
+                            if (whitelistedRole != null) {
+                                guild.addRoleToMember(user, whitelistedRole);
+                            }
+                        }
 
                         hook.deleteOriginal().queue();
                         channel.sendMessage(user.getAsMention() + " befindet sich nun auf der Whitelist.")

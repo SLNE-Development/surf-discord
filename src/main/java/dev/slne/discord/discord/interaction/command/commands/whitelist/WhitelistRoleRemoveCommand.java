@@ -8,6 +8,7 @@ import javax.annotation.Nonnull;
 
 import dev.slne.discord.discord.guild.DiscordGuild;
 import dev.slne.discord.discord.guild.DiscordGuilds;
+import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
@@ -32,6 +33,11 @@ public class WhitelistRoleRemoveCommand extends DiscordCommand {
     @Override
     public @Nonnull List<OptionData> getOptions() {
         return new ArrayList<>();
+    }
+
+    @Override
+    public @Nonnull DiscordPermission getPermission() {
+        return DiscordPermission.USE_COMMAND_WHITELIST_ROLE;
     }
 
     @Override

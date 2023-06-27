@@ -17,6 +17,7 @@ import dev.slne.discord.datasource.Times;
 import dev.slne.discord.datasource.database.future.DiscordFutureResult;
 import dev.slne.discord.discord.guild.DiscordGuild;
 import dev.slne.discord.discord.guild.DiscordGuilds;
+import dev.slne.discord.discord.guild.role.DiscordRole;
 import dev.slne.discord.ticket.member.TicketMember;
 import dev.slne.discord.ticket.message.TicketMessage;
 import dev.slne.discord.ticket.result.TicketCloseResult;
@@ -65,6 +66,8 @@ public class Ticket {
     private Optional<String> webhookName;
     private Optional<String> webhookUrl;
 
+    private Optional<LocalDateTime> createdAt;
+
     /**
      * Constructor for a ticket
      *
@@ -105,6 +108,8 @@ public class Ticket {
         this.webhookId = Optional.empty();
         this.webhookName = Optional.empty();
         this.webhookUrl = Optional.empty();
+
+        this.createdAt = Optional.empty();
     }
 
     /**
@@ -129,6 +134,11 @@ public class Ticket {
      * @param closedAt              The date the ticket was closed
      * @param messages              The messages of the ticket
      * @param members               The members of the ticket
+     * @param webhook               the webhook
+     * @param webhookId             the webhook id
+     * @param webhookName           the webhook name
+     * @param webhookUrl            the webhook url
+     * @param createdAt             The created at
      */
     @SuppressWarnings("java:S107")
     public Ticket(
@@ -139,7 +149,8 @@ public class Ticket {
             Optional<String> closedById,
             Optional<User> closedBy, Optional<String> closedReason, Optional<LocalDateTime> closedAt,
             List<TicketMessage> messages, List<TicketMember> members, Optional<Webhook> webhook,
-            Optional<String> webhookId, Optional<String> webhookName, Optional<String> webhookUrl) {
+            Optional<String> webhookId, Optional<String> webhookName, Optional<String> webhookUrl,
+            Optional<LocalDateTime> createdAt) {
         this.id = id;
         this.ticketId = ticketId;
         this.openedAt = openedAt;
@@ -176,6 +187,8 @@ public class Ticket {
         this.webhookId = webhookId;
         this.webhookName = webhookName;
         this.webhookUrl = webhookUrl;
+
+        this.createdAt = createdAt;
     }
 
     /**
@@ -317,7 +330,7 @@ public class Ticket {
                 embedBuilder.setTitle("Ticket \"" + ticketName + "\" geschlossen");
 
                 String reason = getClosedReason().orElse("Kein Grund angegeben");
-                String description = "Dein Ticket wurde ";
+                String description = "Ein Ticket wurde ";
                 if (closedByOptional.isPresent()) {
                     User closedUser = closedByOptional.get();
                     description += "von " + closedUser.getAsMention() + " ";
@@ -327,7 +340,7 @@ public class Ticket {
 
                 embedBuilder.setColor(Color.decode("#ff6600"));
 
-                Optional<LocalDateTime> openedAtOptional = Optional.of(Times.now());
+                Optional<LocalDateTime> openedAtOptional = getCreatedAt();
                 Optional<LocalDateTime> closedAtOptional = getClosedAt();
 
                 LocalDateTime openedAtDateTime = openedAtOptional.get();
@@ -374,23 +387,43 @@ public class Ticket {
                 return;
             }
 
-            for (TicketMember member : members) {
-                if (member.isRemoved()) {
-                    continue;
+            getTicketAuthor().queue(author -> {
+                if (guild.isEmpty()) {
+                    return;
                 }
 
-                member.getMember().ifPresent(userRest -> userRest.queue(user -> {
-                    if (user == null) {
-                        return;
+                Guild guildItem = guild.get();
+                DiscordGuild discordGuild = DiscordGuilds.getGuild(guildItem);
+
+                if (discordGuild == null) {
+                    return;
+                }
+
+                for (TicketMember member : members) {
+                    if (member.isRemoved()) {
+                        continue;
                     }
 
-                    if (user.equals(DiscordBot.getInstance().getJda().getSelfUser())) {
-                        return;
-                    }
+                    member.getMember().ifPresent(userRest -> userRest.queue(user -> {
+                        if (user == null) {
+                            return;
+                        }
 
-                    user.openPrivateChannel().queue(privateChannel -> privateChannel.sendMessageEmbeds(embed).queue());
-                }));
-            }
+                        if (user.equals(DiscordBot.getInstance().getJda().getSelfUser())) {
+                            return;
+                        }
+
+                        discordGuild.getAllUsers().whenComplete(users -> {
+                            if (user != author && users.contains(user)) {
+                                return;
+                            }
+
+                            user.openPrivateChannel()
+                                    .queue(privateChannel -> privateChannel.sendMessageEmbeds(embed).queue());
+                        });
+                    }));
+                }
+            });
         });
     }
 
@@ -464,14 +497,27 @@ public class Ticket {
         addTicketMember(new TicketMember(this, artyUser, artyUser)).join();
 
         User author = ticketAuthor.complete();
-        TicketMember authorMember = new TicketMember(this, author, DiscordBot.getInstance().getJda().getSelfUser());
-        addTicketMember(authorMember).join();
-
         DiscordGuild discordGuild = DiscordGuilds.getGuild(guild.get());
+        List<User> allUsers = discordGuild.getAllUsers().join();
 
-        for (User user : discordGuild.getAllUsers()) {
-            TicketMember member = new TicketMember(this, user, artyUser);
-            addTicketMember(member).join();
+        if (!allUsers.contains(author)) {
+            addTicketMember(new TicketMember(this, author, DiscordBot.getInstance().getJda().getSelfUser())).join();
+        }
+
+        for (User user : allUsers) {
+            List<DiscordRole> userRoles = discordGuild.getGuildRoles(user.getId());
+
+            boolean canSeeTicket = false;
+            for (DiscordRole role : userRoles) {
+                if (role.canViewTicketChannel(ticketType)) {
+                    canSeeTicket = true;
+                    break;
+                }
+            }
+
+            if (canSeeTicket) {
+                addTicketMember(new TicketMember(this, user, artyUser)).join();
+            }
         }
     }
 
@@ -1044,6 +1090,20 @@ public class Ticket {
      */
     public void setWebhookUrl(Optional<String> webhookUrl) {
         this.webhookUrl = webhookUrl;
+    }
+
+    /**
+     * @return the createdAt
+     */
+    public Optional<LocalDateTime> getCreatedAt() {
+        return createdAt;
+    }
+
+    /**
+     * @param createdAt the createdAt to set
+     */
+    public void setCreatedAt(Optional<LocalDateTime> createdAt) {
+        this.createdAt = createdAt;
     }
 
 }

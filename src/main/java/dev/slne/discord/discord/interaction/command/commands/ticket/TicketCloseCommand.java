@@ -7,6 +7,7 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 
 import dev.slne.discord.Launcher;
+import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketRepository;
@@ -40,6 +41,11 @@ public class TicketCloseCommand extends DiscordCommand {
         options.add(new OptionData(OptionType.STRING, "reason", "The reason for closing the ticket.", true));
 
         return options;
+    }
+
+    @Override
+    public @Nonnull DiscordPermission getPermission() {
+        return DiscordPermission.USE_COMMAND_TICKET_CLOSE;
     }
 
     @Override

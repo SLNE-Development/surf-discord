@@ -7,6 +7,7 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 
 import dev.slne.discord.Launcher;
+import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketRepository;
@@ -34,6 +35,11 @@ public class WhitelistedCommand extends DiscordCommand {
     @Override
     public @Nonnull List<OptionData> getOptions() {
         return new ArrayList<>();
+    }
+
+    @Override
+    public @Nonnull DiscordPermission getPermission() {
+        return DiscordPermission.USE_COMMAND_WHITELISTED;
     }
 
     @Override

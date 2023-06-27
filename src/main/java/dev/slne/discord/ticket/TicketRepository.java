@@ -133,6 +133,7 @@ public class TicketRepository {
             ticket.setOpenedAt(newTicket.getOpenedAt());
             ticket.setTicketId(newTicket.getTicketId());
             ticket.setId(newTicket.getId());
+            ticket.setCreatedAt(newTicket.getCreatedAt());
 
             DiscordBot.getInstance().getTicketManager().addTicket(ticket);
 
@@ -252,9 +253,11 @@ public class TicketRepository {
         Optional<String> webhookName = Optional.empty();
         Optional<String> webhookUrl = Optional.empty();
 
+        Optional<LocalDateTime> createdAt = Optional.empty();
+
         Ticket ticket = new Ticket(id, ticketId, openedAt, guildId, guild, channelId, channel, ticketTypeString,
                 ticketType, ticketAuthorName, ticketAuthorId, ticketAuthorAvatarUrl, ticketAuthor, closedById, closedBy,
-                closedReason, closedAt, messages, members, webhook, webhookId, webhookName, webhookUrl);
+                closedReason, closedAt, messages, members, webhook, webhookId, webhookName, webhookUrl, createdAt);
 
         if (jsonObject.has("id")) {
             id = Optional.of(jsonObject.get("id").getAsLong());
@@ -410,6 +413,12 @@ public class TicketRepository {
             }
 
             ticket.setMembers(members);
+        }
+
+        if (jsonObject.has("created_at") && jsonObject.get("created_at") != null && !(jsonObject
+                .get("created_at") instanceof JsonNull)) {
+            createdAt = Optional.of(LocalDateTime.parse(jsonObject.get("created_at").getAsString().split("\\.")[0]));
+            ticket.setCreatedAt(createdAt);
         }
 
         return ticket;

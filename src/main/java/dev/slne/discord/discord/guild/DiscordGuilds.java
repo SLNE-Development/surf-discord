@@ -3,6 +3,7 @@ package dev.slne.discord.discord.guild;
 import java.util.ArrayList;
 import java.util.List;
 
+import dev.slne.discord.discord.guild.reactionrole.ReactionRoleConfig;
 import net.dv8tion.jda.api.entities.Guild;
 
 public class DiscordGuilds {
@@ -38,12 +39,12 @@ public class DiscordGuilds {
         List<String> discordSupportModerators = new ArrayList<>();
         List<String> serverSupportModerators = new ArrayList<>();
 
-        // serverSupportAdmins.add("201843528618213376");
+        serverSupportAdmins.add("180623182594572288"); // Ammo
 
-        // serverSupportModerators.add("570544431174778881");
+        serverSupportModerators.add("201843528618213376"); // Keviro
 
         return new DiscordGuild("449314616628084758", "983429475649876029", discordSupportAdmins,
-                serverSupportAdmins, discordSupportModerators, serverSupportModerators, "1052580474712756244");
+                serverSupportAdmins, discordSupportModerators, serverSupportModerators, "1052580474712756244", null);
     }
 
     /**
@@ -71,8 +72,12 @@ public class DiscordGuilds {
         serverSupportModerators.add("570544431174778881");
         serverSupportModerators.add("697395817882845214");
 
+        ReactionRoleConfig rrConfig = new ReactionRoleConfig("1052600279968784466", "1005106900179894333", "U+1F514",
+                "1052595432913637469");
+
         return new DiscordGuild("133198459531558912", "987072606530322522", discordSupportAdmins,
-                serverSupportAdmins, discordSupportModerators, serverSupportModerators, "1052361599484170300");
+                serverSupportAdmins, discordSupportModerators, serverSupportModerators, "1052361599484170300",
+                rrConfig);
     }
 
     /**

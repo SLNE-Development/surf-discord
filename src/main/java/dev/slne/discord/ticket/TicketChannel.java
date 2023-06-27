@@ -12,7 +12,7 @@ import dev.slne.discord.DiscordBot;
 import dev.slne.discord.datasource.database.future.DiscordFutureResult;
 import dev.slne.discord.discord.guild.DiscordGuild;
 import dev.slne.discord.discord.guild.DiscordGuilds;
-import dev.slne.discord.discord.guild.GuildRole;
+import dev.slne.discord.discord.guild.role.DiscordRole;
 import dev.slne.discord.ticket.member.TicketMember;
 import dev.slne.discord.ticket.result.TicketCreateResult;
 import net.dv8tion.jda.api.Permission;
@@ -91,33 +91,22 @@ public class TicketChannel {
                 continue;
             }
 
-            Collection<Permission> permissions = new ArrayList<>();
-            List<GuildRole> roles = discordGuild.getGuildRoles(user.getId());
+            if (user.equals(botUser)) {
+                continue;
+            }
 
-            boolean adminAdded = false;
-            boolean moderatorAdded = false;
+            Collection<Permission> permissions = new ArrayList<>();
+            List<DiscordRole> roles = discordGuild.getGuildRoles(user.getId());
 
             if (roles.isEmpty()) {
                 permissions.addAll(TicketPermissions.getMemberPermissions());
             }
 
-            for (GuildRole role : roles) {
-                switch (role) {
-                    case DISCORD_ADMINISTRATOR:
-                    case SERVER_ADMINISTRATOR:
-                        if (!adminAdded) {
-                            permissions.addAll(TicketPermissions.getAdminPermissions());
-                            adminAdded = true;
-                        }
-                        break;
-
-                    case DISCORD_MODERATOR:
-                    case SERVER_MODERATOR:
-                        if (!moderatorAdded) {
-                            permissions.addAll(TicketPermissions.getModeratorPermissions());
-                            moderatorAdded = true;
-                        }
-                        break;
+            for (DiscordRole role : roles) {
+                for (Permission permission : role.getDiscordAllowedPermissions()) {
+                    if (!permissionAdded(permissions, permission)) {
+                        permissions.add(permission);
+                    }
                 }
             }
 
@@ -125,6 +114,26 @@ public class TicketChannel {
         }
 
         manager.queue();
+    }
+
+    /**
+     * Returns if the permissions list contans the given permission
+     *
+     * @param permissions The permissions to check in
+     * @param permission  The permission to check
+     * @return If the permissions list contans the given permission
+     */
+    private static boolean permissionAdded(Collection<Permission> permissions, Permission permission) {
+        boolean added = false;
+
+        for (Permission perm : permissions) {
+            if (perm == permission) {
+                added = true;
+                break;
+            }
+        }
+
+        return added;
     }
 
     /**

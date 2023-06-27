@@ -19,7 +19,7 @@ public class CommandReceivedListener extends ListenerAdapter {
         DiscordCommand command = commandManager.findCommand(interaction.getName());
 
         if (command != null) {
-            command.execute(event);
+            command.internalExecute(event);
         }
     }
 

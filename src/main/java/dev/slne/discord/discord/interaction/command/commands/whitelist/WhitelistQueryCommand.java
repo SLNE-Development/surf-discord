@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
+import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.whitelist.UUIDResolver;
 import dev.slne.discord.whitelist.Whitelist;
@@ -47,6 +48,11 @@ public class WhitelistQueryCommand extends DiscordCommand {
                 "Der Twitch Name des Benutzers.", false, false));
 
         return options;
+    }
+
+    @Override
+    public @Nonnull DiscordPermission getPermission() {
+        return DiscordPermission.USE_COMMAND_WHITELIST_QUERY;
     }
 
     @Override

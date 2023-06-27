@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.datasource.Times;
+import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketRepository;
@@ -44,6 +45,11 @@ public class TicketMemberAddCommand extends DiscordCommand {
         options.add(new OptionData(OptionType.USER, "user", "Der Nutzer, der hinzugefügt werden soll.", true, false));
 
         return options;
+    }
+
+    @Override
+    public @Nonnull DiscordPermission getPermission() {
+        return DiscordPermission.USE_COMMAND_TICKET_ADD_USER;
     }
 
     @Override

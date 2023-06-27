@@ -7,6 +7,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import dev.slne.discord.DiscordBot;
+import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.discord.interaction.button.DiscordButton;
 import dev.slne.discord.discord.interaction.button.DiscordButtonManager;
 import dev.slne.discord.discord.interaction.button.buttons.ticket.TicketButton;
@@ -38,6 +39,11 @@ public class TicketButtonCommand extends DiscordCommand {
     @Override
     public @Nonnull List<OptionData> getOptions() {
         return new ArrayList<>();
+    }
+
+    @Override
+    public @Nonnull DiscordPermission getPermission() {
+        return DiscordPermission.USE_COMMAND_TICKET_TEXT;
     }
 
     @Override
