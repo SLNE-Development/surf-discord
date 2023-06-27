@@ -10,6 +10,7 @@ import dev.slne.discord.discord.interaction.command.commands.ticket.members.Tick
 import dev.slne.discord.discord.interaction.command.commands.ticket.utils.TwitchConnectCommand;
 import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistCommand;
 import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistQueryCommand;
+import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistRoleRemoveCommand;
 import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistedCommand;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.requests.restaction.CommandCreateAction;
@@ -34,6 +35,7 @@ public class DiscordCommandManager {
         this.commands.add(new WhitelistCommand());
         this.commands.add(new WhitelistedCommand());
         this.commands.add(new WhitelistQueryCommand());
+        this.commands.add(new WhitelistRoleRemoveCommand());
     }
 
     /**

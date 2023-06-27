@@ -43,7 +43,7 @@ public class DiscordGuilds {
         // serverSupportModerators.add("570544431174778881");
 
         return new DiscordGuild("449314616628084758", "983429475649876029", discordSupportAdmins,
-                serverSupportAdmins, discordSupportModerators, serverSupportModerators);
+                serverSupportAdmins, discordSupportModerators, serverSupportModerators, "1052580474712756244");
     }
 
     /**
@@ -72,7 +72,7 @@ public class DiscordGuilds {
         serverSupportModerators.add("697395817882845214");
 
         return new DiscordGuild("133198459531558912", "987072606530322522", discordSupportAdmins,
-                serverSupportAdmins, discordSupportModerators, serverSupportModerators);
+                serverSupportAdmins, discordSupportModerators, serverSupportModerators, "1052361599484170300");
     }
 
     /**
