@@ -96,6 +96,13 @@ public class DiscordGuild {
             memberFutures.add(guild.retrieveMemberById(userId).submit());
         });
 
+        for (CompletableFuture<?> memberFuture : memberFutures) {
+            memberFuture.exceptionally(throwable -> {
+                throwable.printStackTrace();
+                return null;
+            });
+        }
+
         CompletableFuture.allOf(memberFutures.toArray(new CompletableFuture<?>[memberFutures.size()])).thenAccept(v -> {
             List<Member> members = memberFutures.stream().map(CompletableFuture::join).toList();
 
