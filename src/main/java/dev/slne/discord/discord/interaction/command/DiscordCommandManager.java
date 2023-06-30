@@ -79,7 +79,14 @@ public class DiscordCommandManager {
         });
 
         updateAction.addCommands(commandDatas).queue(
-                cmds -> Launcher.getLogger().logInfo("Registered command " + cmds + " to guild " + guild.getName()));
+                cmds -> {
+                    String cmdNames = cmds.stream().map(Command::getName).reduce((a, b) -> a + ", " + b).orElse("");
+                    Launcher.getLogger().logInfo("Registered commands [" + cmdNames + "] to guild " + guild.getName());
+                },
+                throwable -> {
+                    Launcher.getLogger().logError("Failed to register commands to guild " + guild.getName());
+                    throwable.printStackTrace();
+                });
     }
 
     /**
