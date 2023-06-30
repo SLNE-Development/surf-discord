@@ -9,7 +9,6 @@ import dev.slne.discord.discord.guild.DiscordGuild;
 import dev.slne.discord.discord.guild.DiscordGuilds;
 import dev.slne.discord.discord.guild.reactionrole.ReactionRoleConfig;
 import dev.slne.discord.listener.Listener;
-import dev.slne.discord.listener.event.EventHandler;
 import dev.slne.discord.listener.event.events.BotStartEvent;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -24,12 +23,13 @@ import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveAllEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEmojiEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.RestAction;
 
 public class ReactionRoleListener extends ListenerAdapter implements Listener {
 
-    @EventHandler
+    // @EventHandler
     @SuppressWarnings({ "java:S3776", "java:S135" })
     public void onBotStart(BotStartEvent event) {
         for (DiscordGuild discordGuild : DiscordGuilds.getGuilds()) {
@@ -219,10 +219,6 @@ public class ReactionRoleListener extends ListenerAdapter implements Listener {
                 return;
             }
 
-            if (message.getAuthor() != guild.getSelfMember().getUser()) {
-                return;
-            }
-
             DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
 
             if (discordGuild == null) {
@@ -282,6 +278,16 @@ public class ReactionRoleListener extends ListenerAdapter implements Listener {
                     }
 
                     guild.addRoleToMember(member, role).queue();
+                }, throwable -> {
+                    if (throwable instanceof ErrorResponseException) {
+                        ErrorResponseException errorResponseException = (ErrorResponseException) throwable;
+
+                        if (errorResponseException.getErrorCode() == 10007) {
+                            return;
+                        }
+                    }
+
+                    throwable.printStackTrace();
                 });
             });
         });
@@ -306,10 +312,6 @@ public class ReactionRoleListener extends ListenerAdapter implements Listener {
         TextChannel textChannel = (TextChannel) channel;
         textChannel.retrieveMessageById(messageId).queue(message -> {
             if (message == null) {
-                return;
-            }
-
-            if (message.getAuthor() != guild.getSelfMember().getUser()) {
                 return;
             }
 
@@ -372,6 +374,16 @@ public class ReactionRoleListener extends ListenerAdapter implements Listener {
                     }
 
                     guild.removeRoleFromMember(member, role).queue();
+                }, throwable -> {
+                    if (throwable instanceof ErrorResponseException) {
+                        ErrorResponseException errorResponseException = (ErrorResponseException) throwable;
+
+                        if (errorResponseException.getErrorCode() == 10007) {
+                            return;
+                        }
+                    }
+
+                    throwable.printStackTrace();
                 });
             });
         });
