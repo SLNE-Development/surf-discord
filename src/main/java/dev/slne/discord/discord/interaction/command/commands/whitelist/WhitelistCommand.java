@@ -155,7 +155,7 @@ public class WhitelistCommand extends DiscordCommand {
                             Role whitelistedRole = discordGuild.getWhitelistedRole();
 
                             if (whitelistedRole != null) {
-                                guild.addRoleToMember(user, whitelistedRole);
+                                guild.addRoleToMember(user, whitelistedRole).queue();
                             }
                         }
 
