@@ -2,7 +2,12 @@ package dev.slne.discord.discord.interaction.command;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
+import dev.slne.data.core.database.future.SurfFutureResult;
+import dev.slne.discord.DiscordBot;
+import dev.slne.discord.Launcher;
+import dev.slne.discord.datasource.database.future.DiscordFutureResult;
 import dev.slne.discord.discord.interaction.command.commands.ticket.TicketButtonCommand;
 import dev.slne.discord.discord.interaction.command.commands.ticket.TicketCloseCommand;
 import dev.slne.discord.discord.interaction.command.commands.ticket.members.TicketMemberAddCommand;
@@ -13,6 +18,7 @@ import dev.slne.discord.discord.interaction.command.commands.whitelist.Whitelist
 import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistRoleRemoveCommand;
 import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistedCommand;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.requests.restaction.CommandCreateAction;
 
 public class DiscordCommandManager {
@@ -61,8 +67,51 @@ public class DiscordCommandManager {
             commandCreateAction.addOptions(command.getOptions());
             commandCreateAction.addSubcommands(command.getSubCommands());
 
-            commandCreateAction.queue();
+            commandCreateAction.queue(success -> Launcher.getLogger()
+                    .logInfo("Registered command " + command.getName() + " to guild " + guild.getName()),
+                    Throwable::printStackTrace);
         });
+    }
+
+    /**
+     * Clears the commands from a guild.
+     *
+     * @param guild The guild.
+     */
+    public SurfFutureResult<Void> clearGuild(Guild guild) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        DiscordFutureResult<Void> result = new DiscordFutureResult<>(future);
+
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+        CompletableFuture<List<Command>> guildFuture = guild.retrieveCommands().submit();
+        CompletableFuture<List<Command>> botFuture = DiscordBot.getInstance().getJda().retrieveCommands().submit();
+
+        CompletableFuture.allOf(guildFuture, botFuture).thenAccept(v -> {
+            List<Command> guildCommands = guildFuture.join();
+            List<Command> botCommands = botFuture.join();
+
+            List<Command> allCommands = new ArrayList<>();
+            allCommands.addAll(guildCommands);
+            allCommands.addAll(botCommands);
+
+            allCommands.forEach(command -> {
+                String applicationId = command.getApplicationId();
+                String botApplicationId = DiscordBot.getInstance().getJda().getSelfUser().getApplicationId();
+
+                if (!applicationId.equals(botApplicationId)) {
+                    return;
+                }
+
+                CompletableFuture<Void> deleteFuture = command.delete().submit();
+                futures.add(deleteFuture);
+            });
+
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]))
+                    .thenAccept(v2 -> future.complete(null));
+        });
+
+        return result;
     }
 
 }
