@@ -404,22 +404,23 @@ public class Ticket {
                         continue;
                     }
 
-                    member.getMember().ifPresent(userRest -> userRest.queue(user -> {
-                        if (user == null) {
+                    member.getMember().ifPresent(userRest -> userRest.queue(memberUser -> {
+                        if (memberUser == null) {
                             return;
                         }
 
-                        if (user.equals(DiscordBot.getInstance().getJda().getSelfUser())) {
+                        if (memberUser.equals(DiscordBot.getInstance().getJda().getSelfUser())) {
                             return;
                         }
 
-                        discordGuild.getAllUsers().whenComplete(users -> {
-                            if (user != author && users.contains(user)) {
-                                return;
+                        discordGuild.getAllUsers().whenComplete(adminUsers -> {
+                            boolean memberIsAuthor = memberUser.equals(author);
+                            boolean isAdminUser = adminUsers.contains(memberUser);
+
+                            if (memberIsAuthor || !isAdminUser) {
+                                memberUser.openPrivateChannel()
+                                        .queue(privateChannel -> privateChannel.sendMessageEmbeds(embed).queue());
                             }
-
-                            user.openPrivateChannel()
-                                    .queue(privateChannel -> privateChannel.sendMessageEmbeds(embed).queue());
                         });
                     }));
                 }
@@ -513,6 +514,10 @@ public class Ticket {
                     canSeeTicket = true;
                     break;
                 }
+            }
+
+            if (user.equals(author)) {
+                canSeeTicket = true;
             }
 
             if (canSeeTicket) {
