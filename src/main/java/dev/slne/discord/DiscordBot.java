@@ -24,7 +24,6 @@ import dev.slne.discord.whitelist.UUIDCache;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
-import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
@@ -69,7 +68,6 @@ public class DiscordBot {
         builder.setAutoReconnect(true);
         builder.disableCache(CacheFlag.VOICE_STATE, CacheFlag.STICKER, CacheFlag.SCHEDULED_EVENTS);
         builder.setEnabledIntents(GatewayIntents.getGatewayIntents());
-        builder.setActivity(Activity.watching("Keviro struggle"));
         builder.setStatus(OnlineStatus.DO_NOT_DISTURB);
 
         this.jda = builder.build();
