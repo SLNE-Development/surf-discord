@@ -11,7 +11,6 @@ import dev.slne.discord.listener.event.EventHandler;
 import dev.slne.discord.listener.event.events.BotStartEvent;
 import dev.slne.discord.whitelist.Whitelist;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 
@@ -59,17 +58,17 @@ public class WhitelistStartListener implements Listener {
                         continue;
                     }
 
-                    Member member = guild.getMember(user);
+                    guild.retrieveMember(user).queue(member -> {
+                        if (member == null) {
+                            return;
+                        }
 
-                    if (member == null) {
-                        continue;
-                    }
+                        if (member.getRoles().contains(whitelistedRole)) {
+                            return;
+                        }
 
-                    if (member.getRoles().contains(whitelistedRole)) {
-                        continue;
-                    }
-
-                    guild.addRoleToMember(member, whitelistedRole).queue();
+                        guild.addRoleToMember(member, whitelistedRole).queue();
+                    });
                 }
             });
         }

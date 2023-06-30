@@ -95,7 +95,7 @@ public class ReactionRoleListener extends ListenerAdapter implements Listener {
     @Override
     public void onMessageReactionAdd(@Nonnull MessageReactionAddEvent event) {
         Guild guild = event.getGuild();
-        User user = event.getUser();
+        User user = event.retrieveUser().complete();
         Channel channel = event.getChannel();
         String messageId = event.getMessageId();
         MessageReaction messageReaction = event.getReaction();
@@ -106,7 +106,7 @@ public class ReactionRoleListener extends ListenerAdapter implements Listener {
     @Override
     public void onMessageReactionRemove(@Nonnull MessageReactionRemoveEvent event) {
         Guild guild = event.getGuild();
-        User user = event.getUser();
+        User user = event.retrieveUser().complete();
         Channel channel = event.getChannel();
         String messageId = event.getMessageId();
         MessageReaction messageReaction = event.getReaction();
@@ -272,17 +272,17 @@ public class ReactionRoleListener extends ListenerAdapter implements Listener {
                     return;
                 }
 
-                Member member = guild.getMember(user);
+                guild.retrieveMember(user).queue(member -> {
+                    if (member == null) {
+                        return;
+                    }
 
-                if (member == null) {
-                    return;
-                }
+                    if (member.getRoles().contains(role)) {
+                        return;
+                    }
 
-                if (member.getRoles().contains(role)) {
-                    return;
-                }
-
-                guild.addRoleToMember(member, role).queue();
+                    guild.addRoleToMember(member, role).queue();
+                });
             });
         });
     }
@@ -362,17 +362,17 @@ public class ReactionRoleListener extends ListenerAdapter implements Listener {
                     return;
                 }
 
-                Member member = guild.getMember(user);
+                guild.retrieveMember(user).queue(member -> {
+                    if (member == null) {
+                        return;
+                    }
 
-                if (member == null) {
-                    return;
-                }
+                    if (!member.getRoles().contains(role)) {
+                        return;
+                    }
 
-                if (!member.getRoles().contains(role)) {
-                    return;
-                }
-
-                guild.removeRoleFromMember(member, role).queue();
+                    guild.removeRoleFromMember(member, role).queue();
+                });
             });
         });
     }
