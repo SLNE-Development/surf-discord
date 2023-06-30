@@ -39,6 +39,7 @@ public class DiscordGuilds {
         List<String> discordSupportModerators = new ArrayList<>();
         List<String> serverSupportModerators = new ArrayList<>();
 
+        discordSupportAdmins.add("1080526283462676584"); // Arty
         serverSupportAdmins.add("180623182594572288"); // Ammo
 
         serverSupportModerators.add("201843528618213376"); // Keviro
@@ -62,7 +63,7 @@ public class DiscordGuilds {
         List<String> discordSupportModerators = new ArrayList<>();
         List<String> serverSupportModerators = new ArrayList<>();
 
-        discordSupportAdmins.add("983430264959164446"); // Arty
+        discordSupportAdmins.add("1080526283462676584"); // Arty
         discordSupportAdmins.add("159372579331768320"); // Tjorben
         discordSupportAdmins.add("128876960238665728"); // CastCrafter
         discordSupportAdmins.add("369349926317981696"); // MelanX
@@ -79,7 +80,7 @@ public class DiscordGuilds {
         ReactionRoleConfig rrConfig = new ReactionRoleConfig("1052600279968784466", "1005106900179894333", "U+1F514",
                 "1052595432913637469");
 
-        return new DiscordGuild("133198459531558912", "987072606530322522", discordSupportAdmins,
+        return new DiscordGuild("133198459531558912", "1124438557830955018", discordSupportAdmins,
                 serverSupportAdmins, discordSupportModerators, serverSupportModerators, "1052361599484170300",
                 rrConfig);
     }

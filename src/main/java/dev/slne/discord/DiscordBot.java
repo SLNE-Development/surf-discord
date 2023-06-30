@@ -25,7 +25,6 @@ import dev.slne.discord.whitelist.UUIDCache;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 public class DiscordBot {
@@ -67,7 +66,10 @@ public class DiscordBot {
         JDABuilder builder = JDABuilder.createDefault(botToken);
 
         builder.setAutoReconnect(true);
-        builder.disableCache(CacheFlag.VOICE_STATE, CacheFlag.STICKER, CacheFlag.SCHEDULED_EVENTS);
+        builder.enableCache(CacheFlag.ACTIVITY, CacheFlag.CLIENT_STATUS, CacheFlag.EMOJI, CacheFlag.MEMBER_OVERRIDES,
+                CacheFlag.ONLINE_STATUS, CacheFlag.ROLE_TAGS, CacheFlag.STICKER,
+                CacheFlag.SCHEDULED_EVENTS);
+        builder.disableCache(CacheFlag.VOICE_STATE);
         builder.setEnabledIntents(GatewayIntents.getGatewayIntents());
         builder.setStatus(OnlineStatus.DO_NOT_DISTURB);
 
@@ -89,10 +91,11 @@ public class DiscordBot {
         listenerManager.registerDiscordListeners();
         listenerManager.registerListeners();
 
-        for (Guild guild : jda.getGuilds()) {
-            DiscordBot.getInstance().getCommandManager().clearGuild(guild)
-                    .whenComplete(cb -> DiscordBot.getInstance().getCommandManager().registerToGuild(guild));
-        }
+        // for (Guild guild : jda.getGuilds()) {
+        // DiscordBot.getInstance().getCommandManager().clearGuild(guild)
+        // .whenComplete(cb ->
+        // DiscordBot.getInstance().getCommandManager().registerToGuild(guild));
+        // }
 
         DiscordBot.getInstance().getTicketManager().fetchActiveTickets();
 

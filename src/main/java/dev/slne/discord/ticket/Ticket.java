@@ -572,7 +572,7 @@ public class Ticket {
 
                                 future.complete(TicketCreateResult.SUCCESS);
                             });
-                        }));
+                        }, future::completeExceptionally));
 
         return futureResult;
     }

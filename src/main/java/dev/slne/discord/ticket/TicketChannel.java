@@ -22,6 +22,7 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.managers.channel.concrete.TextChannelManager;
 import net.dv8tion.jda.api.requests.RestAction;
 
@@ -197,15 +198,27 @@ public class TicketChannel {
                     return;
                 }
 
-                TextChannel ticketChannel = channelCategory.createTextChannel(ticketName).complete();
+                try {
+                    channelCategory.createTextChannel(ticketName).queue(ticketChannel -> {
+                        ticket.setChannel(Optional.of(ticketChannel));
+                        ticket.setChannelId(Optional.of(ticketChannel.getId()));
 
-                ticket.setChannel(Optional.of(ticketChannel));
-                ticket.setChannelId(Optional.of(ticketChannel.getId()));
+                        createWebhook(ticket).join();
+                        TicketRepository.updateTicket(ticket).join();
 
-                createWebhook(ticket).join();
-                TicketRepository.updateTicket(ticket).join();
+                        future.complete(Optional.of(TicketCreateResult.SUCCESS));
+                    }, future::completeExceptionally);
+                } catch (Exception exception) {
+                    if (exception instanceof ErrorResponseException errorResponseException
+                            && errorResponseException.getErrorCode() == 50013) {
+                        future.complete(Optional.of(TicketCreateResult.MISSING_PERMISSIONS));
+                        errorResponseException.printStackTrace();
+                        return;
+                    }
 
-                future.complete(Optional.of(TicketCreateResult.SUCCESS));
+                    future.complete(Optional.of(TicketCreateResult.ERROR));
+                    exception.printStackTrace();
+                }
             }, future::completeExceptionally);
         });
 

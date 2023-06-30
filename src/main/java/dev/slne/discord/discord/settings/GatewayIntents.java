@@ -26,6 +26,7 @@ public class GatewayIntents {
                 // Guild
                 GatewayIntent.GUILD_MEMBERS,
                 GatewayIntent.GUILD_PRESENCES,
+                GatewayIntent.SCHEDULED_EVENTS,
 
                 // Guild Messages
                 GatewayIntent.MESSAGE_CONTENT,

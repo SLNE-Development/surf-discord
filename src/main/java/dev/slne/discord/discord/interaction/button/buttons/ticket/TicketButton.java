@@ -127,6 +127,10 @@ public abstract class TicketButton extends DiscordButton {
                                 "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo")
                                 .queue();
                         return;
+                    } else if (result.equals(TicketCreateResult.MISSING_PERMISSIONS)) {
+                        hook.editOriginal("Du hast nicht die benötigten Berechtigungen, um ein Ticket zu erstellen!")
+                                .queue();
+                        return;
                     } else {
                         hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
                         Launcher.getLogger().logError("Error while creating ticket: " + result);
