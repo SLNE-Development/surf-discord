@@ -1,4 +1,4 @@
-package dev.slne.discord.listener.user;
+package dev.slne.discord.listener.whitelist;
 
 import javax.annotation.Nonnull;
 
@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
-public class UserQuitListener extends ListenerAdapter {
+public class WhitelistQuitListener extends ListenerAdapter {
 
     @Override
     public void onGuildMemberRemove(@Nonnull GuildMemberRemoveEvent event) {
@@ -21,7 +21,7 @@ public class UserQuitListener extends ListenerAdapter {
             Whitelist whitelist = whitelistOptional.get();
             whitelist.setBlocked(true);
 
-            whitelist.update().whenComplete((whitelistUpdateOptional) -> {
+            whitelist.update().whenComplete(whitelistUpdateOptional -> {
                 if (!whitelistUpdateOptional.isPresent()) {
                     DataApi.getDataInstance().logError(getClass(),
                             "Failed to update whitelist for user " + user.getName() + ".");

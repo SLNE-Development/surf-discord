@@ -346,6 +346,43 @@ public class Whitelist {
     }
 
     /**
+     * Returns all whitelists
+     *
+     * @return The List of {@link Whitelist}.
+     */
+    public static SurfFutureResult<Optional<List<Whitelist>>> getAllWhitelists() {
+        return DataApi.getDataInstance().supplyAsync(() -> {
+            WebRequest request = WebRequest.builder().json(true).url(API.WHITELISTS).build();
+            WebResponse response = request.executeGet().join();
+
+            List<Whitelist> whitelists = new ArrayList<>();
+
+            if (response.getStatusCode() != 200) {
+                return Optional.of(whitelists);
+            }
+
+            Object body = response.getBody();
+            String bodyString = body.toString();
+
+            GsonConverter gson = new GsonConverter();
+            JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
+
+            if (!bodyElement.has("data") || !bodyElement.get("data").isJsonArray()) {
+                return Optional.of(whitelists);
+            }
+
+            JsonArray jsonArray = (JsonArray) bodyElement.get("data");
+
+            for (int i = 0; i < jsonArray.size(); i++) {
+                JsonObject jsonObject = (JsonObject) jsonArray.get(i);
+                whitelists.add(fromJsonObject(jsonObject));
+            }
+
+            return Optional.of(whitelists);
+        });
+    }
+
+    /**
      * Creates a new {@link Whitelist} from a {@link JsonObject}.
      *
      * @param jsonObject The {@link JsonObject}.
