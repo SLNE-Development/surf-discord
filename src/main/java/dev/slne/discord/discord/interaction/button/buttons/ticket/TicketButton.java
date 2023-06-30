@@ -185,7 +185,8 @@ public abstract class TicketButton extends DiscordButton {
      * @param hook the hook
      */
     private void sendAllreadyWhitelistedMessage(ButtonInteraction interaction) {
-        interaction.reply("Du befindest dich bereits auf der Whitelist und kannst dieses Ticket nicht öffnen.").queue();
+        interaction.reply("Du befindest dich bereits auf der Whitelist und kannst dieses Ticket nicht öffnen.")
+                .setEphemeral(true).queue();
     }
 
     /**
