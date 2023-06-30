@@ -25,6 +25,7 @@ import dev.slne.discord.whitelist.UUIDCache;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 public class DiscordBot {
@@ -91,11 +92,10 @@ public class DiscordBot {
         listenerManager.registerDiscordListeners();
         listenerManager.registerListeners();
 
-        // for (Guild guild : jda.getGuilds()) {
-        // DiscordBot.getInstance().getCommandManager().clearGuild(guild)
-        // .whenComplete(cb ->
-        // DiscordBot.getInstance().getCommandManager().registerToGuild(guild));
-        // }
+        for (Guild guild : jda.getGuilds()) {
+            DiscordBot.getInstance().getCommandManager().clearGuild(guild)
+                    .whenComplete(cb -> DiscordBot.getInstance().getCommandManager().registerToGuild(guild));
+        }
 
         DiscordBot.getInstance().getTicketManager().fetchActiveTickets();
 

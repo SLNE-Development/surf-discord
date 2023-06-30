@@ -15,7 +15,6 @@ import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
@@ -52,37 +51,37 @@ public class TicketButtonCommand extends DiscordCommand {
             return;
         }
 
-        InteractionHook hook = interaction.deferReply(true).complete();
-        hook.deleteOriginal().complete();
+        interaction.deferReply(true).queue(hook -> {
+            hook.deleteOriginal().queue();
+            TextChannel channel = (TextChannel) interaction.getChannel();
 
-        TextChannel channel = (TextChannel) interaction.getChannel();
+            sendSpacer(channel);
+            sendEmbed(channel, "**Discord Support Ticket:**", getDiscordSupportText(), Color.BLUE);
+            sendSpacer(channel);
 
-        sendSpacer(channel);
-        sendEmbed(channel, "**Discord Support Ticket:**", getDiscordSupportText(), Color.BLUE);
-        sendSpacer(channel);
+            sendEmbed(channel, "**Server Support Ticket:**", getServerSupportText(), Color.GREEN);
+            sendSpacer(channel);
 
-        sendEmbed(channel, "**Server Support Ticket:**", getServerSupportText(), Color.GREEN);
-        sendSpacer(channel);
+            sendEmbed(channel, "**Bugreport Ticket:**", getBugreportText(), Color.RED);
+            sendSpacer(channel);
 
-        sendEmbed(channel, "**Bugreport Ticket:**", getBugreportText(), Color.RED);
-        sendSpacer(channel);
+            sendEmbed(channel, "**Whitelist Ticket:**", getWhitelistText(), Color.WHITE);
+            sendSpacer(channel);
 
-        sendEmbed(channel, "**Whitelist Ticket:**", getWhitelistText(), Color.WHITE);
-        sendSpacer(channel);
+            DiscordButtonManager manager = DiscordBot.getInstance().getButtonManager();
+            DiscordButton whitelistButton = manager.getButton(TicketButton.WHITELIST_TICKET_ID);
+            DiscordButton serverSupportButton = manager.getButton(TicketButton.SERVER_SUPPORT_TICKET_ID);
+            DiscordButton discordSupportButton = manager.getButton(TicketButton.DISCORD_SUPPORT_TICKET_ID);
+            DiscordButton bugreportButton = manager.getButton(TicketButton.BUGREPORT_TICKET_ID);
 
-        DiscordButtonManager manager = DiscordBot.getInstance().getButtonManager();
-        DiscordButton whitelistButton = manager.getButton(TicketButton.WHITELIST_TICKET_ID);
-        DiscordButton serverSupportButton = manager.getButton(TicketButton.SERVER_SUPPORT_TICKET_ID);
-        DiscordButton discordSupportButton = manager.getButton(TicketButton.DISCORD_SUPPORT_TICKET_ID);
-        DiscordButton bugreportButton = manager.getButton(TicketButton.BUGREPORT_TICKET_ID);
+            ActionRow row = ActionRow.of(
+                    discordSupportButton.formDiscordButton(),
+                    serverSupportButton.formDiscordButton(),
+                    bugreportButton.formDiscordButton(),
+                    whitelistButton.formDiscordButton());
 
-        ActionRow row = ActionRow.of(
-                discordSupportButton.formDiscordButton(),
-                serverSupportButton.formDiscordButton(),
-                bugreportButton.formDiscordButton(),
-                whitelistButton.formDiscordButton());
-
-        channel.sendMessageComponents(row).complete();
+            channel.sendMessageComponents(row).queue();
+        });
     }
 
     /**

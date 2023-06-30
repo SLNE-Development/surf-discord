@@ -25,6 +25,7 @@ import dev.slne.discord.datasource.database.future.DiscordFutureResult;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.requests.RestAction;
 
 public class Whitelist {
 
@@ -33,10 +34,10 @@ public class Whitelist {
     private Optional<String> minecraftName;
     private Optional<String> twitchLink;
 
-    private Optional<User> discordUser;
+    private Optional<RestAction<User>> discordUser;
     private Optional<String> discordId;
 
-    private Optional<User> addedBy;
+    private Optional<RestAction<User>> addedBy;
     private Optional<String> addedById;
     private Optional<String> addedByName;
     private Optional<String> addedByAvatarUrl;
@@ -62,10 +63,10 @@ public class Whitelist {
         this.minecraftName = Optional.of(minecraftName);
         this.twitchLink = Optional.of(twitchLink);
 
-        this.discordUser = Optional.of(discordUser);
+        this.discordUser = Optional.of(DiscordBot.getInstance().getJda().retrieveUserById(discordUser.getId()));
         this.discordId = Optional.of(discordUser.getId());
 
-        this.addedBy = Optional.of(addedBy);
+        this.addedBy = Optional.of(DiscordBot.getInstance().getJda().retrieveUserById(addedBy.getId()));
         this.addedById = Optional.of(addedBy.getId());
         this.addedByName = Optional.of(addedBy.getName());
         this.addedByAvatarUrl = Optional.of(addedBy.getAvatarUrl());
@@ -111,8 +112,8 @@ public class Whitelist {
      */
     @SuppressWarnings("java:S107")
     private Whitelist(Optional<Long> id, Optional<UUID> uuid, Optional<String> minecraftName,
-            Optional<String> twitchLink, Optional<User> discordUser, Optional<String> discordId,
-            Optional<User> addedBy, Optional<String> addedById, Optional<String> addedByName,
+            Optional<String> twitchLink, Optional<RestAction<User>> discordUser, Optional<String> discordId,
+            Optional<RestAction<User>> addedBy, Optional<String> addedById, Optional<String> addedByName,
             Optional<String> addedByAvatarUrl, boolean blocked) {
         this.id = id;
         this.uuid = uuid;
@@ -169,8 +170,18 @@ public class Whitelist {
         Optional<UUID> uuid = whitelist.getUuid();
         Optional<String> minecraftName = whitelist.getMinecraftName();
         Optional<String> twitchLink = whitelist.getTwitchLink();
-        Optional<User> discordUser = whitelist.getDiscordUser();
-        Optional<User> addedBy = whitelist.getAddedBy();
+        Optional<RestAction<User>> discordUserRest = whitelist.getDiscordUser();
+        Optional<RestAction<User>> addedByRest = whitelist.getAddedBy();
+
+        User discordUser = null;
+        if (discordUserRest.isPresent()) {
+            discordUser = discordUserRest.get().complete();
+        }
+
+        User addedBy = null;
+        if (addedByRest.isPresent()) {
+            addedBy = addedByRest.get().complete();
+        }
 
         String minecraftNameString = minecraftName.orElse(null);
         String twitchLinkString = twitchLink.orElse(null);
@@ -188,12 +199,12 @@ public class Whitelist {
             builder.addField("Twitch Link", twitchLinkString, true);
         }
 
-        if (discordUser.isPresent()) {
-            builder.addField("Discord User", discordUser.get().getAsMention(), true);
+        if (discordUser != null) {
+            builder.addField("Discord User", discordUser.getAsMention(), true);
         }
 
-        if (addedBy.isPresent()) {
-            builder.addField("Added By", addedBy.get().getAsMention(), true);
+        if (addedBy != null) {
+            builder.addField("Added By", addedBy.getAsMention(), true);
         }
 
         if (uuid.isPresent() && uuidString != null) {
@@ -394,9 +405,9 @@ public class Whitelist {
         Optional<UUID> uuid = Optional.empty();
         Optional<String> minecraftName = Optional.empty();
         Optional<String> twitchLink = Optional.empty();
-        Optional<User> discordUser = Optional.empty();
+        Optional<RestAction<User>> discordUser = Optional.empty();
         Optional<String> discordId = Optional.empty();
-        Optional<User> addedBy = Optional.empty();
+        Optional<RestAction<User>> addedBy = Optional.empty();
         Optional<String> addedById = Optional.empty();
         Optional<String> addedByName = Optional.empty();
         Optional<String> addedByAvatarUrl = Optional.empty();
@@ -422,7 +433,7 @@ public class Whitelist {
             String discordIdString = discordId.orElse(null);
             if (discordId.isPresent() && discordIdString != null) {
                 discordUser = Optional.ofNullable(
-                        DiscordBot.getInstance().getJda().retrieveUserById(discordIdString).complete());
+                        DiscordBot.getInstance().getJda().retrieveUserById(discordIdString));
             }
         }
 
@@ -433,7 +444,7 @@ public class Whitelist {
             String addedByIdString = addedById.orElse(null);
             if (addedById.isPresent() && addedByIdString != null) {
                 addedBy = Optional.ofNullable(
-                        DiscordBot.getInstance().getJda().retrieveUserById(addedByIdString).complete());
+                        DiscordBot.getInstance().getJda().retrieveUserById(addedByIdString));
             }
         }
 
@@ -563,7 +574,7 @@ public class Whitelist {
     /**
      * @return the addedBy
      */
-    public Optional<User> getAddedBy() {
+    public Optional<RestAction<User>> getAddedBy() {
         return addedBy;
     }
 
@@ -633,7 +644,7 @@ public class Whitelist {
     /**
      * @return the discordUser
      */
-    public Optional<User> getDiscordUser() {
+    public Optional<RestAction<User>> getDiscordUser() {
         return discordUser;
     }
 

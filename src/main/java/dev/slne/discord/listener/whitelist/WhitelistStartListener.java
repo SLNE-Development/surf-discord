@@ -1,7 +1,6 @@
 package dev.slne.discord.listener.whitelist;
 
 import java.util.List;
-import java.util.Optional;
 
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.discord.guild.DiscordGuild;
@@ -11,7 +10,6 @@ import dev.slne.discord.listener.event.events.BotStartEvent;
 import dev.slne.discord.whitelist.Whitelist;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.User;
 
 public class WhitelistStartListener implements Listener {
 
@@ -45,29 +43,29 @@ public class WhitelistStartListener implements Listener {
                 List<Whitelist> whitelists = whitelistsOptional.get();
 
                 for (Whitelist whitelist : whitelists) {
-                    Optional<User> whitelistedUser = whitelist.getDiscordUser();
+                    // Optional<User> whitelistedUser = whitelist.getDiscordUser();
 
-                    if (!whitelistedUser.isPresent()) {
-                        continue;
-                    }
+                    // if (!whitelistedUser.isPresent()) {
+                    // continue;
+                    // }
 
-                    User user = whitelistedUser.get();
+                    // User user = whitelistedUser.get();
 
-                    if (user == null) {
-                        continue;
-                    }
+                    // if (user == null) {
+                    // continue;
+                    // }
 
-                    guild.retrieveMember(user).queue(member -> {
-                        if (member == null) {
-                            return;
-                        }
+                    // guild.retrieveMember(user).queue(member -> {
+                    // if (member == null) {
+                    // return;
+                    // }
 
-                        if (member.getRoles().contains(whitelistedRole)) {
-                            return;
-                        }
+                    // if (member.getRoles().contains(whitelistedRole)) {
+                    // return;
+                    // }
 
-                        guild.addRoleToMember(member, whitelistedRole).queue();
-                    });
+                    // guild.addRoleToMember(member, whitelistedRole).queue();
+                    // });
                 }
             });
         }

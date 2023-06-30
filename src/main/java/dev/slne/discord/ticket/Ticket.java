@@ -23,12 +23,15 @@ import dev.slne.discord.ticket.message.TicketMessage;
 import dev.slne.discord.ticket.result.TicketCloseResult;
 import dev.slne.discord.ticket.result.TicketCreateResult;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.Webhook;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.managers.channel.concrete.TextChannelManager;
 import net.dv8tion.jda.api.requests.RestAction;
 
 public class Ticket {
@@ -324,47 +327,48 @@ public class Ticket {
             }
 
             CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[futures.size()])).thenAcceptAsync(v -> {
-                User author = authorRest.complete();
-                Optional<User> closedByOptional = closedByRestOptional.map(RestAction::complete);
+                authorRest.queue(author -> {
+                    Optional<User> closedByOptional = closedByRestOptional.map(RestAction::complete);
 
-                embedBuilder.setTitle("Ticket \"" + ticketName + "\" geschlossen");
+                    embedBuilder.setTitle("Ticket \"" + ticketName + "\" geschlossen");
 
-                String reason = getClosedReason().orElse("Kein Grund angegeben");
-                String description = "Ein Ticket wurde ";
-                if (closedByOptional.isPresent()) {
-                    User closedUser = closedByOptional.get();
-                    description += "von " + closedUser.getAsMention() + " ";
-                }
-                description += "geschlossen.\n\nGrund:\n" + reason;
-                embedBuilder.setDescription(description);
+                    String reason = getClosedReason().orElse("Kein Grund angegeben");
+                    String description = "Ein Ticket wurde ";
+                    if (closedByOptional.isPresent()) {
+                        User closedUser = closedByOptional.get();
+                        description += "von " + closedUser.getAsMention() + " ";
+                    }
+                    description += "geschlossen.\n\nGrund:\n" + reason;
+                    embedBuilder.setDescription(description);
 
-                embedBuilder.setColor(Color.decode("#ff6600"));
+                    embedBuilder.setColor(Color.decode("#ff6600"));
 
-                Optional<LocalDateTime> openedAtOptional = getCreatedAt();
-                Optional<LocalDateTime> closedAtOptional = getClosedAt();
+                    Optional<LocalDateTime> openedAtOptional = getCreatedAt();
+                    Optional<LocalDateTime> closedAtOptional = getClosedAt();
 
-                LocalDateTime openedAtDateTime = openedAtOptional.get();
-                LocalDateTime closedAtDateTime = closedAtOptional.orElse(Times.now());
+                    LocalDateTime openedAtDateTime = openedAtOptional.get();
+                    LocalDateTime closedAtDateTime = closedAtOptional.orElse(Times.now());
 
-                long[] tempDifferences = toTempUnits(openedAtDateTime, closedAtDateTime);
-                long days = tempDifferences[2];
-                long hours = tempDifferences[3];
-                long minutes = tempDifferences[4];
-                long seconds = tempDifferences[5];
+                    long[] tempDifferences = toTempUnits(openedAtDateTime, closedAtDateTime);
+                    long days = tempDifferences[2];
+                    long hours = tempDifferences[3];
+                    long minutes = tempDifferences[4];
+                    long seconds = tempDifferences[5];
 
-                String differenceString = String.format("%d Tage, %d Stunden, %d Minuten, %d Sekunden", days, hours,
-                        minutes, seconds);
+                    String differenceString = String.format("%d Tage, %d Stunden, %d Minuten, %d Sekunden", days, hours,
+                            minutes, seconds);
 
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
-                embedBuilder.addField("Ticket-ID", getTicketId().orElse("") + "", true);
-                embedBuilder.addField("Ticket-Type", getTicketTypeString() + "", true);
-                embedBuilder.addField("Ticket-Author", author.getAsMention(), true);
-                embedBuilder.addField("Ticket-Eröffnungszeit", formatter.format(openedAtDateTime) + "", true);
-                embedBuilder.addField("Ticket-Schließzeit", formatter.format(closedAtDateTime) + "", true);
-                embedBuilder.addField("Ticket-Dauer", differenceString + "", true);
+                    embedBuilder.addField("Ticket-ID", getTicketId().orElse("") + "", true);
+                    embedBuilder.addField("Ticket-Type", getTicketTypeString() + "", true);
+                    embedBuilder.addField("Ticket-Author", author.getAsMention(), true);
+                    embedBuilder.addField("Ticket-Eröffnungszeit", formatter.format(openedAtDateTime) + "", true);
+                    embedBuilder.addField("Ticket-Schließzeit", formatter.format(closedAtDateTime) + "", true);
+                    embedBuilder.addField("Ticket-Dauer", differenceString + "", true);
 
-                future.complete(Optional.of(embedBuilder.build()));
+                    future.complete(Optional.of(embedBuilder.build()));
+                });
             });
         }, future::completeExceptionally);
 
@@ -489,41 +493,56 @@ public class Ticket {
     /**
      * Update the members of the ticket
      */
-    public void initialMembers() {
+    @SuppressWarnings("java:S3776")
+    public SurfFutureResult<Void> initialMembers() {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        DiscordFutureResult<Void> futureResult = new DiscordFutureResult<>(future);
+
         if (guild.isEmpty()) {
-            return;
+            future.complete(null);
+            return futureResult;
         }
 
         User artyUser = DiscordBot.getInstance().getJda().getSelfUser();
         addTicketMember(new TicketMember(this, artyUser, artyUser)).join();
 
-        User author = ticketAuthor.complete();
-        DiscordGuild discordGuild = DiscordGuilds.getGuild(guild.get());
-        List<User> allUsers = discordGuild.getAllUsers().join();
+        ticketAuthor.queue(author -> {
+            DiscordGuild discordGuild = DiscordGuilds.getGuild(guild.get());
+            List<User> allUsers = discordGuild.getAllUsers().join();
 
-        if (!allUsers.contains(author)) {
-            addTicketMember(new TicketMember(this, author, DiscordBot.getInstance().getJda().getSelfUser())).join();
-        }
+            List<CompletableFuture<Optional<TicketMember>>> futures = new ArrayList<>();
 
-        for (User user : allUsers) {
-            List<DiscordRole> userRoles = discordGuild.getGuildRoles(user.getId());
+            if (!allUsers.contains(author)) {
+                futures.add(
+                        addTicketMember(new TicketMember(this, author, DiscordBot.getInstance().getJda().getSelfUser()))
+                                .getFuture());
+            }
 
-            boolean canSeeTicket = false;
-            for (DiscordRole role : userRoles) {
-                if (role.canViewTicketChannel(ticketType)) {
+            for (User user : allUsers) {
+                List<DiscordRole> userRoles = discordGuild.getGuildRoles(user.getId());
+
+                boolean canSeeTicket = false;
+                for (DiscordRole role : userRoles) {
+                    if (role.canViewTicketChannel(ticketType)) {
+                        canSeeTicket = true;
+                        break;
+                    }
+                }
+
+                if (user.equals(author)) {
                     canSeeTicket = true;
-                    break;
+                }
+
+                if (canSeeTicket) {
+                    futures.add(addTicketMember(new TicketMember(this, user, artyUser)).getFuture());
                 }
             }
 
-            if (user.equals(author)) {
-                canSeeTicket = true;
-            }
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[futures.size()]))
+                    .thenAcceptAsync(v -> future.complete(null));
+        });
 
-            if (canSeeTicket) {
-                addTicketMember(new TicketMember(this, user, artyUser)).join();
-            }
-        }
+        return futureResult;
     }
 
     /**
@@ -566,13 +585,46 @@ public class Ticket {
                                     return;
                                 }
 
-                                initialMembers();
-                                TicketChannel.updateChannelPermissions(this);
-                                afterOpen();
+                                initialPermissions().whenComplete(v1 -> {
+                                    initialMembers().whenComplete(v -> {
+                                        TicketChannel.updateChannelPermissions(this);
+                                        afterOpen();
 
-                                future.complete(TicketCreateResult.SUCCESS);
+                                        future.complete(TicketCreateResult.SUCCESS);
+                                    });
+                                });
                             });
                         }, future::completeExceptionally));
+
+        return futureResult;
+    }
+
+    private SurfFutureResult<Void> initialPermissions() {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        DiscordFutureResult<Void> futureResult = new DiscordFutureResult<>(future);
+
+        TextChannel textChannelItem = channel.orElse(null);
+        Guild guildItem = this.guild.orElse(null);
+
+        if (textChannelItem == null || guildItem == null) {
+            future.complete(null);
+            return futureResult;
+        }
+
+        TextChannelManager manager = textChannelItem.getManager();
+
+        User botUser = DiscordBot.getInstance().getJda().getSelfUser();
+        manager.putMemberPermissionOverride(botUser.getIdLong(), Permission.ALL_PERMISSIONS, 0);
+
+        for (Role role : guildItem.getRoles()) {
+            try {
+                manager.putRolePermissionOverride(role.getIdLong(), 0, Permission.ALL_PERMISSIONS);
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
+        }
+
+        manager.queue(v -> future.complete(null), future::completeExceptionally);
 
         return futureResult;
     }

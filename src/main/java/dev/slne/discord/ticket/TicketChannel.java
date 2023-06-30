@@ -87,31 +87,32 @@ public class TicketChannel {
                 continue;
             }
 
-            User user = userRest.complete();
-            if (user == null) {
-                continue;
-            }
+            userRest.queue(user -> {
+                if (user == null) {
+                    return;
+                }
 
-            if (user.equals(botUser)) {
-                continue;
-            }
+                if (user.equals(botUser)) {
+                    return;
+                }
 
-            Collection<Permission> permissions = new ArrayList<>();
-            List<DiscordRole> roles = discordGuild.getGuildRoles(user.getId());
+                Collection<Permission> permissions = new ArrayList<>();
+                List<DiscordRole> roles = discordGuild.getGuildRoles(user.getId());
 
-            if (roles.isEmpty()) {
-                permissions.addAll(TicketPermissions.getMemberPermissions());
-            }
+                if (roles.isEmpty()) {
+                    permissions.addAll(TicketPermissions.getMemberPermissions());
+                }
 
-            for (DiscordRole role : roles) {
-                for (Permission permission : role.getDiscordAllowedPermissions()) {
-                    if (!permissionAdded(permissions, permission)) {
-                        permissions.add(permission);
+                for (DiscordRole role : roles) {
+                    for (Permission permission : role.getDiscordAllowedPermissions()) {
+                        if (!permissionAdded(permissions, permission)) {
+                            permissions.add(permission);
+                        }
                     }
                 }
-            }
 
-            manager.putMemberPermissionOverride(user.getIdLong(), permissions, new ArrayList<>());
+                manager.putMemberPermissionOverride(user.getIdLong(), permissions, new ArrayList<>());
+            });
         }
 
         manager.queue();
