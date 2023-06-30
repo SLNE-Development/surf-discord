@@ -15,6 +15,7 @@ import dev.slne.discord.listener.message.MessageUpdatedListener;
 import dev.slne.discord.listener.pusher.ticket.TicketCloseListener;
 import dev.slne.discord.listener.pusher.ticket.TicketOpenListener;
 import dev.slne.discord.listener.pusher.ticket.TicketReOpenListener;
+import dev.slne.discord.listener.reactionrole.ReactionRoleListener;
 import dev.slne.discord.listener.user.UserQuitListener;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.hooks.EventListener;
@@ -39,6 +40,7 @@ public class ListenerManager {
         listeners.add(new TicketCloseListener());
         listeners.add(new TicketOpenListener());
         listeners.add(new TicketReOpenListener());
+        listeners.add(new ReactionRoleListener());
     }
 
     /**
@@ -54,6 +56,8 @@ public class ListenerManager {
         discordListeners.add(new MessageCreatedListener());
         discordListeners.add(new MessageUpdatedListener());
         discordListeners.add(new MessageDeletedListener());
+
+        discordListeners.add(new ReactionRoleListener());
     }
 
     /**

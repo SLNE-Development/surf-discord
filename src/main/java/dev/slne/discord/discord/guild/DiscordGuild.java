@@ -30,7 +30,7 @@ public class DiscordGuild {
     private List<String> discordSupportModerators;
     private List<String> serverSupportModerators;
 
-    private ReactionRoleConfig rrConfig;
+    private ReactionRoleConfig reactionRoleConfig;
 
     /**
      * Construct a new DiscordGuild.
@@ -59,7 +59,7 @@ public class DiscordGuild {
         this.whitelistedRoleId = whitelistedRoleId;
         this.whitelistedRole = DiscordBot.getInstance().getJda().getRoleById(whitelistedRoleId);
 
-        this.rrConfig = rrConfig;
+        this.reactionRoleConfig = rrConfig;
     }
 
     /**
@@ -234,7 +234,14 @@ public class DiscordGuild {
      * @return the rrConfig
      */
     public ReactionRoleConfig getReactionRoleConfig() {
-        return rrConfig;
+        return reactionRoleConfig;
+    }
+
+    /**
+     * @param reactionRoleConfig the rrConfig to set
+     */
+    public void setReactionRoleConfig(ReactionRoleConfig reactionRoleConfig) {
+        this.reactionRoleConfig = reactionRoleConfig;
     }
 
 }

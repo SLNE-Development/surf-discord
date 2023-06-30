@@ -8,6 +8,7 @@ import dev.slne.data.core.database.future.SurfFutureResult;
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.Launcher;
 import dev.slne.discord.datasource.database.future.DiscordFutureResult;
+import dev.slne.discord.discord.interaction.command.commands.reactionrole.ReactionRoleTextCommand;
 import dev.slne.discord.discord.interaction.command.commands.ticket.TicketButtonCommand;
 import dev.slne.discord.discord.interaction.command.commands.ticket.TicketCloseCommand;
 import dev.slne.discord.discord.interaction.command.commands.ticket.members.TicketMemberAddCommand;
@@ -42,6 +43,8 @@ public class DiscordCommandManager {
         this.commands.add(new WhitelistedCommand());
         this.commands.add(new WhitelistQueryCommand());
         this.commands.add(new WhitelistRoleRemoveCommand());
+
+        this.commands.add(new ReactionRoleTextCommand());
     }
 
     /**

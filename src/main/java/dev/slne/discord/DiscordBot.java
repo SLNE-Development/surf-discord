@@ -19,6 +19,7 @@ import dev.slne.discord.discord.settings.BotConnectionFile;
 import dev.slne.discord.discord.settings.BotConnectionSettings;
 import dev.slne.discord.discord.settings.GatewayIntents;
 import dev.slne.discord.listener.ListenerManager;
+import dev.slne.discord.listener.event.events.BotStartEvent;
 import dev.slne.discord.ticket.TicketManager;
 import dev.slne.discord.whitelist.UUIDCache;
 import net.dv8tion.jda.api.JDA;
@@ -77,8 +78,6 @@ public class DiscordBot {
             exception.printStackTrace();
         }
 
-        Launcher.getLogger().logInfo("Bot is ready!");
-
         roleManager = new DiscordRoleManager();
 
         uuidCache = new UUIDCache();
@@ -96,6 +95,9 @@ public class DiscordBot {
         }
 
         DiscordBot.getInstance().getTicketManager().fetchActiveTickets();
+
+        listenerManager.broadcastEvent(new BotStartEvent());
+        Launcher.getLogger().logInfo("Bot is ready!");
     }
 
     /**

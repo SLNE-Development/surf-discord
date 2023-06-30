@@ -43,8 +43,12 @@ public class DiscordGuilds {
 
         serverSupportModerators.add("201843528618213376"); // Keviro
 
+        ReactionRoleConfig rrConfig = new ReactionRoleConfig("1124375143645454477", "983450492862595122", "U+1F514",
+                "449980058120093706");
+
         return new DiscordGuild("449314616628084758", "983429475649876029", discordSupportAdmins,
-                serverSupportAdmins, discordSupportModerators, serverSupportModerators, "1052580474712756244", null);
+                serverSupportAdmins, discordSupportModerators, serverSupportModerators, "1052580474712756244",
+                rrConfig);
     }
 
     /**

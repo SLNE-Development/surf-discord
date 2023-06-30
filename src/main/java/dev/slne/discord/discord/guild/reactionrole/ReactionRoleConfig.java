@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.requests.RestAction;
 
 public record ReactionRoleConfig(String messageId, String channelId, String reaction, String roleId) {
@@ -65,6 +66,19 @@ public record ReactionRoleConfig(String messageId, String channelId, String reac
         }
 
         return Optional.ofNullable(DiscordBot.getInstance().getJda().getRoleById(this.roleId()));
+    }
+
+    /**
+     * Returns the emoji.
+     *
+     * @return the emoji.
+     */
+    public Emoji getEmoji() {
+        if (this.reaction() == null) {
+            return null;
+        }
+
+        return Emoji.fromFormatted(this.reaction() + "");
     }
 
 }
