@@ -4,6 +4,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
+import dev.slne.discord.discord.interaction.modal.modals.WhitelistTicketModal;
+
 public class DiscordModalManager {
 
     private Map<String, Class<? extends DiscordModal>> modals;
@@ -13,6 +15,8 @@ public class DiscordModalManager {
      */
     public DiscordModalManager() {
         this.modals = new HashMap<>();
+
+        registerModal(WhitelistTicketModal.class);
     }
 
     /**

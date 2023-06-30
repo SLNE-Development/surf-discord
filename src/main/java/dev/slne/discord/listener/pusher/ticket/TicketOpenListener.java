@@ -16,8 +16,6 @@ public class TicketOpenListener implements Listener {
 
         TicketOpenPacket packet = event.getPacket();
 
-        System.out.println(packet);
-
         if (packet.getTicket() != null) {
             packet.getTicket().openFromPusher();
 

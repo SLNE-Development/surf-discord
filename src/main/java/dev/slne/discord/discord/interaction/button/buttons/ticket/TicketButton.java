@@ -1,23 +1,29 @@
 package dev.slne.discord.discord.interaction.button.buttons.ticket;
 
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import dev.slne.discord.Launcher;
+import dev.slne.discord.datasource.database.future.DiscordFutureResult;
 import dev.slne.discord.discord.interaction.button.DiscordButton;
+import dev.slne.discord.discord.interaction.modal.modals.WhitelistTicketModal;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketType;
 import dev.slne.discord.ticket.result.TicketCreateResult;
 import dev.slne.discord.ticket.tickets.BugReportTicket;
 import dev.slne.discord.ticket.tickets.DiscordSupportTicket;
 import dev.slne.discord.ticket.tickets.ServerSupportTicket;
-import dev.slne.discord.ticket.tickets.WhitelistApplicationTicket;
+import dev.slne.discord.whitelist.Whitelist;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
+import net.dv8tion.jda.api.interactions.modals.Modal;
 
 public abstract class TicketButton extends DiscordButton {
 
@@ -51,63 +57,135 @@ public abstract class TicketButton extends DiscordButton {
     @Override
     @SuppressWarnings({ "java:S3776", "java:S1192" })
     public void onClick(ButtonInteraction interaction) {
-        Ticket ticket = null;
-        User user = interaction.getUser();
-        Guild guild = interaction.getGuild();
-
-        InteractionHook hook = interaction.deferReply(true).complete();
-
-        switch (ticketType) {
-            case WHITELIST:
-                ticket = new WhitelistApplicationTicket(guild, user);
-                break;
-            case SERVER_SUPPORT:
-                ticket = new ServerSupportTicket(guild, user);
-                break;
-            case BUGREPORT:
-                ticket = new BugReportTicket(guild, user);
-                break;
-            case DISCORD_SUPPORT:
-                ticket = new DiscordSupportTicket(guild, user);
-                break;
-            default:
-                break;
+        if (ticketType.equals(TicketType.WHITELIST)) {
+            handleWhitelist(interaction);
+            return;
         }
 
-        if (ticket != null) {
-            final Ticket finalTicket = ticket;
+        interaction.deferReply(true).queue(hook -> {
+            User user = interaction.getUser();
+            Guild guild = interaction.getGuild();
 
-            ticket.openFromButton().whenComplete(result -> {
-                if (result.equals(TicketCreateResult.SUCCESS)) {
-                    StringBuilder message = new StringBuilder();
-                    message.append("Dein \"");
-                    message.append(this.ticketType.getName());
-                    message.append("\"-Ticket wurde erfolgreich erstellt! ");
+            CompletableFuture<Ticket> ticketFuture = new CompletableFuture<>();
+            DiscordFutureResult<Ticket> ticketResult = new DiscordFutureResult<>(ticketFuture);
 
-                    if (finalTicket.getChannel().isPresent()) {
-                        message.append(finalTicket.getChannel().get().getAsMention());
+            if (ticketType.equals(TicketType.DISCORD_SUPPORT)) {
+                ticketFuture.complete(new DiscordSupportTicket(guild, user));
+            } else {
+                Whitelist.isWhitelisted(user).whenComplete(whitelistedBoolean -> {
+                    boolean whitelisted = whitelistedBoolean;
+
+                    List<TicketType> whitelistedTypes = List.of(TicketType.SERVER_SUPPORT,
+                            TicketType.BUGREPORT);
+
+                    if (!whitelisted && whitelistedTypes.contains(ticketType)) {
+                        sendNotWhitelistedMessage(hook);
+                        return;
                     }
 
-                    String messageString = message.toString();
-                    if (messageString != null) {
-                        hook.editOriginal(messageString).queue();
+                    Ticket ticket = null;
+                    switch (ticketType) {
+                        case SERVER_SUPPORT:
+                            ticket = new ServerSupportTicket(guild, user);
+                            break;
+                        case BUGREPORT:
+                            ticket = new BugReportTicket(guild, user);
+                            break;
+                        default:
+                            break;
                     }
-                    return;
-                } else if (result.equals(TicketCreateResult.ALREADY_EXISTS)) {
-                    hook.editOriginal(
-                            "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo")
+
+                    ticketFuture.complete(ticket);
+                });
+            }
+
+            ticketResult.whenComplete(ticket -> {
+                if (ticket == null) {
+                    hook.editOriginal("Es konnte kein Ticket mit dem angegebenen Ticket-Typen erstellt werden!")
                             .queue();
                     return;
-                } else {
-                    hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
-                    Launcher.getLogger().logError("Error while creating ticket: " + result);
-                    return;
                 }
+
+                ticket.openFromButton().whenComplete(result -> {
+                    if (result.equals(TicketCreateResult.SUCCESS)) {
+                        StringBuilder message = new StringBuilder();
+                        message.append("Dein \"");
+                        message.append(this.ticketType.getName());
+                        message.append("\"-Ticket wurde erfolgreich erstellt! ");
+
+                        if (ticket.getChannel().isPresent()) {
+                            message.append(ticket.getChannel().get().getAsMention());
+                        }
+
+                        String messageString = message.toString();
+                        if (messageString != null) {
+                            hook.editOriginal(messageString).queue();
+                        }
+                        return;
+                    } else if (result.equals(TicketCreateResult.ALREADY_EXISTS)) {
+                        hook.editOriginal(
+                                "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo")
+                                .queue();
+                        return;
+                    } else {
+                        hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
+                        Launcher.getLogger().logError("Error while creating ticket: " + result);
+                        return;
+                    }
+                });
+            }, failure -> {
+                hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
+                Launcher.getLogger().logError("Error while creating ticket: ", failure);
             });
-        } else {
-            hook.editOriginal("Es konnte kein Ticket mit dem angegebenen Ticket-Typen erstellt werden!")
-                    .queue();
+        });
+
+    }
+
+    /**
+     * Handles the whitelist button
+     *
+     * @param interaction the interaction
+     */
+    private void handleWhitelist(ButtonInteraction interaction) {
+        if (!ticketType.equals(TicketType.WHITELIST)) {
+            return;
         }
+
+        User user = interaction.getUser();
+
+        Whitelist.isWhitelisted(user).whenComplete(whitelistedBoolean -> {
+            boolean whitelisted = whitelistedBoolean;
+
+            if (whitelisted) {
+                sendAllreadyWhitelistedMessage(interaction);
+                return;
+            }
+
+            WhitelistTicketModal whitelistModal = new WhitelistTicketModal();
+            Modal modal = whitelistModal.buildModal();
+            interaction.replyModal(modal).queue();
+        }, failure -> {
+            failure.printStackTrace();
+            interaction.reply("Es ist ein Fehler aufgetreten!").queue();
+        });
+    }
+
+    /**
+     * Sends a message to the user that he is not whitelisted
+     *
+     * @param hook the hook
+     */
+    private void sendNotWhitelistedMessage(InteractionHook hook) {
+        hook.editOriginal("Du befindest dich nicht auf der Whitelist und kannst dieses Ticket nicht öffnen.").queue();
+    }
+
+    /**
+     * Sends a message to the user that he is allready whitelisted
+     *
+     * @param hook the hook
+     */
+    private void sendAllreadyWhitelistedMessage(ButtonInteraction interaction) {
+        interaction.reply("Du befindest dich bereits auf der Whitelist und kannst dieses Ticket nicht öffnen.").queue();
     }
 
     /**

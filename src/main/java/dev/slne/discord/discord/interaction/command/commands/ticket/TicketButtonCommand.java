@@ -43,7 +43,7 @@ public class TicketButtonCommand extends DiscordCommand {
 
     @Override
     public @Nonnull DiscordPermission getPermission() {
-        return DiscordPermission.USE_COMMAND_TICKET_TEXT;
+        return DiscordPermission.USE_COMMAND_TICKET_BUTTONS;
     }
 
     @Override

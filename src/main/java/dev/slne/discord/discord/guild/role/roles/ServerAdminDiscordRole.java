@@ -79,6 +79,7 @@ public class ServerAdminDiscordRole extends DiscordRole {
                 DiscordPermission.USE_COMMAND_NO_INTEREST,
                 DiscordPermission.USE_COMMAND_TICKET_ADD_USER,
                 DiscordPermission.USE_COMMAND_TICKET_BAN,
+                DiscordPermission.USE_COMMAND_TICKET_BUTTONS,
                 DiscordPermission.USE_COMMAND_TICKET_BANLIST,
                 DiscordPermission.USE_COMMAND_TICKET_CLOSE,
                 DiscordPermission.USE_COMMAND_TICKET_INFO,

@@ -128,6 +128,30 @@ public class Whitelist {
     }
 
     /**
+     * Returns if a {@link User} is whitelisted.
+     *
+     * @param user The {@link User}.
+     * @return The {@link SurfFutureResult}.
+     */
+    public static SurfFutureResult<Boolean> isWhitelisted(User user) {
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+        DiscordFutureResult<Boolean> futureResult = new DiscordFutureResult<>(future);
+
+        getWhitelists(null, user.getId(), null).whenComplete(whitelistsOptional -> {
+            if (whitelistsOptional.isEmpty()) {
+                future.complete(false);
+                return;
+            }
+
+            List<Whitelist> whitelists = whitelistsOptional.get();
+
+            future.complete(!whitelists.isEmpty());
+        }, future::completeExceptionally);
+
+        return futureResult;
+    }
+
+    /**
      * Returns a {@link MessageEmbed} for a {@link Whitelist}.
      *
      * @param whitelist The {@link Whitelist}.
@@ -194,8 +218,8 @@ public class Whitelist {
 
             Map<String, String> parameters = new HashMap<>();
             parameters.put("uuid", uuid != null ? uuid.toString() : "");
-            parameters.put("discord_id", discordId);
-            parameters.put("twitch_link", twitchLink);
+            parameters.put("discord_id", discordId != null ? discordId : "");
+            parameters.put("twitch_link", twitchLink != null ? twitchLink : "");
 
             WebRequest request = WebRequest.builder().json(true).url(API.WHITELIST_CHECK).parameters(parameters)
                     .build();
