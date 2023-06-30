@@ -58,19 +58,19 @@ public class DiscordGuilds {
         List<String> discordSupportModerators = new ArrayList<>();
         List<String> serverSupportModerators = new ArrayList<>();
 
-        discordSupportAdmins.add("983430264959164446");
-        discordSupportAdmins.add("159372579331768320");
-        discordSupportAdmins.add("128876960238665728");
-        discordSupportAdmins.add("369349926317981696");
+        discordSupportAdmins.add("983430264959164446"); // Arty
+        discordSupportAdmins.add("159372579331768320"); // Tjorben
+        discordSupportAdmins.add("128876960238665728"); // CastCrafter
+        discordSupportAdmins.add("369349926317981696"); // MelanX
 
-        discordSupportModerators.add("395238525517168641");
-        discordSupportModerators.add("235079227085553676");
+        discordSupportModerators.add("395238525517168641"); // Finja
+        discordSupportModerators.add("235079227085553676"); // Laura
 
-        serverSupportAdmins.add("180623182594572288");
-        serverSupportAdmins.add("201843528618213376");
+        serverSupportAdmins.add("180623182594572288"); // Ammo
+        serverSupportAdmins.add("201843528618213376"); // Keviro
 
-        serverSupportModerators.add("570544431174778881");
-        serverSupportModerators.add("697395817882845214");
+        serverSupportModerators.add("570544431174778881"); // Kendor
+        serverSupportModerators.add("697395817882845214"); // Twisti
 
         ReactionRoleConfig rrConfig = new ReactionRoleConfig("1052600279968784466", "1005106900179894333", "U+1F514",
                 "1052595432913637469");
