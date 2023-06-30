@@ -20,7 +20,10 @@ import dev.slne.discord.discord.interaction.command.commands.whitelist.Whitelist
 import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistedCommand;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.commands.Command;
-import net.dv8tion.jda.api.requests.restaction.CommandCreateAction;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
+import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 
 public class DiscordCommandManager {
 
@@ -63,17 +66,20 @@ public class DiscordCommandManager {
      * @param guild The guild.
      */
     public void registerToGuild(Guild guild) {
+        CommandListUpdateAction updateAction = guild.updateCommands();
+        List<CommandData> commandDatas = new ArrayList<>();
+
         this.commands.forEach(command -> {
-            CommandCreateAction commandCreateAction = guild.upsertCommand(command.getName(),
-                    command.getDescription());
-
-            commandCreateAction.addOptions(command.getOptions());
-            commandCreateAction.addSubcommands(command.getSubCommands());
-
-            commandCreateAction.queue(success -> Launcher.getLogger()
-                    .logInfo("Registered command " + command.getName() + " to guild " + guild.getName()),
-                    Throwable::printStackTrace);
+            SlashCommandData slashCommandData = Commands.slash(command.getName(), command.getDescription());
+            slashCommandData.setGuildOnly(true);
+            slashCommandData.setNSFW(false);
+            slashCommandData.addSubcommands(command.getSubCommands());
+            slashCommandData.addOptions(command.getOptions());
+            commandDatas.add(slashCommandData);
         });
+
+        updateAction.addCommands(commandDatas).queue(
+                cmds -> Launcher.getLogger().logInfo("Registered command " + cmds + " to guild " + guild.getName()));
     }
 
     /**
