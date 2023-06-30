@@ -566,8 +566,6 @@ public class Ticket {
                                 afterOpen();
 
                                 future.complete(TicketCreateResult.SUCCESS);
-
-                                DiscordBot.getInstance().getTicketManager().addTicket(this);
                             });
                         }));
 
@@ -601,7 +599,6 @@ public class Ticket {
                     afterOpen();
                     printAllPreviousMessages();
 
-                    DiscordBot.getInstance().getTicketManager().addTicket(this);
                     future.complete(ticketCreateResult);
                 }));
 
@@ -649,9 +646,8 @@ public class Ticket {
                     future.complete(TicketCloseResult.SUCCESS);
 
                     sendTicketClosedMessages();
-                    afterClose();
-
                     DiscordBot.getInstance().getTicketManager().removeTicket(this);
+                    afterClose();
                 }, throwable -> {
                     future.complete(TicketCloseResult.ERROR);
                     Launcher.getLogger().logError("Error while closing ticket: " + throwable.getMessage());
