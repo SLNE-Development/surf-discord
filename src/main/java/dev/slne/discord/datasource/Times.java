@@ -1,7 +1,6 @@
 package dev.slne.discord.datasource;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 public class Times {
 
@@ -16,6 +15,6 @@ public class Times {
      * The current time.
      */
     public static LocalDateTime now() {
-        return LocalDateTime.now(ZoneId.of("Europe/Berlin"));
+        return LocalDateTime.now();
     }
 }
