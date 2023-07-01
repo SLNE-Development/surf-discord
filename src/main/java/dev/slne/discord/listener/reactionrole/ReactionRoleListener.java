@@ -1,6 +1,5 @@
 package dev.slne.discord.listener.reactionrole;
 
-import java.util.List;
 import java.util.Optional;
 
 import javax.annotation.Nonnull;
@@ -8,8 +7,6 @@ import javax.annotation.Nonnull;
 import dev.slne.discord.discord.guild.DiscordGuild;
 import dev.slne.discord.discord.guild.DiscordGuilds;
 import dev.slne.discord.discord.guild.reactionrole.ReactionRoleConfig;
-import dev.slne.discord.listener.Listener;
-import dev.slne.discord.listener.event.events.BotStartEvent;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -27,70 +24,7 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.RestAction;
 
-public class ReactionRoleListener extends ListenerAdapter implements Listener {
-
-    // @EventHandler
-    @SuppressWarnings({ "java:S3776", "java:S135" })
-    public void onBotStart(BotStartEvent event) {
-        for (DiscordGuild discordGuild : DiscordGuilds.getGuilds()) {
-            ReactionRoleConfig reactionRoleConfig = discordGuild.getReactionRoleConfig();
-
-            if (reactionRoleConfig == null) {
-                continue;
-            }
-
-            Optional<RestAction<Message>> messageOptional = reactionRoleConfig.getMessageRest();
-
-            if (messageOptional.isEmpty()) {
-                continue;
-            }
-
-            RestAction<Message> messageRest = messageOptional.get();
-
-            if (messageRest == null) {
-                continue;
-            }
-
-            messageRest.queue(message -> {
-                if (message == null) {
-                    return;
-                }
-
-                Emoji emoji = reactionRoleConfig.getEmoji();
-
-                if (emoji == null) {
-                    return;
-                }
-
-                Guild guild = message.getGuild();
-                Channel channel = message.getChannel();
-
-                if (guild == null || channel == null || !(channel instanceof TextChannel)) {
-                    return;
-                }
-
-                List<MessageReaction> messageReactions = message.getReactions();
-
-                for (MessageReaction messageReaction : messageReactions) {
-                    Emoji reactionEmoji = messageReaction.getEmoji();
-
-                    if (emoji.hashCode() != reactionEmoji.hashCode()) {
-                        continue;
-                    }
-
-                    messageReaction.retrieveUsers().onSuccess(users -> {
-                        for (User user : users) {
-                            if (user == null) {
-                                continue;
-                            }
-
-                            addReactionRole(user, guild, channel, message.getId(), messageReaction);
-                        }
-                    }).queue();
-                }
-            });
-        }
-    }
+public class ReactionRoleListener extends ListenerAdapter {
 
     @Override
     public void onMessageReactionAdd(@Nonnull MessageReactionAddEvent event) {
