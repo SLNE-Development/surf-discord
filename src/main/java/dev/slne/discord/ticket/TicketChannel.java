@@ -432,18 +432,30 @@ public class TicketChannel {
      * @param channelCategory The category the ticket should be created in
      * @return If the ticket exists
      */
-    public static boolean checkTicketExists(String newTicketName, Category channelCategory, TicketType newTicketType) {
+    public static SurfFutureResult<Boolean> checkTicketExists(String newTicketName, Category channelCategory,
+            TicketType newTicketType, User newAuthor) {
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+        DiscordFutureResult<Boolean> futureResult = new DiscordFutureResult<>(future);
+
         boolean channelExists = channelCategory.getChannels().stream()
                 .anyMatch(categoryChannel -> categoryChannel.getName().equalsIgnoreCase(newTicketName));
 
-        boolean ticketNameChannelExists = DiscordBot.getInstance().getTicketManager().getTickets().stream()
-                .anyMatch(ticket -> ticket.getChannel().isPresent()
-                        && ticket.getChannel().get().getName().equalsIgnoreCase(newTicketName));
+        if (channelExists) {
+            future.complete(true);
+            return futureResult;
+        }
 
-        boolean ticketTypeMatches = DiscordBot.getInstance().getTicketManager().getTickets().stream()
-                .anyMatch(ticket -> ticket.getTicketType() == newTicketType);
+        boolean hasTicket = false;
+        for (Ticket ticket : DiscordBot.getInstance().getTicketManager().getTickets()) {
+            if (newAuthor.getId().equalsIgnoreCase(ticket.getTicketAuthorId())
+                    && newTicketType == ticket.getTicketType()) {
+                hasTicket = true;
+                break;
+            }
+        }
 
-        return channelExists || ticketNameChannelExists || ticketTypeMatches;
+        future.complete(hasTicket);
+        return futureResult;
     }
 
     /**
