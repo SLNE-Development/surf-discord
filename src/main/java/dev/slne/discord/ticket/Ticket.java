@@ -299,8 +299,6 @@ public class Ticket {
         CompletableFuture<Optional<MessageEmbed>> future = new CompletableFuture<>();
         DiscordFutureResult<Optional<MessageEmbed>> futureResult = new DiscordFutureResult<>(future);
 
-        EmbedBuilder embedBuilder = new EmbedBuilder();
-
         TicketChannel.getTicketName(this).whenComplete(ticketNameOptional -> {
             if (ticketNameOptional.isEmpty()) {
                 future.complete(Optional.empty());
@@ -308,65 +306,82 @@ public class Ticket {
             }
 
             String ticketName = ticketNameOptional.get();
-
-            RestAction<User> authorRest = getTicketAuthor();
             Optional<RestAction<User>> closedByRestOptional = getClosedBy();
 
-            List<CompletableFuture<?>> futures = new ArrayList<>();
-            futures.add(authorRest.submit());
+            getTicketAuthor().queue(author -> {
+                if (closedByRestOptional.isPresent()) {
+                    closedByRestOptional.get().queue(closedByUser -> {
+                        MessageEmbed embed = formEmbed(author, closedByUser, ticketName);
+                        future.complete(Optional.of(embed));
+                    });
 
-            if (closedByRestOptional.isPresent()) {
-                RestAction<User> closedByRest = closedByRestOptional.get();
-                futures.add(closedByRest.submit());
-            }
+                    return;
+                }
 
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[futures.size()]))
-                    .thenAcceptAsync(v -> authorRest.queue(author -> {
-                        Optional<User> closedByOptional = closedByRestOptional.map(RestAction::complete);
-
-                        embedBuilder.setTitle("Ticket \"" + ticketName + "\" geschlossen");
-
-                        String reason = getClosedReason().orElse("Kein Grund angegeben");
-                        String description = "Ein Ticket wurde ";
-                        if (closedByOptional.isPresent()) {
-                            User closedUser = closedByOptional.get();
-                            description += "von " + closedUser.getAsMention() + " ";
-                        }
-                        description += "geschlossen.\n\nGrund:\n" + reason;
-                        embedBuilder.setDescription(description);
-
-                        embedBuilder.setColor(Color.decode("#ff6600"));
-
-                        Optional<LocalDateTime> openedAtOptional = getCreatedAt();
-                        Optional<LocalDateTime> closedAtOptional = getClosedAt();
-
-                        LocalDateTime openedAtDateTime = openedAtOptional.get();
-                        LocalDateTime closedAtDateTime = closedAtOptional.orElse(Times.now());
-
-                        long[] tempDifferences = toTempUnits(openedAtDateTime, closedAtDateTime);
-                        long days = tempDifferences[2];
-                        long hours = tempDifferences[3];
-                        long minutes = tempDifferences[4];
-                        long seconds = tempDifferences[5];
-
-                        String differenceString = String.format("%d Tage, %d Stunden, %d Minuten, %d Sekunden", days,
-                                hours,
-                                minutes, seconds);
-
-                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
-
-                        embedBuilder.addField("Ticket-ID", getTicketId().orElse("") + "", true);
-                        embedBuilder.addField("Ticket-Type", getTicketTypeString() + "", true);
-                        embedBuilder.addField("Ticket-Author", author.getAsMention(), true);
-                        embedBuilder.addField("Ticket-Eröffnungszeit", formatter.format(openedAtDateTime) + "", true);
-                        embedBuilder.addField("Ticket-Schließzeit", formatter.format(closedAtDateTime) + "", true);
-                        embedBuilder.addField("Ticket-Dauer", differenceString + "", true);
-
-                        future.complete(Optional.of(embedBuilder.build()));
-                    }));
+                MessageEmbed embed = formEmbed(author, null, ticketName);
+                future.complete(Optional.of(embed));
+            }, future::completeExceptionally);
         }, future::completeExceptionally);
 
         return futureResult;
+    }
+
+    /**
+     * Forms the acutal embed
+     *
+     * @param author     The author
+     * @param closedBy   The user that closed the ticket
+     * @param ticketName The name of the ticket
+     * @return The embed
+     */
+    private MessageEmbed formEmbed(User author, User closedBy, String ticketName) {
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+
+        embedBuilder.setTitle("Ticket \"" + ticketName + "\" geschlossen");
+
+        String reason = getClosedReason().orElse("Kein Grund angegeben");
+        String description = "Ein Ticket wurde ";
+        if (closedBy != null) {
+            description += "von " + closedBy.getAsMention() + " ";
+        }
+        description += "geschlossen.\n\nGrund:\n" + reason;
+        embedBuilder.setDescription(description);
+
+        embedBuilder.setColor(Color.decode("#ff6600"));
+
+        Optional<LocalDateTime> openedAtOptional = getCreatedAt();
+        Optional<LocalDateTime> closedAtOptional = getClosedAt();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+        LocalDateTime closedAtDateTime = closedAtOptional.orElse(Times.now());
+
+        embedBuilder.addField("Ticket-ID", getTicketId().orElse("") + "", true);
+        embedBuilder.addField("Ticket-Type", getTicketTypeString() + "", true);
+        embedBuilder.addField("Ticket-Author", author.getAsMention(), true);
+
+        if (openedAtOptional.isPresent()) {
+            LocalDateTime openedAtDateTime = openedAtOptional.get();
+            embedBuilder.addField("Ticket-Eröffnungszeit", formatter.format(openedAtDateTime) + "", true);
+        }
+
+        embedBuilder.addField("Ticket-Schließzeit", formatter.format(closedAtDateTime) + "", true);
+
+        if (openedAtOptional.isPresent()) {
+            LocalDateTime openedAtDateTime = openedAtOptional.get();
+
+            long[] tempDifferences = toTempUnits(openedAtDateTime, closedAtDateTime);
+            long days = tempDifferences[2];
+            long hours = tempDifferences[3];
+            long minutes = tempDifferences[4];
+            long seconds = tempDifferences[5];
+
+            String differenceString = String.format("%d Tage, %d Stunden, %d Minuten, %d Sekunden", days,
+                    hours,
+                    minutes, seconds);
+            embedBuilder.addField("Ticket-Dauer", differenceString + "", true);
+        }
+
+        return embedBuilder.build();
     }
 
     /**
@@ -522,7 +537,7 @@ public class Ticket {
      * @param runnable The runnable to run after the ticket is opened
      * @return The result of the ticket opening
      */
-    @SuppressWarnings("java:S3776")
+    @SuppressWarnings({ "java:S3776", "java:S1602" })
     private SurfFutureResult<TicketCreateResult> open(Runnable runnable) {
         CompletableFuture<TicketCreateResult> future = new CompletableFuture<>();
         DiscordFutureResult<TicketCreateResult> futureResult = new DiscordFutureResult<>(future);
@@ -574,42 +589,47 @@ public class Ticket {
                         return;
                     }
 
-                    boolean ticketExists = TicketChannel.checkTicketExists(ticketName, channelCategory, ticketType);
+                    ticketAuthor.queue(author -> {
+                        TicketChannel.checkTicketExists(ticketName, channelCategory, ticketType, author)
+                                .whenComplete(ticketExistsBoolean -> {
+                                    boolean ticketExists = ticketExistsBoolean;
 
-                    if (ticketExists) {
-                        future.complete(TicketCreateResult.ALREADY_EXISTS);
-                        return;
-                    }
-
-                    TicketRepository.createTicket(this).whenComplete(ticketCreateResultOptional -> {
-                        if (ticketCreateResultOptional.isEmpty()) {
-                            future.complete(TicketCreateResult.ERROR);
-                            return;
-                        }
-
-                        DiscordBot.getInstance().getTicketManager().addTicket(this);
-
-                        TicketChannel.createTicketChannel(this, ticketName, channelCategory)
-                                .whenComplete(ticketChannelCreateResultOptional -> {
-                                    if (ticketChannelCreateResultOptional.isEmpty()) {
-                                        future.complete(TicketCreateResult.ERROR);
+                                    if (ticketExists) {
+                                        future.complete(TicketCreateResult.ALREADY_EXISTS);
                                         return;
                                     }
 
-                                    TicketCreateResult ticketChannelCreateResult = ticketChannelCreateResultOptional
-                                            .get();
+                                    TicketRepository.createTicket(this).whenComplete(ticketCreateResultOptional -> {
+                                        if (ticketCreateResultOptional.isEmpty()) {
+                                            future.complete(TicketCreateResult.ERROR);
+                                            return;
+                                        }
 
-                                    if (ticketChannelCreateResult != TicketCreateResult.SUCCESS) {
-                                        future.complete(ticketChannelCreateResult);
-                                        return;
-                                    }
+                                        DiscordBot.getInstance().getTicketManager().addTicket(this);
 
-                                    afterOpen();
-                                    runnable.run();
-                                    future.complete(TicketCreateResult.SUCCESS);
-                                }, future::completeExceptionally);
-                    }, future::completeExceptionally);
-                }, future::completeExceptionally));
+                                        TicketChannel.createTicketChannel(this, ticketName, channelCategory)
+                                                .whenComplete(ticketChannelCreateResultOptional -> {
+                                                    if (ticketChannelCreateResultOptional.isEmpty()) {
+                                                        future.complete(TicketCreateResult.ERROR);
+                                                        return;
+                                                    }
+
+                                                    TicketCreateResult ticketChannelCreateResult = ticketChannelCreateResultOptional
+                                                            .get();
+
+                                                    if (ticketChannelCreateResult != TicketCreateResult.SUCCESS) {
+                                                        future.complete(ticketChannelCreateResult);
+                                                        return;
+                                                    }
+
+                                                    afterOpen();
+                                                    runnable.run();
+                                                    future.complete(TicketCreateResult.SUCCESS);
+                                                }, future::completeExceptionally);
+                                    }, future::completeExceptionally);
+                                });
+                    });
+                }));
 
         return futureResult;
     }
