@@ -29,6 +29,7 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.Webhook;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.requests.RestAction;
 
 public class Ticket {
@@ -416,7 +417,29 @@ public class Ticket {
 
                             if (memberIsAuthor || !isAdminUser) {
                                 memberUser.openPrivateChannel()
-                                        .queue(privateChannel -> privateChannel.sendMessageEmbeds(embed).queue());
+                                        .queue(privateChannel -> privateChannel.sendMessageEmbeds(embed).queue(v -> {
+                                        }, failure -> {
+                                            if (failure instanceof ErrorResponseException errorResponseException
+                                                    && errorResponseException.getErrorCode() == 50007) {
+                                                return;
+                                            }
+
+                                            Launcher.getLogger()
+                                                    .logError("Error while sending ticket closed message: "
+                                                            + failure.getMessage());
+                                            failure.printStackTrace();
+                                        }),
+                                                failure -> {
+                                                    if (failure instanceof ErrorResponseException errorResponseException
+                                                            && errorResponseException.getErrorCode() == 50007) {
+                                                        return;
+                                                    }
+
+                                                    Launcher.getLogger()
+                                                            .logError("Error while opening ticket closed message: "
+                                                                    + failure.getMessage());
+                                                    failure.printStackTrace();
+                                                });
                             }
                         });
                     }));
