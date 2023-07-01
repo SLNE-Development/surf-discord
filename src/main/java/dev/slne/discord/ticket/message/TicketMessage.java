@@ -20,7 +20,6 @@ import dev.slne.data.core.database.future.SurfFutureResult;
 import dev.slne.data.core.gson.GsonConverter;
 import dev.slne.data.core.instance.DataApi;
 import dev.slne.data.core.web.WebRequest;
-import dev.slne.data.core.web.WebResponse;
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.Launcher;
 import dev.slne.discord.datasource.API;
@@ -198,16 +197,22 @@ public class TicketMessage {
      * @return the {@link SurfFutureResult}
      */
     public SurfFutureResult<Optional<TicketMessage>> delete() {
-        return DataApi.getDataInstance().supplyAsync(() -> {
+        CompletableFuture<Optional<TicketMessage>> future = new CompletableFuture<>();
+        DiscordFutureResult<Optional<TicketMessage>> result = new DiscordFutureResult<>(future);
+
+        DataApi.getDataInstance().runAsync(() -> {
             if (this.messageDeletedAt.isPresent()) {
-                return Optional.of(this);
+                future.complete(Optional.of(this));
+                return;
             }
 
             TicketMessage newMessage = new TicketMessage(this);
             newMessage.messageDeletedAt = Optional.of(Times.now());
 
-            return newMessage.create().join();
+            newMessage.create().whenComplete(future::complete, future::completeExceptionally);
         });
+
+        return result;
     }
 
     /**
@@ -454,39 +459,51 @@ public class TicketMessage {
      * @return True if the ticket message has been saved successfully, false
      */
     public SurfFutureResult<Optional<TicketMessage>> create() {
-        return DataApi.getDataInstance().supplyAsync(() -> {
+        CompletableFuture<Optional<TicketMessage>> future = new CompletableFuture<>();
+        DiscordFutureResult<Optional<TicketMessage>> result = new DiscordFutureResult<>(future);
+
+        DataApi.getDataInstance().runAsync(() -> {
             if (ticket.getTicketId().isEmpty()) {
-                return Optional.empty();
+                future.complete(Optional.empty());
+                return;
             }
 
             String ticketId = ticket.getTicketId().get();
 
             String url = String.format(API.TICKET_MESSAGES, ticketId);
             WebRequest request = WebRequest.builder().url(url).json(true).parameters(toParameters()).build();
-            WebResponse response = request.executePost().join();
+            request.executePost().thenAccept(response -> {
+                Object responseBody = response.getBody();
+                String bodyString = responseBody.toString();
 
-            Object responseBody = response.getBody();
-            String bodyString = responseBody.toString();
+                if (!(response.getStatusCode() == 201 || response.getStatusCode() == 200)) {
+                    Launcher.getLogger().logError("Ticket message could not be created: " + bodyString);
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            if (!(response.getStatusCode() == 201 || response.getStatusCode() == 200)) {
-                Launcher.getLogger().logError("Ticket message could not be created: " + bodyString);
-                return Optional.empty();
-            }
+                GsonConverter gson = new GsonConverter();
+                JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
 
-            GsonConverter gson = new GsonConverter();
-            JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
+                if (!bodyElement.has("data") || !bodyElement.get("data").isJsonObject()) {
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            if (!bodyElement.has("data") || !bodyElement.get("data").isJsonObject()) {
-                return Optional.empty();
-            }
+                JsonObject jsonObject = (JsonObject) bodyElement.get("data");
 
-            JsonObject jsonObject = (JsonObject) bodyElement.get("data");
+                TicketMessage tempMessage = fromJsonObject(ticket, jsonObject);
+                id = tempMessage.id;
 
-            TicketMessage tempMessage = fromJsonObject(ticket, jsonObject);
-            id = tempMessage.id;
-
-            return Optional.of(this);
+                future.complete(Optional.of(this));
+            }).exceptionally(throwable -> {
+                Launcher.getLogger().logError("Ticket message could not be created: " + throwable.getMessage());
+                future.complete(Optional.empty());
+                return null;
+            });
         });
+
+        return result;
     }
 
     /**

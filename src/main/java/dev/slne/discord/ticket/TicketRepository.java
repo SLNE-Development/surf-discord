@@ -17,7 +17,6 @@ import dev.slne.data.core.database.future.SurfFutureResult;
 import dev.slne.data.core.gson.GsonConverter;
 import dev.slne.data.core.instance.DataApi;
 import dev.slne.data.core.web.WebRequest;
-import dev.slne.data.core.web.WebResponse;
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.Launcher;
 import dev.slne.discord.datasource.API;
@@ -49,40 +48,46 @@ public class TicketRepository {
 
         DataApi.getDataInstance().runAsync(() -> {
             WebRequest request = WebRequest.builder().url(API.ACTIVE_TICKETS).build();
-            WebResponse response = request.executeGet().join();
-            List<Ticket> tickets = new ArrayList<>();
 
-            if (response.getStatusCode() != 200) {
-                Launcher.getLogger().logError(response.getBody());
-                future.complete(Optional.of(tickets));
-                return;
-            }
+            request.executeGet().thenAccept(response -> {
+                List<Ticket> tickets = new ArrayList<>();
 
-            Object body = response.getBody();
-            String bodyString = body.toString();
-
-            GsonConverter gson = new GsonConverter();
-            JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
-
-            if (!bodyElement.has("data") || !bodyElement.get("data").isJsonArray()) {
-                future.complete(Optional.of(tickets));
-                return;
-            }
-
-            JsonArray dataArray = (JsonArray) bodyElement.get("data");
-
-            for (JsonElement ticketElement : dataArray) {
-                if (!ticketElement.isJsonObject()) {
-                    continue;
+                if (response.getStatusCode() != 200) {
+                    Launcher.getLogger().logError(response.getBody());
+                    future.complete(Optional.of(tickets));
+                    return;
                 }
 
-                JsonObject ticketObject = ticketElement.getAsJsonObject();
-                Ticket ticket = ticketByJson(ticketObject);
+                Object body = response.getBody();
+                String bodyString = body.toString();
 
-                tickets.add(ticket);
-            }
+                GsonConverter gson = new GsonConverter();
+                JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
 
-            future.complete(Optional.of(tickets));
+                if (!bodyElement.has("data") || !bodyElement.get("data").isJsonArray()) {
+                    future.complete(Optional.of(tickets));
+                    return;
+                }
+
+                JsonArray dataArray = (JsonArray) bodyElement.get("data");
+
+                for (JsonElement ticketElement : dataArray) {
+                    if (!ticketElement.isJsonObject()) {
+                        continue;
+                    }
+
+                    JsonObject ticketObject = ticketElement.getAsJsonObject();
+                    Ticket ticket = ticketByJson(ticketObject);
+
+                    tickets.add(ticket);
+                }
+
+                future.complete(Optional.of(tickets));
+            }).exceptionally(throwable -> {
+                Launcher.getLogger().logError(throwable);
+                future.completeExceptionally(throwable);
+                return null;
+            });
         });
 
         return futureResult;
@@ -107,36 +112,47 @@ public class TicketRepository {
      * @return The result of the ticket saving
      */
     public static SurfFutureResult<Optional<Ticket>> createTicket(Ticket ticket) {
-        return DataApi.getDataInstance().supplyAsync(() -> {
+        CompletableFuture<Optional<Ticket>> future = new CompletableFuture<>();
+        DiscordFutureResult<Optional<Ticket>> futureResult = new DiscordFutureResult<>(future);
+
+        DataApi.getDataInstance().runAsync(() -> {
             WebRequest request = WebRequest.builder().url(API.TICKETS).json(true).parameters(toParameters(ticket))
                     .build();
-            WebResponse response = request.executePost().join();
+            request.executePost().thenAccept(response -> {
+                if (response.getStatusCode() != 201) {
+                    Launcher.getLogger().logError(response.getBody());
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            if (response.getStatusCode() != 201) {
-                Launcher.getLogger().logError(response.getBody());
-                return Optional.empty();
-            }
+                Object body = response.getBody();
+                String bodyString = body.toString();
 
-            Object body = response.getBody();
-            String bodyString = body.toString();
+                GsonConverter gson = new GsonConverter();
+                JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
 
-            GsonConverter gson = new GsonConverter();
-            JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
+                if (!bodyElement.has("data") || !bodyElement.get("data").isJsonObject()) {
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            if (!bodyElement.has("data") || !bodyElement.get("data").isJsonObject()) {
-                return Optional.empty();
-            }
+                JsonObject jsonObject = (JsonObject) bodyElement.get("data");
+                Ticket newTicket = ticketByJson(jsonObject);
 
-            JsonObject jsonObject = (JsonObject) bodyElement.get("data");
-            Ticket newTicket = ticketByJson(jsonObject);
+                ticket.setOpenedAt(newTicket.getOpenedAt());
+                ticket.setTicketId(newTicket.getTicketId());
+                ticket.setId(newTicket.getId());
+                ticket.setCreatedAt(newTicket.getCreatedAt());
 
-            ticket.setOpenedAt(newTicket.getOpenedAt());
-            ticket.setTicketId(newTicket.getTicketId());
-            ticket.setId(newTicket.getId());
-            ticket.setCreatedAt(newTicket.getCreatedAt());
-
-            return Optional.of(ticket);
+                future.complete(Optional.of(ticket));
+            }).exceptionally(throwable -> {
+                Launcher.getLogger().logError(throwable);
+                future.completeExceptionally(throwable);
+                return null;
+            });
         });
+
+        return futureResult;
     }
 
     /**
@@ -146,33 +162,46 @@ public class TicketRepository {
      * @return The result of the ticket updating
      */
     public static SurfFutureResult<Optional<Ticket>> updateTicket(Ticket ticket) {
+        CompletableFuture<Optional<Ticket>> future = new CompletableFuture<>();
+        DiscordFutureResult<Optional<Ticket>> futureResult = new DiscordFutureResult<>(future);
+
         if (ticket.getTicketId().isEmpty()) {
-            return DataApi.getDataInstance().supplyAsync(Optional::empty);
+            future.complete(Optional.empty());
+            return futureResult;
         }
 
-        return DataApi.getDataInstance().supplyAsync(() -> {
+        DataApi.getDataInstance().runAsync(() -> {
             String url = String.format(API.TICKET, ticket.getTicketId().get());
             WebRequest request = WebRequest.builder().url(url).json(true).parameters(toParameters(ticket))
                     .build();
-            WebResponse response = request.executePut().join();
 
-            if (!(response.getStatusCode() == 200 || response.getStatusCode() == 201)) {
-                Launcher.getLogger().logError(response.getBody());
-                return Optional.empty();
-            }
+            request.executePut().thenAccept(response -> {
+                if (!(response.getStatusCode() == 200 || response.getStatusCode() == 201)) {
+                    Launcher.getLogger().logError(response.getBody());
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            Object body = response.getBody();
-            String bodyString = body.toString();
+                Object body = response.getBody();
+                String bodyString = body.toString();
 
-            GsonConverter gson = new GsonConverter();
-            JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
+                GsonConverter gson = new GsonConverter();
+                JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
 
-            if (!bodyElement.has("data") || !bodyElement.get("data").isJsonObject()) {
-                return Optional.empty();
-            }
+                if (!bodyElement.has("data") || !bodyElement.get("data").isJsonObject()) {
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            return Optional.of(ticket);
+                future.complete(Optional.of(ticket));
+            }).exceptionally(throwable -> {
+                Launcher.getLogger().logError(throwable);
+                future.completeExceptionally(throwable);
+                return null;
+            });
         });
+
+        return futureResult;
     }
 
     /**
@@ -182,40 +211,52 @@ public class TicketRepository {
      * @return The result of the ticket closing
      */
     public static SurfFutureResult<Optional<Ticket>> closeTicket(Ticket ticket) {
+        CompletableFuture<Optional<Ticket>> future = new CompletableFuture<>();
+        DiscordFutureResult<Optional<Ticket>> futureResult = new DiscordFutureResult<>(future);
+
         Optional<String> ticketIdOptional = ticket.getTicketId();
         if (ticketIdOptional.isEmpty()) {
-            return DataApi.getDataInstance().supplyAsync(Optional::empty);
+            future.complete(Optional.empty());
+            return futureResult;
         }
 
         String checkedTicketId = ticketIdOptional.get();
 
-        return DataApi.getDataInstance().supplyAsync(() -> {
+        DataApi.getDataInstance().runAsync(() -> {
             String url = String.format(API.TICKET, checkedTicketId);
 
             WebRequest request = WebRequest.builder().url(url).json(true).parameters(toParameters(ticket)).build();
-            WebResponse response = request.executeDelete().join();
+            request.executeDelete().thenAccept(response -> {
+                if (response.getStatusCode() != 200) {
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            if (response.getStatusCode() != 200) {
-                return Optional.empty();
-            }
+                Object body = response.getBody();
+                String bodyString = body.toString();
 
-            Object body = response.getBody();
-            String bodyString = body.toString();
+                GsonConverter gson = new GsonConverter();
+                JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
 
-            GsonConverter gson = new GsonConverter();
-            JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
+                if (!bodyElement.has("data") || !bodyElement.get("data").isJsonObject()) {
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            if (!bodyElement.has("data") || !bodyElement.get("data").isJsonObject()) {
-                return Optional.empty();
-            }
+                JsonObject jsonObject = (JsonObject) bodyElement.get("data");
+                Ticket newTicket = ticketByJson(jsonObject);
 
-            JsonObject jsonObject = (JsonObject) bodyElement.get("data");
-            Ticket newTicket = ticketByJson(jsonObject);
+                ticket.setClosedAt(newTicket.getClosedAt());
 
-            ticket.setClosedAt(newTicket.getClosedAt());
-
-            return Optional.of(ticket);
+                future.complete(Optional.of(ticket));
+            }).exceptionally(throwable -> {
+                Launcher.getLogger().logError(throwable);
+                future.completeExceptionally(throwable);
+                return null;
+            });
         });
+
+        return futureResult;
     }
 
     /**

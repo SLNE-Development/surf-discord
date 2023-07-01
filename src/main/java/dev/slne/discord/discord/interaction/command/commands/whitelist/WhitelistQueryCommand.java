@@ -140,7 +140,11 @@ public class WhitelistQueryCommand extends DiscordCommand {
             List<Whitelist> whitelists = whitelistsOptional.get();
 
             for (Whitelist whitelist : whitelists) {
-                channel.sendMessageEmbeds(Whitelist.getWhitelistQueryEmbed(whitelist)).queue();
+                Whitelist.getWhitelistQueryEmbed(whitelist).whenComplete(embed -> {
+                    if (embed != null) {
+                        channel.sendMessageEmbeds(embed).queue();
+                    }
+                });
             }
 
             if (whitelists.isEmpty()) {

@@ -29,23 +29,27 @@ public class ReactionRoleListener extends ListenerAdapter {
     @Override
     public void onMessageReactionAdd(@Nonnull MessageReactionAddEvent event) {
         Guild guild = event.getGuild();
-        User user = event.retrieveUser().complete();
-        Channel channel = event.getChannel();
-        String messageId = event.getMessageId();
-        MessageReaction messageReaction = event.getReaction();
 
-        addReactionRole(user, guild, channel, messageId, messageReaction);
+        event.retrieveUser().queue(user -> {
+            Channel channel = event.getChannel();
+            String messageId = event.getMessageId();
+            MessageReaction messageReaction = event.getReaction();
+
+            addReactionRole(user, guild, channel, messageId, messageReaction);
+        });
     }
 
     @Override
     public void onMessageReactionRemove(@Nonnull MessageReactionRemoveEvent event) {
         Guild guild = event.getGuild();
-        User user = event.retrieveUser().complete();
-        Channel channel = event.getChannel();
-        String messageId = event.getMessageId();
-        MessageReaction messageReaction = event.getReaction();
 
-        removeReactionRole(user, guild, channel, messageId, messageReaction);
+        event.retrieveUser().queue(user -> {
+            Channel channel = event.getChannel();
+            String messageId = event.getMessageId();
+            MessageReaction messageReaction = event.getReaction();
+
+            removeReactionRole(user, guild, channel, messageId, messageReaction);
+        });
     }
 
     @Override

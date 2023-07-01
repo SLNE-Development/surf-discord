@@ -1,5 +1,6 @@
 package dev.slne.discord.whitelist;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,10 +18,8 @@ import dev.slne.data.core.database.future.SurfFutureResult;
 import dev.slne.data.core.gson.GsonConverter;
 import dev.slne.data.core.instance.DataApi;
 import dev.slne.data.core.web.WebRequest;
-import dev.slne.data.core.web.WebResponse;
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.datasource.API;
-import dev.slne.discord.datasource.Times;
 import dev.slne.discord.datasource.database.future.DiscordFutureResult;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -158,14 +157,18 @@ public class Whitelist {
      * @param whitelist The {@link Whitelist}.
      * @return The {@link MessageEmbed}.
      */
-    public static @Nonnull MessageEmbed getWhitelistQueryEmbed(Whitelist whitelist) {
+    @SuppressWarnings({ "java:S3776", "java:S1192" })
+    public static @Nonnull SurfFutureResult<MessageEmbed> getWhitelistQueryEmbed(Whitelist whitelist) {
+        CompletableFuture<MessageEmbed> future = new CompletableFuture<>();
+        DiscordFutureResult<MessageEmbed> futureResult = new DiscordFutureResult<>(future);
+
         EmbedBuilder builder = new EmbedBuilder();
 
         builder.setTitle("Whitelist Query");
         builder.setFooter("Whitelist Query", DiscordBot.getInstance().getJda().getSelfUser().getAvatarUrl());
         builder.setDescription("Whitelist Informationen");
         builder.setColor(0x000000);
-        builder.setTimestamp(Times.now());
+        builder.setTimestamp(Instant.now());
 
         Optional<UUID> uuid = whitelist.getUuid();
         Optional<String> minecraftName = whitelist.getMinecraftName();
@@ -173,45 +176,63 @@ public class Whitelist {
         Optional<RestAction<User>> discordUserRest = whitelist.getDiscordUser();
         Optional<RestAction<User>> addedByRest = whitelist.getAddedBy();
 
-        User discordUser = null;
+        CompletableFuture<User> discordUserFuture = new CompletableFuture<>();
+        CompletableFuture<User> addedByFuture = new CompletableFuture<>();
+
         if (discordUserRest.isPresent()) {
-            discordUser = discordUserRest.get().complete();
+            discordUserFuture = discordUserRest.get().submit();
+        } else {
+            discordUserFuture.complete(null);
         }
 
-        User addedBy = null;
         if (addedByRest.isPresent()) {
-            addedBy = addedByRest.get().complete();
+            addedByFuture = addedByRest.get().submit();
+        } else {
+            addedByFuture.complete(null);
         }
 
-        String minecraftNameString = minecraftName.orElse(null);
-        String twitchLinkString = twitchLink.orElse(null);
-        UUID uuidObject = uuid.orElse(null);
-        String uuidString = null;
-        if (uuidObject != null) {
-            uuidString = uuidObject.toString();
-        }
+        final CompletableFuture<User> finaldiscordUserFuture = discordUserFuture;
+        final CompletableFuture<User> finalAddedByFuture = addedByFuture;
 
-        if (minecraftName.isPresent() && minecraftNameString != null) {
-            builder.addField("Minecraft Name", minecraftNameString, true);
-        }
+        CompletableFuture.allOf(finaldiscordUserFuture, finalAddedByFuture).thenAccept(v -> {
+            User discordUser = finaldiscordUserFuture.join();
+            User addedBy = finalAddedByFuture.join();
 
-        if (twitchLink.isPresent() && twitchLinkString != null) {
-            builder.addField("Twitch Link", twitchLinkString, true);
-        }
+            String minecraftNameString = minecraftName.orElse(null);
+            String twitchLinkString = twitchLink.orElse(null);
+            UUID uuidObject = uuid.orElse(null);
+            String uuidString = null;
+            if (uuidObject != null) {
+                uuidString = uuidObject.toString();
+            }
 
-        if (discordUser != null) {
-            builder.addField("Discord User", discordUser.getAsMention(), true);
-        }
+            if (minecraftName.isPresent() && minecraftNameString != null) {
+                builder.addField("Minecraft Name", minecraftNameString, true);
+            }
 
-        if (addedBy != null) {
-            builder.addField("Added By", addedBy.getAsMention(), true);
-        }
+            if (twitchLink.isPresent() && twitchLinkString != null) {
+                builder.addField("Twitch Link", twitchLinkString, true);
+            }
 
-        if (uuid.isPresent() && uuidString != null) {
-            builder.addField("UUID", uuidString, false);
-        }
+            if (discordUser != null) {
+                builder.addField("Discord User", discordUser.getAsMention(), true);
+            }
 
-        return builder.build();
+            if (addedBy != null) {
+                builder.addField("Added By", addedBy.getAsMention(), true);
+            }
+
+            if (uuid.isPresent() && uuidString != null) {
+                builder.addField("UUID", uuidString, false);
+            }
+
+            future.complete(builder.build());
+        }).exceptionally(exception -> {
+            future.completeExceptionally(exception);
+            return null;
+        });
+
+        return futureResult;
     }
 
     /**
@@ -222,9 +243,13 @@ public class Whitelist {
      * @param twitchLink The twitch link.
      * @return The {@link Whitelist}.
      */
+    @SuppressWarnings({ "java:S3776", "java:S1192" })
     public static SurfFutureResult<Optional<List<Whitelist>>> getWhitelists(UUID uuid, String discordId,
             String twitchLink) {
-        return DataApi.getDataInstance().supplyAsync(() -> {
+        CompletableFuture<Optional<List<Whitelist>>> future = new CompletableFuture<>();
+        DiscordFutureResult<Optional<List<Whitelist>>> futureResult = new DiscordFutureResult<>(future);
+
+        DataApi.getDataInstance().runAsync(() -> {
             List<Whitelist> whitelists = new ArrayList<>();
 
             Map<String, String> parameters = new HashMap<>();
@@ -234,31 +259,38 @@ public class Whitelist {
 
             WebRequest request = WebRequest.builder().json(true).url(API.WHITELIST_CHECK).parameters(parameters)
                     .build();
-            WebResponse response = request.executePost().join();
+            request.executePost().thenAccept(response -> {
+                if (response.getStatusCode() != 200) {
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            if (response.getStatusCode() != 200) {
-                return Optional.empty();
-            }
+                Object body = response.getBody();
+                String bodyString = body.toString();
 
-            Object body = response.getBody();
-            String bodyString = body.toString();
+                GsonConverter gson = new GsonConverter();
+                JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
 
-            GsonConverter gson = new GsonConverter();
-            JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
+                if (!bodyElement.has("data") || !bodyElement.get("data").isJsonArray()) {
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            if (!bodyElement.has("data") || !bodyElement.get("data").isJsonArray()) {
-                return Optional.empty();
-            }
+                JsonArray jsonArray = (JsonArray) bodyElement.get("data");
 
-            JsonArray jsonArray = (JsonArray) bodyElement.get("data");
+                for (int i = 0; i < jsonArray.size(); i++) {
+                    JsonObject jsonObject = (JsonObject) jsonArray.get(i);
+                    whitelists.add(fromJsonObject(jsonObject));
+                }
 
-            for (int i = 0; i < jsonArray.size(); i++) {
-                JsonObject jsonObject = (JsonObject) jsonArray.get(i);
-                whitelists.add(fromJsonObject(jsonObject));
-            }
-
-            return Optional.of(whitelists);
+                future.complete(Optional.of(whitelists));
+            }).exceptionally(exception -> {
+                future.completeExceptionally(exception);
+                return null;
+            });
         });
+
+        return futureResult;
     }
 
     /**
@@ -299,29 +331,40 @@ public class Whitelist {
      * @return The {@link Whitelist}.
      */
     public static SurfFutureResult<Optional<Whitelist>> getWhitelistByUUID(UUID uuid) {
-        return DataApi.getDataInstance().supplyAsync(() -> {
+        CompletableFuture<Optional<Whitelist>> future = new CompletableFuture<>();
+        DiscordFutureResult<Optional<Whitelist>> futureResult = new DiscordFutureResult<>(future);
+
+        DataApi.getDataInstance().runAsync(() -> {
             String url = String.format(API.WHITELIST, uuid.toString());
             WebRequest request = WebRequest.builder().json(true).url(url).build();
-            WebResponse response = request.executeGet().join();
 
-            if (response.getStatusCode() != 200) {
-                return Optional.empty();
-            }
+            request.executeGet().thenAccept(response -> {
+                if (response.getStatusCode() != 200) {
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            Object body = response.getBody();
-            String bodyString = body.toString();
+                Object body = response.getBody();
+                String bodyString = body.toString();
 
-            GsonConverter gson = new GsonConverter();
-            JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
+                GsonConverter gson = new GsonConverter();
+                JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
 
-            if (!bodyElement.has("data") || !bodyElement.get("data").isJsonObject()) {
-                return Optional.empty();
-            }
+                if (!bodyElement.has("data") || !bodyElement.get("data").isJsonObject()) {
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            JsonObject jsonObject = (JsonObject) bodyElement.get("data");
+                JsonObject jsonObject = (JsonObject) bodyElement.get("data");
 
-            return Optional.of(fromJsonObject(jsonObject));
+                future.complete(Optional.of(fromJsonObject(jsonObject)));
+            }).exceptionally(exception -> {
+                future.completeExceptionally(exception);
+                return null;
+            });
         });
+
+        return futureResult;
     }
 
     /**
@@ -331,29 +374,40 @@ public class Whitelist {
      * @return The {@link Whitelist}.
      */
     public static SurfFutureResult<Optional<Whitelist>> getWhitelistByDiscordId(String discordId) {
-        return DataApi.getDataInstance().supplyAsync(() -> {
+        CompletableFuture<Optional<Whitelist>> future = new CompletableFuture<>();
+        DiscordFutureResult<Optional<Whitelist>> futureResult = new DiscordFutureResult<>(future);
+
+        DataApi.getDataInstance().runAsync(() -> {
             String url = String.format(API.WHITELIST_BY_DISCORD_ID, discordId);
             WebRequest request = WebRequest.builder().json(true).url(url).build();
-            WebResponse response = request.executeGet().join();
 
-            if (response.getStatusCode() != 200) {
-                return Optional.empty();
-            }
+            request.executeGet().thenAccept(response -> {
+                if (response.getStatusCode() != 200) {
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            Object body = response.getBody();
-            String bodyString = body.toString();
+                Object body = response.getBody();
+                String bodyString = body.toString();
 
-            GsonConverter gson = new GsonConverter();
-            JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
+                GsonConverter gson = new GsonConverter();
+                JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
 
-            if (!bodyElement.has("data") || !bodyElement.get("data").isJsonObject()) {
-                return Optional.empty();
-            }
+                if (!bodyElement.has("data") || !bodyElement.get("data").isJsonObject()) {
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            JsonObject jsonObject = (JsonObject) bodyElement.get("data");
+                JsonObject jsonObject = (JsonObject) bodyElement.get("data");
 
-            return Optional.of(fromJsonObject(jsonObject));
+                future.complete(Optional.of(fromJsonObject(jsonObject)));
+            }).exceptionally(exception -> {
+                future.completeExceptionally(exception);
+                return null;
+            });
         });
+
+        return futureResult;
     }
 
     /**
@@ -362,35 +416,45 @@ public class Whitelist {
      * @return The List of {@link Whitelist}.
      */
     public static SurfFutureResult<Optional<List<Whitelist>>> getAllWhitelists() {
-        return DataApi.getDataInstance().supplyAsync(() -> {
+        CompletableFuture<Optional<List<Whitelist>>> future = new CompletableFuture<>();
+        DiscordFutureResult<Optional<List<Whitelist>>> futureResult = new DiscordFutureResult<>(future);
+
+        DataApi.getDataInstance().runAsync(() -> {
             WebRequest request = WebRequest.builder().json(true).url(API.WHITELISTS).build();
-            WebResponse response = request.executeGet().join();
+            request.executeGet().thenAccept(response -> {
+                List<Whitelist> whitelists = new ArrayList<>();
 
-            List<Whitelist> whitelists = new ArrayList<>();
+                if (response.getStatusCode() != 200) {
+                    future.complete(Optional.of(whitelists));
+                    return;
+                }
 
-            if (response.getStatusCode() != 200) {
-                return Optional.of(whitelists);
-            }
+                Object body = response.getBody();
+                String bodyString = body.toString();
 
-            Object body = response.getBody();
-            String bodyString = body.toString();
+                GsonConverter gson = new GsonConverter();
+                JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
 
-            GsonConverter gson = new GsonConverter();
-            JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
+                if (!bodyElement.has("data") || !bodyElement.get("data").isJsonArray()) {
+                    future.complete(Optional.of(whitelists));
+                    return;
+                }
 
-            if (!bodyElement.has("data") || !bodyElement.get("data").isJsonArray()) {
-                return Optional.of(whitelists);
-            }
+                JsonArray jsonArray = (JsonArray) bodyElement.get("data");
 
-            JsonArray jsonArray = (JsonArray) bodyElement.get("data");
+                for (int i = 0; i < jsonArray.size(); i++) {
+                    JsonObject jsonObject = (JsonObject) jsonArray.get(i);
+                    whitelists.add(fromJsonObject(jsonObject));
+                }
 
-            for (int i = 0; i < jsonArray.size(); i++) {
-                JsonObject jsonObject = (JsonObject) jsonArray.get(i);
-                whitelists.add(fromJsonObject(jsonObject));
-            }
-
-            return Optional.of(whitelists);
+                future.complete(Optional.of(whitelists));
+            }).exceptionally(exception -> {
+                future.completeExceptionally(exception);
+                return null;
+            });
         });
+
+        return futureResult;
     }
 
     /**
@@ -478,31 +542,41 @@ public class Whitelist {
      * @return The {@link SurfFutureResult}.
      */
     public SurfFutureResult<Optional<Whitelist>> create() {
-        return DataApi.getDataInstance().supplyAsync(() -> {
+        CompletableFuture<Optional<Whitelist>> future = new CompletableFuture<>();
+        DiscordFutureResult<Optional<Whitelist>> futureResult = new DiscordFutureResult<>(future);
+
+        DataApi.getDataInstance().runAsync(() -> {
             WebRequest request = WebRequest.builder().json(true).parameters(toParameters()).url(API.WHITELISTS).build();
-            WebResponse response = request.executePost().join();
+            request.executePost().thenAccept(response -> {
+                if (!(response.getStatusCode() == 200 || response.getStatusCode() == 201)) {
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            if (!(response.getStatusCode() == 200 || response.getStatusCode() == 201)) {
-                return Optional.empty();
-            }
+                Object body = response.getBody();
+                String bodyString = body.toString();
 
-            Object body = response.getBody();
-            String bodyString = body.toString();
+                GsonConverter gson = new GsonConverter();
+                JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
 
-            GsonConverter gson = new GsonConverter();
-            JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
+                if (!bodyElement.has("data") || !bodyElement.get("data").isJsonObject()) {
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            if (!bodyElement.has("data") || !bodyElement.get("data").isJsonObject()) {
-                return Optional.empty();
-            }
+                JsonObject jsonObject = (JsonObject) bodyElement.get("data");
 
-            JsonObject jsonObject = (JsonObject) bodyElement.get("data");
+                Whitelist tempWhitelist = fromJsonObject(jsonObject);
+                id = tempWhitelist.id;
 
-            Whitelist tempWhitelist = fromJsonObject(jsonObject);
-            id = tempWhitelist.id;
-
-            return Optional.of(this);
+                future.complete(Optional.of(this));
+            }).exceptionally(exception -> {
+                future.completeExceptionally(exception);
+                return null;
+            });
         });
+
+        return futureResult;
     }
 
     /**
@@ -511,27 +585,37 @@ public class Whitelist {
      * @return The {@link SurfFutureResult}.
      */
     public SurfFutureResult<Optional<Whitelist>> update() {
-        return DataApi.getDataInstance().supplyAsync(() -> {
+        CompletableFuture<Optional<Whitelist>> future = new CompletableFuture<>();
+        DiscordFutureResult<Optional<Whitelist>> futureResult = new DiscordFutureResult<>(future);
+
+        DataApi.getDataInstance().runAsync(() -> {
             String url = String.format(API.WHITELIST, uuid.get().toString());
             WebRequest request = WebRequest.builder().json(true).parameters(toParameters()).url(url).build();
-            WebResponse response = request.executePost().join();
+            request.executePost().thenAccept(response -> {
+                if (!(response.getStatusCode() == 200 || response.getStatusCode() == 201)) {
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            if (!(response.getStatusCode() == 200 || response.getStatusCode() == 201)) {
-                return Optional.empty();
-            }
+                Object body = response.getBody();
+                String bodyString = body.toString();
 
-            Object body = response.getBody();
-            String bodyString = body.toString();
+                GsonConverter gson = new GsonConverter();
+                JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
 
-            GsonConverter gson = new GsonConverter();
-            JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
+                if (!bodyElement.has("data") || !bodyElement.get("data").isJsonObject()) {
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            if (!bodyElement.has("data") || !bodyElement.get("data").isJsonObject()) {
-                return Optional.empty();
-            }
-
-            return Optional.of(this);
+                future.complete(Optional.of(this));
+            }).exceptionally(exception -> {
+                future.completeExceptionally(exception);
+                return null;
+            });
         });
+
+        return futureResult;
     }
 
     /**

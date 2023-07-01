@@ -318,10 +318,9 @@ public class TicketChannel {
                     ticket.setChannel(Optional.of(ticketChannel));
                     ticket.setChannelId(Optional.of(ticketChannel.getId()));
 
-                    createWebhook(ticket).join();
-                    TicketRepository.updateTicket(ticket).join();
-
-                    future.complete(Optional.of(TicketCreateResult.SUCCESS));
+                    CompletableFuture
+                            .allOf(createWebhook(ticket).getFuture(), TicketRepository.updateTicket(ticket).getFuture())
+                            .thenAccept(v1 -> future.complete(Optional.of(TicketCreateResult.SUCCESS)));
                 }, exception -> {
                     if (exception instanceof ErrorResponseException errorResponseException
                             && errorResponseException.getErrorCode() == 50013) {
@@ -470,38 +469,38 @@ public class TicketChannel {
 
         ticketAuthor.queue(author -> {
             DiscordGuild discordGuild = DiscordGuilds.getGuild(guild.get());
-            List<User> allUsers = discordGuild.getAllUsers().join();
+            discordGuild.getAllUsers().whenComplete(allUsers -> {
+                if (!allUsers.contains(author)) {
+                    futures.add(
+                            ticket.addTicketMember(
+                                    new TicketMember(ticket, author, DiscordBot.getInstance().getJda().getSelfUser()))
+                                    .getFuture());
+                }
 
-            if (!allUsers.contains(author)) {
-                futures.add(
-                        ticket.addTicketMember(
-                                new TicketMember(ticket, author, DiscordBot.getInstance().getJda().getSelfUser()))
-                                .getFuture());
-            }
+                for (User user : allUsers) {
+                    List<DiscordRole> userRoles = discordGuild.getGuildRoles(user.getId());
 
-            for (User user : allUsers) {
-                List<DiscordRole> userRoles = discordGuild.getGuildRoles(user.getId());
+                    boolean canSeeTicket = false;
+                    for (DiscordRole role : userRoles) {
+                        if (role.canViewTicketChannel(ticketType)) {
+                            canSeeTicket = true;
+                            break;
+                        }
+                    }
 
-                boolean canSeeTicket = false;
-                for (DiscordRole role : userRoles) {
-                    if (role.canViewTicketChannel(ticketType)) {
+                    if (user.equals(author)) {
                         canSeeTicket = true;
-                        break;
+                    }
+
+                    if (canSeeTicket) {
+                        futures.add(ticket.addTicketMember(new TicketMember(ticket, user, artyUser)).getFuture());
                     }
                 }
 
-                if (user.equals(author)) {
-                    canSeeTicket = true;
-                }
-
-                if (canSeeTicket) {
-                    futures.add(ticket.addTicketMember(new TicketMember(ticket, user, artyUser)).getFuture());
-                }
-            }
-
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[futures.size()]))
-                    .thenAcceptAsync(v -> future.complete(null));
-        });
+                CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[futures.size()]))
+                        .thenAcceptAsync(v -> future.complete(null));
+            }, future::completeExceptionally);
+        }, future::completeExceptionally);
 
         return futureResult;
     }

@@ -1,13 +1,13 @@
 package dev.slne.discord.discord.interaction.command.commands.ticket.utils;
 
 import java.awt.Color;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import javax.annotation.Nonnull;
 
-import dev.slne.discord.datasource.Times;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.ticket.Ticket;
@@ -95,7 +95,7 @@ public class TwitchConnectCommand extends DiscordCommand {
         builder.setDescription(
                 "Bitte verbinde deinen Twitch-Account mit Discord, um auf dem Server zu spielen. Wie du dies tun kannst, findest du hier: <#1124438644523012234>");
         builder.setColor(Color.decode("#6441A5"));
-        builder.setTimestamp(Times.now());
+        builder.setTimestamp(Instant.now());
 
         return builder.build();
     }

@@ -1,6 +1,7 @@
 package dev.slne.discord.discord.interaction.command.commands.ticket.members;
 
 import java.awt.Color;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -9,7 +10,6 @@ import javax.annotation.Nonnull;
 
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.Launcher;
-import dev.slne.discord.datasource.Times;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.ticket.Ticket;
@@ -120,7 +120,7 @@ public class TicketMemberAddCommand extends DiscordCommand {
         builder.setTitle("Willkommen im Ticket!");
         builder.setDescription(
                 "Du wurdest zu einem Ticket hinzugefügt. Bitte sieh dir den Verlauf des Tickets an und warte auf eine Nachricht eines Teammitglieds.");
-        builder.setTimestamp(Times.now());
+        builder.setTimestamp(Instant.now());
         builder.setColor(Color.WHITE);
         builder.setFooter("Hinzugefügt von " + adder.getName(), adder.getAvatarUrl());
 

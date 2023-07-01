@@ -2,6 +2,7 @@ package dev.slne.discord.whitelist;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import com.google.gson.JsonObject;
 
@@ -9,8 +10,8 @@ import dev.slne.data.core.database.future.SurfFutureResult;
 import dev.slne.data.core.gson.GsonConverter;
 import dev.slne.data.core.instance.DataApi;
 import dev.slne.data.core.web.WebRequest;
-import dev.slne.data.core.web.WebResponse;
 import dev.slne.discord.DiscordBot;
+import dev.slne.discord.datasource.database.future.DiscordFutureResult;
 
 public class UUIDResolver {
 
@@ -26,48 +27,61 @@ public class UUIDResolver {
      * @param minecraftName The minecraft name.
      * @return The UUID.
      */
-    @SuppressWarnings("java:S3358")
+    @SuppressWarnings({ "java:S3358", "java:S3776", "java:S1192" })
     public static SurfFutureResult<Optional<UuidMinecraftName>> resolve(Object uuidOrMinecraftName) {
-        return DataApi.getDataInstance().supplyAsync(() -> {
+        CompletableFuture<Optional<UuidMinecraftName>> future = new CompletableFuture<>();
+        DiscordFutureResult<Optional<UuidMinecraftName>> result = new DiscordFutureResult<>(future);
+
+        DataApi.getDataInstance().runAsync(() -> {
             UUIDCache cache = DiscordBot.getInstance().getUuidCache();
             Optional<UuidMinecraftName> cachedUuidMinecraftName = cache.hitCache(uuidOrMinecraftName);
 
             if (cachedUuidMinecraftName.isPresent()) {
-                return cachedUuidMinecraftName;
+                future.complete(cachedUuidMinecraftName);
+                return;
             }
 
             String requestString = uuidOrMinecraftName instanceof UUID uuid ? uuid.toString()
                     : uuidOrMinecraftName instanceof String minecraftName ? minecraftName : null;
 
             if (requestString == null) {
-                return Optional.empty();
+                future.complete(Optional.empty());
+                return;
             }
 
             WebRequest request = WebRequest.builder().json(true).url("https://api.minetools.eu/uuid/" + requestString)
                     .build();
-            WebResponse response = request.executeGet().join();
 
-            if (response.getStatusCode() != 200) {
-                return Optional.empty();
-            }
+            request.executeGet().thenAccept(response -> {
+                if (response.getStatusCode() != 200) {
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            Object body = response.getBody();
-            String bodyString = body.toString();
+                Object body = response.getBody();
+                String bodyString = body.toString();
 
-            JsonObject jsonObject = new GsonConverter().fromJson(bodyString, JsonObject.class);
+                JsonObject jsonObject = new GsonConverter().fromJson(bodyString, JsonObject.class);
 
-            String idString = jsonObject.get("id").getAsString();
-            String nameString = jsonObject.get("name").getAsString();
+                String idString = jsonObject.get("id").getAsString();
+                String nameString = jsonObject.get("name").getAsString();
 
-            if (idString == null || nameString == null) {
-                return Optional.empty();
-            }
+                if (idString == null || nameString == null) {
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            String dashedIdString = toDashedUuid(idString);
-            UUID uuid = UUID.fromString(dashedIdString);
+                String dashedIdString = toDashedUuid(idString);
+                UUID uuid = UUID.fromString(dashedIdString);
 
-            return cache.setCache(nameString, uuid);
+                future.complete(cache.setCache(nameString, uuid));
+            }).exceptionally(throwable -> {
+                future.completeExceptionally(throwable);
+                return null;
+            });
         });
+
+        return result;
     }
 
     /**

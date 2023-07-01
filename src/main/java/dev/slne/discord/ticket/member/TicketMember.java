@@ -3,6 +3,7 @@ package dev.slne.discord.ticket.member;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -11,10 +12,10 @@ import dev.slne.data.core.database.future.SurfFutureResult;
 import dev.slne.data.core.gson.GsonConverter;
 import dev.slne.data.core.instance.DataApi;
 import dev.slne.data.core.web.WebRequest;
-import dev.slne.data.core.web.WebResponse;
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.Launcher;
 import dev.slne.discord.datasource.API;
+import dev.slne.discord.datasource.database.future.DiscordFutureResult;
 import dev.slne.discord.ticket.Ticket;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.requests.RestAction;
@@ -105,28 +106,39 @@ public class TicketMember {
      * @return The result of the deletion
      */
     public SurfFutureResult<Optional<TicketMember>> delete() {
+        CompletableFuture<Optional<TicketMember>> future = new CompletableFuture<>();
+        DiscordFutureResult<Optional<TicketMember>> result = new DiscordFutureResult<>(future);
+
         Optional<String> ticketIdOptional = getTicket().getTicketId();
         if (ticketIdOptional.isEmpty()) {
-            return DataApi.getDataInstance().supplyAsync(Optional::empty);
+            future.complete(Optional.empty());
+            return result;
         }
         String ticketId = ticketIdOptional.get();
 
         if (id.isEmpty()) {
-            return DataApi.getDataInstance().supplyAsync(Optional::empty);
+            future.complete(Optional.empty());
+            return result;
         }
         long idGet = this.id.get();
 
-        return DataApi.getDataInstance().supplyAsync(() -> {
+        DataApi.getDataInstance().runAsync(() -> {
             String url = String.format(API.TICKET_MEMBER, ticketId, idGet);
             WebRequest request = WebRequest.builder().json(true).parameters(toDeleteParameters()).url(url).build();
-            WebResponse response = request.executeDelete().join();
-
-            if (response.getStatusCode() == 200) {
-                return Optional.of(this);
-            }
-
-            return Optional.empty();
+            request.executeDelete().thenAccept(response -> {
+                if (response.getStatusCode() == 200) {
+                    future.complete(Optional.of(this));
+                } else {
+                    future.complete(Optional.empty());
+                }
+            }).exceptionally(exception -> {
+                Launcher.getLogger().logError("Ticket member could not be deleted: " + exception.getMessage());
+                future.completeExceptionally(exception);
+                return null;
+            });
         });
+
+        return result;
     }
 
     /**
@@ -292,39 +304,51 @@ public class TicketMember {
      * @return The result of the creation
      */
     public SurfFutureResult<Optional<TicketMember>> create() {
+        CompletableFuture<Optional<TicketMember>> future = new CompletableFuture<>();
+        DiscordFutureResult<Optional<TicketMember>> result = new DiscordFutureResult<>(future);
+
         Optional<String> ticketIdOptional = getTicket().getTicketId();
         if (ticketIdOptional.isEmpty()) {
-            return DataApi.getDataInstance().supplyAsync(Optional::empty);
+            future.complete(Optional.empty());
+            return result;
         }
         String ticketId = ticketIdOptional.get();
 
-        return DataApi.getDataInstance().supplyAsync(() -> {
+        DataApi.getDataInstance().runAsync(() -> {
             String url = String.format(API.TICKET_MEMBERS, ticketId);
             WebRequest request = WebRequest.builder().url(url).json(true).parameters(toParameters()).build();
-            WebResponse response = request.executePost().join();
+            request.executePost().thenAccept(response -> {
+                Object responseBody = response.getBody();
+                String bodyString = responseBody.toString();
 
-            Object responseBody = response.getBody();
-            String bodyString = responseBody.toString();
+                if (!(response.getStatusCode() == 201 || response.getStatusCode() == 200)) {
+                    Launcher.getLogger().logError("Ticket member could not be created: " + bodyString);
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            if (!(response.getStatusCode() == 201 || response.getStatusCode() == 200)) {
-                Launcher.getLogger().logError("Ticket member could not be created: " + bodyString);
-                return Optional.empty();
-            }
+                GsonConverter gson = new GsonConverter();
+                JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
 
-            GsonConverter gson = new GsonConverter();
-            JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
+                if (!bodyElement.has("data") || !bodyElement.get("data").isJsonObject()) {
+                    future.complete(Optional.empty());
+                    return;
+                }
 
-            if (!bodyElement.has("data") || !bodyElement.get("data").isJsonObject()) {
-                return Optional.empty();
-            }
+                JsonObject jsonObject = (JsonObject) bodyElement.get("data");
 
-            JsonObject jsonObject = (JsonObject) bodyElement.get("data");
+                TicketMember tempMember = fromJsonObject(ticket, jsonObject);
+                id = tempMember.id;
 
-            TicketMember tempMember = fromJsonObject(ticket, jsonObject);
-            id = tempMember.id;
-
-            return Optional.of(this);
+                future.complete(Optional.of(this));
+            }).exceptionally(exception -> {
+                Launcher.getLogger().logError("Ticket member could not be created: " + exception.getMessage());
+                future.completeExceptionally(exception);
+                return null;
+            });
         });
+
+        return result;
     }
 
     /**

@@ -132,7 +132,11 @@ public class WhitelistCommand extends DiscordCommand {
                         channel.sendMessage("Der Spieler befindet sich bereits auf der Whitelist.").queue();
 
                         for (Whitelist whitelist : whitelistsOptional.get()) {
-                            channel.sendMessageEmbeds(Whitelist.getWhitelistQueryEmbed(whitelist)).queue();
+                            Whitelist.getWhitelistQueryEmbed(whitelist).whenComplete(embed -> {
+                                if (embed != null) {
+                                    channel.sendMessageEmbeds(embed).queue();
+                                }
+                            });
                         }
 
                         return;
@@ -159,9 +163,14 @@ public class WhitelistCommand extends DiscordCommand {
                             }
                         }
 
-                        hook.deleteOriginal().queue();
-                        channel.sendMessage(user.getAsMention() + " befindet sich nun auf der Whitelist.")
-                                .setEmbeds(Whitelist.getWhitelistQueryEmbed(whitelistCreate)).queue();
+                        Whitelist.getWhitelistQueryEmbed(whitelistCreate).whenComplete(embed -> {
+                            hook.deleteOriginal().queue();
+                            channel.sendMessage(user.getAsMention() + " befindet sich nun auf der Whitelist.")
+                                    .setEmbeds(embed).queue();
+                        }, throwable -> {
+                            hook.editOriginal("Ein Fehler ist aufgetreten.").queue();
+                            throwable.printStackTrace();
+                        });
                     }, throwable -> {
                         hook.editOriginal("Ein Fehler ist aufgetreten.").queue();
                         throwable.printStackTrace();

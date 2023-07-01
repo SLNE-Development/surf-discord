@@ -70,20 +70,13 @@ public class MessageDeletedListener extends ListenerAdapter {
                 continue;
             }
 
-            RestAction<Message> messageRest = messageOptional.get();
-            messageRest.queue(message -> {
-                if (message.isWebhookMessage()) {
+            ticketMessage.delete().whenComplete(deletedTicketMessageCallback -> {
+                if (deletedTicketMessageCallback.isEmpty()) {
                     return;
                 }
 
-                ticketMessage.delete().whenComplete(deletedTicketMessageCallback -> {
-                    if (deletedTicketMessageCallback.isEmpty()) {
-                        return;
-                    }
-
-                    TicketMessage deletedTicketMessage = deletedTicketMessageCallback.get();
-                    ticket.addRawTicketMessage(deletedTicketMessage);
-                });
+                TicketMessage deletedTicketMessage = deletedTicketMessageCallback.get();
+                ticket.addRawTicketMessage(deletedTicketMessage);
             });
         }
     }
