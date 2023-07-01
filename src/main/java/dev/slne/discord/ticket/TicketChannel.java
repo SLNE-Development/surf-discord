@@ -151,8 +151,8 @@ public class TicketChannel {
             return futureResult;
         }
 
-        List<CompletableFuture<User>> addedUserFutures = new ArrayList<>();
-        List<CompletableFuture<User>> removedUserFutures = new ArrayList<>();
+        List<String> removedUserIds = new ArrayList<>();
+        List<String> addedUserIds = new ArrayList<>();
 
         List<Permission> allPermissions = getAllPermissions();
 
@@ -162,24 +162,13 @@ public class TicketChannel {
                 continue;
             }
 
-            RestAction<User> userRest = member.getMember().orElse(null);
-            if (userRest == null) {
-                continue;
-            }
-
-            addedUserFutures.add(userRest.submit());
+            addedUserIds.add(member.getMemberId());
         }
         // #endregion
 
         // #region Removed Members
         for (TicketMember removedMember : new ArrayList<>(removedMembers)) {
-            RestAction<User> memberRest = removedMember.getMember().orElse(null);
-
-            if (memberRest == null) {
-                continue;
-            }
-
-            removedUserFutures.add(memberRest.submit());
+            removedUserIds.add(removedMember.getMemberId());
         }
         // #endregion
 
@@ -207,59 +196,48 @@ public class TicketChannel {
                 new ArrayList<>()));
         // #endregion
 
-        List<CompletableFuture<User>> allFutures = new ArrayList<>();
-        allFutures.addAll(addedUserFutures);
-        allFutures.addAll(removedUserFutures);
+        // #region Added users
+        for (String addedUserId : addedUserIds) {
+            if (addedUserId == null) {
+                continue;
+            }
 
-        CompletableFuture.allOf(allFutures.toArray(new CompletableFuture<?>[allFutures.size()]))
-                .thenAccept(v -> {
-                    List<User> removedUsers = removedUserFutures.stream().map(CompletableFuture::join).toList();
-                    List<User> addedUsers = addedUserFutures.stream().map(CompletableFuture::join).toList();
+            if (addedUserId.equals(botUser.getId())) {
+                continue;
+            }
 
-                    // #region Added users
-                    for (User addedUser : addedUsers) {
-                        if (addedUser == null) {
-                            continue;
-                        }
+            Collection<Permission> permissions = new ArrayList<>();
+            List<DiscordRole> roles = discordGuild.getGuildRoles(addedUserId);
 
-                        if (addedUser.equals(botUser)) {
-                            continue;
-                        }
-
-                        Collection<Permission> permissions = new ArrayList<>();
-                        List<DiscordRole> roles = discordGuild.getGuildRoles(addedUser.getId());
-
-                        for (DiscordRole role : roles) {
-                            for (Permission permission : role.getDiscordAllowedPermissions()) {
-                                if (!permissionAdded(permissions, permission)) {
-                                    permissions.add(permission);
-                                }
-                            }
-                        }
-
-                        overrides.add(new TicketPermissionOverride(Type.USER, addedUser.getIdLong(),
-                                permissions, new ArrayList<>()));
+            for (DiscordRole role : roles) {
+                for (Permission permission : role.getDiscordAllowedPermissions()) {
+                    if (!permissionAdded(permissions, permission)) {
+                        permissions.add(permission);
                     }
-                    // #endregion
+                }
+            }
 
-                    // #region Removed users
-                    for (User removedUser : removedUsers) {
-                        if (removedUser == null) {
-                            continue;
-                        }
+            overrides.add(new TicketPermissionOverride(Type.USER, Long.valueOf(addedUserId),
+                    permissions, new ArrayList<>()));
+        }
+        // #endregion
 
-                        if (removedUser.equals(botUser)) {
-                            continue;
-                        }
+        // #region Removed users
+        for (String removedUserId : removedUserIds) {
+            if (removedUserId == null) {
+                continue;
+            }
 
-                        overrides.add(new TicketPermissionOverride(Type.USER,
-                                removedUser.getIdLong(), new ArrayList<>(), allPermissions));
-                    }
-                    // #endregion
+            if (removedUserId.equals(botUser.getId())) {
+                continue;
+            }
 
-                    future.complete(overrides);
-                });
+            overrides.add(new TicketPermissionOverride(Type.USER,
+                    Long.valueOf(removedUserId), new ArrayList<>(), allPermissions));
+        }
+        // #endregion
 
+        future.complete(overrides);
         return futureResult;
     }
 
@@ -324,6 +302,7 @@ public class TicketChannel {
 
         DataApi.getDataInstance().runAsync(() -> initialMembers(ticket).whenComplete(v -> {
             ChannelAction<TextChannel> channelAction = channelCategory.createTextChannel(ticketName);
+
             getChannelPermissions(ticket, channelCategory).whenComplete(overrides -> {
                 for (TicketPermissionOverride override : overrides) {
                     if (override.getType() == Type.ROLE) {
@@ -333,7 +312,6 @@ public class TicketChannel {
                         channelAction.addMemberPermissionOverride(override.getId(),
                                 override.getAllow(), override.getDeny());
                     }
-
                 }
 
                 channelAction.queue(ticketChannel -> {
