@@ -63,7 +63,6 @@ public class ServerModDiscordRole extends DiscordRole {
                 DiscordPermission.USE_EXTERNAL_STICKERS,
                 DiscordPermission.MANAGE_MESSAGES,
                 DiscordPermission.READ_MESSAGE_HISTORY,
-                DiscordPermission.SEND_TTS_MESSAGES,
                 DiscordPermission.USE_APPLICATION_COMMANDS,
                 DiscordPermission.VIEW_SERVER_SUPPORT_TICKETS,
                 DiscordPermission.VIEW_BUGREPORT_TICKETS,

@@ -47,7 +47,6 @@ public class DiscordModDiscordRole extends DiscordRole {
                 DiscordPermission.USE_EXTERNAL_STICKERS,
                 DiscordPermission.MANAGE_MESSAGES,
                 DiscordPermission.READ_MESSAGE_HISTORY,
-                DiscordPermission.SEND_TTS_MESSAGES,
                 DiscordPermission.USE_APPLICATION_COMMANDS,
                 DiscordPermission.ALL_ROLE));
     }

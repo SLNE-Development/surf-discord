@@ -7,9 +7,11 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 
 import dev.slne.discord.DiscordBot;
+import dev.slne.discord.Launcher;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.ticket.Ticket;
+import dev.slne.discord.ticket.TicketChannel;
 import dev.slne.discord.ticket.TicketRepository;
 import dev.slne.discord.ticket.member.TicketMember;
 import net.dv8tion.jda.api.entities.User;
@@ -106,10 +108,13 @@ public class TicketMemberRemoveCommand extends DiscordCommand {
                     return;
                 }
 
-                hook.editOriginal("Der Nutzer wurde entfernt.").queue();
-
-                channel.sendMessage(user.getAsMention() + " wurde von " + interaction.getUser().getAsMention()
-                        + " entfernt.").queue();
+                TicketChannel.removeTicketMember(ticket, ticketMember).whenComplete(v -> {
+                    hook.editOriginal("Der Nutzer wurde entfernt.").queue();
+                    channel.sendMessage(
+                            user.getAsMention() + " wurde von " + interaction.getUser().getAsMention() + " entfernt.")
+                            .queue();
+                }, failure -> Launcher.getLogger()
+                        .logError("Error while updating channel permissions: " + failure.getMessage()));
             });
         });
     }

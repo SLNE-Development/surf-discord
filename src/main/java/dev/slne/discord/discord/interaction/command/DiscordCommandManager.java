@@ -2,12 +2,8 @@ package dev.slne.discord.discord.interaction.command;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
-import dev.slne.data.core.database.future.SurfFutureResult;
-import dev.slne.discord.DiscordBot;
 import dev.slne.discord.Launcher;
-import dev.slne.discord.datasource.database.future.DiscordFutureResult;
 import dev.slne.discord.discord.interaction.command.commands.reactionrole.ReactionRoleTextCommand;
 import dev.slne.discord.discord.interaction.command.commands.ticket.TicketButtonCommand;
 import dev.slne.discord.discord.interaction.command.commands.ticket.TicketCloseCommand;
@@ -88,46 +84,4 @@ public class DiscordCommandManager {
                     throwable.printStackTrace();
                 });
     }
-
-    /**
-     * Clears the commands from a guild.
-     *
-     * @param guild The guild.
-     */
-    public SurfFutureResult<Void> clearGuild(Guild guild) {
-        CompletableFuture<Void> future = new CompletableFuture<>();
-        DiscordFutureResult<Void> result = new DiscordFutureResult<>(future);
-
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-
-        CompletableFuture<List<Command>> guildFuture = guild.retrieveCommands().submit();
-        CompletableFuture<List<Command>> botFuture = DiscordBot.getInstance().getJda().retrieveCommands().submit();
-
-        CompletableFuture.allOf(guildFuture, botFuture).thenAccept(v -> {
-            List<Command> guildCommands = guildFuture.join();
-            List<Command> botCommands = botFuture.join();
-
-            List<Command> allCommands = new ArrayList<>();
-            allCommands.addAll(guildCommands);
-            allCommands.addAll(botCommands);
-
-            allCommands.forEach(command -> {
-                String applicationId = command.getApplicationId();
-                String botApplicationId = DiscordBot.getInstance().getJda().getSelfUser().getApplicationId();
-
-                if (!applicationId.equals(botApplicationId)) {
-                    return;
-                }
-
-                CompletableFuture<Void> deleteFuture = command.delete().submit();
-                futures.add(deleteFuture);
-            });
-
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]))
-                    .thenAccept(v2 -> future.complete(null));
-        });
-
-        return result;
-    }
-
 }

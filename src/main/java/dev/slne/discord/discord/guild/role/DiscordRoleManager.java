@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import dev.slne.discord.discord.guild.role.roles.DefaultDiscordRole;
 import dev.slne.discord.discord.guild.role.roles.DiscordAdminDiscordRole;
 import dev.slne.discord.discord.guild.role.roles.DiscordModDiscordRole;
 import dev.slne.discord.discord.guild.role.roles.ServerAdminDiscordRole;
@@ -20,6 +21,8 @@ public class DiscordRoleManager {
         this.roles.add(new DiscordModDiscordRole());
         this.roles.add(new ServerAdminDiscordRole());
         this.roles.add(new ServerModDiscordRole());
+
+        this.roles.add(new DefaultDiscordRole());
     }
 
     /**

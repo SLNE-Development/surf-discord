@@ -135,8 +135,6 @@ public class TicketRepository {
             ticket.setId(newTicket.getId());
             ticket.setCreatedAt(newTicket.getCreatedAt());
 
-            DiscordBot.getInstance().getTicketManager().addTicket(ticket);
-
             return Optional.of(ticket);
         });
     }

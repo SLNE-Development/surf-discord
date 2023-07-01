@@ -93,8 +93,7 @@ public class DiscordBot {
         listenerManager.registerListeners();
 
         for (Guild guild : jda.getGuilds()) {
-            DiscordBot.getInstance().getCommandManager().clearGuild(guild)
-                    .whenComplete(cb -> DiscordBot.getInstance().getCommandManager().registerToGuild(guild));
+            DiscordBot.getInstance().getCommandManager().registerToGuild(guild);
         }
 
         DiscordBot.getInstance().getTicketManager().fetchActiveTickets();

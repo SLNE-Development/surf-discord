@@ -27,11 +27,7 @@ public enum DiscordPermission {
     USE_EXTERNAL_STICKERS("USE_EXTERNAL_STICKERS", false, true, Permission.MESSAGE_EXT_STICKER),
     MANAGE_MESSAGES("MANAGE_MESSAGES", false, true, Permission.MESSAGE_MANAGE),
     READ_MESSAGE_HISTORY("READ_MESSAGE_HISTORY", false, true, Permission.MESSAGE_HISTORY),
-    SEND_TTS_MESSAGES("SEND_TTS_MESSAGES", false, true, Permission.MESSAGE_TTS),
     USE_APPLICATION_COMMANDS("USE_APPLICATION_COMMANDS", false, true, Permission.USE_APPLICATION_COMMANDS),
-
-    // Roles
-    MANAGE_ROLES("MANAGE_ROLES", false, true, Permission.MANAGE_ROLES),
 
     // Webhooks
     MANAGE_WEBHOOKS("MANAGE_WEBHOOKS", false, true, Permission.MANAGE_WEBHOOKS),

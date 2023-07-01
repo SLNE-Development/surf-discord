@@ -43,6 +43,7 @@ public class DiscordGuilds {
         serverSupportAdmins.add("180623182594572288"); // Ammo
 
         serverSupportModerators.add("201843528618213376"); // Keviro
+        serverSupportModerators.add("697395817882845214"); // Twisti
 
         ReactionRoleConfig rrConfig = new ReactionRoleConfig("1124375143645454477", "983450492862595122", "U+1F514",
                 "449980058120093706");

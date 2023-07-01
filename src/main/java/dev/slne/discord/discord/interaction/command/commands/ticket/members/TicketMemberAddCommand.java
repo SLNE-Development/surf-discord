@@ -8,10 +8,12 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 
 import dev.slne.discord.DiscordBot;
+import dev.slne.discord.Launcher;
 import dev.slne.discord.datasource.Times;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.ticket.Ticket;
+import dev.slne.discord.ticket.TicketChannel;
 import dev.slne.discord.ticket.TicketRepository;
 import dev.slne.discord.ticket.member.TicketMember;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -98,9 +100,11 @@ public class TicketMemberAddCommand extends DiscordCommand {
                     return;
                 }
 
-                hook.editOriginal("Der Nutzer wurde erfolgreich hinzugefügt.").queue();
-
-                channel.sendMessage(user.getAsMention()).setEmbeds(getAddedEmbed(interaction.getUser())).queue();
+                TicketChannel.addTicketMember(ticket, ticketMember).whenComplete(v -> {
+                    hook.editOriginal("Der Nutzer wurde erfolgreich hinzugefügt.").queue();
+                    channel.sendMessage(user.getAsMention()).setEmbeds(getAddedEmbed(interaction.getUser())).queue();
+                }, failure -> Launcher.getLogger()
+                        .logError("Error while updating channel permissions: " + failure.getMessage()));
             });
         });
     }

@@ -124,7 +124,7 @@ public abstract class TicketButton extends DiscordButton {
                         return;
                     } else if (result.equals(TicketCreateResult.ALREADY_EXISTS)) {
                         hook.editOriginal(
-                                "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo")
+                                "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo.")
                                 .queue();
                         return;
                     } else if (result.equals(TicketCreateResult.MISSING_PERMISSIONS)) {

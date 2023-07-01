@@ -62,7 +62,7 @@ public class TicketCloseCommand extends DiscordCommand {
         TextChannel channel = (TextChannel) interaction.getChannel();
         Optional<Ticket> ticketOptional = TicketRepository.getTicketByChannel(channel.getId());
 
-        interaction.reply("Schließe Ticket...")
+        interaction.reply("Schließe Ticket...").setEphemeral(true)
                 .queue(deferedReply -> {
                     if (ticketOptional.isEmpty()) {
                         deferedReply.editOriginal("Dieser Kanal ist kein Ticket.").queue();

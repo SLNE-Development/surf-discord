@@ -103,7 +103,7 @@ public class WhitelistTicketModal extends DiscordModal {
                     }
 
                     if (minecraftName != null && channelOptional.isPresent()) {
-                        channelOptional.get().sendMessage("Minecraft-Name: " + minecraftName).queue();
+                        channelOptional.get().sendMessage("Minecraft-Name: `" + minecraftName + "`").queue();
                     }
 
                     return;

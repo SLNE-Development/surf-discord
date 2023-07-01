@@ -35,7 +35,7 @@ public class WhitelistApplicationTicket extends Ticket {
         }
 
         getTicketAuthor().queue(author -> {
-            String message = "Du möchtest dich auf dem Server whitelisten lassen? Bitte beachte die Vorrausetzungen in <#1124438644523012234>.";
+            String message = "Vielen Dank für deine Whitelist Anfrage. Du wirst nun auf die Whitelist hinzugefügt, sobald jemand aus dem Team Zeit findet. Wir bitten um etwas Geduld.";
 
             if (author != null) {
                 message = author.getAsMention() + " | " + message;

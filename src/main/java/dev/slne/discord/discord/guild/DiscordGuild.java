@@ -151,6 +151,9 @@ public class DiscordGuild {
         Optional<DiscordRole> serverModRoleOptional = DiscordBot.getInstance().getRoleManager()
                 .getRoleByName(DiscordRole.SERVER_MOD_ROLE);
 
+        Optional<DiscordRole> defaultRole = DiscordBot.getInstance().getRoleManager()
+                .getRoleByName(DiscordRole.DEFAULT_ROLE);
+
         if (discordSupportAdmins.contains(userId) && discordAdminRoleOptional.isPresent()) {
             roles.add(discordAdminRoleOptional.get());
         }
@@ -165,6 +168,10 @@ public class DiscordGuild {
 
         if (serverSupportModerators.contains(userId) && serverModRoleOptional.isPresent()) {
             roles.add(serverModRoleOptional.get());
+        }
+
+        if (roles.isEmpty() && defaultRole.isPresent()) {
+            roles.add(defaultRole.get());
         }
 
         return roles;
