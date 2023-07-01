@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import dev.slne.data.core.database.future.SurfFutureResult;
@@ -61,10 +62,25 @@ public class UUIDResolver {
                 Object body = response.getBody();
                 String bodyString = body.toString();
 
-                JsonObject jsonObject = new GsonConverter().fromJson(bodyString, JsonObject.class);
+                JsonElement jsonElement = new GsonConverter().fromJson(bodyString, JsonElement.class);
 
-                String idString = jsonObject.get("id").getAsString();
-                String nameString = jsonObject.get("name").getAsString();
+                if (jsonElement.isJsonNull()) {
+                    future.complete(Optional.empty());
+                    return;
+                }
+
+                JsonObject jsonObject = jsonElement.getAsJsonObject();
+
+                JsonElement idElement = jsonObject.get("id");
+                JsonElement nameElement = jsonObject.get("name");
+
+                if (idElement == null || nameElement == null || idElement.isJsonNull() || nameElement.isJsonNull()) {
+                    future.complete(Optional.empty());
+                    return;
+                }
+
+                String idString = idElement.getAsString();
+                String nameString = nameElement.getAsString();
 
                 if (idString == null || nameString == null) {
                     future.complete(Optional.empty());
