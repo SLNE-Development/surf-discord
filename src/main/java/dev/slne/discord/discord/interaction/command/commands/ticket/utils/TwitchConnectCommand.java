@@ -93,7 +93,7 @@ public class TwitchConnectCommand extends DiscordCommand {
 
         builder.setTitle("Twitch-Account verbinden");
         builder.setDescription(
-                "Bitte verbinde deinen Twitch-Account mit Discord, um auf dem Server zu spielen. Wie du dies tun kannst, findest du hier: <#983479094983397406>");
+                "Bitte verbinde deinen Twitch-Account mit Discord, um auf dem Server zu spielen. Wie du dies tun kannst, findest du hier: <#1124438644523012234>");
         builder.setColor(Color.decode("#6441A5"));
         builder.setTimestamp(Times.now());
 
