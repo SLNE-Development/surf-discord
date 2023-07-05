@@ -114,7 +114,7 @@ public class TicketMember {
                     future.complete(null);
                 }
             }).exceptionally(exception -> {
-                Launcher.getLogger().logError("Ticket member could not be deleted: " + exception.getMessage());
+                Launcher.getLogger(getClass()).error("Ticket member could not be deleted: ", exception);
                 future.completeExceptionally(exception);
                 return null;
             });
@@ -223,7 +223,7 @@ public class TicketMember {
                 String bodyString = responseBody.toString();
 
                 if (!(response.getStatusCode() == 201 || response.getStatusCode() == 200)) {
-                    Launcher.getLogger().logError("Ticket member could not be created: " + bodyString);
+                    Launcher.getLogger(getClass()).error("Ticket member could not be created: {}", bodyString);
                     future.complete(null);
                     return;
                 }
@@ -243,7 +243,7 @@ public class TicketMember {
 
                 future.complete(this);
             }).exceptionally(exception -> {
-                Launcher.getLogger().logError("Ticket member could not be created: " + exception.getMessage());
+                Launcher.getLogger(getClass()).error("Ticket member could not be created", exception);
                 future.completeExceptionally(exception);
                 return null;
             });

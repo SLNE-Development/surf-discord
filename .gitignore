@@ -31,3 +31,5 @@ package-lock.json
 package.json
 app.js
 data/
+
+log/*

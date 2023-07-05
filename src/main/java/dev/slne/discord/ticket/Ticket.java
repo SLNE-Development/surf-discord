@@ -368,9 +368,9 @@ public class Ticket {
                                                             return;
                                                         }
 
-                                                        Launcher.getLogger()
-                                                                .logError("Error while sending ticket closed message: "
-                                                                        + failure.getMessage());
+                                                        Launcher.getLogger(getClass())
+                                                                .error("Error while sending ticket closed message: ",
+                                                                        failure);
                                                         failure.printStackTrace();
                                                     }),
                                                     failure -> {
@@ -379,9 +379,9 @@ public class Ticket {
                                                             return;
                                                         }
 
-                                                        Launcher.getLogger()
-                                                                .logError("Error while opening ticket closed message: "
-                                                                        + failure.getMessage());
+                                                        Launcher.getLogger(getClass())
+                                                                .error("Error while opening ticket closed message: ",
+                                                                        failure);
                                                         failure.printStackTrace();
                                                     });
                                 }
@@ -611,14 +611,12 @@ public class Ticket {
                     afterClose();
                 }, throwable -> {
                     future.complete(TicketCloseResult.TICKET_CHANNEL_NOT_CLOSABLE);
-                    Launcher.getLogger().logError("Error while closing ticket: " + throwable.getMessage());
-                    throwable.printStackTrace();
+                    Launcher.getLogger(getClass()).error("Error while closing ticket", throwable);
                 });
             }, throwable -> {
                 future.complete(TicketCloseResult.TICKET_REPOSITORY_ERROR);
 
-                Launcher.getLogger().logError("Error while closing ticket: " + throwable.getMessage());
-                throwable.printStackTrace();
+                Launcher.getLogger(getClass()).error("Error while closing ticket", throwable);
             });
         });
 

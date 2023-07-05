@@ -309,7 +309,7 @@ public class TicketMessage {
                 String bodyString = responseBody.toString();
 
                 if (!(response.getStatusCode() == 201 || response.getStatusCode() == 200)) {
-                    Launcher.getLogger().logError("Ticket message could not be created: " + bodyString);
+                    Launcher.getLogger(getClass()).error("Ticket message could not be created: {}", bodyString);
                     future.complete(null);
                     return;
                 }
@@ -329,7 +329,7 @@ public class TicketMessage {
 
                 future.complete(this);
             }).exceptionally(throwable -> {
-                Launcher.getLogger().logError("Ticket message could not be created: " + throwable.getMessage());
+                Launcher.getLogger(getClass()).error("Ticket message could not be created: ", throwable);
                 future.complete(null);
                 return null;
             });

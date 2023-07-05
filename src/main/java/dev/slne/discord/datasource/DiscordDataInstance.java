@@ -21,7 +21,7 @@ public class DiscordDataInstance extends CoreDataInstance {
 
     @Override
     public void logError(Class<?> caller, String message, Throwable... throwables) {
-        Launcher.getLogger().logError(caller.getSimpleName() + " - " + message);
+        Launcher.getLogger(caller).error(message);
         for (Throwable throwable : throwables) {
             throwable.printStackTrace();
         }
@@ -29,7 +29,7 @@ public class DiscordDataInstance extends CoreDataInstance {
 
     @Override
     public void logInfo(Class<?> caller, String message) {
-        Launcher.getLogger().logInfo(caller.getSimpleName() + " - " + message);
+        Launcher.getLogger(caller).info(message);
     }
 
     @Override
@@ -45,7 +45,7 @@ public class DiscordDataInstance extends CoreDataInstance {
 
     @Override
     public void logWarning(Class<?> caller, String message) {
-        Launcher.getLogger().logWarn(caller.getSimpleName() + " - " + message);
+        Launcher.getLogger(caller).warn(message);
     }
 
     @Override

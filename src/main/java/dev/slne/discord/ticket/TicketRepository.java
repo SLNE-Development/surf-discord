@@ -55,7 +55,8 @@ public class TicketRepository {
                 List<Ticket> tickets = new ArrayList<>();
 
                 if (response.getStatusCode() != 200) {
-                    Launcher.getLogger().logError(response.getBody());
+                    Launcher.getLogger(TicketRepository.class).error("Could not get active tickets: {}",
+                            response.getBody());
                     future.complete(tickets);
                     return;
                 }
@@ -86,7 +87,7 @@ public class TicketRepository {
 
                 future.complete(tickets);
             }).exceptionally(throwable -> {
-                Launcher.getLogger().logError(throwable);
+                Launcher.getLogger(TicketRepository.class).error("Could not get active tickets", throwable);
                 future.completeExceptionally(throwable);
                 return null;
             });
@@ -122,7 +123,7 @@ public class TicketRepository {
                     .build();
             request.executePost().thenAccept(response -> {
                 if (response.getStatusCode() != 201) {
-                    Launcher.getLogger().logError(response.getBody());
+                    Launcher.getLogger(TicketRepository.class).error("Could not create ticket: {}", response.getBody());
                     future.complete(null);
                     return;
                 }
@@ -148,7 +149,7 @@ public class TicketRepository {
 
                 future.complete(ticket);
             }).exceptionally(throwable -> {
-                Launcher.getLogger().logError(throwable);
+                Launcher.getLogger(TicketRepository.class).error("Could not create ticket", throwable);
                 future.completeExceptionally(throwable);
                 return null;
             });
@@ -180,7 +181,8 @@ public class TicketRepository {
 
             request.executePut().thenAccept(response -> {
                 if (!(response.getStatusCode() == 200 || response.getStatusCode() == 201)) {
-                    Launcher.getLogger().logError(response.getBody());
+                    Launcher.getLogger(TicketRepository.class).error("Could not update ticket: {}",
+                            response.getBody());
                     future.complete(null);
                     return;
                 }
@@ -198,7 +200,7 @@ public class TicketRepository {
 
                 future.complete(ticket);
             }).exceptionally(throwable -> {
-                Launcher.getLogger().logError(throwable);
+                Launcher.getLogger(TicketRepository.class).error("Could not update ticket", throwable);
                 future.completeExceptionally(throwable);
                 return null;
             });
@@ -229,7 +231,7 @@ public class TicketRepository {
             WebRequest request = WebRequest.builder().url(url).json(true).parameters(toParameters(ticket)).build();
             request.executeDelete().thenAccept(response -> {
                 if (response.getStatusCode() != 200) {
-                    Launcher.getLogger().logError(response.getBody());
+                    Launcher.getLogger(TicketRepository.class).error("Could not close ticket: {}", response.getBody());
                     future.complete(null);
                     return;
                 }
@@ -252,7 +254,7 @@ public class TicketRepository {
 
                 future.complete(ticket);
             }).exceptionally(throwable -> {
-                Launcher.getLogger().logError(throwable);
+                Launcher.getLogger(TicketRepository.class).error("Could not close ticket", throwable);
                 future.completeExceptionally(throwable);
                 return null;
             });

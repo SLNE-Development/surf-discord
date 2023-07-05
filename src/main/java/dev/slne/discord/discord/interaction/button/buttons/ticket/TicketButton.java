@@ -133,13 +133,13 @@ public abstract class TicketButton extends DiscordButton {
                         return;
                     } else {
                         hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
-                        Launcher.getLogger().logError("Error while creating ticket: " + result);
+                        Launcher.getLogger(getClass()).error("Error while creating ticket: {}", result);
                         return;
                     }
                 });
             }, failure -> {
                 hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
-                Launcher.getLogger().logError("Error while creating ticket: ", failure);
+                Launcher.getLogger(getClass()).error("Error while creating ticket", failure);
             });
         });
 

@@ -2,7 +2,8 @@ package dev.slne.discord;
 
 import java.util.Random;
 
-import com.mysql.cj.log.Slf4JLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import dev.slne.discord.datasource.DiscordDataSource;
 
@@ -12,7 +13,6 @@ public class Launcher {
     private DiscordDataSource dataSource;
 
     private static Random random;
-    private static final Slf4JLogger LOGGER = new Slf4JLogger("Launcher");
 
     /**
      * Constructor for the launcher
@@ -84,8 +84,8 @@ public class Launcher {
      *
      * @return The logger
      */
-    public static final Slf4JLogger getLogger() {
-        return LOGGER;
+    public static final Logger getLogger(Class<?> clazz) {
+        return LoggerFactory.getLogger(clazz);
     }
 
     /**

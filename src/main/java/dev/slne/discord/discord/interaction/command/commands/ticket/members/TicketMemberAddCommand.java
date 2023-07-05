@@ -85,8 +85,8 @@ public class TicketMemberAddCommand extends TicketCommand {
                     hook.editOriginal("Der Nutzer wurde erfolgreich hinzugefügt.").queue();
                     getChannel().sendMessage(user.getAsMention()).setEmbeds(getAddedEmbed(interaction.getUser()))
                             .queue();
-                }, failure -> Launcher.getLogger()
-                        .logError("Error while updating channel permissions: " + failure.getMessage()));
+                }, failure -> Launcher.getLogger(getClass())
+                        .error("Error while updating channel permissions: {}", failure.getMessage()));
             });
         });
     }

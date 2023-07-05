@@ -50,8 +50,7 @@ public class WhitelistedCommand extends TicketCommand {
                     }
                 }, throwable -> {
                     deferedReply.editOriginal("Fehler beim Schließen des Tickets.").queue();
-                    Launcher.getLogger().logError("Error while closing ticket: " + throwable.getMessage());
-                    throwable.printStackTrace();
+                    Launcher.getLogger(getClass()).error("Error while closing ticket", throwable);
                 }));
     }
 }

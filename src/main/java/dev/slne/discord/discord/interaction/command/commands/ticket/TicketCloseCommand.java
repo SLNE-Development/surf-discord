@@ -54,12 +54,11 @@ public class TicketCloseCommand extends TicketCommand {
                 .queue(deferedReply -> getTicket().close(closer, reason).whenComplete(result -> {
                     if (result != TicketCloseResult.SUCCESS) {
                         deferedReply.editOriginal("Fehler beim Schließen des Tickets.").queue();
-                        Launcher.getLogger().logError("Error while closing ticket: " + result.name());
+                        Launcher.getLogger(getClass()).error("Error while closing ticket: {}", result.name());
                     }
                 }, throwable -> {
                     deferedReply.editOriginal("Fehler beim Schließen des Tickets.").queue();
-                    Launcher.getLogger().logError("Error while closing ticket: " + throwable.getMessage());
-                    throwable.printStackTrace();
+                    Launcher.getLogger(getClass()).error("Error while closing ticket", throwable);
                 }));
     }
 

@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
+import dev.slne.discord.Launcher;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.whitelist.UUIDResolver;
@@ -122,7 +123,7 @@ public class WhitelistQueryCommand extends DiscordCommand {
      */
     public void errorHandler(InteractionHook hook, Throwable throwable) {
         hook.editOriginal("Es ist ein Fehler aufgetreten.").queue();
-        throwable.printStackTrace();
+        Launcher.getLogger(getClass()).error("Error while executing wlquery command", throwable);
     }
 
     /**

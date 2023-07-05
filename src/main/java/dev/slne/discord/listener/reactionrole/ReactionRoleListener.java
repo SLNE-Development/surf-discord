@@ -2,6 +2,7 @@ package dev.slne.discord.listener.reactionrole;
 
 import javax.annotation.Nonnull;
 
+import dev.slne.discord.Launcher;
 import dev.slne.discord.discord.guild.DiscordGuild;
 import dev.slne.discord.discord.guild.DiscordGuilds;
 import dev.slne.discord.discord.guild.reactionrole.ReactionRoleConfig;
@@ -199,7 +200,7 @@ public class ReactionRoleListener extends ListenerAdapter {
                         }
                     }
 
-                    throwable.printStackTrace();
+                    Launcher.getLogger(getClass()).error("Error while adding reaction role", throwable);
                 });
             });
         });
@@ -283,7 +284,7 @@ public class ReactionRoleListener extends ListenerAdapter {
                         }
                     }
 
-                    throwable.printStackTrace();
+                    Launcher.getLogger(getClass()).error("Error while removing reaction role", throwable);
                 });
             });
         });

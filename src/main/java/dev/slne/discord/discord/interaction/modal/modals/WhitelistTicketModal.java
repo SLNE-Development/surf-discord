@@ -60,7 +60,7 @@ public class WhitelistTicketModal extends DiscordModal {
             ModalMapping minecraftNameValue = modalInteraction.getValue("minecraft-name");
             if (minecraftNameValue == null) {
                 hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
-                Launcher.getLogger().logError("Error while creating ticket: minecraftNameOption is null");
+                Launcher.getLogger(getClass()).error("Error while creating ticket: minecraftNameOption is null");
                 return;
             }
             String minecraftName = minecraftNameValue.getAsString();
@@ -73,7 +73,8 @@ public class WhitelistTicketModal extends DiscordModal {
             ModalMapping discordTwitchVerifiedValue = modalInteraction.getValue("discord-twitch-verified");
             if (discordTwitchVerifiedValue == null) {
                 hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
-                Launcher.getLogger().logError("Error while creating ticket: discordTwitchVerifiedOption is null");
+                Launcher.getLogger(getClass())
+                        .error("Error while creating ticket: discordTwitchVerifiedOption is null");
                 return;
             }
             String discordTwitchVerifiedString = discordTwitchVerifiedValue.getAsString();
@@ -130,16 +131,16 @@ public class WhitelistTicketModal extends DiscordModal {
                         return;
                     } else {
                         hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
-                        Launcher.getLogger().logError("Error while creating ticket: " + result);
+                        Launcher.getLogger(getClass()).error("Error while creating ticket: {}", result);
                         return;
                     }
                 }, failure -> {
                     hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
-                    Launcher.getLogger().logError("Error while creating ticket: ", failure);
+                    Launcher.getLogger(getClass()).error("Error while creating ticket", failure);
                 });
             }, uuidMinecraftNameFailure -> {
                 hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
-                Launcher.getLogger().logError("Error while creating ticket: ", uuidMinecraftNameFailure);
+                Launcher.getLogger(getClass()).error("Error while creating ticket", uuidMinecraftNameFailure);
             });
         });
     }

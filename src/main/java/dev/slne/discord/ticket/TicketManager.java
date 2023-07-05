@@ -36,7 +36,7 @@ public class TicketManager {
             long end = System.currentTimeMillis();
             long time = end - start;
 
-            Launcher.getLogger().logInfo("Fetched " + tickets.size() + " tickets in " + time + "ms.");
+            Launcher.getLogger(getClass()).info("Fetched {} tickets in {}ms.", tickets.size(), time);
 
             fetched = true;
             popQueue();
