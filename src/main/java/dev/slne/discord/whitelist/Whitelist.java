@@ -540,6 +540,10 @@ public class Whitelist {
             parameters.put("added_by_avatar_url", addedByAvatarUrl);
         }
 
+        if (minecraftName != null) {
+            parameters.put("minecraft_name", addedByAvatarUrl);
+        }
+
         parameters.put("blocked", blocked ? "1" : "0");
 
         return parameters;
