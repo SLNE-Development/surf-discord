@@ -11,6 +11,7 @@ import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketType;
 import dev.slne.discord.ticket.result.TicketCreateResult;
 import dev.slne.discord.ticket.tickets.WhitelistApplicationTicket;
+import dev.slne.discord.whitelist.UUIDResolver;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
@@ -64,6 +65,11 @@ public class WhitelistTicketModal extends DiscordModal {
             }
             String minecraftName = minecraftNameValue.getAsString();
 
+            if (minecraftName.isEmpty()) {
+                hook.editOriginal("Du musst einen Minecraft-Namen angeben!").queue();
+                return;
+            }
+
             ModalMapping discordTwitchVerifiedValue = modalInteraction.getValue("discord-twitch-verified");
             if (discordTwitchVerifiedValue == null) {
                 hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
@@ -81,48 +87,59 @@ public class WhitelistTicketModal extends DiscordModal {
                         .queue();
                 return;
             }
-            Ticket ticket = new WhitelistApplicationTicket(modalInteraction.getGuild(),
-                    modalInteraction.getUser());
 
-            ticket.openFromButton().whenComplete(result -> {
-                if (result.equals(TicketCreateResult.SUCCESS)) {
-                    StringBuilder message = new StringBuilder();
-                    message.append("Dein \"");
-                    message.append(TicketType.WHITELIST.getName());
-                    message.append("\"-Ticket wurde erfolgreich erstellt! ");
-
-                    TextChannel channel = ticket.getChannel();
-                    if (channel != null) {
-                        message.append(channel.getAsMention());
-                    }
-
-                    String messageString = message.toString();
-                    if (messageString != null) {
-                        hook.editOriginal(messageString).queue();
-                    }
-
-                    if (minecraftName != null && channel != null) {
-                        channel.sendMessage("Minecraft-Name: `" + minecraftName + "`").queue();
-                    }
-
-                    return;
-                } else if (result.equals(TicketCreateResult.ALREADY_EXISTS)) {
-                    hook.editOriginal(
-                            "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo.")
-                            .queue();
-                    return;
-                } else if (result.equals(TicketCreateResult.MISSING_PERMISSIONS)) {
-                    hook.editOriginal("Du hast nicht die benötigten Berechtigungen, um ein Ticket zu erstellen!")
-                            .queue();
-                    return;
-                } else {
-                    hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
-                    Launcher.getLogger().logError("Error while creating ticket: " + result);
+            UUIDResolver.resolve(minecraftName).whenComplete(uuidMinecraftName -> {
+                if (uuidMinecraftName == null) {
+                    hook.editOriginal("Du musst einen gültigen Minecraft-Java Namen angeben.").queue();
                     return;
                 }
-            }, failure -> {
+
+                Ticket ticket = new WhitelistApplicationTicket(modalInteraction.getGuild(),
+                        modalInteraction.getUser());
+
+                ticket.openFromButton().whenComplete(result -> {
+                    if (result.equals(TicketCreateResult.SUCCESS)) {
+                        StringBuilder message = new StringBuilder();
+                        message.append("Dein \"");
+                        message.append(TicketType.WHITELIST.getName());
+                        message.append("\"-Ticket wurde erfolgreich erstellt! ");
+
+                        TextChannel channel = ticket.getChannel();
+                        if (channel != null) {
+                            message.append(channel.getAsMention());
+                        }
+
+                        String messageString = message.toString();
+                        if (messageString != null) {
+                            hook.editOriginal(messageString).queue();
+                        }
+
+                        if (minecraftName != null && channel != null) {
+                            channel.sendMessage("Minecraft-Name: `" + minecraftName + "`").queue();
+                        }
+
+                        return;
+                    } else if (result.equals(TicketCreateResult.ALREADY_EXISTS)) {
+                        hook.editOriginal(
+                                "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo.")
+                                .queue();
+                        return;
+                    } else if (result.equals(TicketCreateResult.MISSING_PERMISSIONS)) {
+                        hook.editOriginal("Du hast nicht die benötigten Berechtigungen, um ein Ticket zu erstellen!")
+                                .queue();
+                        return;
+                    } else {
+                        hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
+                        Launcher.getLogger().logError("Error while creating ticket: " + result);
+                        return;
+                    }
+                }, failure -> {
+                    hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
+                    Launcher.getLogger().logError("Error while creating ticket: ", failure);
+                });
+            }, uuidMinecraftNameFailure -> {
                 hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
-                Launcher.getLogger().logError("Error while creating ticket: ", failure);
+                Launcher.getLogger().logError("Error while creating ticket: ", uuidMinecraftNameFailure);
             });
         });
     }
