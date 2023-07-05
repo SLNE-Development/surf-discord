@@ -541,7 +541,7 @@ public class Whitelist {
         }
 
         if (minecraftName != null) {
-            parameters.put("minecraft_name", addedByAvatarUrl);
+            parameters.put("minecraft_name", minecraftName);
         }
 
         parameters.put("blocked", blocked ? "1" : "0");
