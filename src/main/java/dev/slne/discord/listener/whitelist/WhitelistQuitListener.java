@@ -13,16 +13,15 @@ public class WhitelistQuitListener extends ListenerAdapter {
     @Override
     public void onGuildMemberRemove(@Nonnull GuildMemberRemoveEvent event) {
         User user = event.getUser();
-        Whitelist.getWhitelistByDiscordId(user.getId()).whenComplete(whitelistOptional -> {
-            if (!whitelistOptional.isPresent()) {
+        Whitelist.getWhitelistByDiscordId(user.getId()).whenComplete(whitelist -> {
+            if (whitelist == null) {
                 return;
             }
 
-            Whitelist whitelist = whitelistOptional.get();
             whitelist.setBlocked(true);
 
-            whitelist.update().whenComplete(whitelistUpdateOptional -> {
-                if (!whitelistUpdateOptional.isPresent()) {
+            whitelist.update().whenComplete(whitelistUpdate -> {
+                if (whitelistUpdate == null) {
                     DataApi.getDataInstance().logError(getClass(),
                             "Failed to update whitelist for user " + user.getName() + ".");
                     return;

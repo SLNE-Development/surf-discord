@@ -1,21 +1,30 @@
 package dev.slne.discord.ticket.message;
 
-import java.util.Optional;
-
-import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import com.google.gson.annotations.SerializedName;
 
 public class TicketMessageAttachement {
 
-    private Optional<Long> id;
-    private TicketMessage message;
+    @SerializedName("id")
+    private long id;
 
-    private Optional<String> name;
-    private Optional<String> url;
-    private Optional<String> extension;
-    private Optional<Integer> size;
+    @SerializedName("name")
+    private String name;
 
-    private Optional<String> description;
+    @SerializedName("url")
+    private String url;
+
+    @SerializedName("extension")
+    private String extension;
+
+    @SerializedName("size")
+    private int size;
+
+    @SerializedName("description")
+    private String description;
+
+    @SerializedName("message_id")
+    private long messageId;
 
     /**
      * Constructor for a ticket message attachement
@@ -24,13 +33,14 @@ public class TicketMessageAttachement {
      */
     public TicketMessageAttachement(TicketMessageAttachement clone) {
         this.id = clone.id;
-        this.message = clone.message;
 
         this.name = clone.name;
         this.url = clone.url;
         this.extension = clone.extension;
         this.size = clone.size;
         this.description = clone.description;
+
+        this.messageId = clone.messageId;
     }
 
     /**
@@ -45,68 +55,15 @@ public class TicketMessageAttachement {
      */
     public TicketMessageAttachement(TicketMessage message, String name, String url, String extension, int size,
             String description) {
-        this.id = Optional.empty();
-        this.message = message;
+        this.id = 0;
 
-        this.name = Optional.ofNullable(name);
-        this.url = Optional.ofNullable(url);
-        this.extension = Optional.ofNullable(extension);
-        this.size = Optional.ofNullable(size);
-        this.description = Optional.ofNullable(description);
-    }
-
-    /**
-     * Construct a new {@link TicketMessageAttachement}
-     *
-     * @param id          the id
-     * @param message     the message
-     * @param name        the name
-     * @param url         the url
-     * @param extension   the extension
-     * @param size        the size
-     * @param description the description
-     */
-    private TicketMessageAttachement(Optional<Long> id, TicketMessage message, Optional<String> name,
-            Optional<String> url, Optional<String> extension, Optional<Integer> size, Optional<String> description) {
-        this.id = id;
-        this.message = message;
         this.name = name;
         this.url = url;
         this.extension = extension;
         this.size = size;
         this.description = description;
-    }
 
-    /**
-     * Form a {@link TicketMessageAttachement} by the json object
-     *
-     * @param ticketMessage the ticket message
-     * @param jsonObject    the json object
-     * @return the {@link TicketMessageAttachement}
-     */
-    public static TicketMessageAttachement fromJsonObject(TicketMessage ticketMessage, JsonObject jsonObject) {
-        Optional<Long> id = jsonObject.has("id") && jsonObject.get("id") != null && !(jsonObject
-                .get("id") instanceof JsonNull) ? Optional.of(jsonObject.get("id").getAsLong()) : Optional.empty();
-        Optional<String> name = jsonObject.has("name") && jsonObject.get("name") != null && !(jsonObject
-                .get("name") instanceof JsonNull) ? Optional.of(jsonObject.get("name").getAsString())
-                        : Optional.empty();
-        Optional<String> url = jsonObject.has("url") && jsonObject.get("url") != null && !(jsonObject
-                .get("url") instanceof JsonNull) ? Optional.of(jsonObject.get("url").getAsString())
-                        : Optional.empty();
-        Optional<String> extension = jsonObject.has("extension") && jsonObject.get("extension") != null && !(jsonObject
-                .get("extension") instanceof JsonNull)
-                        ? Optional.of(jsonObject.get("extension").getAsString())
-                        : Optional.empty();
-        Optional<Integer> size = jsonObject.has("size") && jsonObject.get("size") != null && !(jsonObject
-                .get("size") instanceof JsonNull) ? Optional.of(jsonObject.get("size").getAsInt())
-                        : Optional.empty();
-        Optional<String> description = jsonObject.has("description") && jsonObject.get("description") != null
-                && !(jsonObject
-                        .get("description") instanceof JsonNull)
-                                ? Optional.of(jsonObject.get("description").getAsString())
-                                : Optional.empty();
-
-        return new TicketMessageAttachement(id, ticketMessage, name, url, extension, size, description);
+        this.messageId = message.getId();
     }
 
     /**
@@ -117,12 +74,25 @@ public class TicketMessageAttachement {
     public JsonObject toJsonObject() {
         JsonObject jsonObject = new JsonObject();
 
-        id.ifPresent(value -> jsonObject.addProperty("id", value));
-        name.ifPresent(value -> jsonObject.addProperty("name", value));
-        url.ifPresent(value -> jsonObject.addProperty("url", value));
-        extension.ifPresent(value -> jsonObject.addProperty("extension", value));
-        size.ifPresent(value -> jsonObject.addProperty("size", value));
-        description.ifPresent(value -> jsonObject.addProperty("description", value));
+        jsonObject.addProperty("id", id);
+
+        if (name != null) {
+            jsonObject.addProperty("name", name);
+        }
+
+        if (url != null) {
+            jsonObject.addProperty("url", url);
+        }
+
+        if (extension != null) {
+            jsonObject.addProperty("extension", extension);
+        }
+
+        jsonObject.addProperty("size", size);
+
+        if (description != null) {
+            jsonObject.addProperty("description", description);
+        }
 
         return jsonObject;
     }
@@ -133,7 +103,11 @@ public class TicketMessageAttachement {
      * @return The message the attachement is attached to
      */
     public TicketMessage getMessage() {
-        return message;
+        if (messageId == 0) {
+            return null;
+        }
+
+        return TicketMessage.getByMessageId(messageId);
     }
 
     /**
@@ -141,7 +115,7 @@ public class TicketMessageAttachement {
      *
      * @return The name of the attachement
      */
-    public Optional<String> getName() {
+    public String getName() {
         return name;
     }
 
@@ -150,7 +124,7 @@ public class TicketMessageAttachement {
      *
      * @return The url of the attachement
      */
-    public Optional<String> getUrl() {
+    public String getUrl() {
         return url;
     }
 
@@ -159,7 +133,7 @@ public class TicketMessageAttachement {
      *
      * @return The extension of the attachement
      */
-    public Optional<String> getExtension() {
+    public String getExtension() {
         return extension;
     }
 
@@ -168,7 +142,7 @@ public class TicketMessageAttachement {
      *
      * @return The size of the attachement
      */
-    public Optional<Integer> getSize() {
+    public int getSize() {
         return size;
     }
 
@@ -177,14 +151,14 @@ public class TicketMessageAttachement {
      *
      * @return The description of the attachement
      */
-    public Optional<String> getDescription() {
+    public String getDescription() {
         return description;
     }
 
     /**
      * @return the id
      */
-    public Optional<Long> getId() {
+    public long getId() {
         return id;
     }
 

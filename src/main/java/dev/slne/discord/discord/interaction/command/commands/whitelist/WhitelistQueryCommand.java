@@ -2,7 +2,6 @@ package dev.slne.discord.discord.interaction.command.commands.whitelist;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
@@ -94,9 +93,9 @@ public class WhitelistQueryCommand extends DiscordCommand {
             if (minecraftOption != null && minecraftOption.getAsString() != null) {
                 String minecraft = minecraftOption.getAsString();
 
-                UUIDResolver.resolve(minecraft).whenComplete(uuidMinecraftNameOptional -> {
-                    if (uuidMinecraftNameOptional.isPresent()) {
-                        UUID uuid = uuidMinecraftNameOptional.get().uuid();
+                UUIDResolver.resolve(minecraft).whenComplete(uuidMinecraftName -> {
+                    if (uuidMinecraftName != null) {
+                        UUID uuid = uuidMinecraftName.uuid();
 
                         Whitelist.getWhitelists(uuid, null, null).whenComplete(whitelists -> {
                             printWlQuery(channel, "\"" + minecraft + " (" + uuid.toString() + ")\"", whitelists);
@@ -133,12 +132,10 @@ public class WhitelistQueryCommand extends DiscordCommand {
      * @param title      The title.
      * @param whitelists The whitelists.
      */
-    public void printWlQuery(TextChannel channel, String title, Optional<List<Whitelist>> whitelistsOptional) {
+    public void printWlQuery(TextChannel channel, String title, List<Whitelist> whitelists) {
         channel.sendMessage("WlQuery für: \"" + title + "\"");
 
-        if (whitelistsOptional.isPresent()) {
-            List<Whitelist> whitelists = whitelistsOptional.get();
-
+        if (whitelists != null) {
             for (Whitelist whitelist : whitelists) {
                 Whitelist.getWhitelistQueryEmbed(whitelist).whenComplete(embed -> {
                     if (embed != null) {
@@ -148,11 +145,10 @@ public class WhitelistQueryCommand extends DiscordCommand {
             }
 
             if (whitelists.isEmpty()) {
-                channel.sendMessage("Es wurden keine Whitelist Einträge gefunden.").queue();
+                channel.sendMessage("Es wurden keine Whitelist Einträge für " + title + " gefunden.").queue();
             }
-
         } else {
-            channel.sendMessage("Es wurden keine Whitelist Einträge gefunden.").queue();
+            channel.sendMessage("Es wurden keine Whitelist Einträge für " + title + " gefunden.").queue();
         }
     }
 }

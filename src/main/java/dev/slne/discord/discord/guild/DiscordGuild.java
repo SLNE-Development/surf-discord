@@ -2,7 +2,6 @@ package dev.slne.discord.discord.guild;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import javax.annotation.Nonnull;
@@ -142,36 +141,36 @@ public class DiscordGuild {
     public List<DiscordRole> getGuildRoles(String userId) {
         List<DiscordRole> roles = new ArrayList<>();
 
-        Optional<DiscordRole> discordAdminRoleOptional = DiscordBot.getInstance().getRoleManager()
+        DiscordRole discordAdminRole = DiscordBot.getInstance().getRoleManager()
                 .getRoleByName(DiscordRole.DISCORD_ADMIN_ROLE);
-        Optional<DiscordRole> discordModRoleOptional = DiscordBot.getInstance().getRoleManager()
+        DiscordRole discordModRole = DiscordBot.getInstance().getRoleManager()
                 .getRoleByName(DiscordRole.DISCORD_MOD_ROLE);
-        Optional<DiscordRole> serverAdminRoleOptional = DiscordBot.getInstance().getRoleManager()
+        DiscordRole serverAdminRole = DiscordBot.getInstance().getRoleManager()
                 .getRoleByName(DiscordRole.SERVER_ADMIN_ROLE);
-        Optional<DiscordRole> serverModRoleOptional = DiscordBot.getInstance().getRoleManager()
+        DiscordRole serverModRole = DiscordBot.getInstance().getRoleManager()
                 .getRoleByName(DiscordRole.SERVER_MOD_ROLE);
 
-        Optional<DiscordRole> defaultRole = DiscordBot.getInstance().getRoleManager()
+        DiscordRole defaultRole = DiscordBot.getInstance().getRoleManager()
                 .getRoleByName(DiscordRole.DEFAULT_ROLE);
 
-        if (discordSupportAdmins.contains(userId) && discordAdminRoleOptional.isPresent()) {
-            roles.add(discordAdminRoleOptional.get());
+        if (discordSupportAdmins.contains(userId) && discordAdminRole != null) {
+            roles.add(discordAdminRole);
         }
 
-        if (discordSupportModerators.contains(userId) && discordModRoleOptional.isPresent()) {
-            roles.add(discordModRoleOptional.get());
+        if (discordSupportModerators.contains(userId) && discordModRole != null) {
+            roles.add(discordModRole);
         }
 
-        if (serverSupportAdmins.contains(userId) && serverAdminRoleOptional.isPresent()) {
-            roles.add(serverAdminRoleOptional.get());
+        if (serverSupportAdmins.contains(userId) && serverAdminRole != null) {
+            roles.add(serverAdminRole);
         }
 
-        if (serverSupportModerators.contains(userId) && serverModRoleOptional.isPresent()) {
-            roles.add(serverModRoleOptional.get());
+        if (serverSupportModerators.contains(userId) && serverModRole != null) {
+            roles.add(serverModRole);
         }
 
-        if (roles.isEmpty() && defaultRole.isPresent()) {
-            roles.add(defaultRole.get());
+        if (roles.isEmpty() && defaultRole != null) {
+            roles.add(defaultRole);
         }
 
         return roles;

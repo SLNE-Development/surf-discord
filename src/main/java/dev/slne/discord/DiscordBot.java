@@ -25,7 +25,6 @@ import dev.slne.discord.whitelist.UUIDCache;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 public class DiscordBot {
@@ -47,7 +46,7 @@ public class DiscordBot {
     /**
      * Called when the bot is loaded.
      */
-    @SuppressWarnings({ "java:S2696", "java:S2142" })
+    @SuppressWarnings({ "java:S2696", "java:S2142", "java:S125" })
     public void onLoad() {
         instance = this;
 
@@ -92,9 +91,9 @@ public class DiscordBot {
         listenerManager.registerDiscordListeners();
         listenerManager.registerListeners();
 
-        for (Guild guild : jda.getGuilds()) {
-            DiscordBot.getInstance().getCommandManager().registerToGuild(guild);
-        }
+        // for (Guild guild : jda.getGuilds()) {
+        // DiscordBot.getInstance().getCommandManager().registerToGuild(guild);
+        // }
 
         DiscordBot.getInstance().getTicketManager().fetchActiveTickets();
 

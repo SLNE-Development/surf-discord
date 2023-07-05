@@ -2,7 +2,6 @@ package dev.slne.discord.discord.interaction.modal.modals;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import javax.annotation.Nonnull;
 
@@ -92,9 +91,9 @@ public class WhitelistTicketModal extends DiscordModal {
                     message.append(TicketType.WHITELIST.getName());
                     message.append("\"-Ticket wurde erfolgreich erstellt! ");
 
-                    Optional<TextChannel> channelOptional = ticket.getChannel();
-                    if (channelOptional.isPresent()) {
-                        message.append(channelOptional.get().getAsMention());
+                    TextChannel channel = ticket.getChannel();
+                    if (channel != null) {
+                        message.append(channel.getAsMention());
                     }
 
                     String messageString = message.toString();
@@ -102,8 +101,8 @@ public class WhitelistTicketModal extends DiscordModal {
                         hook.editOriginal(messageString).queue();
                     }
 
-                    if (minecraftName != null && channelOptional.isPresent()) {
-                        channelOptional.get().sendMessage("Minecraft-Name: `" + minecraftName + "`").queue();
+                    if (minecraftName != null && channel != null) {
+                        channel.sendMessage("Minecraft-Name: `" + minecraftName + "`").queue();
                     }
 
                     return;

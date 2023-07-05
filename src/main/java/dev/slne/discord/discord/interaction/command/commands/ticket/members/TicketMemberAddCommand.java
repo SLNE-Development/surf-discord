@@ -4,29 +4,25 @@ import java.awt.Color;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import javax.annotation.Nonnull;
 
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.Launcher;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
-import dev.slne.discord.discord.interaction.command.DiscordCommand;
-import dev.slne.discord.ticket.Ticket;
+import dev.slne.discord.discord.interaction.command.commands.TicketCommand;
 import dev.slne.discord.ticket.TicketChannel;
-import dev.slne.discord.ticket.TicketRepository;
 import dev.slne.discord.ticket.member.TicketMember;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
-public class TicketMemberAddCommand extends DiscordCommand {
+public class TicketMemberAddCommand extends TicketCommand {
 
     /**
      * Creates a new TicketMemberAddCommand.
@@ -56,22 +52,7 @@ public class TicketMemberAddCommand extends DiscordCommand {
 
     @Override
     public void execute(SlashCommandInteractionEvent interaction) {
-        if (!(interaction.getChannel() instanceof TextChannel)) {
-            interaction.reply("Dieser Befehl kann nur in einem Ticket verwendet werden.").queue();
-            return;
-        }
-
         interaction.deferReply(true).queue(hook -> {
-            TextChannel channel = (TextChannel) interaction.getChannel();
-            Optional<Ticket> ticketOptional = TicketRepository.getTicketByChannel(channel.getId());
-
-            if (!ticketOptional.isPresent()) {
-                hook.editOriginal("Dieser Befehl kann nur in einem Ticket verwendet werden.")
-                        .queue();
-                return;
-            }
-
-            Ticket ticket = ticketOptional.get();
             OptionMapping userOption = interaction.getOption("user");
 
             if (userOption == null) {
@@ -86,23 +67,24 @@ public class TicketMemberAddCommand extends DiscordCommand {
                 return;
             }
 
-            Optional<TicketMember> ticketMemberOptional = ticket.getActiveTicketMember(user);
+            TicketMember ticketMember = getTicket().getActiveTicketMember(user);
 
-            if (ticketMemberOptional.isPresent()) {
+            if (ticketMember != null) {
                 hook.editOriginal("Dieser Nutzer ist bereits in diesem Ticket.").queue();
                 return;
             }
 
-            TicketMember ticketMember = new TicketMember(ticket, user, interaction.getUser());
-            ticket.addTicketMember(ticketMember).whenComplete(ticketMemberCreateOptional -> {
-                if (!ticketMemberCreateOptional.isPresent()) {
+            TicketMember newTicketMember = new TicketMember(getTicket(), user, interaction.getUser());
+            getTicket().addTicketMember(newTicketMember).whenComplete(createdTicketMember -> {
+                if (createdTicketMember == null) {
                     hook.editOriginal("Der Nutzer konnte nicht hinzugefügt werden.").queue();
                     return;
                 }
 
-                TicketChannel.addTicketMember(ticket, ticketMember).whenComplete(v -> {
+                TicketChannel.addTicketMember(getTicket(), newTicketMember).whenComplete(v -> {
                     hook.editOriginal("Der Nutzer wurde erfolgreich hinzugefügt.").queue();
-                    channel.sendMessage(user.getAsMention()).setEmbeds(getAddedEmbed(interaction.getUser())).queue();
+                    getChannel().sendMessage(user.getAsMention()).setEmbeds(getAddedEmbed(interaction.getUser()))
+                            .queue();
                 }, failure -> Launcher.getLogger()
                         .logError("Error while updating channel permissions: " + failure.getMessage()));
             });

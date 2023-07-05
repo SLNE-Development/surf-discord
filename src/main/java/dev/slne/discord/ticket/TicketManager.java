@@ -2,7 +2,6 @@ package dev.slne.discord.ticket;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import dev.slne.discord.Launcher;
 
@@ -29,9 +28,9 @@ public class TicketManager {
 
         long start = System.currentTimeMillis();
 
-        TicketRepository.getActiveTickets().whenComplete(ticketListOptional -> {
-            if (ticketListOptional.isPresent()) {
-                this.tickets = ticketListOptional.get();
+        TicketRepository.getActiveTickets().whenComplete(ticketList -> {
+            if (ticketList != null) {
+                this.tickets = ticketList;
             }
 
             long end = System.currentTimeMillis();
@@ -50,10 +49,10 @@ public class TicketManager {
      * @param channelId the channel id
      * @return the ticket
      */
-    public Optional<Ticket> getTicket(String channelId) {
-        return Optional.ofNullable(tickets.stream()
-                .filter(ticket -> ticket.getChannelId().isPresent() && ticket.getChannelId().get().equals(channelId))
-                .findFirst().orElse(null));
+    public Ticket getTicket(String channelId) {
+        return tickets.stream()
+                .filter(ticket -> ticket.getChannelId() != null && ticket.getChannelId().equals(channelId))
+                .findFirst().orElse(null);
     }
 
     /**
@@ -106,5 +105,15 @@ public class TicketManager {
      */
     public boolean isFetched() {
         return fetched;
+    }
+
+    /**
+     * Returns a ticket by its id
+     *
+     * @param ticketId The id of the ticket
+     * @return The ticket
+     */
+    public Ticket getTicketById(long ticketId) {
+        return tickets.stream().filter(ticket -> ticket.getId() == ticketId).findFirst().orElse(null);
     }
 }

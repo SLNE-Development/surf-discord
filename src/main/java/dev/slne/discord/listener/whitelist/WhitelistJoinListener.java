@@ -16,8 +16,8 @@ public class WhitelistJoinListener extends ListenerAdapter {
     @Override
     public void onGuildMemberJoin(@Nonnull GuildMemberJoinEvent event) {
         User user = event.getUser();
-        Whitelist.getWhitelistByDiscordId(user.getId()).whenComplete(whitelistOptional -> {
-            if (!whitelistOptional.isPresent()) {
+        Whitelist.getWhitelistByDiscordId(user.getId()).whenComplete(whitelist -> {
+            if (whitelist == null) {
                 return;
             }
 

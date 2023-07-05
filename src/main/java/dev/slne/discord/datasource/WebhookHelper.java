@@ -1,6 +1,5 @@
 package dev.slne.discord.datasource;
 
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import dev.slne.data.core.database.future.SurfFutureResult;
@@ -24,14 +23,13 @@ public class WebhookHelper {
      * @param webhookId The webhook id to get
      * @return The webhook
      */
-    public static SurfFutureResult<Optional<Webhook>> getWebhook(TextChannel channel, String webhookId) {
-        CompletableFuture<Optional<Webhook>> future = new CompletableFuture<>();
-        DiscordFutureResult<Optional<Webhook>> result = new DiscordFutureResult<>(future);
+    public static SurfFutureResult<Webhook> getWebhook(TextChannel channel, String webhookId) {
+        CompletableFuture<Webhook> future = new CompletableFuture<>();
+        DiscordFutureResult<Webhook> result = new DiscordFutureResult<>(future);
 
-        channel.retrieveWebhooks().queue(webhooks -> {
-            Optional<Webhook> webhook = webhooks.stream().filter(hook -> hook.getId().equals(webhookId)).findFirst();
-            future.complete(webhook);
-        }, future::completeExceptionally);
+        channel.retrieveWebhooks().queue(webhooks ->
+            future.complete(webhooks.stream().filter(hook -> hook.getId().equals(webhookId)).findFirst().orElse(null))
+        , future::completeExceptionally);
 
         return result;
     }

@@ -6,8 +6,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+
+import com.google.gson.annotations.SerializedName;
 
 import dev.slne.data.core.database.future.SurfFutureResult;
 import dev.slne.data.core.instance.DataApi;
@@ -34,40 +35,60 @@ import net.dv8tion.jda.api.requests.RestAction;
 
 public class Ticket {
 
-    private Optional<Long> id;
-    private Optional<String> ticketId;
+    @SerializedName("id")
+    private long id;
+
+    @SerializedName("ticket_id")
+    private String ticketId;
+
+    @SerializedName("opened_at")
     private LocalDateTime openedAt;
 
-    private Optional<String> guildId;
-    private Optional<Guild> guild;
+    @SerializedName("guild_id")
+    private String guildId;
 
-    private Optional<String> channelId;
-    private Optional<TextChannel> channel;
+    @SerializedName("channel_id")
+    private String channelId;
 
+    @SerializedName("type")
     private String ticketTypeString;
-    private TicketType ticketType;
 
+    @SerializedName("author_id")
     private String ticketAuthorId;
+
+    @SerializedName("author_name")
     private String ticketAuthorName;
+
+    @SerializedName("author_avatar_url")
     private String ticketAuthorAvatarUrl;
-    private RestAction<User> ticketAuthor;
 
-    private Optional<String> closedById;
-    private Optional<RestAction<User>> closedBy;
+    @SerializedName("closed_by_id")
+    private String closedById;
 
-    private Optional<String> closedReason;
-    private Optional<LocalDateTime> closedAt;
+    @SerializedName("closed_reason")
+    private String closedReason;
 
+    @SerializedName("closed_at")
+    private LocalDateTime closedAt;
+
+    @SerializedName("messages")
     private List<TicketMessage> messages;
+
+    @SerializedName("members")
     private List<TicketMember> members;
     private List<TicketMember> removedMembers;
 
-    private Optional<Webhook> webhook;
-    private Optional<String> webhookId;
-    private Optional<String> webhookName;
-    private Optional<String> webhookUrl;
+    @SerializedName("webhook_id")
+    private String webhookId;
 
-    private Optional<LocalDateTime> createdAt;
+    @SerializedName("webhook_name")
+    private String webhookName;
+
+    @SerializedName("webhook_avatar_url")
+    private String webhookUrl;
+
+    @SerializedName("created_at")
+    private LocalDateTime createdAt;
 
     /**
      * Constructor for a ticket
@@ -77,119 +98,25 @@ public class Ticket {
      * @param ticketType   The type of the ticket
      */
     public Ticket(Guild guild, User ticketAuthor, TicketType ticketType) {
-        this.id = Optional.empty();
-        this.ticketId = Optional.empty();
         this.openedAt = Times.now();
 
-        this.guildId = Optional.of(guild.getId());
-        this.guild = Optional.of(guild);
+        if (guild != null) {
+            this.guildId = guild.getId();
+        }
 
-        this.channelId = Optional.empty();
-        this.channel = Optional.empty();
+        if (ticketType != null) {
+            this.ticketTypeString = ticketType.name();
+        }
 
-        this.ticketTypeString = ticketType.name();
-        this.ticketType = ticketType;
-
-        this.ticketAuthorName = ticketAuthor.getName();
-        this.ticketAuthorId = ticketAuthor.getId();
-        this.ticketAuthor = DiscordBot.getInstance().getJda().retrieveUserById(ticketAuthor.getId());
-        this.ticketAuthorAvatarUrl = ticketAuthor.getAvatarUrl();
-
-        this.closedById = Optional.empty();
-        this.closedBy = Optional.empty();
-
-        this.closedReason = Optional.empty();
-        this.closedAt = Optional.empty();
+        if (ticketAuthor != null) {
+            this.ticketAuthorName = ticketAuthor.getName();
+            this.ticketAuthorId = ticketAuthor.getId();
+            this.ticketAuthorAvatarUrl = ticketAuthor.getAvatarUrl();
+        }
 
         this.messages = new ArrayList<>();
         this.members = new ArrayList<>();
         this.removedMembers = new ArrayList<>();
-
-        this.webhook = Optional.empty();
-        this.webhookId = Optional.empty();
-        this.webhookName = Optional.empty();
-        this.webhookUrl = Optional.empty();
-
-        this.createdAt = Optional.empty();
-    }
-
-    /**
-     * Constructor for a ticket
-     *
-     * @param id                    The id of the ticket
-     * @param ticketId              The ticket id
-     * @param openedAt              The date the ticket was opened
-     * @param guildId               The id of the guild the ticket is created in
-     * @param guild                 The guild the ticket is created in
-     * @param channelId             The id of the channel the ticket is created in
-     * @param channel               The channel the ticket is created in
-     * @param ticketTypeString      The type of the ticket as a string
-     * @param ticketType            The type of the ticket
-     * @param ticketAuthorName      The name of the author of the ticket
-     * @param ticketAuthorId        The id of the author of the ticket
-     * @param ticketAuthorAvatarUrl The avatar url of the author of the ticket
-     * @param ticketAuthor          The author of the ticket
-     * @param closedById            The id of the user that closed the ticket
-     * @param closedBy              The user that closed the ticket
-     * @param closedReason          The reason the ticket was closed
-     * @param closedAt              The date the ticket was closed
-     * @param messages              The messages of the ticket
-     * @param members               The members of the ticket
-     * @param webhook               the webhook
-     * @param webhookId             the webhook id
-     * @param webhookName           the webhook name
-     * @param webhookUrl            the webhook url
-     * @param createdAt             The created at
-     */
-    @SuppressWarnings("java:S107")
-    public Ticket(
-            Optional<Long> id, Optional<String> ticketId, LocalDateTime openedAt, Optional<String> guildId,
-            Optional<Guild> guild, Optional<String> channelId, Optional<TextChannel> channel, String ticketTypeString,
-            TicketType ticketType, String ticketAuthorName, String ticketAuthorId, String ticketAuthorAvatarUrl,
-            User ticketAuthor,
-            Optional<String> closedById,
-            Optional<User> closedBy, Optional<String> closedReason, Optional<LocalDateTime> closedAt,
-            List<TicketMessage> messages, List<TicketMember> members, Optional<Webhook> webhook,
-            Optional<String> webhookId, Optional<String> webhookName, Optional<String> webhookUrl,
-            Optional<LocalDateTime> createdAt) {
-        this.id = id;
-        this.ticketId = ticketId;
-        this.openedAt = openedAt;
-        this.guildId = guildId;
-        this.guild = guild;
-        this.channelId = channelId;
-        this.channel = channel;
-        this.ticketTypeString = ticketTypeString;
-        this.ticketType = ticketType;
-        this.ticketAuthorAvatarUrl = ticketAuthorAvatarUrl;
-        this.ticketAuthorName = ticketAuthorName;
-        this.ticketAuthorId = ticketAuthorId;
-
-        if (ticketAuthorId != null) {
-            this.ticketAuthor = DiscordBot.getInstance().getJda().retrieveUserById(ticketAuthorId);
-        }
-
-        this.closedById = closedById;
-
-        if (closedById.isPresent()) {
-            String closedId = closedById.get();
-
-            if (closedId != null) {
-                this.closedBy = Optional.of(DiscordBot.getInstance().getJda().retrieveUserById(closedId));
-            }
-        }
-
-        this.closedReason = closedReason;
-        this.closedAt = closedAt;
-        this.messages = messages;
-        this.members = members;
-        this.removedMembers = new ArrayList<>();
-        this.webhook = webhook;
-        this.webhookId = webhookId;
-        this.webhookName = webhookName;
-        this.webhookUrl = webhookUrl;
-
-        this.createdAt = createdAt;
     }
 
     /**
@@ -212,18 +139,18 @@ public class Ticket {
      * @param ticketMessage The ticket message
      * @return The result of the ticket message adding
      */
-    public SurfFutureResult<Optional<TicketMessage>> addTicketMessage(TicketMessage ticketMessage) {
-        CompletableFuture<Optional<TicketMessage>> future = new CompletableFuture<>();
-        DiscordFutureResult<Optional<TicketMessage>> futureResult = new DiscordFutureResult<>(future);
+    public SurfFutureResult<TicketMessage> addTicketMessage(TicketMessage ticketMessage) {
+        CompletableFuture<TicketMessage> future = new CompletableFuture<>();
+        DiscordFutureResult<TicketMessage> futureResult = new DiscordFutureResult<>(future);
 
-        ticketMessage.create().whenComplete(ticketMessageCallback -> {
-            if (ticketMessageCallback.isEmpty()) {
-                future.complete(Optional.empty());
+        ticketMessage.create().whenComplete(newTicketMessage -> {
+            if (newTicketMessage == null) {
+                future.complete(null);
                 return;
             }
 
             addRawTicketMessage(ticketMessage);
-            future.complete(ticketMessageCallback);
+            future.complete(ticketMessage);
         });
 
         return futureResult;
@@ -236,31 +163,31 @@ public class Ticket {
      * @param addingUser   The user that adds the ticket member
      * @return The result of the ticket member adding
      */
-    public SurfFutureResult<Optional<TicketMember>> addTicketMember(TicketMember ticketMember) {
-        CompletableFuture<Optional<TicketMember>> future = new CompletableFuture<>();
-        DiscordFutureResult<Optional<TicketMember>> futureResult = new DiscordFutureResult<>(future);
+    public SurfFutureResult<TicketMember> addTicketMember(TicketMember ticketMember) {
+        CompletableFuture<TicketMember> future = new CompletableFuture<>();
+        DiscordFutureResult<TicketMember> futureResult = new DiscordFutureResult<>(future);
 
-        RestAction<User> userRest = ticketMember.getMember().orElse(null);
+        RestAction<User> userRest = ticketMember.getMember();
 
         if (userRest == null) {
-            future.complete(Optional.empty());
+            future.complete(null);
             return futureResult;
         }
 
         userRest.queue(user -> {
             if (user == null || memberExists(user)) {
-                future.complete(Optional.empty());
+                future.complete(null);
                 return;
             }
 
-            ticketMember.create().whenComplete(ticketMemberCallback -> {
-                if (ticketMemberCallback.isEmpty()) {
-                    future.complete(Optional.empty());
+            ticketMember.create().whenComplete(newTicketMember -> {
+                if (newTicketMember == null) {
+                    future.complete(null);
                     return;
                 }
 
                 addRawTicketMember(ticketMember);
-                future.complete(ticketMemberCallback);
+                future.complete(ticketMember);
             });
         });
 
@@ -273,18 +200,18 @@ public class Ticket {
      * @param ticketMember The ticket member
      * @return The result of the ticket member removing
      */
-    public SurfFutureResult<Optional<TicketMember>> removeTicketMember(TicketMember ticketMember) {
-        CompletableFuture<Optional<TicketMember>> future = new CompletableFuture<>();
-        DiscordFutureResult<Optional<TicketMember>> futureResult = new DiscordFutureResult<>(future);
+    public SurfFutureResult<TicketMember> removeTicketMember(TicketMember ticketMember) {
+        CompletableFuture<TicketMember> future = new CompletableFuture<>();
+        DiscordFutureResult<TicketMember> futureResult = new DiscordFutureResult<>(future);
 
-        ticketMember.delete().whenComplete(ticketMemberCallback -> {
-            if (ticketMemberCallback.isEmpty()) {
-                future.complete(Optional.empty());
+        ticketMember.delete().whenComplete(deletedTicketMember -> {
+            if (deletedTicketMember == null) {
+                future.complete(null);
                 return;
             }
 
             removeRawTicketMember(ticketMember);
-            future.complete(ticketMemberCallback);
+            future.complete(ticketMember);
         });
 
         return futureResult;
@@ -295,31 +222,30 @@ public class Ticket {
      *
      * @return The embed for the ticket closed message
      */
-    public SurfFutureResult<Optional<MessageEmbed>> getTicketClosedEmbed() {
-        CompletableFuture<Optional<MessageEmbed>> future = new CompletableFuture<>();
-        DiscordFutureResult<Optional<MessageEmbed>> futureResult = new DiscordFutureResult<>(future);
+    public SurfFutureResult<MessageEmbed> getTicketClosedEmbed() {
+        CompletableFuture<MessageEmbed> future = new CompletableFuture<>();
+        DiscordFutureResult<MessageEmbed> futureResult = new DiscordFutureResult<>(future);
 
-        TicketChannel.getTicketName(this).whenComplete(ticketNameOptional -> {
-            if (ticketNameOptional.isEmpty()) {
-                future.complete(Optional.empty());
+        TicketChannel.getTicketName(this).whenComplete(ticketName -> {
+            if (ticketName == null) {
+                future.complete(null);
                 return;
             }
 
-            String ticketName = ticketNameOptional.get();
-            Optional<RestAction<User>> closedByRestOptional = getClosedBy();
+            RestAction<User> closedByRest = getClosedBy();
 
             getTicketAuthor().queue(author -> {
-                if (closedByRestOptional.isPresent()) {
-                    closedByRestOptional.get().queue(closedByUser -> {
+                if (closedByRest != null) {
+                    closedByRest.queue(closedByUser -> {
                         MessageEmbed embed = formEmbed(author, closedByUser, ticketName);
-                        future.complete(Optional.of(embed));
+                        future.complete(embed);
                     });
 
                     return;
                 }
 
                 MessageEmbed embed = formEmbed(author, null, ticketName);
-                future.complete(Optional.of(embed));
+                future.complete(embed);
             }, future::completeExceptionally);
         }, future::completeExceptionally);
 
@@ -339,7 +265,12 @@ public class Ticket {
 
         embedBuilder.setTitle("Ticket \"" + ticketName + "\" geschlossen");
 
-        String reason = getClosedReason().orElse("Kein Grund angegeben");
+        String reason = getClosedReason();
+
+        if (reason == null) {
+            reason = "Kein Grund angegeben.";
+        }
+
         String description = "Ein Ticket wurde ";
         if (closedBy != null) {
             description += "von " + closedBy.getAsMention() + " ";
@@ -349,26 +280,26 @@ public class Ticket {
 
         embedBuilder.setColor(Color.decode("#ff6600"));
 
-        Optional<LocalDateTime> openedAtOptional = getCreatedAt();
-        Optional<LocalDateTime> closedAtOptional = getClosedAt();
+        LocalDateTime openedAtDateTime = getCreatedAt();
+        LocalDateTime closedAtDateTime = getClosedAt();
+
+        if (closedAtDateTime == null) {
+            closedAtDateTime = Times.now();
+        }
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
-        LocalDateTime closedAtDateTime = closedAtOptional.orElse(Times.now());
 
-        embedBuilder.addField("Ticket-ID", getTicketId().orElse("") + "", true);
+        embedBuilder.addField("Ticket-ID", getTicketId() + "", true);
         embedBuilder.addField("Ticket-Type", getTicketTypeString() + "", true);
         embedBuilder.addField("Ticket-Author", author.getAsMention(), true);
 
-        if (openedAtOptional.isPresent()) {
-            LocalDateTime openedAtDateTime = openedAtOptional.get();
+        if (openedAtDateTime != null) {
             embedBuilder.addField("Ticket-Eröffnungszeit", formatter.format(openedAtDateTime) + "", true);
         }
 
         embedBuilder.addField("Ticket-Schließzeit", formatter.format(closedAtDateTime) + "", true);
 
-        if (openedAtOptional.isPresent()) {
-            LocalDateTime openedAtDateTime = openedAtOptional.get();
-
+        if (openedAtDateTime != null) {
             long[] tempDifferences = toTempUnits(openedAtDateTime, closedAtDateTime);
             long days = tempDifferences[2];
             long hours = tempDifferences[3];
@@ -389,24 +320,19 @@ public class Ticket {
      */
     @SuppressWarnings("java:S3776")
     public void sendTicketClosedMessages() {
-        getTicketClosedEmbed().whenComplete(embedOptional -> {
-            if (embedOptional.isEmpty()) {
-                return;
-            }
-
-            MessageEmbed embed = embedOptional.get();
-
+        getTicketClosedEmbed().whenComplete(embed -> {
             if (embed == null) {
                 return;
             }
 
             getTicketAuthor().queue(author -> {
-                if (guild.isEmpty()) {
+                Guild guild = getGuild();
+
+                if (guild == null) {
                     return;
                 }
 
-                Guild guildItem = guild.get();
-                DiscordGuild discordGuild = DiscordGuilds.getGuild(guildItem);
+                DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
 
                 if (discordGuild == null) {
                     return;
@@ -417,47 +343,51 @@ public class Ticket {
                         continue;
                     }
 
-                    member.getMember().ifPresent(userRest -> userRest.queue(memberUser -> {
-                        if (memberUser == null) {
-                            return;
-                        }
-
-                        if (memberUser.equals(DiscordBot.getInstance().getJda().getSelfUser())) {
-                            return;
-                        }
-
-                        discordGuild.getAllUsers().whenComplete(adminUsers -> {
-                            boolean memberIsAuthor = memberUser.equals(author);
-                            boolean isAdminUser = adminUsers.contains(memberUser);
-
-                            if (memberIsAuthor || !isAdminUser) {
-                                memberUser.openPrivateChannel()
-                                        .queue(privateChannel -> privateChannel.sendMessageEmbeds(embed).queue(v -> {
-                                        }, failure -> {
-                                            if (failure instanceof ErrorResponseException errorResponseException
-                                                    && errorResponseException.getErrorCode() == 50007) {
-                                                return;
-                                            }
-
-                                            Launcher.getLogger()
-                                                    .logError("Error while sending ticket closed message: "
-                                                            + failure.getMessage());
-                                            failure.printStackTrace();
-                                        }),
-                                                failure -> {
-                                                    if (failure instanceof ErrorResponseException errorResponseException
-                                                            && errorResponseException.getErrorCode() == 50007) {
-                                                        return;
-                                                    }
-
-                                                    Launcher.getLogger()
-                                                            .logError("Error while opening ticket closed message: "
-                                                                    + failure.getMessage());
-                                                    failure.printStackTrace();
-                                                });
+                    RestAction<User> memberUserRest = member.getMember();
+                    if (memberUserRest != null) {
+                        memberUserRest.queue(memberUser -> {
+                            if (memberUser == null) {
+                                return;
                             }
+
+                            if (memberUser.equals(DiscordBot.getInstance().getJda().getSelfUser())) {
+                                return;
+                            }
+
+                            discordGuild.getAllUsers().whenComplete(adminUsers -> {
+                                boolean memberIsAuthor = memberUser.equals(author);
+                                boolean isAdminUser = adminUsers.contains(memberUser);
+
+                                if (memberIsAuthor || !isAdminUser) {
+                                    memberUser.openPrivateChannel()
+                                            .queue(privateChannel -> privateChannel.sendMessageEmbeds(embed)
+                                                    .queue(v -> {
+                                                    }, failure -> {
+                                                        if (failure instanceof ErrorResponseException errorResponseException
+                                                                && errorResponseException.getErrorCode() == 50007) {
+                                                            return;
+                                                        }
+
+                                                        Launcher.getLogger()
+                                                                .logError("Error while sending ticket closed message: "
+                                                                        + failure.getMessage());
+                                                        failure.printStackTrace();
+                                                    }),
+                                                    failure -> {
+                                                        if (failure instanceof ErrorResponseException errorResponseException
+                                                                && errorResponseException.getErrorCode() == 50007) {
+                                                            return;
+                                                        }
+
+                                                        Launcher.getLogger()
+                                                                .logError("Error while opening ticket closed message: "
+                                                                        + failure.getMessage());
+                                                        failure.printStackTrace();
+                                                    });
+                                }
+                            });
                         });
-                    }));
+                    }
                 }
             });
         });
@@ -543,33 +473,19 @@ public class Ticket {
         DiscordFutureResult<TicketCreateResult> futureResult = new DiscordFutureResult<>(future);
 
         DataApi.getDataInstance()
-                .runAsync(() -> TicketChannel.getTicketName(this).whenComplete(ticketNameOptional -> {
-                    if (ticketNameOptional.isEmpty()) {
-                        future.complete(TicketCreateResult.ERROR);
-                        return;
-                    }
-
-                    String ticketName = ticketNameOptional.get();
-
+                .runAsync(() -> TicketChannel.getTicketName(this).whenComplete(ticketName -> {
                     if (ticketName == null) {
                         future.complete(TicketCreateResult.ERROR);
                         return;
                     }
 
-                    Optional<Guild> guildOptional = getGuild();
-                    if (guildOptional.isEmpty()) {
+                    Guild guild = getGuild();
+                    if (guild == null) {
                         future.complete(TicketCreateResult.GUILD_NOT_FOUND);
                         return;
                     }
 
-                    Guild guildItem = guildOptional.get();
-
-                    if (guildItem == null) {
-                        future.complete(TicketCreateResult.GUILD_NOT_FOUND);
-                        return;
-                    }
-
-                    DiscordGuild discordGuild = DiscordGuilds.getGuild(guildItem);
+                    DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
 
                     if (discordGuild == null) {
                         future.complete(TicketCreateResult.GUILD_NOT_FOUND);
@@ -582,15 +498,15 @@ public class Ticket {
                         return;
                     }
 
-                    Category channelCategory = guildItem.getCategoryById(categoryId);
+                    Category channelCategory = guild.getCategoryById(categoryId);
 
                     if (channelCategory == null) {
                         future.complete(TicketCreateResult.CATEGORY_NOT_FOUND);
                         return;
                     }
 
-                    ticketAuthor.queue(author -> {
-                        TicketChannel.checkTicketExists(ticketName, channelCategory, ticketType, author)
+                    getTicketAuthor().queue(author -> {
+                        TicketChannel.checkTicketExists(ticketName, channelCategory, getTicketType(), author)
                                 .whenComplete(ticketExistsBoolean -> {
                                     boolean ticketExists = ticketExistsBoolean;
 
@@ -599,8 +515,8 @@ public class Ticket {
                                         return;
                                     }
 
-                                    TicketRepository.createTicket(this).whenComplete(ticketCreateResultOptional -> {
-                                        if (ticketCreateResultOptional.isEmpty()) {
+                                    TicketRepository.createTicket(this).whenComplete(ticketCreateResult -> {
+                                        if (ticketCreateResult == null) {
                                             future.complete(TicketCreateResult.ERROR);
                                             return;
                                         }
@@ -608,14 +524,11 @@ public class Ticket {
                                         DiscordBot.getInstance().getTicketManager().addTicket(this);
 
                                         TicketChannel.createTicketChannel(this, ticketName, channelCategory)
-                                                .whenComplete(ticketChannelCreateResultOptional -> {
-                                                    if (ticketChannelCreateResultOptional.isEmpty()) {
+                                                .whenComplete(ticketChannelCreateResult -> {
+                                                    if (ticketChannelCreateResult == null) {
                                                         future.complete(TicketCreateResult.ERROR);
                                                         return;
                                                     }
-
-                                                    TicketCreateResult ticketChannelCreateResult = ticketChannelCreateResultOptional
-                                                            .get();
 
                                                     if (ticketChannelCreateResult != TicketCreateResult.SUCCESS) {
                                                         future.complete(ticketChannelCreateResult);
@@ -674,19 +587,19 @@ public class Ticket {
         DiscordFutureResult<TicketCloseResult> futureResult = new DiscordFutureResult<>(future);
 
         DataApi.getDataInstance().runAsync(() -> {
-            if (channel.isEmpty()) {
+            TextChannel channel = getChannel();
+
+            if (channel == null) {
                 future.complete(TicketCloseResult.TICKET_NOT_FOUND);
                 return;
             }
 
-            this.closedById = Optional.of(user.getId());
-            this.closedBy = Optional.of(DiscordBot.getInstance().getJda().retrieveUserById(user.getId()));
+            this.closedById = user.getId();
+            this.closedReason = reason;
 
-            this.closedReason = Optional.of(reason);
-
-            TicketRepository.closeTicket(this).whenComplete(newTicketOptional -> {
-                if (newTicketOptional.isEmpty()) {
-                    future.complete(TicketCloseResult.ERROR);
+            TicketRepository.closeTicket(this).whenComplete(newTicket -> {
+                if (newTicket == null) {
+                    future.complete(TicketCloseResult.TICKET_REPOSITORY_ERROR);
                     return;
                 }
 
@@ -697,12 +610,12 @@ public class Ticket {
                     DiscordBot.getInstance().getTicketManager().removeTicket(this);
                     afterClose();
                 }, throwable -> {
-                    future.complete(TicketCloseResult.ERROR);
+                    future.complete(TicketCloseResult.TICKET_CHANNEL_NOT_CLOSABLE);
                     Launcher.getLogger().logError("Error while closing ticket: " + throwable.getMessage());
                     throwable.printStackTrace();
                 });
             }, throwable -> {
-                future.complete(TicketCloseResult.ERROR);
+                future.complete(TicketCloseResult.TICKET_REPOSITORY_ERROR);
 
                 Launcher.getLogger().logError("Error while closing ticket: " + throwable.getMessage());
                 throwable.printStackTrace();
@@ -718,9 +631,9 @@ public class Ticket {
      * @param message The message
      * @return The ticket message
      */
-    public Optional<TicketMessage> getTicketMessage(Message message) {
+    public TicketMessage getTicketMessage(Message message) {
         return messages.stream().filter(ticketMessage -> ticketMessage.getMessageId().equals(message.getId()))
-                .findFirst();
+                .findFirst().orElse(null);
     }
 
     /**
@@ -729,8 +642,9 @@ public class Ticket {
      * @param messageId The message id
      * @return The ticket message
      */
-    public Optional<TicketMessage> getTicketMessage(String messageId) {
-        return messages.stream().filter(ticketMessage -> ticketMessage.getMessageId().equals(messageId)).findFirst();
+    public TicketMessage getTicketMessage(String messageId) {
+        return messages.stream().filter(ticketMessage -> ticketMessage.getMessageId().equals(messageId)).findFirst()
+                .orElse(null);
     }
 
     /**
@@ -739,8 +653,9 @@ public class Ticket {
      * @param user The member
      * @return The ticket member
      */
-    public Optional<TicketMember> getTicketMember(User user) {
-        return members.stream().filter(ticketMember -> ticketMember.getMemberId().equals(user.getId())).findFirst();
+    public TicketMember getTicketMember(User user) {
+        return members.stream().filter(ticketMember -> ticketMember.getMemberId().equals(user.getId())).findFirst()
+                .orElse(null);
     }
 
     /**
@@ -749,10 +664,10 @@ public class Ticket {
      * @param user The member
      * @return The active ticket member
      */
-    public Optional<TicketMember> getActiveTicketMember(User user) {
+    public TicketMember getActiveTicketMember(User user) {
         return members.stream()
                 .filter(ticketMember -> ticketMember.getMemberId().equals(user.getId()) && !ticketMember.isRemoved())
-                .findFirst();
+                .findFirst().orElse(null);
     }
 
     /**
@@ -761,8 +676,9 @@ public class Ticket {
      * @param userId The member id
      * @return The ticket member
      */
-    public Optional<TicketMember> getTicketMember(String userId) {
-        return members.stream().filter(ticketMember -> ticketMember.getMemberId().equals(userId)).findFirst();
+    public TicketMember getTicketMember(String userId) {
+        return members.stream().filter(ticketMember -> ticketMember.getMemberId().equals(userId)).findFirst()
+                .orElse(null);
     }
 
     /**
@@ -770,7 +686,7 @@ public class Ticket {
      *
      * @return The ticket id
      */
-    public Optional<String> getTicketId() {
+    public String getTicketId() {
         return ticketId;
     }
 
@@ -778,7 +694,11 @@ public class Ticket {
      * @return the ticketAuthor
      */
     public RestAction<User> getTicketAuthor() {
-        return ticketAuthor;
+        if (ticketAuthorId == null) {
+            return null;
+        }
+
+        return DiscordBot.getInstance().getJda().retrieveUserById(ticketAuthorId + "");
     }
 
     /**
@@ -796,7 +716,7 @@ public class Ticket {
      * @return The type of the ticket
      */
     public TicketType getTicketType() {
-        return ticketType;
+        return TicketType.valueOf(ticketTypeString);
     }
 
     /**
@@ -822,7 +742,7 @@ public class Ticket {
      *
      * @return The id of the guild the ticket is created in
      */
-    public Optional<String> getGuildId() {
+    public String getGuildId() {
         return guildId;
     }
 
@@ -831,8 +751,12 @@ public class Ticket {
      *
      * @return The guild the ticket is created in
      */
-    public Optional<Guild> getGuild() {
-        return guild;
+    public Guild getGuild() {
+        if (guildId == null) {
+            return null;
+        }
+
+        return DiscordBot.getInstance().getJda().getGuildById(guildId + "");
     }
 
     /**
@@ -840,7 +764,7 @@ public class Ticket {
      *
      * @return The id of the channel the ticket is created in
      */
-    public Optional<String> getChannelId() {
+    public String getChannelId() {
         return channelId;
     }
 
@@ -849,8 +773,12 @@ public class Ticket {
      *
      * @return The channel the ticket is created in
      */
-    public Optional<TextChannel> getChannel() {
-        return channel;
+    public TextChannel getChannel() {
+        if (channelId == null) {
+            return null;
+        }
+
+        return DiscordBot.getInstance().getJda().getTextChannelById(channelId + "");
     }
 
     /**
@@ -858,15 +786,19 @@ public class Ticket {
      *
      * @return The id of the user that closed the ticket
      */
-    public Optional<String> getClosedById() {
+    public String getClosedById() {
         return closedById;
     }
 
     /**
      * @return the closedBy
      */
-    public Optional<RestAction<User>> getClosedBy() {
-        return closedBy;
+    public RestAction<User> getClosedBy() {
+        if (closedById == null) {
+            return null;
+        }
+
+        return DiscordBot.getInstance().getJda().retrieveUserById(closedById + "");
     }
 
     /**
@@ -874,7 +806,7 @@ public class Ticket {
      *
      * @return The reason the ticket was closed
      */
-    public Optional<String> getClosedReason() {
+    public String getClosedReason() {
         return closedReason;
     }
 
@@ -883,7 +815,7 @@ public class Ticket {
      *
      * @return The date the ticket was closed
      */
-    public Optional<LocalDateTime> getClosedAt() {
+    public LocalDateTime getClosedAt() {
         return closedAt;
     }
 
@@ -892,7 +824,7 @@ public class Ticket {
      *
      * @return the id
      */
-    public Optional<Long> getId() {
+    public long getId() {
         return id;
     }
 
@@ -927,14 +859,14 @@ public class Ticket {
     /**
      * @param id the id to set
      */
-    public void setId(Optional<Long> id) {
+    public void setId(long id) {
         this.id = id;
     }
 
     /**
      * @param ticketId the ticketId to set
      */
-    public void setTicketId(Optional<String> ticketId) {
+    public void setTicketId(String ticketId) {
         this.ticketId = ticketId;
     }
 
@@ -962,21 +894,14 @@ public class Ticket {
     /**
      * @param closedAt the closedAt to set
      */
-    public void setClosedAt(Optional<LocalDateTime> closedAt) {
+    public void setClosedAt(LocalDateTime closedAt) {
         this.closedAt = closedAt;
-    }
-
-    /**
-     * @param channel the channel to set
-     */
-    public void setChannel(Optional<TextChannel> channel) {
-        this.channel = channel;
     }
 
     /**
      * @param channelId the channelId to set
      */
-    public void setChannelId(Optional<String> channelId) {
+    public void setChannelId(String channelId) {
         this.channelId = channelId;
     }
 
@@ -990,79 +915,49 @@ public class Ticket {
     /**
      * @return the webhook
      */
-    public Optional<Webhook> getWebhook() {
-        return webhook;
+    public RestAction<Webhook> getWebhook() {
+        return DiscordBot.getInstance().getJda().retrieveWebhookById(webhookId + "");
     }
 
     /**
      * @return the webhookId
      */
-    public Optional<String> getWebhookId() {
+    public String getWebhookId() {
         return webhookId;
     }
 
     /**
      * @return the webhookName
      */
-    public Optional<String> getWebhookName() {
+    public String getWebhookName() {
         return webhookName;
     }
 
     /**
      * @return the webhookUrl
      */
-    public Optional<String> getWebhookUrl() {
+    public String getWebhookUrl() {
         return webhookUrl;
-    }
-
-    /**
-     * @param webhook the webhook to set
-     */
-    public void setWebhook(Optional<Webhook> webhook) {
-        this.webhook = webhook;
-
-        if (webhook.isEmpty()) {
-            return;
-        }
-
-        Webhook webhookItem = webhook.get();
-        this.webhookId = Optional.of(webhookItem.getId());
-        this.webhookName = Optional.of(webhookItem.getName());
-        this.webhookUrl = Optional.of(webhookItem.getUrl());
-    }
-
-    /**
-     * @param closedBy the closedBy to set
-     */
-    public void setClosedBy(Optional<RestAction<User>> closedBy) {
-        this.closedBy = closedBy;
     }
 
     /**
      * @param closedById the closedById to set
      */
-    public void setClosedById(Optional<String> closedById) {
+    public void setClosedById(String closedById) {
         this.closedById = closedById;
     }
 
     /**
      * @param closedReason the closedReason to set
      */
-    public void setClosedReason(Optional<String> closedReason) {
+    public void setClosedReason(String closedReason) {
         this.closedReason = closedReason;
-    }
-
-    /**
-     * @param guild the guild to set
-     */
-    public void setGuild(Optional<Guild> guild) {
-        this.guild = guild;
     }
 
     /**
      * @param guildId the guildId to set
      */
-    public void setGuildId(Optional<String> guildId) {
+    public void setGuildId(String guildId) {
         this.guildId = guildId;
     }
 
@@ -1071,13 +966,6 @@ public class Ticket {
      */
     public void setRemovedMembers(List<TicketMember> removedMembers) {
         this.removedMembers = removedMembers;
-    }
-
-    /**
-     * @param ticketAuthor the ticketAuthor to set
-     */
-    public void setTicketAuthor(RestAction<User> ticketAuthor) {
-        this.ticketAuthor = ticketAuthor;
     }
 
     /**
@@ -1102,13 +990,6 @@ public class Ticket {
     }
 
     /**
-     * @param ticketType the ticketType to set
-     */
-    public void setTicketType(TicketType ticketType) {
-        this.ticketType = ticketType;
-    }
-
-    /**
      * @param ticketTypeString the ticketTypeString to set
      */
     public void setTicketTypeString(String ticketTypeString) {
@@ -1118,35 +999,35 @@ public class Ticket {
     /**
      * @param webhookId the webhookId to set
      */
-    public void setWebhookId(Optional<String> webhookId) {
+    public void setWebhookId(String webhookId) {
         this.webhookId = webhookId;
     }
 
     /**
      * @param webhookName the webhookName to set
      */
-    public void setWebhookName(Optional<String> webhookName) {
+    public void setWebhookName(String webhookName) {
         this.webhookName = webhookName;
     }
 
     /**
      * @param webhookUrl the webhookUrl to set
      */
-    public void setWebhookUrl(Optional<String> webhookUrl) {
+    public void setWebhookUrl(String webhookUrl) {
         this.webhookUrl = webhookUrl;
     }
 
     /**
      * @return the createdAt
      */
-    public Optional<LocalDateTime> getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
     /**
      * @param createdAt the createdAt to set
      */
-    public void setCreatedAt(Optional<LocalDateTime> createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 

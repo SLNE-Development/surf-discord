@@ -2,7 +2,6 @@ package dev.slne.discord.listener.message;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import javax.annotation.Nonnull;
 
@@ -50,32 +49,29 @@ public class MessageDeletedListener extends ListenerAdapter {
         }
 
         for (String messageId : messageIds) {
-            Optional<Ticket> ticketOptional = DiscordBot.getInstance().getTicketManager().getTicket(channel.getId());
+            Ticket ticket = DiscordBot.getInstance().getTicketManager().getTicket(channel.getId());
 
-            if (ticketOptional.isEmpty()) {
+            if (ticket == null) {
                 continue;
             }
 
-            Ticket ticket = ticketOptional.get();
-            Optional<TicketMessage> ticketMessageOptional = ticket.getTicketMessage(messageId);
+            TicketMessage ticketMessage = ticket.getTicketMessage(messageId);
 
-            if (ticketMessageOptional.isEmpty()) {
+            if (ticketMessage == null) {
                 continue;
             }
 
-            TicketMessage ticketMessage = ticketMessageOptional.get();
-            Optional<RestAction<Message>> messageOptional = ticketMessage.getMessage();
+            RestAction<Message> message = ticketMessage.getMessage();
 
-            if (!messageOptional.isPresent()) {
+            if (message == null) {
                 continue;
             }
 
-            ticketMessage.delete().whenComplete(deletedTicketMessageCallback -> {
-                if (deletedTicketMessageCallback.isEmpty()) {
+            ticketMessage.delete().whenComplete(deletedTicketMessage -> {
+                if (deletedTicketMessage == null) {
                     return;
                 }
 
-                TicketMessage deletedTicketMessage = deletedTicketMessageCallback.get();
                 ticket.addRawTicketMessage(deletedTicketMessage);
             });
         }

@@ -1,6 +1,5 @@
 package dev.slne.discord.whitelist;
 
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -29,15 +28,15 @@ public class UUIDResolver {
      * @return The UUID.
      */
     @SuppressWarnings({ "java:S3358", "java:S3776", "java:S1192" })
-    public static SurfFutureResult<Optional<UuidMinecraftName>> resolve(Object uuidOrMinecraftName) {
-        CompletableFuture<Optional<UuidMinecraftName>> future = new CompletableFuture<>();
-        DiscordFutureResult<Optional<UuidMinecraftName>> result = new DiscordFutureResult<>(future);
+    public static SurfFutureResult<UuidMinecraftName> resolve(Object uuidOrMinecraftName) {
+        CompletableFuture<UuidMinecraftName> future = new CompletableFuture<>();
+        DiscordFutureResult<UuidMinecraftName> result = new DiscordFutureResult<>(future);
 
         DataApi.getDataInstance().runAsync(() -> {
             UUIDCache cache = DiscordBot.getInstance().getUuidCache();
-            Optional<UuidMinecraftName> cachedUuidMinecraftName = cache.hitCache(uuidOrMinecraftName);
+            UuidMinecraftName cachedUuidMinecraftName = cache.hitCache(uuidOrMinecraftName);
 
-            if (cachedUuidMinecraftName.isPresent()) {
+            if (cachedUuidMinecraftName != null) {
                 future.complete(cachedUuidMinecraftName);
                 return;
             }
@@ -46,7 +45,7 @@ public class UUIDResolver {
                     : uuidOrMinecraftName instanceof String minecraftName ? minecraftName : null;
 
             if (requestString == null) {
-                future.complete(Optional.empty());
+                future.complete(null);
                 return;
             }
 
@@ -55,7 +54,7 @@ public class UUIDResolver {
 
             request.executeGet().thenAccept(response -> {
                 if (response.getStatusCode() != 200) {
-                    future.complete(Optional.empty());
+                    future.complete(null);
                     return;
                 }
 
@@ -65,7 +64,7 @@ public class UUIDResolver {
                 JsonElement jsonElement = new GsonConverter().fromJson(bodyString, JsonElement.class);
 
                 if (jsonElement.isJsonNull()) {
-                    future.complete(Optional.empty());
+                    future.complete(null);
                     return;
                 }
 
@@ -75,7 +74,7 @@ public class UUIDResolver {
                 JsonElement nameElement = jsonObject.get("name");
 
                 if (idElement == null || nameElement == null || idElement.isJsonNull() || nameElement.isJsonNull()) {
-                    future.complete(Optional.empty());
+                    future.complete(null);
                     return;
                 }
 
@@ -83,7 +82,7 @@ public class UUIDResolver {
                 String nameString = nameElement.getAsString();
 
                 if (idString == null || nameString == null) {
-                    future.complete(Optional.empty());
+                    future.complete(null);
                     return;
                 }
 

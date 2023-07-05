@@ -75,9 +75,25 @@ public abstract class DiscordCommand {
         User user = interaction.getUser();
         Guild guild = interaction.getGuild();
 
+        if (!performDiscordCommandChecks(user, guild, interaction)) {
+            return;
+        }
+
+        execute(interaction);
+    }
+
+    /**
+     * Performs the checks for the command.
+     *
+     * @param user        The user.
+     * @param guild       The guild.
+     * @param interaction The interaction.
+     * @return Whether the checks were successful.
+     */
+    protected boolean performDiscordCommandChecks(User user, Guild guild, SlashCommandInteractionEvent interaction) {
         if (guild == null) {
             interaction.reply("Es ist ein Fehler aufgetreten (dhwfm4nD)").setEphemeral(true).queue();
-            return;
+            return false;
         }
 
         DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
@@ -94,10 +110,10 @@ public abstract class DiscordCommand {
 
         if (!hasPermission) {
             interaction.reply("Du besitzt keine Berechtigung diesen Befehl zu verwenden.").setEphemeral(true).queue();
-            return;
+            return false;
         }
 
-        execute(interaction);
+        return true;
     }
 
     /**

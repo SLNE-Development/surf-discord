@@ -1,7 +1,5 @@
 package dev.slne.discord.listener.message;
 
-import java.util.Optional;
-
 import javax.annotation.Nonnull;
 
 import dev.slne.discord.DiscordBot;
@@ -28,27 +26,24 @@ public class MessageUpdatedListener extends ListenerAdapter {
             return;
         }
 
-        Optional<Ticket> ticketOptional = DiscordBot.getInstance().getTicketManager().getTicket(channel.getId());
+        Ticket ticket = DiscordBot.getInstance().getTicketManager().getTicket(channel.getId());
 
-        if (ticketOptional.isEmpty()) {
+        if (ticket == null) {
             return;
         }
 
-        Ticket ticket = ticketOptional.get();
-        Optional<TicketMessage> ticketMessageOptional = ticket.getTicketMessage(message.getId());
+        TicketMessage ticketMessage = ticket.getTicketMessage(message.getId());
 
-        if (ticketMessageOptional.isEmpty()) {
+        if (ticketMessage == null) {
             return;
         }
 
-        TicketMessage ticketMessage = ticketMessageOptional.get();
-        ticketMessage.update(message).whenComplete(ticketMessageCallback -> {
-            if (ticketMessageCallback.isEmpty()) {
+        ticketMessage.update(message).whenComplete(updatedTicketMessage -> {
+            if (updatedTicketMessage == null) {
                 return;
             }
 
-            TicketMessage createdTicketMessage = ticketMessageCallback.get();
-            ticket.addRawTicketMessage(createdTicketMessage);
+            ticket.addRawTicketMessage(updatedTicketMessage);
         });
     }
 }

@@ -1,7 +1,5 @@
 package dev.slne.discord.listener.reactionrole;
 
-import java.util.Optional;
-
 import javax.annotation.Nonnull;
 
 import dev.slne.discord.discord.guild.DiscordGuild;
@@ -67,13 +65,7 @@ public class ReactionRoleListener extends ListenerAdapter {
             return;
         }
 
-        Optional<Role> roleOptional = reactionRoleConfig.getRole();
-
-        if (roleOptional.isEmpty()) {
-            return;
-        }
-
-        Role role = roleOptional.get();
+        Role role = reactionRoleConfig.getRole();
 
         if (role == null) {
             return;
@@ -108,13 +100,7 @@ public class ReactionRoleListener extends ListenerAdapter {
             return;
         }
 
-        Optional<Role> roleOptional = reactionRoleConfig.getRole();
-
-        if (roleOptional.isEmpty()) {
-            return;
-        }
-
-        Role role = roleOptional.get();
+        Role role = reactionRoleConfig.getRole();
 
         if (role == null) {
             return;
@@ -169,13 +155,7 @@ public class ReactionRoleListener extends ListenerAdapter {
                 return;
             }
 
-            Optional<RestAction<Message>> messageOptional = reactionRoleConfig.getMessageRest();
-
-            if (messageOptional.isEmpty()) {
-                return;
-            }
-
-            RestAction<Message> messageRest = messageOptional.get();
+            RestAction<Message> messageRest = reactionRoleConfig.getMessageRest();
 
             if (messageRest == null) {
                 return;
@@ -194,13 +174,7 @@ public class ReactionRoleListener extends ListenerAdapter {
                     return;
                 }
 
-                Optional<Role> roleOptional = reactionRoleConfig.getRole();
-
-                if (roleOptional.isEmpty()) {
-                    return;
-                }
-
-                Role role = roleOptional.get();
+                Role role = reactionRoleConfig.getRole();
 
                 if (role == null) {
                     return;
@@ -265,13 +239,7 @@ public class ReactionRoleListener extends ListenerAdapter {
                 return;
             }
 
-            Optional<RestAction<Message>> messageOptional = reactionRoleConfig.getMessageRest();
-
-            if (messageOptional.isEmpty()) {
-                return;
-            }
-
-            RestAction<Message> messageRest = messageOptional.get();
+            RestAction<Message> messageRest = reactionRoleConfig.getMessageRest();
 
             if (messageRest == null) {
                 return;
@@ -290,13 +258,7 @@ public class ReactionRoleListener extends ListenerAdapter {
                     return;
                 }
 
-                Optional<Role> roleOptional = reactionRoleConfig.getRole();
-
-                if (roleOptional.isEmpty()) {
-                    return;
-                }
-
-                Role role = roleOptional.get();
+                Role role = reactionRoleConfig.getRole();
 
                 if (role == null) {
                     return;

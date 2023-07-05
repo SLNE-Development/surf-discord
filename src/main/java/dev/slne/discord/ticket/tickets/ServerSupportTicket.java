@@ -1,7 +1,5 @@
 package dev.slne.discord.ticket.tickets;
 
-import java.util.Optional;
-
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketType;
 import net.dv8tion.jda.api.entities.Guild;
@@ -22,13 +20,7 @@ public class ServerSupportTicket extends Ticket {
 
     @Override
     public void afterOpen() {
-        Optional<TextChannel> channelOptional = getChannel();
-
-        if (channelOptional.isEmpty()) {
-            return;
-        }
-
-        TextChannel channel = channelOptional.get();
+        TextChannel channel = getChannel();
 
         if (channel == null) {
             return;

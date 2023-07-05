@@ -3,7 +3,6 @@ package dev.slne.discord.ticket;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import javax.annotation.Nonnull;
@@ -26,6 +25,7 @@ import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.managers.channel.concrete.TextChannelManager;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.ChannelAction;
@@ -49,9 +49,9 @@ public class TicketChannel {
         CompletableFuture<Void> future = new CompletableFuture<>();
         DiscordFutureResult<Void> futureResult = new DiscordFutureResult<>(future);
 
-        Guild guild = ticket.getGuild().orElse(null);
-        TextChannel channel = ticket.getChannel().orElse(null);
-        RestAction<User> userRest = ticketMember.getMember().orElse(null);
+        Guild guild = ticket.getGuild();
+        TextChannel channel = ticket.getChannel();
+        RestAction<User> userRest = ticketMember.getMember();
 
         if (guild == null || channel == null || userRest == null) {
             future.complete(null);
@@ -101,8 +101,8 @@ public class TicketChannel {
         CompletableFuture<Void> future = new CompletableFuture<>();
         DiscordFutureResult<Void> futureResult = new DiscordFutureResult<>(future);
 
-        TextChannel channel = ticket.getChannel().orElse(null);
-        RestAction<User> userRest = ticketMember.getMember().orElse(null);
+        TextChannel channel = ticket.getChannel();
+        RestAction<User> userRest = ticketMember.getMember();
 
         if (channel == null || userRest == null) {
             future.complete(null);
@@ -132,19 +132,18 @@ public class TicketChannel {
         CompletableFuture<List<TicketPermissionOverride>> future = new CompletableFuture<>();
         DiscordFutureResult<List<TicketPermissionOverride>> futureResult = new DiscordFutureResult<>(future);
 
-        Optional<Guild> guild = ticket.getGuild();
+        Guild guild = ticket.getGuild();
         List<TicketMember> members = ticket.getMembers();
         List<TicketMember> removedMembers = ticket.getRemovedMembers();
 
         List<TicketPermissionOverride> overrides = new ArrayList<>();
 
-        if (guild.isEmpty()) {
+        if (guild == null) {
             future.complete(overrides);
             return futureResult;
         }
 
-        Guild guildItem = guild.get();
-        DiscordGuild discordGuild = DiscordGuilds.getGuild(guildItem);
+        DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
 
         if (discordGuild == null) {
             future.complete(overrides);
@@ -173,9 +172,9 @@ public class TicketChannel {
         // #endregion
 
         // #region Roles
-        Role botRole = guildItem.getBotRole();
+        Role botRole = guild.getBotRole();
 
-        for (Role role : guildItem.getRoles()) {
+        for (Role role : guild.getRoles()) {
             if (role == null) {
                 continue;
             }
@@ -288,53 +287,69 @@ public class TicketChannel {
      * @return The result of the ticket creation
      */
     @SuppressWarnings({ "java:S3776", "java:S135", "java:S1192" })
-    public static SurfFutureResult<Optional<TicketCreateResult>> createTicketChannel(Ticket ticket,
+    public static SurfFutureResult<TicketCreateResult> createTicketChannel(Ticket ticket,
             @Nonnull String ticketName, @Nonnull Category channelCategory) {
-        CompletableFuture<Optional<TicketCreateResult>> future = new CompletableFuture<>();
-        DiscordFutureResult<Optional<TicketCreateResult>> futureResult = new DiscordFutureResult<>(future);
+        CompletableFuture<TicketCreateResult> future = new CompletableFuture<>();
+        DiscordFutureResult<TicketCreateResult> futureResult = new DiscordFutureResult<>(future);
 
-        Optional<Guild> guildOptional = ticket.getGuild();
+        Guild guild = ticket.getGuild();
 
-        if (guildOptional.isEmpty()) {
-            future.complete(Optional.of(TicketCreateResult.GUILD_NOT_FOUND));
+        if (guild == null) {
+            future.complete(TicketCreateResult.GUILD_NOT_FOUND);
             return futureResult;
         }
 
         DataApi.getDataInstance().runAsync(() -> initialMembers(ticket).whenComplete(v -> {
-            ChannelAction<TextChannel> channelAction = channelCategory.createTextChannel(ticketName);
+            try {
+                ChannelAction<TextChannel> channelAction = channelCategory.createTextChannel(ticketName);
 
-            getChannelPermissions(ticket, channelCategory).whenComplete(overrides -> {
-                for (TicketPermissionOverride override : overrides) {
-                    if (override.getType() == Type.ROLE) {
-                        channelAction.addRolePermissionOverride(override.getId(),
-                                override.getAllow(), override.getDeny());
-                    } else if (override.getType() == Type.USER) {
-                        channelAction.addMemberPermissionOverride(override.getId(),
-                                override.getAllow(), override.getDeny());
-                    }
-                }
-
-                channelAction.queue(ticketChannel -> {
-                    ticket.setChannel(Optional.of(ticketChannel));
-                    ticket.setChannelId(Optional.of(ticketChannel.getId()));
-
-                    CompletableFuture
-                            .allOf(createWebhook(ticket).getFuture(), TicketRepository.updateTicket(ticket).getFuture())
-                            .thenAccept(v1 -> future.complete(Optional.of(TicketCreateResult.SUCCESS)));
-                }, exception -> {
-                    if (exception instanceof ErrorResponseException errorResponseException
-                            && errorResponseException.getErrorCode() == 50013) {
-                        future.complete(Optional.of(TicketCreateResult.MISSING_PERMISSIONS));
-                        return;
+                getChannelPermissions(ticket, channelCategory).whenComplete(overrides -> {
+                    for (TicketPermissionOverride override : overrides) {
+                        if (override.getType() == Type.ROLE) {
+                            channelAction.addRolePermissionOverride(override.getId(),
+                                    override.getAllow(), override.getDeny());
+                        } else if (override.getType() == Type.USER) {
+                            channelAction.addMemberPermissionOverride(override.getId(),
+                                    override.getAllow(), override.getDeny());
+                        }
                     }
 
-                    future.complete(Optional.of(TicketCreateResult.ERROR));
-                    exception.printStackTrace();
+                    channelAction.queue(ticketChannel -> {
+                        ticket.setChannelId(ticketChannel.getId());
+
+                        CompletableFuture
+                                .allOf(createWebhook(ticket).getFuture(),
+                                        TicketRepository.updateTicket(ticket).getFuture())
+                                .thenAccept(v1 -> future.complete(TicketCreateResult.SUCCESS));
+                    }, exception -> handleException(exception, future));
                 });
-            });
+            } catch (Exception exception) {
+                handleException(exception, future);
+            }
         }));
 
         return futureResult;
+    }
+
+    /**
+     * Handles the exception
+     *
+     * @param throwable The exception
+     * @param future    The future
+     */
+    @SuppressWarnings("java:S1871")
+    private static void handleException(Throwable throwable, CompletableFuture<TicketCreateResult> future) {
+        if (throwable instanceof ErrorResponseException errorResponseException
+                && errorResponseException.getErrorCode() == 50013) {
+            future.complete(TicketCreateResult.MISSING_PERMISSIONS);
+            return;
+        } else if (throwable instanceof InsufficientPermissionException) {
+            future.complete(TicketCreateResult.MISSING_PERMISSIONS);
+            return;
+        }
+
+        future.complete(TicketCreateResult.ERROR);
+        throwable.printStackTrace();
     }
 
     /**
@@ -343,14 +358,14 @@ public class TicketChannel {
      * @param ticket The ticket to get the name for
      * @return The name for the ticket channel
      */
-    public static SurfFutureResult<Optional<String>> getTicketName(Ticket ticket) {
-        CompletableFuture<Optional<String>> future = new CompletableFuture<>();
-        DiscordFutureResult<Optional<String>> futureResult = new DiscordFutureResult<>(future);
+    public static SurfFutureResult<String> getTicketName(Ticket ticket) {
+        CompletableFuture<String> future = new CompletableFuture<>();
+        DiscordFutureResult<String> futureResult = new DiscordFutureResult<>(future);
 
         TicketType ticketType = ticket.getTicketType();
         ticket.getTicketAuthor().queue(ticketAuthor -> {
             if (ticketType == null || ticketAuthor == null) {
-                future.complete(Optional.empty());
+                future.complete(null);
                 return;
             }
 
@@ -370,7 +385,7 @@ public class TicketChannel {
                 ticketName = ticketName.substring(0, maxLength);
             }
 
-            future.complete(Optional.of(ticketName));
+            future.complete(ticketName);
         });
 
         return futureResult;
@@ -383,14 +398,17 @@ public class TicketChannel {
      */
     public static SurfFutureResult<Void> createWebhook(Ticket ticket) {
         return DataApi.getDataInstance().supplyAsync(() -> {
-            Optional<TextChannel> channel = ticket.getChannel();
+            TextChannel channel = ticket.getChannel();
 
-            if (channel.isEmpty()) {
+            if (channel == null) {
                 return null;
             }
 
-            TextChannel textChannel = channel.get();
-            textChannel.createWebhook("Ticket Webhook").queue(webhook -> ticket.setWebhook(Optional.of(webhook)));
+            channel.createWebhook("Ticket Webhook").queue(webhook -> {
+                ticket.setWebhookId(webhook.getId());
+                ticket.setWebhookName(webhook.getName());
+                ticket.setWebhookUrl(webhook.getUrl());
+            });
 
             return null;
         });
@@ -406,21 +424,14 @@ public class TicketChannel {
         CompletableFuture<Void> future = new CompletableFuture<>();
         DiscordFutureResult<Void> futureResult = new DiscordFutureResult<>(future);
 
-        Optional<TextChannel> channel = ticket.getChannel();
+        TextChannel channel = ticket.getChannel();
 
-        if (channel.isEmpty()) {
+        if (channel == null) {
             future.complete(null);
             return futureResult;
         }
 
-        TextChannel textChannel = channel.get();
-
-        if (textChannel == null) {
-            future.complete(null);
-            return futureResult;
-        }
-
-        textChannel.delete().queue(future::complete, future::completeExceptionally);
+        channel.delete().queue(future::complete, future::completeExceptionally);
 
         return futureResult;
     }
@@ -466,21 +477,21 @@ public class TicketChannel {
         CompletableFuture<Void> future = new CompletableFuture<>();
         DiscordFutureResult<Void> futureResult = new DiscordFutureResult<>(future);
 
-        Optional<Guild> guild = ticket.getGuild();
+        Guild guild = ticket.getGuild();
         RestAction<User> ticketAuthor = ticket.getTicketAuthor();
         TicketType ticketType = ticket.getTicketType();
 
-        if (guild.isEmpty()) {
+        if (guild == null) {
             future.complete(null);
             return futureResult;
         }
 
-        List<CompletableFuture<Optional<TicketMember>>> futures = new ArrayList<>();
+        List<CompletableFuture<TicketMember>> futures = new ArrayList<>();
         User artyUser = DiscordBot.getInstance().getJda().getSelfUser();
         futures.add(ticket.addTicketMember(new TicketMember(ticket, artyUser, artyUser)).getFuture());
 
         ticketAuthor.queue(author -> {
-            DiscordGuild discordGuild = DiscordGuilds.getGuild(guild.get());
+            DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
             discordGuild.getAllUsers().whenComplete(allUsers -> {
                 if (!allUsers.contains(author)) {
                     futures.add(

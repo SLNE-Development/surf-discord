@@ -113,8 +113,8 @@ public abstract class TicketButton extends DiscordButton {
                         message.append(this.ticketType.getName());
                         message.append("\"-Ticket wurde erfolgreich erstellt! ");
 
-                        if (ticket.getChannel().isPresent()) {
-                            message.append(ticket.getChannel().get().getAsMention());
+                        if (ticket.getChannel() != null) {
+                            message.append(ticket.getChannel().getAsMention());
                         }
 
                         String messageString = message.toString();

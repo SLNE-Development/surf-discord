@@ -1,7 +1,5 @@
 package dev.slne.discord.discord.guild.reactionrole;
 
-import java.util.Optional;
-
 import dev.slne.discord.DiscordBot;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
@@ -17,21 +15,18 @@ public record ReactionRoleConfig(String messageId, String channelId, String reac
      *
      * @return the message rest.
      */
-    @SuppressWarnings("null")
-    public Optional<RestAction<Message>> getMessageRest() {
-        if (this.messageId == null || this.channelId == null) {
-            return Optional.empty();
+    public RestAction<Message> getMessageRest() {
+        if (this.messageId() == null || this.channelId() == null) {
+            return null;
         }
 
-        Optional<TextChannel> textChannelOptional = this.getTextChannel();
+        TextChannel channel = this.getTextChannel();
 
-        if (textChannelOptional.isEmpty()) {
-            return Optional.empty();
+        if (channel == null) {
+            return null;
         }
 
-        TextChannel textChannel = textChannelOptional.get();
-
-        return Optional.of(textChannel.retrieveMessageById(this.messageId()));
+        return channel.retrieveMessageById(this.messageId() + "");
     }
 
     /**
@@ -39,19 +34,18 @@ public record ReactionRoleConfig(String messageId, String channelId, String reac
      *
      * @return the text channel.
      */
-    @SuppressWarnings("null")
-    public Optional<TextChannel> getTextChannel() {
-        if (this.channelId == null) {
-            return Optional.empty();
+    public TextChannel getTextChannel() {
+        if (this.channelId() == null) {
+            return null;
         }
 
-        Channel channel = DiscordBot.getInstance().getJda().getTextChannelById(this.channelId());
+        Channel channel = DiscordBot.getInstance().getJda().getTextChannelById(this.channelId() + "");
 
         if (channel == null || !channel.getType().isMessage()) {
-            return Optional.empty();
+            return null;
         }
 
-        return Optional.of((TextChannel) channel);
+        return (TextChannel) channel;
     }
 
     /**
@@ -59,13 +53,12 @@ public record ReactionRoleConfig(String messageId, String channelId, String reac
      *
      * @return the role.
      */
-    @SuppressWarnings("null")
-    public Optional<Role> getRole() {
-        if (this.roleId == null) {
-            return Optional.empty();
+    public Role getRole() {
+        if (this.roleId() == null) {
+            return null;
         }
 
-        return Optional.ofNullable(DiscordBot.getInstance().getJda().getRoleById(this.roleId()));
+        return DiscordBot.getInstance().getJda().getRoleById(this.roleId() + "");
     }
 
     /**

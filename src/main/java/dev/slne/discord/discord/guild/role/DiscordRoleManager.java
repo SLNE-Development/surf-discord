@@ -2,7 +2,6 @@ package dev.slne.discord.discord.guild.role;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import dev.slne.discord.discord.guild.role.roles.DefaultDiscordRole;
 import dev.slne.discord.discord.guild.role.roles.DiscordAdminDiscordRole;
@@ -26,13 +25,13 @@ public class DiscordRoleManager {
     }
 
     /**
-     * Returns the role with the given name or an empty optional if no role with the
+     * Returns the role with the given name or null if no role with the
      *
      * @param name the name of the role
-     * @return the role with the given name or an empty optional if no role with the
+     * @return the role with the given name or null if no role with the
      */
-    public Optional<DiscordRole> getRoleByName(String name) {
-        return this.roles.stream().filter(role -> role.getName().equals(name)).findFirst();
+    public DiscordRole getRoleByName(String name) {
+        return this.roles.stream().filter(role -> role.getName().equals(name)).findFirst().orElse(null);
     }
 
     /**

@@ -4,25 +4,21 @@ import java.awt.Color;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import javax.annotation.Nonnull;
 
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
-import dev.slne.discord.discord.interaction.command.DiscordCommand;
-import dev.slne.discord.ticket.Ticket;
-import dev.slne.discord.ticket.TicketRepository;
+import dev.slne.discord.discord.interaction.command.commands.TicketCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
-public class TwitchConnectCommand extends DiscordCommand {
+public class TwitchConnectCommand extends TicketCommand {
 
     /**
      * Creates a new TwitchConnectCommand.
@@ -54,21 +50,7 @@ public class TwitchConnectCommand extends DiscordCommand {
 
     @Override
     public void execute(SlashCommandInteractionEvent interaction) {
-        if (!(interaction.getChannel() instanceof TextChannel)) {
-            interaction.reply("Dieser Befehl kann nur in einem Ticket verwendet werden.").setEphemeral(true).queue();
-            return;
-        }
-
         interaction.deferReply(true).queue(hook -> {
-            TextChannel channel = (TextChannel) interaction.getChannel();
-            Optional<Ticket> ticketOptional = TicketRepository.getTicketByChannel(channel.getId());
-
-            if (!ticketOptional.isPresent()) {
-                hook.editOriginal("Dieser Befehl kann nur in einem Ticket verwendet werden.")
-                        .queue();
-                return;
-            }
-
             OptionMapping userOption = interaction.getOption("user");
 
             if (userOption == null) {
@@ -77,7 +59,7 @@ public class TwitchConnectCommand extends DiscordCommand {
             }
 
             User user = userOption.getAsUser();
-            channel.sendMessage(user.getAsMention()).setEmbeds(getEmbed()).queue();
+            getChannel().sendMessage(user.getAsMention()).setEmbeds(getEmbed()).queue();
 
             hook.deleteOriginal().queue();
         });

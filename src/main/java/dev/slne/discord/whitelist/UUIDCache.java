@@ -2,7 +2,6 @@ package dev.slne.discord.whitelist;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public class UUIDCache {
@@ -22,20 +21,20 @@ public class UUIDCache {
      * @param uuidOrMinecraftName The UUID or minecraft name.
      * @return The {@link UuidMinecraftName} if found.
      */
-    public Optional<UuidMinecraftName> hitCache(Object uuidOrMinecraftName) {
-        Optional<UuidMinecraftName> uuidMinecraftNameOptional = Optional.empty();
+    public UuidMinecraftName hitCache(Object uuidOrMinecraftName) {
+        UuidMinecraftName uuidMinecraftName = null;
 
         if (uuidOrMinecraftName instanceof UUID uuid) {
-            uuidMinecraftNameOptional = this.cache.stream()
-                    .filter(uuidMinecraftName -> uuidMinecraftName.uuid().equals(uuid))
-                    .findFirst();
+            uuidMinecraftName = this.cache.stream()
+                    .filter(uuidMinecraftNameItem -> uuidMinecraftNameItem.uuid().equals(uuid))
+                    .findFirst().orElse(null);
         } else if (uuidOrMinecraftName instanceof String minecraftName) {
-            uuidMinecraftNameOptional = this.cache.stream()
-                    .filter(uuidMinecraftName -> uuidMinecraftName.minecraftName().equals(minecraftName))
-                    .findFirst();
+            uuidMinecraftName = this.cache.stream()
+                    .filter(uuidMinecraftNameItem -> uuidMinecraftNameItem.minecraftName().equals(minecraftName))
+                    .findFirst().orElse(null);
         }
 
-        return uuidMinecraftNameOptional;
+        return uuidMinecraftName;
     }
 
     /**
@@ -44,13 +43,16 @@ public class UUIDCache {
      * @param minecraftName The minecraft name.
      * @param uuid          The UUID.
      */
-    public Optional<UuidMinecraftName> setCache(String minecraftName, UUID uuid) {
-        Optional<UuidMinecraftName> uuidMinecraftNameOptional = this.hitCache(minecraftName);
+    public UuidMinecraftName setCache(String minecraftName, UUID uuid) {
+        UuidMinecraftName uuidMinecraftName = this.hitCache(minecraftName);
 
-        return Optional.of(uuidMinecraftNameOptional.orElseGet(() -> {
-            UuidMinecraftName newUuidMinecraftName = new UuidMinecraftName(uuid, minecraftName);
-            this.cache.add(newUuidMinecraftName);
-            return newUuidMinecraftName;
-        }));
+        if (uuidMinecraftName != null) {
+            this.cache.remove(uuidMinecraftName);
+        }
+
+        UuidMinecraftName newUuidMinecraftName = new UuidMinecraftName(uuid, minecraftName);
+        this.cache.add(newUuidMinecraftName);
+
+        return newUuidMinecraftName;
     }
 }
