@@ -68,4 +68,14 @@ public class DiscordDataInstance extends CoreDataInstance {
         return CompletableDiscordFuture.supplyAsync(supplier, executor);
     }
 
+    @Override
+    public String getServerName() {
+        return "Discord";
+    }
+
+    @Override
+    public void exitApplication() {
+        System.exit(0);
+    }
+
 }

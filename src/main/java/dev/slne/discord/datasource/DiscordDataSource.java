@@ -4,7 +4,7 @@ import dev.slne.data.core.DataSource;
 import dev.slne.data.core.instance.DataApi;
 import dev.slne.data.core.pusher.PusherModule;
 
-public class DiscordDataSource extends DataSource {
+public class DiscordDataSource implements DataSource {
 
     private static DiscordDataSource instance;
     private DiscordDataInstance dataInstance;
