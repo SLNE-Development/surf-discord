@@ -67,6 +67,19 @@
     </dependency>
   </dependencies>
 
+  <repositories>
+    <repository>
+      <id>slne-repository-snapshots</id>
+      <name>SLNE Repository</name>
+      <url>https://repo.slne.dev:2053/snapshots</url>
+    </repository>
+    <repository>
+      <id>slne-repository-releases</id>
+      <name>SLNE Repository</name>
+      <url>https://repo.slne.dev:2053/releases</url>
+    </repository>
+  </repositories>
+
   <build>
     <plugins>
       <plugin>
