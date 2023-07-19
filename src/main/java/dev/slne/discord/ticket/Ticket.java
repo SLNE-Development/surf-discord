@@ -22,6 +22,7 @@ import dev.slne.discord.ticket.member.TicketMember;
 import dev.slne.discord.ticket.message.TicketMessage;
 import dev.slne.discord.ticket.result.TicketCloseResult;
 import dev.slne.discord.ticket.result.TicketCreateResult;
+import dev.slne.discord.whitelist.Whitelist;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
@@ -621,6 +622,48 @@ public class Ticket {
         });
 
         return futureResult;
+    }
+
+    /**
+     * Prints the wl query embeds
+     */
+    public void printWlQueryEmbeds() {
+        getTicketAuthor().queue(ticketAuthor -> {
+            if (ticketAuthor == null) {
+                return;
+            }
+
+            Whitelist.getWhitelists(null, ticketAuthorId, null).whenComplete(
+                    whitelists -> printWlQuery(getChannel(), "\"" + ticketAuthor.getName() + "\"", whitelists),
+                    Throwable::printStackTrace);
+        });
+    }
+
+    /**
+     * Prints a wlquery request.
+     *
+     * @param channel    The channel.
+     * @param title      The title.
+     * @param whitelists The whitelists.
+     */
+    public void printWlQuery(TextChannel channel, String title, List<Whitelist> whitelists) {
+        channel.sendMessage("WlQuery für: \"" + title + "\"");
+
+        if (whitelists != null) {
+            for (Whitelist whitelist : whitelists) {
+                Whitelist.getWhitelistQueryEmbed(whitelist).whenComplete(embed -> {
+                    if (embed != null) {
+                        channel.sendMessageEmbeds(embed).queue();
+                    }
+                });
+            }
+
+            if (whitelists.isEmpty()) {
+                channel.sendMessage("Es wurden keine Whitelist Einträge für " + title + " gefunden.").queue();
+            }
+        } else {
+            channel.sendMessage("Es wurden keine Whitelist Einträge für " + title + " gefunden.").queue();
+        }
     }
 
     /**

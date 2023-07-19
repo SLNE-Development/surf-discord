@@ -36,5 +36,6 @@ public class BugReportTicket extends Ticket {
             channel.sendMessage(message).queue();
         });
 
+        printWlQueryEmbeds();
     }
 }

@@ -35,5 +35,7 @@ public class ServerSupportTicket extends Ticket {
 
             channel.sendMessage(message).queue();
         });
+
+        printWlQueryEmbeds();
     }
 }

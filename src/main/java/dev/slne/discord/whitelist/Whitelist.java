@@ -34,9 +34,6 @@ public class Whitelist {
     @SerializedName("uuid")
     private UUID uuid;
 
-    @SerializedName("minecraft_name")
-    private String minecraftName;
-
     @SerializedName("twitch_link")
     private String twitchLink;
 
@@ -54,6 +51,7 @@ public class Whitelist {
 
     @SerializedName("blocked")
     private boolean blocked;
+    private String minecraftName;
 
     /**
      * Creates a new {@link Whitelist}.
@@ -70,8 +68,8 @@ public class Whitelist {
         }
 
         this.uuid = uuid;
-        this.minecraftName = minecraftName;
         this.twitchLink = twitchLink;
+        this.minecraftName = minecraftName;
 
         if (discordUser != null) {
             this.discordId = discordUser.getId();
@@ -94,7 +92,6 @@ public class Whitelist {
     public Whitelist(Whitelist copy) {
         this.id = copy.id;
         this.uuid = copy.uuid;
-        this.minecraftName = copy.minecraftName;
         this.twitchLink = copy.twitchLink;
 
         this.discordId = copy.discordId;
@@ -154,58 +151,66 @@ public class Whitelist {
         builder.setColor(0x000000);
         builder.setTimestamp(Instant.now());
 
-        UUID uuid = whitelist.getUuid();
-        String minecraftName = whitelist.getMinecraftName();
-        String twitchLink = whitelist.getTwitchLink();
-        RestAction<User> discordUserRest = whitelist.getDiscordUser();
-        RestAction<User> addedByRest = whitelist.getAddedBy();
+        UUIDResolver.resolve(whitelist.getUuid()).whenComplete(uuidMinecraftName -> {
+            String minecraftName = null;
 
-        CompletableFuture<User> discordUserFuture = new CompletableFuture<>();
-        CompletableFuture<User> addedByFuture = new CompletableFuture<>();
-
-        if (discordUserRest != null) {
-            discordUserFuture = discordUserRest.submit();
-        } else {
-            discordUserFuture.complete(null);
-        }
-
-        if (addedByRest != null) {
-            addedByFuture = addedByRest.submit();
-        } else {
-            addedByFuture.complete(null);
-        }
-
-        final CompletableFuture<User> finaldiscordUserFuture = discordUserFuture;
-        final CompletableFuture<User> finalAddedByFuture = addedByFuture;
-
-        CompletableFuture.allOf(finaldiscordUserFuture, finalAddedByFuture).thenAccept(v -> {
-            User discordUser = finaldiscordUserFuture.join();
-            User addedBy = finalAddedByFuture.join();
-
-            if (minecraftName != null) {
-                builder.addField("Minecraft Name", minecraftName, true);
+            if (uuidMinecraftName != null) {
+                minecraftName = uuidMinecraftName.minecraftName();
             }
 
-            if (twitchLink != null) {
-                builder.addField("Twitch Link", twitchLink, true);
+            UUID uuid = whitelist.getUuid();
+            String twitchLink = whitelist.getTwitchLink();
+            RestAction<User> discordUserRest = whitelist.getDiscordUser();
+            RestAction<User> addedByRest = whitelist.getAddedBy();
+
+            CompletableFuture<User> discordUserFuture = new CompletableFuture<>();
+            CompletableFuture<User> addedByFuture = new CompletableFuture<>();
+
+            if (discordUserRest != null) {
+                discordUserFuture = discordUserRest.submit();
+            } else {
+                discordUserFuture.complete(null);
             }
 
-            if (discordUser != null) {
-                builder.addField("Discord User", discordUser.getAsMention(), true);
+            if (addedByRest != null) {
+                addedByFuture = addedByRest.submit();
+            } else {
+                addedByFuture.complete(null);
             }
 
-            if (addedBy != null) {
-                builder.addField("Added By", addedBy.getAsMention(), true);
-            }
+            final CompletableFuture<User> finaldiscordUserFuture = discordUserFuture;
+            final CompletableFuture<User> finalAddedByFuture = addedByFuture;
 
-            if (uuid != null) {
-                builder.addField("UUID", uuid.toString() + "", false);
-            }
+            final String finalMinecraftName = minecraftName;
+            CompletableFuture.allOf(finaldiscordUserFuture, finalAddedByFuture).thenAccept(v -> {
+                User discordUser = finaldiscordUserFuture.join();
+                User addedBy = finalAddedByFuture.join();
 
-            future.complete(builder.build());
-        }).exceptionally(exception -> {
-            future.completeExceptionally(exception);
-            return null;
+                if (finalMinecraftName != null) {
+                    builder.addField("Minecraft Name", finalMinecraftName, true);
+                }
+
+                if (twitchLink != null) {
+                    builder.addField("Twitch Link", twitchLink, true);
+                }
+
+                if (discordUser != null) {
+                    builder.addField("Discord User", discordUser.getAsMention(), true);
+                }
+
+                if (addedBy != null) {
+                    builder.addField("Added By", addedBy.getAsMention(), true);
+                }
+
+                if (uuid != null) {
+                    builder.addField("UUID", uuid.toString() + "", false);
+                }
+
+                future.complete(builder.build());
+            }).exceptionally(exception -> {
+                future.completeExceptionally(exception);
+                return null;
+            });
         });
 
         return futureResult;
