@@ -78,4 +78,14 @@ public class DiscordDataInstance extends CoreDataInstance {
         System.exit(0);
     }
 
+    @Override
+    public String getIpAddress() {
+        return "127.0.0.1";
+    }
+
+    @Override
+    public int getPort() {
+        return 0;
+    }
+
 }

@@ -228,7 +228,7 @@ public class Whitelist {
         DataApi.getDataInstance().runAsync(() -> {
             List<Whitelist> whitelists = new ArrayList<>();
 
-            Map<String, String> parameters = new HashMap<>();
+            Map<String, Object> parameters = new HashMap<>();
             parameters.put("uuid", uuid != null ? uuid.toString() : "");
             parameters.put("discord_id", discordId != null ? discordId : "");
             parameters.put("twitch_link", twitchLink != null ? twitchLink : "");
@@ -236,12 +236,12 @@ public class Whitelist {
             WebRequest request = WebRequest.builder().json(true).url(API.WHITELIST_CHECK).parameters(parameters)
                     .build();
             request.executePost().thenAccept(response -> {
-                if (response.getStatusCode() != 200) {
+                if (response.statusCode() != 200) {
                     future.complete(null);
                     return;
                 }
 
-                Object body = response.getBody();
+                Object body = response.body();
                 String bodyString = body.toString();
 
                 GsonConverter gson = new GsonConverter();
@@ -308,12 +308,12 @@ public class Whitelist {
             WebRequest request = WebRequest.builder().json(true).url(url).build();
 
             request.executeGet().thenAccept(response -> {
-                if (response.getStatusCode() != 200) {
+                if (response.statusCode() != 200) {
                     future.complete(null);
                     return;
                 }
 
-                Object body = response.getBody();
+                Object body = response.body();
                 String bodyString = body.toString();
 
                 GsonConverter gson = new GsonConverter();
@@ -351,12 +351,12 @@ public class Whitelist {
             WebRequest request = WebRequest.builder().json(true).url(url).build();
 
             request.executeGet().thenAccept(response -> {
-                if (response.getStatusCode() != 200) {
+                if (response.statusCode() != 200) {
                     future.complete(null);
                     return;
                 }
 
-                Object body = response.getBody();
+                Object body = response.body();
                 String bodyString = body.toString();
 
                 GsonConverter gson = new GsonConverter();
@@ -393,12 +393,12 @@ public class Whitelist {
             request.executeGet().thenAccept(response -> {
                 List<Whitelist> whitelists = new ArrayList<>();
 
-                if (response.getStatusCode() != 200) {
+                if (response.statusCode() != 200) {
                     future.complete(whitelists);
                     return;
                 }
 
-                Object body = response.getBody();
+                Object body = response.body();
                 String bodyString = body.toString();
 
                 GsonConverter gson = new GsonConverter();
@@ -438,12 +438,12 @@ public class Whitelist {
         DataApi.getDataInstance().runAsync(() -> {
             WebRequest request = WebRequest.builder().json(true).parameters(toParameters()).url(API.WHITELISTS).build();
             request.executePost().thenAccept(response -> {
-                if (!(response.getStatusCode() == 200 || response.getStatusCode() == 201)) {
+                if (!(response.statusCode() == 200 || response.statusCode() == 201)) {
                     future.complete(null);
                     return;
                 }
 
-                Object body = response.getBody();
+                Object body = response.body();
                 String bodyString = body.toString();
 
                 GsonConverter gson = new GsonConverter();
@@ -482,12 +482,12 @@ public class Whitelist {
             String url = String.format(API.WHITELIST, uuid.toString());
             WebRequest request = WebRequest.builder().json(true).parameters(toParameters()).url(url).build();
             request.executePost().thenAccept(response -> {
-                if (!(response.getStatusCode() == 200 || response.getStatusCode() == 201)) {
+                if (!(response.statusCode() == 200 || response.statusCode() == 201)) {
                     future.complete(null);
                     return;
                 }
 
-                Object body = response.getBody();
+                Object body = response.body();
                 String bodyString = body.toString();
 
                 GsonConverter gson = new GsonConverter();
@@ -513,8 +513,8 @@ public class Whitelist {
      *
      * @return The {@link Map} of parameters.
      */
-    public Map<String, String> toParameters() {
-        Map<String, String> parameters = new HashMap<>();
+    public Map<String, Object> toParameters() {
+        Map<String, Object> parameters = new HashMap<>();
 
         if (uuid != null) {
             parameters.put("uuid", uuid.toString());

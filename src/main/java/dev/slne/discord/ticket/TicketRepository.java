@@ -54,14 +54,14 @@ public class TicketRepository {
             request.executeGet().thenAccept(response -> {
                 List<Ticket> tickets = new ArrayList<>();
 
-                if (response.getStatusCode() != 200) {
+                if (response.statusCode() != 200) {
                     Launcher.getLogger(TicketRepository.class).error("Could not get active tickets: {}",
-                            response.getBody());
+                            response.body());
                     future.complete(tickets);
                     return;
                 }
 
-                Object body = response.getBody();
+                Object body = response.body();
                 String bodyString = body.toString();
 
                 GsonConverter gson = new GsonConverter();
@@ -122,13 +122,13 @@ public class TicketRepository {
             WebRequest request = WebRequest.builder().url(API.TICKETS).json(true).parameters(toParameters(ticket))
                     .build();
             request.executePost().thenAccept(response -> {
-                if (response.getStatusCode() != 201) {
-                    Launcher.getLogger(TicketRepository.class).error("Could not create ticket: {}", response.getBody());
+                if (response.statusCode() != 201) {
+                    Launcher.getLogger(TicketRepository.class).error("Could not create ticket: {}", response.body());
                     future.complete(null);
                     return;
                 }
 
-                Object body = response.getBody();
+                Object body = response.body();
                 String bodyString = body.toString();
 
                 GsonConverter gson = new GsonConverter();
@@ -180,14 +180,14 @@ public class TicketRepository {
                     .build();
 
             request.executePut().thenAccept(response -> {
-                if (!(response.getStatusCode() == 200 || response.getStatusCode() == 201)) {
+                if (!(response.statusCode() == 200 || response.statusCode() == 201)) {
                     Launcher.getLogger(TicketRepository.class).error("Could not update ticket: {}",
-                            response.getBody());
+                            response.body());
                     future.complete(null);
                     return;
                 }
 
-                Object body = response.getBody();
+                Object body = response.body();
                 String bodyString = body.toString();
 
                 GsonConverter gson = new GsonConverter();
@@ -230,13 +230,13 @@ public class TicketRepository {
 
             WebRequest request = WebRequest.builder().url(url).json(true).parameters(toParameters(ticket)).build();
             request.executeDelete().thenAccept(response -> {
-                if (response.getStatusCode() != 200) {
-                    Launcher.getLogger(TicketRepository.class).error("Could not close ticket: {}", response.getBody());
+                if (response.statusCode() != 200) {
+                    Launcher.getLogger(TicketRepository.class).error("Could not close ticket: {}", response.body());
                     future.complete(null);
                     return;
                 }
 
-                Object body = response.getBody();
+                Object body = response.body();
                 String bodyString = body.toString();
 
                 GsonConverter gson = new GsonConverter();
@@ -269,7 +269,7 @@ public class TicketRepository {
      * @param ticket The ticket
      * @return The map of the parameters
      */
-    public static Map<String, String> toParameters(Ticket ticket) {
+    public static Map<String, Object> toParameters(Ticket ticket) {
         String channelId = ticket.getChannelId();
         String guildId = ticket.getGuildId();
         String ticketAuthorName = ticket.getTicketAuthorName();
@@ -284,7 +284,7 @@ public class TicketRepository {
         String webhookName = ticket.getWebhookName();
         String webhookUrl = ticket.getWebhookUrl();
 
-        Map<String, String> parameters = new HashMap<>();
+        Map<String, Object> parameters = new HashMap<>();
 
         if (ticketAuthorId != null) {
             parameters.put("author_id", ticketAuthorId);

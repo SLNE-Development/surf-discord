@@ -108,7 +108,7 @@ public class TicketMember {
             String url = String.format(API.TICKET_MEMBER, ticketId, id);
             WebRequest request = WebRequest.builder().json(true).parameters(toDeleteParameters()).url(url).build();
             request.executeDelete().thenAccept(response -> {
-                if (response.getStatusCode() == 200) {
+                if (response.statusCode() == 200) {
                     future.complete(this);
                 } else {
                     future.complete(null);
@@ -128,8 +128,8 @@ public class TicketMember {
      *
      * @return The map of parameters
      */
-    public Map<String, String> toParameters() {
-        Map<String, String> parameters = new HashMap<>();
+    public Map<String, Object> toParameters() {
+        Map<String, Object> parameters = new HashMap<>();
 
         if (memberId != null) {
             parameters.put("member_id", memberId);
@@ -163,8 +163,8 @@ public class TicketMember {
      *
      * @return The map of parameters
      */
-    public Map<String, String> toDeleteParameters() {
-        Map<String, String> parameters = new HashMap<>();
+    public Map<String, Object> toDeleteParameters() {
+        Map<String, Object> parameters = new HashMap<>();
 
         if (removedById != null) {
             parameters.put("removed_by_id", removedById);
@@ -219,10 +219,10 @@ public class TicketMember {
             String url = String.format(API.TICKET_MEMBERS, ticketId);
             WebRequest request = WebRequest.builder().url(url).json(true).parameters(toParameters()).build();
             request.executePost().thenAccept(response -> {
-                Object responseBody = response.getBody();
+                Object responseBody = response.body();
                 String bodyString = responseBody.toString();
 
-                if (!(response.getStatusCode() == 201 || response.getStatusCode() == 200)) {
+                if (!(response.statusCode() == 201 || response.statusCode() == 200)) {
                     Launcher.getLogger(getClass()).error("Ticket member could not be created: {}", bodyString);
                     future.complete(null);
                     return;

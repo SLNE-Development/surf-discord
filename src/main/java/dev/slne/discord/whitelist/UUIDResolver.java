@@ -53,12 +53,12 @@ public class UUIDResolver {
                     .build();
 
             request.executeGet().thenAccept(response -> {
-                if (response.getStatusCode() != 200) {
+                if (response.statusCode() != 200) {
                     future.complete(null);
                     return;
                 }
 
-                Object body = response.getBody();
+                Object body = response.body();
                 String bodyString = body.toString();
 
                 JsonElement jsonElement = new GsonConverter().fromJson(bodyString, JsonElement.class);

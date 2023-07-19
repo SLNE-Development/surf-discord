@@ -123,9 +123,6 @@ public class DiscordBot {
             pusherModule.getPacketManager().registerPacket(entry.getKey(), entry.getValue());
         }
 
-        pusherModule.bindEvents("surf-communication",
-                packets.keySet().toArray(new String[packets.keySet().size()]));
-
         listenerManager.registerListenersToJda(this.jda);
 
         buttonManager = new DiscordButtonManager();

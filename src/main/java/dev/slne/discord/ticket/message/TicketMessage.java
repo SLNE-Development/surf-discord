@@ -196,8 +196,8 @@ public class TicketMessage {
      * @return the parameters of the ticket message
      */
     @SuppressWarnings("java:S1192")
-    public Map<String, String> toParameters() {
-        Map<String, String> parameters = new HashMap<>();
+    public Map<String, Object> toParameters() {
+        Map<String, Object> parameters = new HashMap<>();
 
         if (messageId != null) {
             parameters.put("message_id", messageId);
@@ -305,10 +305,10 @@ public class TicketMessage {
             String url = String.format(API.TICKET_MESSAGES, ticketId);
             WebRequest request = WebRequest.builder().url(url).json(true).parameters(toParameters()).build();
             request.executePost().thenAccept(response -> {
-                Object responseBody = response.getBody();
+                Object responseBody = response.body();
                 String bodyString = responseBody.toString();
 
-                if (!(response.getStatusCode() == 201 || response.getStatusCode() == 200)) {
+                if (!(response.statusCode() == 201 || response.statusCode() == 200)) {
                     Launcher.getLogger(getClass()).error("Ticket message could not be created: {}", bodyString);
                     future.complete(null);
                     return;
