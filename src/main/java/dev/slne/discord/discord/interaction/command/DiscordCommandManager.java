@@ -7,6 +7,7 @@ import dev.slne.discord.Launcher;
 import dev.slne.discord.discord.interaction.command.commands.reactionrole.ReactionRoleTextCommand;
 import dev.slne.discord.discord.interaction.command.commands.ticket.TicketButtonCommand;
 import dev.slne.discord.discord.interaction.command.commands.ticket.TicketCloseCommand;
+import dev.slne.discord.discord.interaction.command.commands.ticket.TicketDependenciesNotMetCommand;
 import dev.slne.discord.discord.interaction.command.commands.ticket.members.TicketMemberAddCommand;
 import dev.slne.discord.discord.interaction.command.commands.ticket.members.TicketMemberRemoveCommand;
 import dev.slne.discord.discord.interaction.command.commands.ticket.utils.TwitchConnectCommand;
@@ -37,6 +38,7 @@ public class DiscordCommandManager {
         this.commands.add(new TicketMemberRemoveCommand());
 
         this.commands.add(new TwitchConnectCommand());
+        this.commands.add(new TicketDependenciesNotMetCommand());
 
         this.commands.add(new WhitelistCommand());
         this.commands.add(new WhitelistedCommand());
