@@ -1,5 +1,7 @@
 package dev.slne.discord.ticket.tickets;
 
+import java.util.concurrent.CompletableFuture;
+
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketType;
 import net.dv8tion.jda.api.entities.Guild;
@@ -19,11 +21,11 @@ public class WhitelistApplicationTicket extends Ticket {
     }
 
     @Override
-    public void afterOpen() {
+    public CompletableFuture<Void> afterOpen() {
         TextChannel channel = getChannel();
 
         if (channel == null) {
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         getTicketAuthor().queue(author -> {
@@ -35,6 +37,8 @@ public class WhitelistApplicationTicket extends Ticket {
 
             channel.sendMessage(message).queue();
         });
+
+        return CompletableFuture.completedFuture(null);
     }
 
 }

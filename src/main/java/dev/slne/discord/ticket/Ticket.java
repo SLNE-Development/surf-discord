@@ -123,8 +123,9 @@ public class Ticket {
     /**
      * After the ticket is opened
      */
-    public void afterOpen() {
+    public CompletableFuture<Void> afterOpen() {
         // Implemented by subclasses
+        return CompletableFuture.completedFuture(null);
     }
 
     /**
@@ -536,9 +537,13 @@ public class Ticket {
                                                         return;
                                                     }
 
-                                                    afterOpen();
-                                                    runnable.run();
-                                                    future.complete(TicketCreateResult.SUCCESS);
+                                                    afterOpen().thenAcceptAsync(v -> {
+                                                        runnable.run();
+                                                        future.complete(TicketCreateResult.SUCCESS);
+                                                    }).exceptionally(exception -> {
+                                                        future.completeExceptionally(exception);
+                                                        return null;
+                                                    });
                                                 }, future::completeExceptionally);
                                     }, future::completeExceptionally);
                                 });
