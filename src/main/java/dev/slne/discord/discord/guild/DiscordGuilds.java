@@ -77,6 +77,7 @@ public class DiscordGuilds {
 
         serverSupportModerators.add("570544431174778881"); // Kendor
         serverSupportModerators.add("697395817882845214"); // Twisti
+        serverSupportModerators.add("929085897952100433"); // Marlon
 
         ReactionRoleConfig rrConfig = new ReactionRoleConfig("1052600279968784466", "1005106900179894333", "U+1F514",
                 "1052595432913637469");
