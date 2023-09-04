@@ -1,6 +1,6 @@
 package dev.slne.discord.datasource.pusher.packets;
 
-import dev.slne.data.core.pusher.packet.PusherPacket;
+import dev.slne.data.api.pusher.packet.PusherPacket;
 import dev.slne.discord.ticket.Ticket;
 
 public class TicketOpenPacket extends PusherPacket {

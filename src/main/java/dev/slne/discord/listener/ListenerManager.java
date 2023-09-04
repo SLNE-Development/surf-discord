@@ -1,9 +1,6 @@
 package dev.slne.discord.listener;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-
+import dev.slne.data.api.DataApi;
 import dev.slne.discord.listener.event.Event;
 import dev.slne.discord.listener.event.EventHandler;
 import dev.slne.discord.listener.interaction.button.DiscordButtonListener;
@@ -21,10 +18,14 @@ import dev.slne.discord.listener.whitelist.WhitelistQuitListener;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.hooks.EventListener;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+
 public class ListenerManager {
 
-    private List<Listener> listeners;
-    private List<EventListener> discordListeners;
+    private final List<Listener> listeners;
+    private final List<EventListener> discordListeners;
 
     /**
      * Creates a new listener manager.
@@ -92,7 +93,7 @@ public class ListenerManager {
                             try {
                                 method.invoke(listener, event);
                             } catch (Exception exception) {
-                                exception.printStackTrace();
+                                DataApi.getDataInstance().logError(getClass(), "Failed to invoke method", exception);
                             }
                         }
                     }

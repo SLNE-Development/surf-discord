@@ -1,10 +1,6 @@
 package dev.slne.discord.listener.message;
 
-import java.util.Arrays;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
+import dev.slne.data.api.DataApi;
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.message.TicketMessage;
@@ -18,6 +14,9 @@ import net.dv8tion.jda.api.events.message.MessageDeleteEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.RestAction;
 
+import javax.annotation.Nonnull;
+import java.util.List;
+
 public class MessageDeletedListener extends ListenerAdapter {
 
     @Override
@@ -25,7 +24,7 @@ public class MessageDeletedListener extends ListenerAdapter {
         MessageChannelUnion channel = event.getChannel();
         String messageId = event.getMessageId();
 
-        deleteMessage(channel, Arrays.asList(messageId));
+        deleteMessage(channel, List.of(messageId));
     }
 
     @Override
@@ -67,12 +66,15 @@ public class MessageDeletedListener extends ListenerAdapter {
                 continue;
             }
 
-            ticketMessage.delete().whenComplete(deletedTicketMessage -> {
+            ticketMessage.delete().thenAcceptAsync(deletedTicketMessage -> {
                 if (deletedTicketMessage == null) {
                     return;
                 }
 
                 ticket.addRawTicketMessage(deletedTicketMessage);
+            }).exceptionally(throwable -> {
+                DataApi.getDataInstance().logError(getClass(), "Failed to delete ticket message", throwable);
+                return null;
             });
         }
     }

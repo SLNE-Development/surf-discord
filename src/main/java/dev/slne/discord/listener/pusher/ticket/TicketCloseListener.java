@@ -11,12 +11,11 @@ import dev.slne.discord.ticket.TicketChannel;
 public class TicketCloseListener implements Listener {
 
     @EventHandler
-    public void onTicketClose(DiscordPusherEvent<TicketClosePacket> event) {
-        if (!(event.getPacket() instanceof TicketClosePacket)) {
+    public void onTicketClose(DiscordPusherEvent event) {
+        if (!(event.packet() instanceof TicketClosePacket packet)) {
             return;
         }
 
-        TicketClosePacket packet = event.getPacket();
         Ticket ticket = packet.getTicket();
 
         if (ticket == null) {

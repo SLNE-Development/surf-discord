@@ -1,7 +1,6 @@
 package dev.slne.discord.listener.whitelist;
 
-import javax.annotation.Nonnull;
-
+import dev.slne.data.api.DataApi;
 import dev.slne.discord.discord.guild.DiscordGuild;
 import dev.slne.discord.discord.guild.DiscordGuilds;
 import dev.slne.discord.whitelist.Whitelist;
@@ -11,12 +10,15 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
+import javax.annotation.Nonnull;
+
 public class WhitelistJoinListener extends ListenerAdapter {
 
     @Override
     public void onGuildMemberJoin(@Nonnull GuildMemberJoinEvent event) {
         User user = event.getUser();
-        Whitelist.getWhitelistByDiscordId(user.getId()).whenComplete(whitelist -> {
+
+        Whitelist.getWhitelistByDiscordId(user.getId()).thenAcceptAsync(whitelist -> {
             if (whitelist == null) {
                 return;
             }
@@ -41,6 +43,9 @@ public class WhitelistJoinListener extends ListenerAdapter {
 
                 guild.addRoleToMember(member, whitelistedRole).queue();
             });
+        }).exceptionally(throwable -> {
+            DataApi.getDataInstance().logError(getClass(), "Failed to get whitelist by discord id.", throwable);
+            return null;
         });
     }
 

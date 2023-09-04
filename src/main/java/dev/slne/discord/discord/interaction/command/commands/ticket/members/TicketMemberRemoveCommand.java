@@ -1,10 +1,5 @@
 package dev.slne.discord.discord.interaction.command.commands.ticket.members;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.Launcher;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
@@ -17,6 +12,10 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TicketMemberRemoveCommand extends TicketCommand {
 
@@ -78,19 +77,28 @@ public class TicketMemberRemoveCommand extends TicketCommand {
             ticketMember.setRemovedByAvatarUrl(interaction.getUser().getAvatarUrl());
             ticketMember.setRemovedById(interaction.getUser().getId());
             ticketMember.setRemovedByName(interaction.getUser().getName());
-            getTicket().removeTicketMember(ticketMember).whenComplete(ticketMemberRemoved -> {
+            getTicket().removeTicketMember(ticketMember).thenAcceptAsync(ticketMemberRemoved -> {
                 if (ticketMemberRemoved == null) {
                     hook.editOriginal("Der Nutzer konnte nicht entfernt werden.").queue();
                     return;
                 }
 
-                TicketChannel.removeTicketMember(getTicket(), ticketMember).whenComplete(v -> {
+                TicketChannel.removeTicketMember(getTicket(), ticketMember).thenAcceptAsync(v -> {
                     hook.editOriginal("Der Nutzer wurde entfernt.").queue();
                     getChannel().sendMessage(
-                            user.getAsMention() + " wurde von " + interaction.getUser().getAsMention() + " entfernt.")
+                                    user.getAsMention() + " wurde von " + interaction.getUser().getAsMention() + " entfernt.")
                             .queue();
-                }, failure -> Launcher.getLogger(getClass())
-                        .error("Error while updating channel permissions: {}", failure.getMessage()));
+                }).exceptionally(exception -> {
+                    Launcher.getLogger(getClass()).error("Error while removing ticket member", exception);
+                    hook.editOriginal("Der Nutzer konnte nicht entfernt werden.").queue();
+
+                    return null;
+                });
+            }).exceptionally(exception -> {
+                Launcher.getLogger(getClass()).error("Error while removing ticket member", exception);
+                hook.editOriginal("Der Nutzer konnte nicht entfernt werden.").queue();
+
+                return null;
             });
         });
     }

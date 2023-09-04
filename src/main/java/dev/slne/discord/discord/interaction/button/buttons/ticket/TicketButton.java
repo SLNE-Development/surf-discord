@@ -1,13 +1,7 @@
 package dev.slne.discord.discord.interaction.button.buttons.ticket;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
+import dev.slne.data.api.DataApi;
 import dev.slne.discord.Launcher;
-import dev.slne.discord.datasource.database.future.DiscordFutureResult;
 import dev.slne.discord.discord.interaction.button.DiscordButton;
 import dev.slne.discord.discord.interaction.modal.modals.WhitelistTicketModal;
 import dev.slne.discord.ticket.Ticket;
@@ -25,6 +19,11 @@ import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 public abstract class TicketButton extends DiscordButton {
 
     public static final String WHITELIST_TICKET_ID = "whitelist-ticket";
@@ -32,7 +31,7 @@ public abstract class TicketButton extends DiscordButton {
     public static final String DISCORD_SUPPORT_TICKET_ID = "discord-support-ticket";
     public static final String BUGREPORT_TICKET_ID = "bugreport-ticket";
 
-    private TicketType ticketType;
+    private final TicketType ticketType;
 
     /**
      * The TicketButton
@@ -43,7 +42,7 @@ public abstract class TicketButton extends DiscordButton {
      * @param ticketType the ticket type of the button
      */
     protected TicketButton(@Nonnull String id, @Nonnull String label, @Nullable Emoji emoji,
-            @Nonnull ButtonStyle style, @Nonnull TicketType ticketType) {
+                           @Nonnull ButtonStyle style, @Nonnull TicketType ticketType) {
         super(id, label, emoji, style);
 
         this.ticketType = ticketType;
@@ -67,14 +66,11 @@ public abstract class TicketButton extends DiscordButton {
             Guild guild = interaction.getGuild();
 
             CompletableFuture<Ticket> ticketFuture = new CompletableFuture<>();
-            DiscordFutureResult<Ticket> ticketResult = new DiscordFutureResult<>(ticketFuture);
 
             if (ticketType.equals(TicketType.DISCORD_SUPPORT)) {
                 ticketFuture.complete(new DiscordSupportTicket(guild, user));
             } else {
-                Whitelist.isWhitelisted(user).whenComplete(whitelistedBoolean -> {
-                    boolean whitelisted = whitelistedBoolean;
-
+                Whitelist.isWhitelisted(user).thenAcceptAsync(whitelisted -> {
                     List<TicketType> whitelistedTypes = List.of(TicketType.SERVER_SUPPORT,
                             TicketType.BUGREPORT);
 
@@ -85,28 +81,24 @@ public abstract class TicketButton extends DiscordButton {
 
                     Ticket ticket = null;
                     switch (ticketType) {
-                        case SERVER_SUPPORT:
-                            ticket = new ServerSupportTicket(guild, user);
-                            break;
-                        case BUGREPORT:
-                            ticket = new BugReportTicket(guild, user);
-                            break;
-                        default:
-                            break;
+                        case SERVER_SUPPORT -> ticket = new ServerSupportTicket(guild, user);
+                        case BUGREPORT -> ticket = new BugReportTicket(guild, user);
+                        default -> {
+                        }
                     }
 
                     ticketFuture.complete(ticket);
                 });
             }
 
-            ticketResult.whenComplete(ticket -> {
+            ticketFuture.thenAcceptAsync(ticket -> {
                 if (ticket == null) {
                     hook.editOriginal("Es konnte kein Ticket mit dem angegebenen Ticket-Typen erstellt werden!")
                             .queue();
                     return;
                 }
 
-                ticket.openFromButton().whenComplete(result -> {
+                ticket.openFromButton().thenAcceptAsync(result -> {
                     if (result.equals(TicketCreateResult.SUCCESS)) {
                         StringBuilder message = new StringBuilder();
                         message.append("Dein \"");
@@ -121,25 +113,28 @@ public abstract class TicketButton extends DiscordButton {
                         if (messageString != null) {
                             hook.editOriginal(messageString).queue();
                         }
-                        return;
                     } else if (result.equals(TicketCreateResult.ALREADY_EXISTS)) {
                         hook.editOriginal(
-                                "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo.")
+                                        "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo.")
                                 .queue();
-                        return;
                     } else if (result.equals(TicketCreateResult.MISSING_PERMISSIONS)) {
                         hook.editOriginal("Du hast nicht die benötigten Berechtigungen, um ein Ticket zu erstellen!")
                                 .queue();
-                        return;
                     } else {
                         hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
                         Launcher.getLogger(getClass()).error("Error while creating ticket: {}", result);
-                        return;
                     }
+                }).exceptionally(failure -> {
+                    hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
+                    DataApi.getDataInstance().logError(getClass(), "Error while creating ticket", failure);
+
+                    return null;
                 });
-            }, failure -> {
+            }).exceptionally(failure -> {
                 hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
-                Launcher.getLogger(getClass()).error("Error while creating ticket", failure);
+                DataApi.getDataInstance().logError(getClass(), "Error while creating ticket", failure);
+
+                return null;
             });
         });
 
@@ -157,20 +152,22 @@ public abstract class TicketButton extends DiscordButton {
 
         User user = interaction.getUser();
 
-        Whitelist.isWhitelisted(user).whenComplete(whitelistedBoolean -> {
+        Whitelist.isWhitelisted(user).thenAcceptAsync(whitelistedBoolean -> {
             boolean whitelisted = whitelistedBoolean;
 
             if (whitelisted) {
-                sendAllreadyWhitelistedMessage(interaction);
+                sendAlreadyWhitelistedMessage(interaction);
                 return;
             }
 
             WhitelistTicketModal whitelistModal = new WhitelistTicketModal();
             Modal modal = whitelistModal.buildModal();
             interaction.replyModal(modal).queue();
-        }, failure -> {
-            failure.printStackTrace();
-            interaction.reply("Es ist ein Fehler aufgetreten!").queue();
+        }).exceptionally(failure -> {
+            interaction.reply("Es ist ein Fehler aufgetreten!").setEphemeral(true).queue();
+            DataApi.getDataInstance().logError(getClass(), "Error while checking if user is whitelisted", failure);
+
+            return null;
         });
     }
 
@@ -186,9 +183,9 @@ public abstract class TicketButton extends DiscordButton {
     /**
      * Sends a message to the user that he is allready whitelisted
      *
-     * @param hook the hook
+     * @param interaction the interaction
      */
-    private void sendAllreadyWhitelistedMessage(ButtonInteraction interaction) {
+    private void sendAlreadyWhitelistedMessage(ButtonInteraction interaction) {
         interaction.reply("Du befindest dich bereits auf der Whitelist und kannst dieses Ticket nicht öffnen.")
                 .setEphemeral(true).queue();
     }

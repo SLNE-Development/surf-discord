@@ -9,12 +9,10 @@ import dev.slne.discord.listener.event.EventHandler;
 public class TicketOpenListener implements Listener {
 
     @EventHandler
-    public void onTicketOpen(DiscordPusherEvent<TicketOpenPacket> event) {
-        if (!(event.getPacket() instanceof TicketOpenPacket)) {
+    public void onTicketOpen(DiscordPusherEvent event) {
+        if (!(event.packet() instanceof TicketOpenPacket packet)) {
             return;
         }
-
-        TicketOpenPacket packet = event.getPacket();
 
         if (packet.getTicket() != null) {
             packet.getTicket().openFromPusher();

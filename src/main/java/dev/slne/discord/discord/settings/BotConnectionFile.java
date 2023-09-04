@@ -1,9 +1,9 @@
 package dev.slne.discord.discord.settings;
 
+import dev.slne.data.api.config.JsonConfigReader;
+
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
-
-import dev.slne.data.core.config.JsonConfigReader;
 
 public class BotConnectionFile extends JsonConfigReader {
 

@@ -1,5 +1,24 @@
 package dev.slne.discord.ticket.message;
 
+import club.minnced.discord.webhook.external.JDAWebhookClient;
+import club.minnced.discord.webhook.send.WebhookMessageBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.annotations.SerializedName;
+import dev.slne.data.api.gson.GsonConverter;
+import dev.slne.data.api.web.WebRequest;
+import dev.slne.discord.DiscordBot;
+import dev.slne.discord.Launcher;
+import dev.slne.discord.datasource.API;
+import dev.slne.discord.datasource.Times;
+import dev.slne.discord.ticket.Ticket;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.Message.Attachment;
+import net.dv8tion.jda.api.entities.MessageReference;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.requests.RestAction;
+
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -8,29 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.annotations.SerializedName;
-
-import club.minnced.discord.webhook.external.JDAWebhookClient;
-import club.minnced.discord.webhook.send.WebhookMessageBuilder;
-import dev.slne.data.core.database.future.SurfFutureResult;
-import dev.slne.data.core.gson.GsonConverter;
-import dev.slne.data.core.instance.DataApi;
-import dev.slne.data.core.web.WebRequest;
-import dev.slne.discord.DiscordBot;
-import dev.slne.discord.Launcher;
-import dev.slne.discord.datasource.API;
-import dev.slne.discord.datasource.Times;
-import dev.slne.discord.datasource.database.future.DiscordFutureResult;
-import dev.slne.discord.ticket.Ticket;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.Message.Attachment;
-import net.dv8tion.jda.api.entities.MessageReference;
-import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.requests.RestAction;
 
 public class TicketMessage {
 
@@ -145,6 +141,7 @@ public class TicketMessage {
      * Returns a ticket message from a json object
      *
      * @param jsonObject The json object
+     *
      * @return The ticket message
      */
     private static TicketMessage fromJsonObject(JsonObject jsonObject) {
@@ -166,16 +163,14 @@ public class TicketMessage {
 
     /**
      * Delete a ticket message
+     * the message id
      *
-     * @param messageId
-     *                  the message id
-     * @return the {@link SurfFutureResult}
+     * @return the {@link CompletableFuture}
      */
-    public SurfFutureResult<TicketMessage> delete() {
+    public CompletableFuture<TicketMessage> delete() {
         CompletableFuture<TicketMessage> future = new CompletableFuture<>();
-        DiscordFutureResult<TicketMessage> result = new DiscordFutureResult<>(future);
 
-        DataApi.getDataInstance().runAsync(() -> {
+        CompletableFuture.runAsync(() -> {
             if (this.messageDeletedAt != null) {
                 future.complete(this);
                 return;
@@ -184,10 +179,14 @@ public class TicketMessage {
             TicketMessage newMessage = new TicketMessage(this);
             newMessage.messageDeletedAt = Times.now();
 
-            newMessage.create().whenComplete(future::complete, future::completeExceptionally);
+            newMessage.create().thenAcceptAsync(future::complete).exceptionally(throwable -> {
+                Launcher.getLogger(getClass()).error("Ticket message could not be deleted: ");
+                future.complete(null);
+                return null;
+            });
         });
 
-        return result;
+        return future;
     }
 
     /**
@@ -283,71 +282,49 @@ public class TicketMessage {
      *
      * @return True if the ticket message has been saved successfully, false
      */
-    public SurfFutureResult<TicketMessage> create() {
+    public CompletableFuture<TicketMessage> create() {
         CompletableFuture<TicketMessage> future = new CompletableFuture<>();
-        DiscordFutureResult<TicketMessage> result = new DiscordFutureResult<>(future);
-
         Ticket ticket = getTicket();
 
         if (ticket == null) {
             future.complete(null);
-            return result;
+            return future;
         }
 
         String ticketId = ticket.getTicketId();
 
         if (ticketId == null) {
             future.complete(null);
-            return result;
+            return future;
         }
 
-        DataApi.getDataInstance().runAsync(() -> {
+        CompletableFuture.runAsync(() -> {
             String url = String.format(API.TICKET_MESSAGES, ticketId);
             WebRequest request = WebRequest.builder().url(url).json(true).parameters(toParameters()).build();
             request.executePost().thenAccept(response -> {
-                Object responseBody = response.body();
-                String bodyString = responseBody.toString();
-
-                if (!(response.statusCode() == 201 || response.statusCode() == 200)) {
-                    Launcher.getLogger(getClass()).error("Ticket message could not be created: {}", bodyString);
-                    future.complete(null);
-                    return;
-                }
-
-                GsonConverter gson = new GsonConverter();
-                JsonObject bodyElement = gson.fromJson(bodyString, JsonObject.class);
-
-                if (!bodyElement.has("data") || !bodyElement.get("data").isJsonObject()) {
-                    future.complete(null);
-                    return;
-                }
-
-                JsonObject jsonObject = (JsonObject) bodyElement.get("data");
-
-                TicketMessage tempMessage = fromJsonObject(jsonObject);
+                TicketMessage tempMessage = fromJsonObject(response.bodyObject(new GsonConverter()));
                 id = tempMessage.id;
 
                 future.complete(this);
             }).exceptionally(throwable -> {
                 Launcher.getLogger(getClass()).error("Ticket message could not be created: ", throwable);
-                future.complete(null);
+                future.completeExceptionally(throwable);
                 return null;
             });
         });
 
-        return result;
+        return future;
     }
 
     /**
      * Updates the ticket message
      *
      * @param updatedMessage The updated message
+     *
      * @return The future result
      */
-    public SurfFutureResult<TicketMessage> update(Message updatedMessage) {
+    public CompletableFuture<TicketMessage> update(Message updatedMessage) {
         CompletableFuture<TicketMessage> future = new CompletableFuture<>();
-        DiscordFutureResult<TicketMessage> result = new DiscordFutureResult<>(future);
-
         TicketMessage newTicketMessage = new TicketMessage(this);
 
         newTicketMessage.jsonContent = updatedMessage.getContentDisplay();
@@ -373,9 +350,13 @@ public class TicketMessage {
             newTicketMessage.attachments.add(attachement);
         }
 
-        newTicketMessage.create().whenComplete(future::complete, future::completeExceptionally);
+        newTicketMessage.create().thenAcceptAsync(future::complete).exceptionally(throwable -> {
+            Launcher.getLogger(getClass()).error("Ticket message could not be updated: ", throwable);
+            future.completeExceptionally(throwable);
+            return null;
+        });
 
-        return result;
+        return future;
     }
 
     /**
@@ -387,7 +368,7 @@ public class TicketMessage {
             return null;
         }
 
-        return channel.retrieveMessageById(messageId + "");
+        return channel.retrieveMessageById(messageId);
     }
 
     /**
@@ -400,12 +381,26 @@ public class TicketMessage {
     }
 
     /**
+     * @param messageId the messageId to set
+     */
+    public void setMessageId(String messageId) {
+        this.messageId = messageId;
+    }
+
+    /**
      * Returns the id of the author of the ticket message
      *
      * @return The id of the author of the ticket message
      */
     public String getAuthorId() {
         return authorId;
+    }
+
+    /**
+     * @param authorId the authorId to set
+     */
+    public void setAuthorId(String authorId) {
+        this.authorId = authorId;
     }
 
     /**
@@ -416,7 +411,7 @@ public class TicketMessage {
             return null;
         }
 
-        return DiscordBot.getInstance().getJda().retrieveUserById(authorId + "");
+        return DiscordBot.getInstance().getJda().retrieveUserById(authorId);
     }
 
     /**
@@ -429,12 +424,26 @@ public class TicketMessage {
     }
 
     /**
+     * @param messageCreatedAt the messageCreatedAt to set
+     */
+    public void setMessageCreatedAt(LocalDateTime messageCreatedAt) {
+        this.messageCreatedAt = messageCreatedAt;
+    }
+
+    /**
      * Returns the date of the last edit of the ticket message
      *
      * @return The date of the last edit of the ticket message
      */
     public LocalDateTime getMessageEditedAt() {
         return messageEditedAt;
+    }
+
+    /**
+     * @param messageEditedAt the messageEditedAt to set
+     */
+    public void setMessageEditedAt(LocalDateTime messageEditedAt) {
+        this.messageEditedAt = messageEditedAt;
     }
 
     /**
@@ -447,12 +456,26 @@ public class TicketMessage {
     }
 
     /**
+     * @param messageDeletedAt the messageDeletedAt to set
+     */
+    public void setMessageDeletedAt(LocalDateTime messageDeletedAt) {
+        this.messageDeletedAt = messageDeletedAt;
+    }
+
+    /**
      * Returns the id of the referenced message of the ticket message
      *
      * @return The id of the referenced message of the ticket message
      */
     public String getReferencesMessageId() {
         return referencesMessageId;
+    }
+
+    /**
+     * @param referencesMessageId the referencesMessageId to set
+     */
+    public void setReferencesMessageId(String referencesMessageId) {
+        this.referencesMessageId = referencesMessageId;
     }
 
     /**
@@ -468,7 +491,7 @@ public class TicketMessage {
             return null;
         }
 
-        return channel.retrieveMessageById(referencesMessageId + "");
+        return channel.retrieveMessageById(referencesMessageId);
     }
 
     /**
@@ -499,107 +522,10 @@ public class TicketMessage {
     }
 
     /**
-     * @param ticketId the ticketId to set
-     */
-    public void setTicketRawId(long ticketId) {
-        this.ticketRawId = ticketId;
-    }
-
-    /**
      * @return the id
      */
     public long getId() {
         return id;
-    }
-
-    /**
-     * @return the authorAvatarUrl
-     */
-    public String getAuthorAvatarUrl() {
-        return authorAvatarUrl;
-    }
-
-    /**
-     * @return the authorName
-     */
-    public String getAuthorName() {
-        return authorName;
-    }
-
-    /**
-     * @return the content
-     */
-    public SurfFutureResult<String> getContent() {
-        CompletableFuture<String> future = new CompletableFuture<>();
-        DiscordFutureResult<String> result = new DiscordFutureResult<>(future);
-
-        if (jsonContent != null) {
-            future.complete(jsonContent);
-            return result;
-        }
-
-        RestAction<Message> message = getMessage();
-
-        if (message == null) {
-            future.complete(null);
-            return result;
-        }
-
-        message.queue(msg -> {
-            String content = msg.getContentDisplay();
-            future.complete(content);
-        });
-
-        return result;
-    }
-
-    /**
-     * @param authorAvatarUrl the authorAvatarUrl to set
-     */
-    public void setAuthorAvatarUrl(String authorAvatarUrl) {
-        this.authorAvatarUrl = authorAvatarUrl;
-    }
-
-    /**
-     * @param authorId the authorId to set
-     */
-    public void setAuthorId(String authorId) {
-        this.authorId = authorId;
-    }
-
-    /**
-     * @return the jsonContent
-     */
-    public String getJsonContent() {
-        return jsonContent;
-    }
-
-    /**
-     * @return the ticketId
-     */
-    public long getTicketRawId() {
-        return ticketRawId;
-    }
-
-    /**
-     * @param authorName the authorName to set
-     */
-    public void setAuthorName(String authorName) {
-        this.authorName = authorName;
-    }
-
-    /**
-     * @param botMessage the botMessage to set
-     */
-    public void setBotMessage(boolean botMessage) {
-        this.botMessage = botMessage;
-    }
-
-    /**
-     * @param jsonContent the jsonContent to set
-     */
-    public void setJsonContent(String jsonContent) {
-        this.jsonContent = jsonContent;
     }
 
     /**
@@ -610,38 +536,92 @@ public class TicketMessage {
     }
 
     /**
-     * @param messageCreatedAt the messageCreatedAt to set
+     * @return the authorAvatarUrl
      */
-    public void setMessageCreatedAt(LocalDateTime messageCreatedAt) {
-        this.messageCreatedAt = messageCreatedAt;
+    public String getAuthorAvatarUrl() {
+        return authorAvatarUrl;
     }
 
     /**
-     * @param messageDeletedAt the messageDeletedAt to set
+     * @param authorAvatarUrl the authorAvatarUrl to set
      */
-    public void setMessageDeletedAt(LocalDateTime messageDeletedAt) {
-        this.messageDeletedAt = messageDeletedAt;
+    public void setAuthorAvatarUrl(String authorAvatarUrl) {
+        this.authorAvatarUrl = authorAvatarUrl;
     }
 
     /**
-     * @param messageEditedAt the messageEditedAt to set
+     * @return the authorName
      */
-    public void setMessageEditedAt(LocalDateTime messageEditedAt) {
-        this.messageEditedAt = messageEditedAt;
+    public String getAuthorName() {
+        return authorName;
     }
 
     /**
-     * @param messageId the messageId to set
+     * @param authorName the authorName to set
      */
-    public void setMessageId(String messageId) {
-        this.messageId = messageId;
+    public void setAuthorName(String authorName) {
+        this.authorName = authorName;
     }
 
     /**
-     * @param referencesMessageId the referencesMessageId to set
+     * @return the content
      */
-    public void setReferencesMessageId(String referencesMessageId) {
-        this.referencesMessageId = referencesMessageId;
+    public CompletableFuture<String> getContent() {
+        CompletableFuture<String> future = new CompletableFuture<>();
+
+        if (jsonContent != null) {
+            future.complete(jsonContent);
+            return future;
+        }
+
+        RestAction<Message> message = getMessage();
+
+        if (message == null) {
+            future.complete(null);
+            return future;
+        }
+
+        message.queue(msg -> {
+            String content = msg.getContentDisplay();
+            future.complete(content);
+        });
+
+        return future;
+    }
+
+    /**
+     * @return the jsonContent
+     */
+    public String getJsonContent() {
+        return jsonContent;
+    }
+
+    /**
+     * @param jsonContent the jsonContent to set
+     */
+    public void setJsonContent(String jsonContent) {
+        this.jsonContent = jsonContent;
+    }
+
+    /**
+     * @return the ticketId
+     */
+    public long getTicketRawId() {
+        return ticketRawId;
+    }
+
+    /**
+     * @param ticketId the ticketId to set
+     */
+    public void setTicketRawId(long ticketId) {
+        this.ticketRawId = ticketId;
+    }
+
+    /**
+     * @param botMessage the botMessage to set
+     */
+    public void setBotMessage(boolean botMessage) {
+        this.botMessage = botMessage;
     }
 
 }

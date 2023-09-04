@@ -1,11 +1,5 @@
 package dev.slne.discord.discord.interaction.command.commands.whitelist;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
-import javax.annotation.Nonnull;
-
 import dev.slne.discord.Launcher;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
@@ -19,6 +13,11 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class WhitelistQueryCommand extends DiscordCommand {
 
@@ -57,25 +56,26 @@ public class WhitelistQueryCommand extends DiscordCommand {
 
     @Override
     public void execute(SlashCommandInteractionEvent interaction) {
-        if (!(interaction.getChannel() instanceof TextChannel)) {
+        if (!(interaction.getChannel() instanceof TextChannel channel)) {
             interaction.reply("Dieser Befehl kann nur in Textkanälen verwendet werden.").setEphemeral(true).queue();
             return;
         }
-
-        TextChannel channel = (TextChannel) interaction.getChannel();
 
         OptionMapping userOption = interaction.getOption("user");
         OptionMapping minecraftOption = interaction.getOption("minecraft");
         OptionMapping twitchOption = interaction.getOption("twitch");
 
         interaction.deferReply().queue(hook -> {
-            if (userOption != null && userOption.getAsUser() != null) {
+            if (userOption != null) {
                 User user = userOption.getAsUser();
 
-                Whitelist.getWhitelists(null, user.getId(), null).whenComplete(whitelists -> {
+                Whitelist.getWhitelists(null, user.getId(), null).thenAcceptAsync(whitelists -> {
                     printWlQuery(channel, "\"" + user.getName() + "\"", whitelists);
                     hook.deleteOriginal().queue();
-                }, throwable -> errorHandler(hook, throwable));
+                }).exceptionally(throwable -> {
+                    errorHandler(hook, throwable);
+                    return null;
+                });
 
                 return;
             }
@@ -83,25 +83,31 @@ public class WhitelistQueryCommand extends DiscordCommand {
             if (twitchOption != null && twitchOption.getAsString() != null) {
                 String twitch = twitchOption.getAsString();
 
-                Whitelist.getWhitelists(null, null, twitch).whenComplete(whitelists -> {
+                Whitelist.getWhitelists(null, null, twitch).thenAcceptAsync(whitelists -> {
                     printWlQuery(channel, "\"" + twitch + "\"", whitelists);
                     hook.deleteOriginal().queue();
-                }, throwable -> errorHandler(hook, throwable));
+                }).exceptionally(throwable -> {
+                    errorHandler(hook, throwable);
+                    return null;
+                });
 
                 return;
             }
 
-            if (minecraftOption != null && minecraftOption.getAsString() != null) {
+            if (minecraftOption != null) {
                 String minecraft = minecraftOption.getAsString();
 
-                UUIDResolver.resolve(minecraft).whenComplete(uuidMinecraftName -> {
+                UUIDResolver.resolve(minecraft).thenAcceptAsync(uuidMinecraftName -> {
                     if (uuidMinecraftName != null) {
                         UUID uuid = uuidMinecraftName.uuid();
 
-                        Whitelist.getWhitelists(uuid, null, null).whenComplete(whitelists -> {
+                        Whitelist.getWhitelists(uuid, null, null).thenAcceptAsync(whitelists -> {
                             printWlQuery(channel, "\"" + minecraft + " (" + uuid.toString() + ")\"", whitelists);
                             hook.deleteOriginal().queue();
-                        }, throwable -> errorHandler(hook, throwable));
+                        }).exceptionally(throwable -> {
+                            errorHandler(hook, throwable);
+                            return null;
+                        });
                     } else {
                         hook.editOriginal("Der Minecraft Name \"" + minecraft + "\" konnte nicht aufgelöst werden.")
                                 .queue();
@@ -138,10 +144,13 @@ public class WhitelistQueryCommand extends DiscordCommand {
 
         if (whitelists != null) {
             for (Whitelist whitelist : whitelists) {
-                Whitelist.getWhitelistQueryEmbed(whitelist).whenComplete(embed -> {
+                Whitelist.getWhitelistQueryEmbed(whitelist).thenAcceptAsync(embed -> {
                     if (embed != null) {
                         channel.sendMessageEmbeds(embed).queue();
                     }
+                }).exceptionally(throwable -> {
+                    Launcher.getLogger(getClass()).error("Error while executing wlquery command", throwable);
+                    return null;
                 });
             }
 

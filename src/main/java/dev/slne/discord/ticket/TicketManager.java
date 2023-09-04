@@ -1,15 +1,15 @@
 package dev.slne.discord.ticket;
 
+import dev.slne.discord.Launcher;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import dev.slne.discord.Launcher;
-
 public class TicketManager {
 
+    private final List<Ticket> ticketQueue;
     private boolean fetched;
     private List<Ticket> tickets;
-    private List<Ticket> ticketQueue;
 
     /**
      * Constructor for the ticket manager
@@ -28,7 +28,7 @@ public class TicketManager {
 
         long start = System.currentTimeMillis();
 
-        TicketRepository.getActiveTickets().whenComplete(ticketList -> {
+        TicketRepository.getActiveTickets().thenAcceptAsync(ticketList -> {
             if (ticketList != null) {
                 this.tickets = ticketList;
             }
@@ -40,6 +40,9 @@ public class TicketManager {
 
             fetched = true;
             popQueue();
+        }).exceptionally(throwable -> {
+            Launcher.getLogger(getClass()).error("Failed to fetch tickets.", throwable);
+            return null;
         });
     }
 
@@ -47,6 +50,7 @@ public class TicketManager {
      * Returns a ticket from cache
      *
      * @param channelId the channel id
+     *
      * @return the ticket
      */
     public Ticket getTicket(String channelId) {
@@ -65,7 +69,7 @@ public class TicketManager {
     /**
      * Adds a ticket to the ticket manager
      *
-     * @param ticket
+     * @param ticket The ticket
      */
     public void addTicket(Ticket ticket) {
         if (!fetched) {
@@ -78,7 +82,7 @@ public class TicketManager {
     /**
      * Removes a ticket from the ticket manager
      *
-     * @param ticket
+     * @param ticket The ticket
      */
     public void removeTicket(Ticket ticket) {
         tickets.remove(ticket);
@@ -111,6 +115,7 @@ public class TicketManager {
      * Returns a ticket by its id
      *
      * @param ticketId The id of the ticket
+     *
      * @return The ticket
      */
     public Ticket getTicketById(long ticketId) {

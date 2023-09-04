@@ -1,10 +1,5 @@
 package dev.slne.discord.discord.interaction.modal.modals;
 
-import java.util.Arrays;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
 import dev.slne.discord.Launcher;
 import dev.slne.discord.discord.interaction.modal.DiscordModal;
 import dev.slne.discord.ticket.Ticket;
@@ -18,6 +13,10 @@ import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.ModalInteraction;
 import net.dv8tion.jda.api.interactions.modals.ModalMapping;
+
+import javax.annotation.Nonnull;
+import java.util.Arrays;
+import java.util.List;
 
 public class WhitelistTicketModal extends DiscordModal {
 
@@ -34,7 +33,7 @@ public class WhitelistTicketModal extends DiscordModal {
                 .setRequired(true).build();
 
         TextInput discordTwitchVerified = TextInput.create("discord-twitch-verified",
-                "Twitch-Account verbunden?", TextInputStyle.SHORT)
+                        "Twitch-Account verbunden?", TextInputStyle.SHORT)
                 .setPlaceholder("Ja").setValue("Nein").setRequired(true).build();
 
         components.add(minecraftNameInput);
@@ -84,12 +83,12 @@ public class WhitelistTicketModal extends DiscordModal {
 
             if (!discordTwitchVerified) {
                 hook.editOriginal(
-                        "Dein Twitch-Account muss mit deinem Discord-Account verknüpft sein, um auf dem Server spielen zu dürfen.")
+                                "Dein Twitch-Account muss mit deinem Discord-Account verknüpft sein, um auf dem Server spielen zu dürfen.")
                         .queue();
                 return;
             }
 
-            UUIDResolver.resolve(minecraftName).whenComplete(uuidMinecraftName -> {
+            UUIDResolver.resolve(minecraftName).thenAcceptAsync(uuidMinecraftName -> {
                 if (uuidMinecraftName == null) {
                     hook.editOriginal("Du musst einen gültigen Minecraft-Java Namen angeben.").queue();
                     return;
@@ -98,7 +97,7 @@ public class WhitelistTicketModal extends DiscordModal {
                 Ticket ticket = new WhitelistApplicationTicket(modalInteraction.getGuild(),
                         modalInteraction.getUser());
 
-                ticket.openFromButton().whenComplete(result -> {
+                ticket.openFromButton().thenAcceptAsync(result -> {
                     if (result.equals(TicketCreateResult.SUCCESS)) {
                         StringBuilder message = new StringBuilder();
                         message.append("Dein \"");
@@ -119,35 +118,33 @@ public class WhitelistTicketModal extends DiscordModal {
                             channel.sendMessage("Minecraft-Name: `" + minecraftName + "`").queue();
                         }
 
-                        return;
                     } else if (result.equals(TicketCreateResult.ALREADY_EXISTS)) {
                         hook.editOriginal(
-                                "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo.")
+                                        "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo.")
                                 .queue();
-                        return;
                     } else if (result.equals(TicketCreateResult.MISSING_PERMISSIONS)) {
                         hook.editOriginal("Du hast nicht die benötigten Berechtigungen, um ein Ticket zu erstellen!")
                                 .queue();
-                        return;
                     } else {
                         hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
                         Launcher.getLogger(getClass()).error("Error while creating ticket: {}", result);
-                        return;
                     }
                 }, failure -> {
                     hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
                     Launcher.getLogger(getClass()).error("Error while creating ticket", failure);
                 });
-            }, uuidMinecraftNameFailure -> {
+            }).exceptionally(uuidMinecraftNameFailure -> {
                 hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
                 Launcher.getLogger(getClass()).error("Error while creating ticket", uuidMinecraftNameFailure);
+
+                return null;
             });
         });
     }
 
     @Override
     public @Nonnull String getCustomId() {
-        return TicketType.WHITELIST.name() + "";
+        return TicketType.WHITELIST.name();
     }
 
 }

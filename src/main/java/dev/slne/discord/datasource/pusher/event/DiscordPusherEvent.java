@@ -1,83 +1,62 @@
 package dev.slne.discord.datasource.pusher.event;
 
-import java.time.LocalDateTime;
-
-import dev.slne.data.bukkit.pusher.event.BukkitPusherPacketEvent;
-import dev.slne.data.core.pusher.event.PusherPacketEvent;
-import dev.slne.data.core.pusher.packet.PusherPacket;
-import dev.slne.discord.datasource.Times;
+import dev.slne.data.api.pusher.packet.PusherPacket;
+import dev.slne.data.api.pusher.packet.event.PusherPacketEvent;
 import dev.slne.discord.listener.event.Event;
 
-public class DiscordPusherEvent<T extends PusherPacket> extends Event implements PusherPacketEvent<T> {
+import java.time.LocalDateTime;
 
-    private String channelName;
-    private String pusherEventName;
-    private String userId;
+public class DiscordPusherEvent extends Event implements PusherPacketEvent {
 
-    private T packet;
-    private LocalDateTime timestamp;
-
-    /**
-     * Creates a new {@link DiscordPusherEvent}
-     *
-     * <p>
-     * Calls
-     * {@link DiscordPusherEvent#BukkitPusherPacketEvent(String, String, String, PusherPacket, boolean)}
-     * with { @code true} as the last parameter
-     * </p
-     *
-     * @param channelName the name of the channel the packet was received on
-     * @param eventName   the name of the event the packet was received on
-     * @param userId      the id of the user who sent the packet
-     * @param packet      the packet
-     *
-     */
-    public DiscordPusherEvent(String channelName, String eventName, String userId, T packet) {
-        this(channelName, eventName, userId, packet, true);
-    }
+    private final PusherPacket packet;
+    private final LocalDateTime timestamp;
+    private final String channelName;
+    private final String pusherEventName;
+    private final String userId;
 
     /**
-     * Creates a new {@link BukkitPusherPacketEvent}
+     * Constructor for the DiscordPusherEvent
      *
-     * @param channelName     the name of the channel the packet was received on
-     * @param pusherEventName the name of the event the packet was received on
-     * @param userId          the id of the user who sent the packet
-     * @param packet          the packet
-     * @param async           whether the event should be called asynchronously
+     * @param packet          The packet
+     * @param timestamp       The timestamp
+     * @param channelName     The channel name
+     * @param pusherEventName The pusher event name
+     * @param userId          The user id
+     * @param async           Whether the event is async
      */
-    public DiscordPusherEvent(String channelName, String pusherEventName, String userId, T packet,
-            boolean async) {
+    public DiscordPusherEvent(PusherPacket packet, LocalDateTime timestamp, String channelName, String pusherEventName,
+                              String userId, boolean async) {
         super(async);
 
         this.packet = packet;
+        this.timestamp = timestamp;
         this.channelName = channelName;
         this.pusherEventName = pusherEventName;
         this.userId = userId;
-        this.timestamp = Times.now();
     }
 
     @Override
-    public T getPacket() {
-        return this.packet;
+    public PusherPacket packet() {
+        return packet;
     }
 
     @Override
-    public LocalDateTime getTimestamp() {
-        return this.timestamp;
+    public LocalDateTime timestamp() {
+        return timestamp;
     }
 
     @Override
-    public String getChannelName() {
-        return this.channelName;
+    public String channelName() {
+        return channelName;
     }
 
     @Override
-    public String getPusherEventName() {
-        return this.pusherEventName;
+    public String pusherEventName() {
+        return pusherEventName;
     }
 
     @Override
-    public String getUserId() {
-        return this.userId;
+    public String userId() {
+        return userId;
     }
 }

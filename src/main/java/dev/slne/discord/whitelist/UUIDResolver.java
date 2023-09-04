@@ -1,17 +1,13 @@
 package dev.slne.discord.whitelist;
 
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
-import dev.slne.data.core.database.future.SurfFutureResult;
-import dev.slne.data.core.gson.GsonConverter;
-import dev.slne.data.core.instance.DataApi;
-import dev.slne.data.core.web.WebRequest;
+import dev.slne.data.api.gson.GsonConverter;
+import dev.slne.data.api.web.WebRequest;
 import dev.slne.discord.DiscordBot;
-import dev.slne.discord.datasource.database.future.DiscordFutureResult;
+
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class UUIDResolver {
 
@@ -24,15 +20,15 @@ public class UUIDResolver {
     /**
      * Resolves a minecraft name to a UUID.
      *
-     * @param minecraftName The minecraft name.
+     * @param uuidOrMinecraftName The uuid or minecraft name.
+     *
      * @return The UUID.
      */
     @SuppressWarnings({ "java:S3358", "java:S3776", "java:S1192" })
-    public static SurfFutureResult<UuidMinecraftName> resolve(Object uuidOrMinecraftName) {
+    public static CompletableFuture<UuidMinecraftName> resolve(Object uuidOrMinecraftName) {
         CompletableFuture<UuidMinecraftName> future = new CompletableFuture<>();
-        DiscordFutureResult<UuidMinecraftName> result = new DiscordFutureResult<>(future);
 
-        DataApi.getDataInstance().runAsync(() -> {
+        CompletableFuture.runAsync(() -> {
             UUIDCache cache = DiscordBot.getInstance().getUuidCache();
             UuidMinecraftName cachedUuidMinecraftName = cache.hitCache(uuidOrMinecraftName);
 
@@ -53,22 +49,17 @@ public class UUIDResolver {
                     .build();
 
             request.executeGet().thenAccept(response -> {
-                if (response.statusCode() != 200) {
+                int statusCode = response.statusCode();
+
+                if (!(statusCode >= 200 && statusCode < 300)) {
                     future.complete(null);
                     return;
                 }
 
                 Object body = response.body();
-                String bodyString = body.toString();
-
-                JsonElement jsonElement = new GsonConverter().fromJson(bodyString, JsonElement.class);
-
-                if (jsonElement.isJsonNull()) {
-                    future.complete(null);
-                    return;
-                }
-
-                JsonObject jsonObject = jsonElement.getAsJsonObject();
+                String bodyString = body instanceof String string ? string : null;
+                
+                JsonObject jsonObject = new GsonConverter().fromJson(bodyString, JsonObject.class);
 
                 JsonElement idElement = jsonObject.get("id");
                 JsonElement nameElement = jsonObject.get("name");
@@ -96,13 +87,14 @@ public class UUIDResolver {
             });
         });
 
-        return result;
+        return future;
     }
 
     /**
      * Converts a undashed UUID to a dashed UUID.
      *
      * @param undashedUuid The undashed UUID.
+     *
      * @return The UUID.
      */
     public static String toDashedUuid(String undashedUuid) {

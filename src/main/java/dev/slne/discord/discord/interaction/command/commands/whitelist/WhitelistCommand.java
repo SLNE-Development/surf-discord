@@ -1,12 +1,6 @@
 package dev.slne.discord.discord.interaction.command.commands.whitelist;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
-import javax.annotation.Nonnull;
-
-import dev.slne.data.core.instance.DataApi;
+import dev.slne.data.api.DataApi;
 import dev.slne.discord.discord.guild.DiscordGuild;
 import dev.slne.discord.discord.guild.DiscordGuilds;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
@@ -25,6 +19,11 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class WhitelistCommand extends DiscordCommand {
 
@@ -64,12 +63,10 @@ public class WhitelistCommand extends DiscordCommand {
     @Override
     @SuppressWarnings("java:S3776")
     public void execute(SlashCommandInteractionEvent interaction) {
-        if (!(interaction.getChannel() instanceof TextChannel)) {
+        if (!(interaction.getChannel() instanceof TextChannel channel)) {
             interaction.reply("Dieser Befehl kann nur in Textkanälen verwendet werden.").setEphemeral(true).queue();
             return;
         }
-
-        TextChannel channel = (TextChannel) interaction.getChannel();
 
         InteractionHook hook = interaction.deferReply(true).complete();
 
@@ -124,10 +121,13 @@ public class WhitelistCommand extends DiscordCommand {
             channel.sendMessage("Der Spieler befindet sich bereits auf der Whitelist.").queue();
 
             for (Whitelist whitelist : whitelists) {
-                Whitelist.getWhitelistQueryEmbed(whitelist).whenComplete(embed -> {
+                Whitelist.getWhitelistQueryEmbed(whitelist).thenAcceptAsync(embed -> {
                     if (embed != null) {
                         channel.sendMessageEmbeds(embed).queue();
                     }
+                }).exceptionally(throwable -> {
+                    DataApi.getDataInstance().logError(getClass(), "Failed to send whitelist query embed.", throwable);
+                    return null;
                 });
             }
 

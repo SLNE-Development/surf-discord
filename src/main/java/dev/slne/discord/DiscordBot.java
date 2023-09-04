@@ -1,13 +1,8 @@
 package dev.slne.discord;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import dev.slne.data.core.instance.DataApi;
-import dev.slne.data.core.pusher.PusherModule;
-import dev.slne.data.core.pusher.packet.PusherPacket;
+import dev.slne.data.api.DataApi;
+import dev.slne.data.api.pusher.PusherModule;
+import dev.slne.data.api.pusher.packet.PusherPacket;
 import dev.slne.discord.datasource.pusher.packets.TicketClosePacket;
 import dev.slne.discord.datasource.pusher.packets.TicketOpenPacket;
 import dev.slne.discord.datasource.pusher.packets.TicketReOpenPacket;
@@ -28,6 +23,11 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 public class DiscordBot {
 
     private static String botToken;
@@ -43,6 +43,15 @@ public class DiscordBot {
     private TicketManager ticketManager;
     private DiscordButtonManager buttonManager;
     private UUIDCache uuidCache;
+
+    /**
+     * Gets the instance of the discord bot.
+     *
+     * @return the instance
+     */
+    public static DiscordBot getInstance() {
+        return instance;
+    }
 
     /**
      * Called when the bot is loaded.
@@ -133,15 +142,6 @@ public class DiscordBot {
      */
     public void onDisable() {
         // Currently empty
-    }
-
-    /**
-     * Gets the instance of the discord bot.
-     *
-     * @return the instance
-     */
-    public static DiscordBot getInstance() {
-        return instance;
     }
 
     /**

@@ -1,12 +1,5 @@
 package dev.slne.discord.discord.interaction.command.commands.ticket.members;
 
-import java.awt.Color;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.Launcher;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
@@ -21,6 +14,12 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+
+import javax.annotation.Nonnull;
+import java.awt.*;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TicketMemberAddCommand extends TicketCommand {
 
@@ -75,18 +74,26 @@ public class TicketMemberAddCommand extends TicketCommand {
             }
 
             TicketMember newTicketMember = new TicketMember(getTicket(), user, interaction.getUser());
-            getTicket().addTicketMember(newTicketMember).whenComplete(createdTicketMember -> {
+            getTicket().addTicketMember(newTicketMember).thenAcceptAsync(createdTicketMember -> {
                 if (createdTicketMember == null) {
                     hook.editOriginal("Der Nutzer konnte nicht hinzugefügt werden.").queue();
                     return;
                 }
 
-                TicketChannel.addTicketMember(getTicket(), newTicketMember).whenComplete(v -> {
+                TicketChannel.addTicketMember(getTicket(), newTicketMember).thenAcceptAsync(v -> {
                     hook.editOriginal("Der Nutzer wurde erfolgreich hinzugefügt.").queue();
                     getChannel().sendMessage(user.getAsMention()).setEmbeds(getAddedEmbed(interaction.getUser()))
                             .queue();
-                }, failure -> Launcher.getLogger(getClass())
-                        .error("Error while updating channel permissions: {}", failure.getMessage()));
+                }).exceptionally(exception -> {
+                    Launcher.getLogger(getClass())
+                            .error("Error while updating channel permissions: {}", exception.getMessage());
+                    hook.editOriginal("Der Nutzer konnte nicht hinzugefügt werden.").queue();
+                    return null;
+                });
+            }).exceptionally(exception -> {
+                Launcher.getLogger(getClass()).error("Error while adding ticket member: {}", exception.getMessage());
+                hook.editOriginal("Der Nutzer konnte nicht hinzugefügt werden.").queue();
+                return null;
             });
         });
     }

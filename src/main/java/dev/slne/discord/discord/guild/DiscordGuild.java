@@ -1,33 +1,32 @@
 package dev.slne.discord.discord.guild;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
-import javax.annotation.Nonnull;
-
-import dev.slne.data.core.database.future.SurfFutureResult;
+import dev.slne.data.api.DataApi;
 import dev.slne.discord.DiscordBot;
-import dev.slne.discord.datasource.database.future.DiscordFutureResult;
 import dev.slne.discord.discord.guild.reactionrole.ReactionRoleConfig;
 import dev.slne.discord.discord.guild.role.DiscordRole;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
+import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class DiscordGuild {
 
-    private @Nonnull String guildId;
-    private @Nonnull String categoryId;
+    private final @Nonnull String guildId;
+    private final @Nonnull String categoryId;
 
-    private @Nonnull String whitelistedRoleId;
-    private Role whitelistedRole;
+    private final @Nonnull String whitelistedRoleId;
+    private final Role whitelistedRole;
 
-    private List<String> discordSupportAdmins;
-    private List<String> serverSupportAdmins;
-    private List<String> discordSupportModerators;
-    private List<String> serverSupportModerators;
+    private final List<String> discordSupportAdmins;
+    private final List<String> serverSupportAdmins;
+    private final List<String> discordSupportModerators;
+    private final List<String> serverSupportModerators;
 
     private ReactionRoleConfig reactionRoleConfig;
 
@@ -45,8 +44,9 @@ public class DiscordGuild {
      */
     @SuppressWarnings("java:S107")
     public DiscordGuild(@Nonnull String guildId, @Nonnull String categoryId, List<String> discordSupportAdmins,
-            List<String> serverSupportAdmins, List<String> discordSupportModerators,
-            List<String> serverSupportModerators, @Nonnull String whitelistedRoleId, ReactionRoleConfig rrConfig) {
+                        List<String> serverSupportAdmins, List<String> discordSupportModerators,
+                        List<String> serverSupportModerators, @Nonnull String whitelistedRoleId,
+                        ReactionRoleConfig rrConfig) {
         this.guildId = guildId;
         this.categoryId = categoryId;
 
@@ -66,9 +66,8 @@ public class DiscordGuild {
      *
      * @return The users.
      */
-    public SurfFutureResult<List<User>> getAllUsers() {
+    public CompletableFuture<List<User>> getAllUsers() {
         CompletableFuture<List<User>> future = new CompletableFuture<>();
-        DiscordFutureResult<List<User>> futureResult = new DiscordFutureResult<>(future);
 
         List<String> userIds = new ArrayList<>();
         List<User> users = new ArrayList<>();
@@ -82,7 +81,7 @@ public class DiscordGuild {
 
         if (guild == null) {
             future.complete(users);
-            return futureResult;
+            return future;
         }
 
         List<CompletableFuture<Member>> memberFutures = new ArrayList<>();
@@ -97,12 +96,12 @@ public class DiscordGuild {
 
         for (CompletableFuture<?> memberFuture : memberFutures) {
             memberFuture.exceptionally(throwable -> {
-                throwable.printStackTrace();
+                DataApi.getDataInstance().logError(getClass(), "Failed to retrieve member", throwable);
                 return null;
             });
         }
 
-        CompletableFuture.allOf(memberFutures.toArray(new CompletableFuture<?>[memberFutures.size()])).thenAccept(v -> {
+        CompletableFuture.allOf(memberFutures.toArray(CompletableFuture[]::new)).thenAccept(v -> {
             List<Member> members = memberFutures.stream().map(CompletableFuture::join).toList();
 
             for (Member member : members) {
@@ -111,11 +110,11 @@ public class DiscordGuild {
 
             future.complete(users);
         }).exceptionally(throwable -> {
-            throwable.printStackTrace();
+            DataApi.getDataInstance().logError(getClass(), "Failed to retrieve members", throwable);
             return null;
         });
 
-        return futureResult;
+        return future;
     }
 
     /**
@@ -136,6 +135,7 @@ public class DiscordGuild {
      * Returns the guild roles of a user.
      *
      * @param userId The user id.
+     *
      * @return The guild roles.
      */
     public List<DiscordRole> getGuildRoles(String userId) {
@@ -181,7 +181,7 @@ public class DiscordGuild {
      *
      * @return The guild id.
      */
-    public String getGuildId() {
+    public @NotNull String getGuildId() {
         return guildId;
     }
 
@@ -190,7 +190,7 @@ public class DiscordGuild {
      *
      * @return The category id.
      */
-    public String getCategoryId() {
+    public @NotNull String getCategoryId() {
         return categoryId;
     }
 
