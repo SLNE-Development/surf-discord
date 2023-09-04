@@ -9,6 +9,7 @@ import dev.slne.discord.listener.interaction.modal.DiscordModalListener;
 import dev.slne.discord.listener.message.MessageCreatedListener;
 import dev.slne.discord.listener.message.MessageDeletedListener;
 import dev.slne.discord.listener.message.MessageUpdatedListener;
+import dev.slne.discord.listener.pusher.social.SocialChatListener;
 import dev.slne.discord.listener.pusher.ticket.TicketCloseListener;
 import dev.slne.discord.listener.pusher.ticket.TicketOpenListener;
 import dev.slne.discord.listener.pusher.ticket.TicketReOpenListener;
@@ -42,6 +43,7 @@ public class ListenerManager {
         listeners.add(new TicketCloseListener());
         listeners.add(new TicketOpenListener());
         listeners.add(new TicketReOpenListener());
+        listeners.add(new SocialChatListener());
     }
 
     /**

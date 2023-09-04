@@ -140,6 +140,8 @@ public class WhitelistQueryCommand extends DiscordCommand {
      * @param whitelists The whitelists.
      */
     public void printWlQuery(TextChannel channel, String title, List<Whitelist> whitelists) {
+        title = title.replace("\"", "");
+
         channel.sendMessage("WlQuery für: \"" + title + "\"");
 
         if (whitelists != null) {

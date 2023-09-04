@@ -6,6 +6,7 @@ import dev.slne.data.api.pusher.packet.PusherPacket;
 import dev.slne.discord.datasource.pusher.packets.TicketClosePacket;
 import dev.slne.discord.datasource.pusher.packets.TicketOpenPacket;
 import dev.slne.discord.datasource.pusher.packets.TicketReOpenPacket;
+import dev.slne.discord.datasource.pusher.packets.social.SocialChatPacket;
 import dev.slne.discord.discord.guild.role.DiscordRoleManager;
 import dev.slne.discord.discord.interaction.button.DiscordButtonManager;
 import dev.slne.discord.discord.interaction.command.DiscordCommandManager;
@@ -124,9 +125,10 @@ public class DiscordBot {
         PusherModule pusherModule = DataApi.getDataInstance().getDataModule("pusher");
         Map<String, Class<? extends PusherPacket>> packets = new HashMap<>();
 
-        packets.put("App\\Events\\Ticket\\CloseTicketEvent", TicketClosePacket.class);
-        packets.put("App\\Events\\Ticket\\OpenTicketEvent", TicketOpenPacket.class);
-        packets.put("App\\Events\\Ticket\\ReOpenTicketEvent", TicketReOpenPacket.class);
+        packets.put("surf:ticket:close", TicketClosePacket.class);
+        packets.put("surf:ticket:open", TicketOpenPacket.class);
+        packets.put("surf:ticket:reopen", TicketReOpenPacket.class);
+        packets.put("surf:social:chat", SocialChatPacket.class);
 
         for (Map.Entry<String, Class<? extends PusherPacket>> entry : packets.entrySet()) {
             pusherModule.getPacketManager().registerPacket(entry.getKey(), entry.getValue());

@@ -1,5 +1,6 @@
 package dev.slne.discord.datasource.pusher.event;
 
+import com.google.common.base.MoreObjects;
 import dev.slne.data.api.pusher.packet.PusherPacket;
 import dev.slne.data.api.pusher.packet.event.PusherPacketEvent;
 import dev.slne.discord.listener.event.Event;
@@ -58,5 +59,16 @@ public class DiscordPusherEvent extends Event implements PusherPacketEvent {
     @Override
     public String userId() {
         return userId;
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("packet", packet)
+                .add("timestamp", timestamp)
+                .add("channelName", channelName)
+                .add("pusherEventName", pusherEventName)
+                .add("userId", userId)
+                .toString();
     }
 }

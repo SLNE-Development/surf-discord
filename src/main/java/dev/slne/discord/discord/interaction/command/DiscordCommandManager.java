@@ -1,8 +1,5 @@
 package dev.slne.discord.discord.interaction.command;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import dev.slne.discord.Launcher;
 import dev.slne.discord.discord.interaction.command.commands.reactionrole.ReactionRoleTextCommand;
 import dev.slne.discord.discord.interaction.command.commands.ticket.TicketButtonCommand;
@@ -16,15 +13,18 @@ import dev.slne.discord.discord.interaction.command.commands.whitelist.Whitelist
 import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistRoleRemoveCommand;
 import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistedCommand;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DiscordCommandManager {
 
-    private List<DiscordCommand> commands;
+    private final List<DiscordCommand> commands;
 
     /**
      * Creates a new DiscordCommandManager.
@@ -52,6 +52,7 @@ public class DiscordCommandManager {
      * Finds a command
      *
      * @param name The name of the command.
+     *
      * @return The command.
      */
     public DiscordCommand findCommand(String name) {
@@ -63,7 +64,7 @@ public class DiscordCommandManager {
      *
      * @param guild The guild.
      */
-    public void registerToGuild(Guild guild) {
+    public void registerToGuild(@NotNull Guild guild) {
         CommandListUpdateAction updateAction = guild.updateCommands();
         List<CommandData> commandDatas = new ArrayList<>();
 
@@ -76,15 +77,18 @@ public class DiscordCommandManager {
             commandDatas.add(slashCommandData);
         });
 
-        updateAction.addCommands(commandDatas).queue(
-                cmds -> {
-                    String cmdNames = cmds.stream().map(Command::getName).reduce((a, b) -> a + ", " + b).orElse("");
-                    Launcher.getLogger(getClass()).info("Registered commands [{}] to guild {}.", cmdNames,
-                            guild.getName());
-                },
-                throwable -> {
-                    Launcher.getLogger(getClass()).error("Failed to register commands to guild {}", guild.getName());
-                    throwable.printStackTrace();
-                });
+//        updateAction.addCommands(commandDatas).queue(
+//                cmds -> {
+//                    String cmdNames = cmds.stream().map(Command::getName).reduce((a, b) -> a + ", " + b).orElse("");
+//                    Launcher.getLogger(getClass()).info("Registered commands [{}] to guild {}.", cmdNames,
+//                            guild.getName());
+//                },
+//                throwable -> {
+//                    Launcher.getLogger(getClass()).error("Failed to register commands to guild {}", guild.getName());
+//                    throwable.printStackTrace();
+//                });
+
+        Launcher.getLogger(getClass()).info("Registered commands [{}] to guild {}.", commandDatas,
+                guild.getName());
     }
 }

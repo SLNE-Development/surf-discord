@@ -326,10 +326,12 @@ public class Ticket {
     /**
      * Send the ticket closed messages
      */
-    @SuppressWarnings("java:S3776")
-    public void sendTicketClosedMessages() {
+    public CompletableFuture<Void> sendTicketClosedMessages() {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+
         getTicketClosedEmbed().thenAcceptAsync(embed -> {
             if (embed == null) {
+                future.complete(null);
                 return;
             }
 
@@ -337,17 +339,24 @@ public class Ticket {
                 Guild guild = getGuild();
 
                 if (guild == null) {
+                    future.complete(null);
                     return;
                 }
 
                 DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
 
                 if (discordGuild == null) {
+                    future.complete(null);
                     return;
                 }
 
+                List<CompletableFuture<Void>> futures = new ArrayList<>();
                 for (TicketMember member : members) {
+                    CompletableFuture<Void> memberFuture = new CompletableFuture<>();
+                    futures.add(memberFuture);
+
                     if (member.isRemoved()) {
+                        memberFuture.complete(null);
                         continue;
                     }
 
@@ -355,10 +364,12 @@ public class Ticket {
                     if (memberUserRest != null) {
                         memberUserRest.queue(memberUser -> {
                             if (memberUser == null) {
+                                memberFuture.complete(null);
                                 return;
                             }
 
                             if (memberUser.equals(DiscordBot.getInstance().getJda().getSelfUser())) {
+                                memberFuture.complete(null);
                                 return;
                             }
 
@@ -370,40 +381,55 @@ public class Ticket {
                                     memberUser.openPrivateChannel()
                                             .queue(privateChannel -> privateChannel.sendMessageEmbeds(embed)
                                                             .queue(v -> {
+                                                                memberFuture.complete(null);
                                                             }, failure -> {
                                                                 if (failure instanceof ErrorResponseException errorResponseException
                                                                         && errorResponseException.getErrorCode() == 50007) {
+                                                                    memberFuture.complete(null);
                                                                     return;
                                                                 }
 
                                                                 DataApi.getDataInstance().logError(getClass(),
                                                                         "Error while opening ticket closed message: ",
                                                                         failure);
+                                                                memberFuture.completeExceptionally(failure);
                                                             }),
                                                     failure -> {
                                                         if (failure instanceof ErrorResponseException errorResponseException
                                                                 && errorResponseException.getErrorCode() == 50007) {
+                                                            memberFuture.complete(null);
                                                             return;
                                                         }
 
                                                         DataApi.getDataInstance().logError(getClass(),
                                                                 "Error while opening ticket closed message: ",
                                                                 failure);
+                                                        memberFuture.completeExceptionally(failure);
                                                     });
+                                } else {
+                                    memberFuture.complete(null);
                                 }
                             }).exceptionally(throwable -> {
                                 DataApi.getDataInstance().logError(getClass(),
                                         "Error while opening ticket closed message: ", throwable);
+                                memberFuture.completeExceptionally(throwable);
                                 return null;
                             });
                         });
                     }
                 }
+
+                CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).thenAcceptAsync(v -> {
+                    future.complete(null);
+                });
             });
         }).exceptionally(throwable -> {
             DataApi.getDataInstance().logError(getClass(), "Error while opening ticket closed message: ", throwable);
+            future.completeExceptionally(throwable);
             return null;
         });
+
+        return future;
     }
 
     /**
@@ -514,56 +540,55 @@ public class Ticket {
                 return;
             }
 
-            getTicketAuthor().queue(author -> {
-                TicketChannel.checkTicketExists(ticketName, channelCategory, getTicketType(), author)
-                        .thenAcceptAsync(ticketExistsBoolean -> {
-                            boolean ticketExists = ticketExistsBoolean;
+            getTicketAuthor().queue(
+                    author -> TicketChannel.checkTicketExists(ticketName, channelCategory, getTicketType(), author)
+                            .thenAcceptAsync(ticketExistsBoolean -> {
+                                boolean ticketExists = ticketExistsBoolean;
 
-                            if (ticketExists) {
-                                future.complete(TicketCreateResult.ALREADY_EXISTS);
-                                return;
-                            }
-
-                            TicketRepository.createTicket(this).thenAcceptAsync(ticketCreateResult -> {
-                                if (ticketCreateResult == null) {
-                                    future.complete(TicketCreateResult.ERROR);
+                                if (ticketExists) {
+                                    future.complete(TicketCreateResult.ALREADY_EXISTS);
                                     return;
                                 }
 
-                                DiscordBot.getInstance().getTicketManager().addTicket(this);
+                                TicketRepository.createTicket(this).thenAcceptAsync(ticketCreateResult -> {
+                                    if (ticketCreateResult == null) {
+                                        future.complete(TicketCreateResult.ERROR);
+                                        return;
+                                    }
 
-                                TicketChannel.createTicketChannel(this, ticketName, channelCategory)
-                                        .thenAcceptAsync(ticketChannelCreateResult -> {
-                                            if (ticketChannelCreateResult == null) {
-                                                future.complete(TicketCreateResult.ERROR);
-                                                return;
-                                            }
+                                    DiscordBot.getInstance().getTicketManager().addTicket(this);
 
-                                            if (ticketChannelCreateResult != TicketCreateResult.SUCCESS) {
-                                                future.complete(ticketChannelCreateResult);
-                                                return;
-                                            }
+                                    TicketChannel.createTicketChannel(this, ticketName, channelCategory)
+                                            .thenAcceptAsync(ticketChannelCreateResult -> {
+                                                if (ticketChannelCreateResult == null) {
+                                                    future.complete(TicketCreateResult.ERROR);
+                                                    return;
+                                                }
 
-                                            afterOpen().thenAcceptAsync(v -> {
-                                                runnable.run();
-                                                future.complete(TicketCreateResult.SUCCESS);
+                                                if (ticketChannelCreateResult != TicketCreateResult.SUCCESS) {
+                                                    future.complete(ticketChannelCreateResult);
+                                                    return;
+                                                }
+
+                                                afterOpen().thenAcceptAsync(v -> {
+                                                    runnable.run();
+                                                    future.complete(TicketCreateResult.SUCCESS);
+                                                }).exceptionally(exception -> {
+                                                    future.completeExceptionally(exception);
+                                                    return null;
+                                                });
                                             }).exceptionally(exception -> {
                                                 future.completeExceptionally(exception);
                                                 return null;
                                             });
-                                        }).exceptionally(exception -> {
-                                            future.completeExceptionally(exception);
-                                            return null;
-                                        });
+                                }).exceptionally(exception -> {
+                                    future.completeExceptionally(exception);
+                                    return null;
+                                });
                             }).exceptionally(exception -> {
                                 future.completeExceptionally(exception);
                                 return null;
-                            });
-                        }).exceptionally(exception -> {
-                            future.completeExceptionally(exception);
-                            return null;
-                        });
-            });
+                            }));
         }).exceptionally(exception -> {
             future.completeExceptionally(exception);
             return null;
@@ -678,26 +703,30 @@ public class Ticket {
      * @param whitelists The whitelists.
      */
     public void printWlQuery(TextChannel channel, String title, List<Whitelist> whitelists) {
-        channel.sendMessage("WlQuery für: \"" + title + "\"");
+        title = title.replace("\"", "");
 
-        if (whitelists != null) {
-            for (Whitelist whitelist : whitelists) {
-                Whitelist.getWhitelistQueryEmbed(whitelist).thenAcceptAsync(embed -> {
-                    if (embed != null) {
-                        channel.sendMessageEmbeds(embed).queue();
-                    }
-                }).exceptionally(throwable -> {
-                    DataApi.getDataInstance().logError(getClass(), "Error while printing wl query embeds", throwable);
-                    return null;
-                });
-            }
+        String finalTitle = title;
+        channel.sendMessage("WlQuery für: \"" + title + "\"").queue(v -> {
+            if (whitelists != null) {
+                for (Whitelist whitelist : whitelists) {
+                    Whitelist.getWhitelistQueryEmbed(whitelist).thenAcceptAsync(embed -> {
+                        if (embed != null) {
+                            channel.sendMessageEmbeds(embed).queue();
+                        }
+                    }).exceptionally(throwable -> {
+                        DataApi.getDataInstance()
+                                .logError(getClass(), "Error while printing wl query embeds", throwable);
+                        return null;
+                    });
+                }
 
-            if (whitelists.isEmpty()) {
-                channel.sendMessage("Es wurden keine Whitelist Einträge für " + title + " gefunden.").queue();
+                if (whitelists.isEmpty()) {
+                    channel.sendMessage("Es wurden keine Whitelist Einträge für " + finalTitle + " gefunden.").queue();
+                }
+            } else {
+                channel.sendMessage("Es wurden keine Whitelist Einträge für " + finalTitle + " gefunden.").queue();
             }
-        } else {
-            channel.sendMessage("Es wurden keine Whitelist Einträge für " + title + " gefunden.").queue();
-        }
+        });
     }
 
     /**
