@@ -1,22 +1,29 @@
 package dev.slne.discord.discord.guild.role;
 
-import java.util.List;
-
+import com.google.common.base.MoreObjects;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.ticket.TicketType;
 import net.dv8tion.jda.api.Permission;
 
+import java.util.List;
+
 public class DiscordRole {
 
-    public static final String SERVER_ADMIN_ROLE = "ServerAdmin";
-    public static final String SERVER_MOD_ROLE = "ServerMod";
-    public static final String DISCORD_ADMIN_ROLE = "DiscordAdmin";
-    public static final String DISCORD_MOD_ROLE = "DiscordMod";
+    public static final String SERVER_ADMIN_ROLE = "ServerSupportAdmin";
+    public static final String SERVER_MOD_ROLE = "ServerSupportModerator";
+    public static final String DISCORD_ADMIN_ROLE = "DiscordSupportAdmin";
+    public static final String DISCORD_MOD_ROLE = "DiscordSupportModerator";
     public static final String DEFAULT_ROLE = "Default";
 
-    private String name;
-    private List<DiscordPermission> permissions;
+    private final String name;
+    private final List<DiscordPermission> permissions;
 
+    /**
+     * Construct a new DiscordRole.
+     *
+     * @param name        The name of the role.
+     * @param permissions The permissions of the role.
+     */
     public DiscordRole(String name, List<DiscordPermission> permissions) {
         this.name = name;
         this.permissions = permissions;
@@ -36,27 +43,19 @@ public class DiscordRole {
      * Returns true if the role can view the given ticket channel.
      *
      * @param ticketType the ticket type
+     *
      * @return true if the role can view the given ticket channel
      */
     public boolean canViewTicketChannel(TicketType ticketType) {
         boolean canView = false;
 
         switch (ticketType) {
-            case BUGREPORT:
-                canView = hasRolePermission(DiscordPermission.VIEW_BUGREPORT_TICKETS);
-                break;
-            case DISCORD_SUPPORT:
-                canView = hasRolePermission(DiscordPermission.VIEW_DISCORD_SUPPORT_TICKETS);
-                break;
-            case SERVER_SUPPORT:
-                canView = hasRolePermission(DiscordPermission.VIEW_SERVER_SUPPORT_TICKETS);
-                break;
-            case WHITELIST:
-                canView = hasRolePermission(DiscordPermission.VIEW_WHITELIST_TICKETS);
-                break;
-
-            default:
-                break;
+            case BUGREPORT -> canView = hasRolePermission(DiscordPermission.VIEW_BUGREPORT_TICKETS);
+            case DISCORD_SUPPORT -> canView = hasRolePermission(DiscordPermission.VIEW_DISCORD_SUPPORT_TICKETS);
+            case SERVER_SUPPORT -> canView = hasRolePermission(DiscordPermission.VIEW_SERVER_SUPPORT_TICKETS);
+            case WHITELIST -> canView = hasRolePermission(DiscordPermission.VIEW_WHITELIST_TICKETS);
+            default -> {
+            }
         }
 
         if (hasRolePermission(DiscordPermission.VIEW_ALL_TICKETS)) {
@@ -70,6 +69,7 @@ public class DiscordRole {
      * Returns true if the role has the given permission.
      *
      * @param permission the permission to check
+     *
      * @return true if the role has the given permission
      */
     public boolean hasDiscordPermission(Permission permission) {
@@ -83,6 +83,7 @@ public class DiscordRole {
             if (discordPermission.getPermission() != null
                     && discordPermission.getPermission().name().equalsIgnoreCase(permission.name())) {
                 hasPermission = true;
+                break;
             }
         }
 
@@ -93,6 +94,7 @@ public class DiscordRole {
      * Returns true if the role has the given permission.
      *
      * @param permission the permission to check
+     *
      * @return true if the role has the given permission
      */
     public boolean hasRolePermission(DiscordPermission permission) {
@@ -101,6 +103,8 @@ public class DiscordRole {
     }
 
     /**
+     * Returns the permissions of the role.
+     *
      * @return the permissions
      */
     public List<DiscordPermission> getPermissions() {
@@ -108,10 +112,19 @@ public class DiscordRole {
     }
 
     /**
+     * Returns the name of the role.
+     *
      * @return the name
      */
     public String getName() {
         return name;
     }
 
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("name", name)
+                .add("permissions", permissions)
+                .toString();
+    }
 }

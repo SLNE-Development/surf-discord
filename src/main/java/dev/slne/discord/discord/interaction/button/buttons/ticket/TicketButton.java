@@ -109,10 +109,7 @@ public abstract class TicketButton extends DiscordButton {
                             message.append(ticket.getChannel().getAsMention());
                         }
 
-                        String messageString = message.toString();
-                        if (messageString != null) {
-                            hook.editOriginal(messageString).queue();
-                        }
+                        hook.editOriginal(message.toString()).queue();
                     } else if (result.equals(TicketCreateResult.ALREADY_EXISTS)) {
                         hook.editOriginal(
                                         "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo.")
@@ -188,13 +185,6 @@ public abstract class TicketButton extends DiscordButton {
     private void sendAlreadyWhitelistedMessage(ButtonInteraction interaction) {
         interaction.reply("Du befindest dich bereits auf der Whitelist und kannst dieses Ticket nicht öffnen.")
                 .setEphemeral(true).queue();
-    }
-
-    /**
-     * @return the ticketType
-     */
-    public TicketType getTicketType() {
-        return ticketType;
     }
 
     public static class WhitelistTicketButton extends TicketButton {

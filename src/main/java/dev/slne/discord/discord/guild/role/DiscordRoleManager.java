@@ -1,17 +1,17 @@
 package dev.slne.discord.discord.guild.role;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import dev.slne.discord.discord.guild.role.roles.DefaultDiscordRole;
 import dev.slne.discord.discord.guild.role.roles.DiscordAdminDiscordRole;
 import dev.slne.discord.discord.guild.role.roles.DiscordModDiscordRole;
 import dev.slne.discord.discord.guild.role.roles.ServerAdminDiscordRole;
 import dev.slne.discord.discord.guild.role.roles.ServerModDiscordRole;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DiscordRoleManager {
 
-    private List<DiscordRole> roles;
+    private final List<DiscordRole> roles;
 
     public DiscordRoleManager() {
         this.roles = new ArrayList<>();
@@ -28,17 +28,11 @@ public class DiscordRoleManager {
      * Returns the role with the given name or null if no role with the
      *
      * @param name the name of the role
+     *
      * @return the role with the given name or null if no role with the
      */
     public DiscordRole getRoleByName(String name) {
         return this.roles.stream().filter(role -> role.getName().equals(name)).findFirst().orElse(null);
-    }
-
-    /**
-     * @return the roles
-     */
-    public List<DiscordRole> getRoles() {
-        return roles;
     }
 
 }

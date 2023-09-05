@@ -69,19 +69,24 @@ public class TicketChannel {
                 return;
             }
 
-            List<DiscordRole> roles = discordGuild.getGuildRoles(user.getId());
+            CompletableFuture<List<DiscordRole>> rolesFuture = discordGuild.getGuildRoles(user.getId());
             List<Permission> permissions = new ArrayList<>();
 
-            for (DiscordRole role : roles) {
-                for (Permission permission : role.getDiscordAllowedPermissions()) {
-                    if (!permissionAdded(permissions, permission)) {
-                        permissions.add(permission);
+            rolesFuture.thenAcceptAsync(roles -> {
+                for (DiscordRole role : roles) {
+                    for (Permission permission : role.getDiscordAllowedPermissions()) {
+                        if (!permissionAdded(permissions, permission)) {
+                            permissions.add(permission);
+                        }
                     }
                 }
-            }
 
-            manager.putMemberPermissionOverride(user.getIdLong(), permissions, new ArrayList<>())
-                    .queue(future::complete, future::completeExceptionally);
+                manager.putMemberPermissionOverride(user.getIdLong(), permissions, new ArrayList<>())
+                        .queue(future::complete, future::completeExceptionally);
+            }).exceptionally(throwable -> {
+                future.completeExceptionally(throwable);
+                return null;
+            });
         }, future::completeExceptionally);
 
         return future;
@@ -121,121 +126,109 @@ public class TicketChannel {
     }
 
     /**
-     * Updates the permissions for the ticket channel
+     * Returns the default permission overrides for the ticket channel
      *
-     * @param ticket The ticket to update the permissions for
+     * @param ticket The ticket
+     * @param author The author of the ticket
      *
-     * @return The future result
+     * @return The default permission overrides for the ticket channel
      */
-    public static CompletableFuture<List<TicketPermissionOverride>> getChannelPermissions(Ticket ticket) {
-        CompletableFuture<List<TicketPermissionOverride>> future = new CompletableFuture<>();
-
+    public static List<TicketPermissionOverride> getChannelPermissions(Ticket ticket, User author) {
         Guild guild = ticket.getGuild();
-        List<TicketMember> members = ticket.getMembers();
-        List<TicketMember> removedMembers = ticket.getRemovedMembers();
-
-        List<TicketPermissionOverride> overrides = new ArrayList<>();
-
-        if (guild == null) {
-            future.complete(overrides);
-            return future;
-        }
-
-        DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
-
-        if (discordGuild == null) {
-            future.complete(overrides);
-            return future;
-        }
-
-        List<String> removedUserIds = new ArrayList<>();
-        List<String> addedUserIds = new ArrayList<>();
+        TicketType ticketType = ticket.getTicketType();
 
         List<Permission> allPermissions = getAllPermissions();
+        List<TicketPermissionOverride> overrides = new ArrayList<>();
 
-        // #region Members
-        for (TicketMember member : members) {
-            if (member.isRemoved()) {
-                continue;
-            }
+        // Deny public role
+        overrides.add(new TicketPermissionOverride(Type.ROLE, guild.getPublicRole().getIdLong(), new ArrayList<>(),
+                allPermissions));
 
-            addedUserIds.add(member.getMemberId());
-        }
-        // #endregion
+        // Allow bot user
+        overrides.add(
+                new TicketPermissionOverride(Type.USER, DiscordBot.getInstance().getJda().getSelfUser().getIdLong(),
+                        allPermissions, new ArrayList<>()));
 
-        // #region Removed Members
-        for (TicketMember removedMember : new ArrayList<>(removedMembers)) {
-            removedUserIds.add(removedMember.getMemberId());
-        }
-        // #endregion
-
-        // #region Roles
+        // Allow bot role
         Role botRole = guild.getBotRole();
-
-        for (Role role : guild.getRoles()) {
-            if (role == null) {
-                continue;
-            }
-
-            if (role.equals(botRole)) {
-                overrides.add(
-                        new TicketPermissionOverride(Type.ROLE, role.getIdLong(), allPermissions, new ArrayList<>()));
-            } else {
-                overrides.add(new TicketPermissionOverride(Type.ROLE, role.getIdLong(), new ArrayList<>(),
-                        allPermissions));
-            }
+        if (botRole != null) {
+            overrides.add(new TicketPermissionOverride(Type.ROLE, botRole.getIdLong(), allPermissions,
+                    new ArrayList<>()));
         }
-        // #endregion
 
-        // #region Bot
-        User botUser = DiscordBot.getInstance().getJda().getSelfUser();
-        overrides.add(new TicketPermissionOverride(Type.USER, botUser.getIdLong(), allPermissions,
+        // Deny support roles
+        DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
+
+        if (!discordGuild.canRoleViewTicket(discordGuild.getDiscordSupportAdminRole(), ticketType)) {
+            overrides.add(new TicketPermissionOverride(Type.ROLE, discordGuild.getDiscordSupportAdminRole().getIdLong(),
+                    new ArrayList<>(), allPermissions));
+        }
+
+        if (!discordGuild.canRoleViewTicket(discordGuild.getDiscordSupportModeratorRole(), ticketType)) {
+            overrides.add(
+                    new TicketPermissionOverride(Type.ROLE, discordGuild.getDiscordSupportModeratorRole().getIdLong(),
+                            new ArrayList<>(), allPermissions));
+        }
+
+        if (!discordGuild.canRoleViewTicket(discordGuild.getServerSupportAdminRole(), ticketType)) {
+            overrides.add(new TicketPermissionOverride(Type.ROLE, discordGuild.getServerSupportAdminRole().getIdLong(),
+                    new ArrayList<>(), allPermissions));
+        }
+
+        if (!discordGuild.canRoleViewTicket(discordGuild.getServerSupportModeratorRole(), ticketType)) {
+            overrides.add(
+                    new TicketPermissionOverride(Type.ROLE, discordGuild.getServerSupportModeratorRole().getIdLong(),
+                            new ArrayList<>(), allPermissions));
+        }
+
+        // Apply support roles
+        if (discordGuild.canRoleViewTicket(discordGuild.getDiscordSupportAdminRole(), ticketType)) {
+            overrides.add(new TicketPermissionOverride(Type.ROLE, discordGuild.getDiscordSupportAdminRole().getIdLong(),
+                    allPermissions, new ArrayList<>()));
+        }
+
+        if (discordGuild.canRoleViewTicket(discordGuild.getDiscordSupportModeratorRole(), ticketType)) {
+            overrides.add(
+                    new TicketPermissionOverride(Type.ROLE, discordGuild.getDiscordSupportModeratorRole().getIdLong(),
+                            allPermissions, new ArrayList<>()));
+        }
+
+        if (discordGuild.canRoleViewTicket(discordGuild.getServerSupportAdminRole(), ticketType)) {
+            overrides.add(new TicketPermissionOverride(Type.ROLE, discordGuild.getServerSupportAdminRole().getIdLong(),
+                    allPermissions, new ArrayList<>()));
+        }
+
+        if (discordGuild.canRoleViewTicket(discordGuild.getServerSupportModeratorRole(), ticketType)) {
+            overrides.add(
+                    new TicketPermissionOverride(Type.ROLE, discordGuild.getServerSupportModeratorRole().getIdLong(),
+                            allPermissions, new ArrayList<>()));
+        }
+
+        // Apply author
+        overrides.add(new TicketPermissionOverride(Type.USER, author.getIdLong(), allPermissions,
                 new ArrayList<>()));
-        // #endregion
 
-        // #region Added users
-        for (String addedUserId : addedUserIds) {
-            if (addedUserId == null) {
-                continue;
-            }
+        return overrides;
+    }
 
-            if (addedUserId.equals(botUser.getId())) {
-                continue;
-            }
+    /**
+     * Creates the author ticket member
+     *
+     * @param ticket The ticket
+     * @param author The author of the ticket
+     *
+     * @return The result of the ticket member creation
+     */
+    private static CompletableFuture<TicketMember> createAuthorTicketMember(Ticket ticket, User author,
+                                                                            ChannelAction<TextChannel> channelAction) {
+        TicketMember ticketMember = new TicketMember(ticket, author, DiscordBot.getInstance().getJda().getSelfUser());
+        DiscordRole defaultRole = DiscordBot.getInstance().getRoleManager().getRoleByName(DiscordRole.DEFAULT_ROLE);
+        TicketPermissionOverride override = new TicketPermissionOverride(Type.USER, author.getIdLong(),
+                defaultRole.getDiscordAllowedPermissions(), new ArrayList<>());
 
-            Collection<Permission> permissions = new ArrayList<>();
-            List<DiscordRole> roles = discordGuild.getGuildRoles(addedUserId);
+        channelAction.addMemberPermissionOverride(author.getIdLong(), override.getAllow(), override.getDeny());
 
-            for (DiscordRole role : roles) {
-                for (Permission permission : role.getDiscordAllowedPermissions()) {
-                    if (!permissionAdded(permissions, permission)) {
-                        permissions.add(permission);
-                    }
-                }
-            }
-
-            overrides.add(new TicketPermissionOverride(Type.USER, Long.parseLong(addedUserId),
-                    permissions, new ArrayList<>()));
-        }
-        // #endregion
-
-        // #region Removed users
-        for (String removedUserId : removedUserIds) {
-            if (removedUserId == null) {
-                continue;
-            }
-
-            if (removedUserId.equals(botUser.getId())) {
-                continue;
-            }
-
-            overrides.add(new TicketPermissionOverride(Type.USER,
-                    Long.parseLong(removedUserId), new ArrayList<>(), allPermissions));
-        }
-        // #endregion
-
-        future.complete(overrides);
-        return future;
+        return ticket.addTicketMember(ticketMember);
     }
 
     /**
@@ -259,12 +252,12 @@ public class TicketChannel {
     }
 
     /**
-     * Returns if the permissions list contans the given permission
+     * Returns if the permissions list contains the given permission
      *
      * @param permissions The permissions to check in
      * @param permission  The permission to check
      *
-     * @return If the permissions list contans the given permission
+     * @return If the permissions list contains the given permission
      */
     private static boolean permissionAdded(Collection<Permission> permissions, Permission permission) {
         boolean added = false;
@@ -291,7 +284,6 @@ public class TicketChannel {
     public static CompletableFuture<TicketCreateResult> createTicketChannel(Ticket ticket, @Nonnull String ticketName,
                                                                             @Nonnull Category channelCategory) {
         CompletableFuture<TicketCreateResult> future = new CompletableFuture<>();
-
         Guild guild = ticket.getGuild();
 
         if (guild == null) {
@@ -299,28 +291,39 @@ public class TicketChannel {
             return future;
         }
 
-        CompletableFuture.runAsync(() -> initialMembers(ticket).thenAcceptAsync(v -> {
+        CompletableFuture.runAsync(() -> {
             try {
                 ChannelAction<TextChannel> channelAction = channelCategory.createTextChannel(ticketName);
 
-                getChannelPermissions(ticket).thenAcceptAsync(overrides -> {
-                    for (TicketPermissionOverride override : overrides) {
-                        if (override.getType() == Type.ROLE) {
-                            channelAction.addRolePermissionOverride(override.getId(),
-                                    override.getAllow(), override.getDeny());
-                        } else if (override.getType() == Type.USER) {
-                            channelAction.addMemberPermissionOverride(override.getId(),
-                                    override.getAllow(), override.getDeny());
+                ticket.getTicketAuthor().queue(author -> {
+                    createAuthorTicketMember(ticket, author, channelAction).thenAcceptAsync(v -> {
+                        List<TicketPermissionOverride> overrides = getChannelPermissions(ticket, author);
+                        for (TicketPermissionOverride override : overrides) {
+                            if (override.getType() == Type.ROLE) {
+                                channelAction.addRolePermissionOverride(override.getId(),
+                                        override.getAllow(), override.getDeny());
+                            } else if (override.getType() == Type.USER) {
+                                channelAction.addMemberPermissionOverride(override.getId(),
+                                        override.getAllow(), override.getDeny());
+                            }
                         }
-                    }
 
-                    channelAction.queue(ticketChannel -> {
-                        ticket.setChannelId(ticketChannel.getId());
-
-                        CompletableFuture
-                                .allOf(createWebhook(ticket), TicketRepository.updateTicket(ticket))
-                                .thenAccept(v1 -> future.complete(TicketCreateResult.SUCCESS));
-                    }, exception -> handleException(exception, future));
+                        channelAction.queue(ticketChannel -> {
+                            ticket.setChannelId(ticketChannel.getId());
+                            CompletableFuture
+                                    .allOf(createWebhook(ticket), TicketRepository.updateTicket(ticket))
+                                    .thenAccept(v1 -> future.complete(TicketCreateResult.SUCCESS));
+                        }, exception -> handleException(exception, future));
+                    }).exceptionally(throwable -> {
+                        future.complete(TicketCreateResult.ERROR);
+                        DataApi.getDataInstance()
+                                .logError(TicketChannel.class, "Failed to create ticket channel.", throwable);
+                        return null;
+                    });
+                }, failure -> {
+                    future.complete(TicketCreateResult.ERROR);
+                    DataApi.getDataInstance()
+                            .logError(TicketChannel.class, "Failed to create ticket channel.", failure);
                 });
             } catch (Exception exception) {
                 handleException(exception, future);
@@ -328,7 +331,7 @@ public class TicketChannel {
         }).exceptionally(throwable -> {
             handleException(throwable, future);
             return null;
-        }));
+        });
 
         return future;
     }
@@ -339,7 +342,6 @@ public class TicketChannel {
      * @param throwable The exception
      * @param future    The future
      */
-    @SuppressWarnings("java:S1871")
     private static void handleException(Throwable throwable, CompletableFuture<TicketCreateResult> future) {
         if (throwable instanceof ErrorResponseException errorResponseException
                 && errorResponseException.getErrorCode() == 50013) {
@@ -393,21 +395,29 @@ public class TicketChannel {
      * @param ticket The ticket to create the webhook for
      */
     public static CompletableFuture<Void> createWebhook(Ticket ticket) {
-        return CompletableFuture.supplyAsync(() -> {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+
+        CompletableFuture.runAsync(() -> {
             TextChannel channel = ticket.getChannel();
 
             if (channel == null) {
-                return null;
+                future.complete(null);
+                return;
             }
 
-            channel.createWebhook("Ticket Webhook").queue(webhook -> {
-                ticket.setWebhookId(webhook.getId());
-                ticket.setWebhookName(webhook.getName());
-                ticket.setWebhookUrl(webhook.getUrl());
-            });
-
-            return null;
+//            channel.createWebhook("Ticket Webhook").queue(webhook -> {
+//                ticket.setWebhookId(webhook.getId());
+//                ticket.setWebhookName(webhook.getName());
+//                ticket.setWebhookUrl(webhook.getUrl());
+//
+//                long end = System.currentTimeMillis();
+//                Launcher.getLogger(TicketChannel.class).info("Ticket webhook creation took {}ms", end - start);
+//                future.complete(null);
+//            }, future::completeExceptionally);
+            future.complete(null);
         });
+
+        return future;
     }
 
     /**
@@ -462,64 +472,6 @@ public class TicketChannel {
         }
 
         future.complete(hasTicket);
-        return future;
-    }
-
-    /**
-     * Update the members of the ticket
-     */
-    @SuppressWarnings("java:S3776")
-    public static CompletableFuture<Void> initialMembers(Ticket ticket) {
-        CompletableFuture<Void> future = new CompletableFuture<>();
-
-        Guild guild = ticket.getGuild();
-        RestAction<User> ticketAuthor = ticket.getTicketAuthor();
-        TicketType ticketType = ticket.getTicketType();
-
-        if (guild == null) {
-            future.complete(null);
-            return future;
-        }
-
-        List<CompletableFuture<TicketMember>> futures = new ArrayList<>();
-        User artyUser = DiscordBot.getInstance().getJda().getSelfUser();
-        futures.add(ticket.addTicketMember(new TicketMember(ticket, artyUser, artyUser)));
-
-        ticketAuthor.queue(author -> {
-            DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
-            discordGuild.getAllUsers().thenAcceptAsync(allUsers -> {
-                if (!allUsers.contains(author)) {
-                    futures.add(ticket.addTicketMember(
-                            new TicketMember(ticket, author, DiscordBot.getInstance().getJda().getSelfUser())));
-                }
-
-                for (User user : allUsers) {
-                    List<DiscordRole> userRoles = discordGuild.getGuildRoles(user.getId());
-
-                    boolean canSeeTicket = false;
-                    for (DiscordRole role : userRoles) {
-                        if (role.canViewTicketChannel(ticketType)) {
-                            canSeeTicket = true;
-                            break;
-                        }
-                    }
-
-                    if (user.equals(author)) {
-                        canSeeTicket = true;
-                    }
-
-                    if (canSeeTicket) {
-                        futures.add(ticket.addTicketMember(new TicketMember(ticket, user, artyUser)));
-                    }
-                }
-
-                CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))
-                        .thenAcceptAsync(v -> future.complete(null));
-            }).exceptionally(throwable -> {
-                future.completeExceptionally(throwable);
-                return null;
-            });
-        }, future::completeExceptionally);
 
         return future;
     }

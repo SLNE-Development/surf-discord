@@ -1,9 +1,5 @@
 package dev.slne.discord.discord.interaction.command;
 
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
 import dev.slne.discord.discord.guild.DiscordGuild;
 import dev.slne.discord.discord.guild.DiscordGuilds;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
@@ -18,15 +14,18 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
+import javax.annotation.Nonnull;
+import java.util.List;
+
 public abstract class DiscordCommand {
 
-    private @Nonnull String name;
-    private @Nonnull DefaultMemberPermissions defaultMemberPermissions;
-    private @Nonnull String description;
-    private boolean guildOnly;
-    private boolean nsfw;
+    private final @Nonnull String name;
+    private final @Nonnull DefaultMemberPermissions defaultMemberPermissions;
+    private final @Nonnull String description;
+    private final boolean guildOnly;
+    private final boolean nsfw;
 
-    private SlashCommandData commandData;
+    private final SlashCommandData commandData;
 
     /**
      * Creates a new DiscordCommand.
@@ -88,6 +87,7 @@ public abstract class DiscordCommand {
      * @param user        The user.
      * @param guild       The guild.
      * @param interaction The interaction.
+     *
      * @return Whether the checks were successful.
      */
     protected boolean performDiscordCommandChecks(User user, Guild guild, SlashCommandInteractionEvent interaction) {
@@ -97,7 +97,7 @@ public abstract class DiscordCommand {
         }
 
         DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
-        List<DiscordRole> userRoles = discordGuild.getGuildRoles(user.getId());
+        List<DiscordRole> userRoles = discordGuild.getGuildRoles(user.getId()).join();
 
         boolean hasPermission = false;
 

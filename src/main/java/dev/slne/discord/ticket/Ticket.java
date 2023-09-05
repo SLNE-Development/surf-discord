@@ -6,21 +6,26 @@ import dev.slne.discord.DiscordBot;
 import dev.slne.discord.datasource.Times;
 import dev.slne.discord.discord.guild.DiscordGuild;
 import dev.slne.discord.discord.guild.DiscordGuilds;
+import dev.slne.discord.discord.guild.role.DiscordRole;
 import dev.slne.discord.ticket.member.TicketMember;
 import dev.slne.discord.ticket.message.TicketMessage;
 import dev.slne.discord.ticket.result.TicketCloseResult;
 import dev.slne.discord.ticket.result.TicketCreateResult;
 import dev.slne.discord.whitelist.Whitelist;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.PermissionOverride;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.Webhook;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.requests.RestAction;
+import net.dv8tion.jda.api.requests.restaction.PermissionOverrideAction;
 
 import java.awt.*;
 import java.time.LocalDateTime;
@@ -373,9 +378,8 @@ public class Ticket {
                                 return;
                             }
 
-                            discordGuild.getAllUsers().thenAcceptAsync(adminUsers -> {
+                            discordGuild.isAdminUser(author).thenAcceptAsync(isAdminUser -> {
                                 boolean memberIsAuthor = memberUser.equals(author);
-                                boolean isAdminUser = adminUsers.contains(memberUser);
 
                                 if (memberIsAuthor || !isAdminUser) {
                                     memberUser.openPrivateChannel()
@@ -419,9 +423,8 @@ public class Ticket {
                     }
                 }
 
-                CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).thenAcceptAsync(v -> {
-                    future.complete(null);
-                });
+                CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))
+                        .thenAcceptAsync(v -> future.complete(null));
             });
         }).exceptionally(throwable -> {
             DataApi.getDataInstance().logError(getClass(), "Error while opening ticket closed message: ", throwable);
@@ -674,6 +677,31 @@ public class Ticket {
         });
 
         return future;
+    }
+
+    /**
+     * Adds a role to the ticket channel
+     *
+     * @param role The role
+     *
+     * @return The permission override
+     */
+    public CompletableFuture<PermissionOverride> addTicketRole(Role role) {
+        TextChannel channel = getChannel();
+
+        if (channel == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        DiscordRole discordRole = DiscordGuilds.getGuild(getGuild()).getDiscordRoleByRole(role);
+        List<Permission> allowedPermissions = discordRole.getDiscordAllowedPermissions();
+
+        PermissionOverrideAction permissionOverrideAction = channel.upsertPermissionOverride(role);
+        permissionOverrideAction = permissionOverrideAction.resetAllow();
+        permissionOverrideAction = permissionOverrideAction.resetDeny();
+        permissionOverrideAction = permissionOverrideAction.setAllowed(allowedPermissions);
+
+        return permissionOverrideAction.submit();
     }
 
     /**

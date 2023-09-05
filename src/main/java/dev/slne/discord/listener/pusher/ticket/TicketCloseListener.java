@@ -18,7 +18,6 @@ public class TicketCloseListener implements Listener {
         }
 
         Ticket ticket = packet.getTicket();
-
         if (ticket == null) {
             return;
         }
