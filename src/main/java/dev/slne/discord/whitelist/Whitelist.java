@@ -106,7 +106,7 @@ public class Whitelist {
      * @return The {@link Whitelist}.
      */
     private static Whitelist fromJsonObject(JsonObject jsonObject) {
-        GsonConverter gson = new GsonConverter();
+        GsonConverter gson = DiscordBot.getInstance().getGsonConverter();
 
         return gson.fromJson(jsonObject.toString(), Whitelist.class);
     }
@@ -239,7 +239,7 @@ public class Whitelist {
             WebRequest request = WebRequest.builder().json(true).url(API.WHITELIST_CHECK).parameters(parameters)
                     .build();
             request.executePost().thenAccept(response -> {
-                JsonArray jsonArray = response.bodyArray(new GsonConverter());
+                JsonArray jsonArray = response.bodyArray(DiscordBot.getInstance().getGsonConverter());
                 for (int i = 0; i < jsonArray.size(); i++) {
                     JsonObject jsonObject = (JsonObject) jsonArray.get(i);
                     whitelists.add(fromJsonObject(jsonObject));
@@ -300,7 +300,7 @@ public class Whitelist {
             WebRequest request = WebRequest.builder().json(true).url(url).build();
 
             request.executeGet().thenAccept(response -> {
-                future.complete(fromJsonObject(response.bodyObject(new GsonConverter())));
+                future.complete(fromJsonObject(response.bodyObject(DiscordBot.getInstance().getGsonConverter())));
             }).exceptionally(exception -> {
                 future.completeExceptionally(exception);
                 return null;
@@ -325,7 +325,7 @@ public class Whitelist {
             WebRequest request = WebRequest.builder().json(true).url(url).build();
 
             request.executeGet().thenAccept(response -> {
-                future.complete(fromJsonObject(response.bodyObject(new GsonConverter())));
+                future.complete(fromJsonObject(response.bodyObject(DiscordBot.getInstance().getGsonConverter())));
             }).exceptionally(exception -> {
                 future.completeExceptionally(exception);
                 return null;
@@ -347,7 +347,7 @@ public class Whitelist {
             WebRequest request = WebRequest.builder().json(true).url(API.WHITELISTS).build();
             request.executeGet().thenAccept(response -> {
                 List<Whitelist> whitelists = new ArrayList<>();
-                JsonArray jsonArray = response.bodyArray(new GsonConverter());
+                JsonArray jsonArray = response.bodyArray(DiscordBot.getInstance().getGsonConverter());
 
                 for (int i = 0; i < jsonArray.size(); i++) {
                     JsonObject jsonObject = (JsonObject) jsonArray.get(i);
@@ -375,7 +375,8 @@ public class Whitelist {
         CompletableFuture.runAsync(() -> {
             WebRequest request = WebRequest.builder().json(true).parameters(toParameters()).url(API.WHITELISTS).build();
             request.executePost().thenAccept(response -> {
-                Whitelist tempWhitelist = fromJsonObject(response.bodyObject(new GsonConverter()));
+                Whitelist tempWhitelist =
+                        fromJsonObject(response.bodyObject(DiscordBot.getInstance().getGsonConverter()));
                 id = tempWhitelist.id;
 
                 future.complete(this);
@@ -400,7 +401,7 @@ public class Whitelist {
             String url = String.format(API.WHITELIST, uuid.toString());
             WebRequest request = WebRequest.builder().json(true).parameters(toParameters()).url(url).build();
             request.executePost().thenAccept(response -> {
-                response.bodyObject(new GsonConverter());
+                response.bodyObject(DiscordBot.getInstance().getGsonConverter());
                 future.complete(this);
             }).exceptionally(exception -> {
                 future.completeExceptionally(exception);

@@ -145,7 +145,7 @@ public class TicketMessage {
      * @return The ticket message
      */
     private static TicketMessage fromJsonObject(JsonObject jsonObject) {
-        GsonConverter gson = new GsonConverter();
+        GsonConverter gson = DiscordBot.getInstance().getGsonConverter();
 
         return gson.fromJson(jsonObject.toString(), TicketMessage.class);
     }
@@ -302,7 +302,8 @@ public class TicketMessage {
             String url = String.format(API.TICKET_MESSAGES, ticketId);
             WebRequest request = WebRequest.builder().url(url).json(true).parameters(toParameters()).build();
             request.executePost().thenAccept(response -> {
-                TicketMessage tempMessage = fromJsonObject(response.bodyObject(new GsonConverter()));
+                TicketMessage tempMessage =
+                        fromJsonObject(response.bodyObject(DiscordBot.getInstance().getGsonConverter()));
                 id = tempMessage.id;
 
                 future.complete(this);

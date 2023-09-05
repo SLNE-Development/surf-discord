@@ -31,7 +31,7 @@ public class TicketRepository {
      * @return The ticket
      */
     public static Ticket ticketByJson(JsonObject jsonObject) {
-        GsonConverter gson = new GsonConverter();
+        GsonConverter gson = DiscordBot.getInstance().getGsonConverter();
 
         return gson.fromJson(jsonObject.toString(), Ticket.class);
     }
@@ -49,7 +49,7 @@ public class TicketRepository {
 
             request.executeGet().thenAccept(response -> {
                 List<Ticket> tickets = new ArrayList<>();
-                JsonArray dataArray = response.bodyArray(new GsonConverter());
+                JsonArray dataArray = response.bodyArray(DiscordBot.getInstance().getGsonConverter());
 
                 for (JsonElement ticketElement : dataArray) {
                     if (!ticketElement.isJsonObject()) {
@@ -99,7 +99,7 @@ public class TicketRepository {
             WebRequest request = WebRequest.builder().url(API.TICKETS).json(true).parameters(toParameters(ticket))
                     .build();
             request.executePost().thenAccept(response -> {
-                JsonObject jsonObject = response.bodyObject(new GsonConverter());
+                JsonObject jsonObject = response.bodyObject(DiscordBot.getInstance().getGsonConverter());
                 Ticket newTicket = ticketByJson(jsonObject);
 
                 ticket.setOpenedAt(newTicket.getOpenedAt());
@@ -140,7 +140,7 @@ public class TicketRepository {
                     .build();
 
             request.executePut().thenAccept(response -> {
-                ticketByJson(response.bodyObject(new GsonConverter()));
+                ticketByJson(response.bodyObject(DiscordBot.getInstance().getGsonConverter()));
 
                 future.complete(ticket);
             }).exceptionally(throwable -> {
@@ -174,7 +174,7 @@ public class TicketRepository {
 
             WebRequest request = WebRequest.builder().url(url).json(true).parameters(toParameters(ticket)).build();
             request.executeDelete().thenAccept(response -> {
-                Ticket newTicket = ticketByJson(response.bodyObject(new GsonConverter()));
+                Ticket newTicket = ticketByJson(response.bodyObject(DiscordBot.getInstance().getGsonConverter()));
 
                 ticket.setClosedAt(newTicket.getClosedAt());
 

@@ -181,7 +181,7 @@ public class TicketMember {
      * @return The ticket member
      */
     private TicketMember fromJsonObject(JsonObject jsonObject) {
-        GsonConverter gson = new GsonConverter();
+        GsonConverter gson = DiscordBot.getInstance().getGsonConverter();
 
         return gson.fromJson(jsonObject.toString(), TicketMember.class);
     }
@@ -212,7 +212,8 @@ public class TicketMember {
             String url = String.format(API.TICKET_MEMBERS, ticketId);
             WebRequest request = WebRequest.builder().url(url).json(true).parameters(toParameters()).build();
             request.executePost().thenAccept(response -> {
-                TicketMember tempMember = fromJsonObject(response.bodyObject(new GsonConverter()));
+                TicketMember tempMember =
+                        fromJsonObject(response.bodyObject(DiscordBot.getInstance().getGsonConverter()));
                 id = tempMember.id;
 
                 future.complete(this);

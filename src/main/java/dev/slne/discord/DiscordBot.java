@@ -1,6 +1,7 @@
 package dev.slne.discord;
 
 import dev.slne.data.api.DataApi;
+import dev.slne.data.api.gson.GsonConverter;
 import dev.slne.data.api.pusher.PusherModule;
 import dev.slne.data.api.pusher.packet.PusherPacket;
 import dev.slne.discord.datasource.pusher.packets.TicketClosePacket;
@@ -44,6 +45,7 @@ public class DiscordBot {
     private TicketManager ticketManager;
     private DiscordButtonManager buttonManager;
     private UUIDCache uuidCache;
+    private GsonConverter gsonConverter;
 
     /**
      * Gets the instance of the discord bot.
@@ -60,6 +62,8 @@ public class DiscordBot {
     @SuppressWarnings({ "java:S2696", "java:S2142", "java:S125" })
     public void onLoad() {
         instance = this;
+
+        this.gsonConverter = new GsonConverter();
 
         try {
             botConnectionFile = new BotConnectionFile();
@@ -209,13 +213,6 @@ public class DiscordBot {
     }
 
     /**
-     * @return the botToken
-     */
-    public String getBotToken() {
-        return botToken;
-    }
-
-    /**
      * @return the uuidCache
      */
     public UUIDCache getUuidCache() {
@@ -227,5 +224,14 @@ public class DiscordBot {
      */
     public DiscordRoleManager getRoleManager() {
         return roleManager;
+    }
+
+    /**
+     * Returns the GsonConverter.
+     *
+     * @return the GsonConverter
+     */
+    public GsonConverter getGsonConverter() {
+        return gsonConverter;
     }
 }

@@ -2,7 +2,6 @@ package dev.slne.discord.whitelist;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import dev.slne.data.api.gson.GsonConverter;
 import dev.slne.data.api.web.WebRequest;
 import dev.slne.discord.DiscordBot;
 
@@ -58,8 +57,9 @@ public class UUIDResolver {
 
                 Object body = response.body();
                 String bodyString = body instanceof String string ? string : null;
-                
-                JsonObject jsonObject = new GsonConverter().fromJson(bodyString, JsonObject.class);
+
+                JsonObject jsonObject =
+                        DiscordBot.getInstance().getGsonConverter().fromJson(bodyString, JsonObject.class);
 
                 JsonElement idElement = jsonObject.get("id");
                 JsonElement nameElement = jsonObject.get("name");
