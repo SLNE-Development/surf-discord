@@ -204,9 +204,11 @@ public class TicketChannel {
                             allPermissions, new ArrayList<>()));
         }
 
+        DiscordRole defaultRole = DiscordBot.getInstance().getRoleManager().getRoleByName(DiscordRole.DEFAULT_ROLE);
         // Apply author
-        overrides.add(new TicketPermissionOverride(Type.USER, author.getIdLong(), allPermissions,
-                new ArrayList<>()));
+        overrides.add(
+                new TicketPermissionOverride(Type.USER, author.getIdLong(), defaultRole.getDiscordAllowedPermissions(),
+                        new ArrayList<>()));
 
         return overrides;
     }
