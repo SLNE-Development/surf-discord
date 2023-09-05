@@ -1,23 +1,20 @@
 package dev.slne.discord;
 
-import java.util.Random;
-
+import dev.slne.discord.datasource.DiscordDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dev.slne.discord.datasource.DiscordDataSource;
+import java.util.Random;
 
 public class Launcher {
 
-    private DiscordBot discordBot;
-    private DiscordDataSource dataSource;
-
     private static Random random;
+    private final DiscordBot discordBot;
+    private final DiscordDataSource dataSource;
 
     /**
      * Constructor for the launcher
      */
-    @SuppressWarnings("java:S3010")
     public Launcher() {
         dataSource = new DiscordDataSource();
         discordBot = new DiscordBot();
@@ -35,6 +32,22 @@ public class Launcher {
 
         launcher.onLoad();
         launcher.onEnable();
+    }
+
+    /**
+     * Returns the logger
+     *
+     * @return The logger
+     */
+    public static final Logger getLogger(Class<?> clazz) {
+        return LoggerFactory.getLogger(clazz);
+    }
+
+    /**
+     * @return the random
+     */
+    public static Random getRandom() {
+        return random;
     }
 
     /**
@@ -77,22 +90,6 @@ public class Launcher {
      */
     public DiscordBot getDiscordBot() {
         return discordBot;
-    }
-
-    /**
-     * Returns the logger
-     *
-     * @return The logger
-     */
-    public static final Logger getLogger(Class<?> clazz) {
-        return LoggerFactory.getLogger(clazz);
-    }
-
-    /**
-     * @return the random
-     */
-    public static Random getRandom() {
-        return random;
     }
 
 }

@@ -137,7 +137,6 @@ public class Whitelist {
      *
      * @return The {@link MessageEmbed}.
      */
-    @SuppressWarnings({ "java:S3776", "java:S1192" })
     public static @Nonnull CompletableFuture<MessageEmbed> getWhitelistQueryEmbed(Whitelist whitelist) {
         CompletableFuture<MessageEmbed> future = new CompletableFuture<>();
 
@@ -223,7 +222,6 @@ public class Whitelist {
      *
      * @return The {@link Whitelist}.
      */
-    @SuppressWarnings({ "java:S3776", "java:S1192" })
     public static CompletableFuture<List<Whitelist>> getWhitelists(UUID uuid, String discordId,
                                                                    String twitchLink) {
         CompletableFuture<List<Whitelist>> future = new CompletableFuture<>();

@@ -23,7 +23,6 @@ public class UUIDResolver {
      *
      * @return The UUID.
      */
-    @SuppressWarnings({ "java:S3358", "java:S3776", "java:S1192" })
     public static CompletableFuture<UuidMinecraftName> resolve(Object uuidOrMinecraftName) {
         CompletableFuture<UuidMinecraftName> future = new CompletableFuture<>();
 

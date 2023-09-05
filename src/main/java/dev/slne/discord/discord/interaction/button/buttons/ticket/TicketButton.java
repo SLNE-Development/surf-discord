@@ -53,7 +53,6 @@ public abstract class TicketButton extends DiscordButton {
      * @param interaction the interaction
      */
     @Override
-    @SuppressWarnings({ "java:S3776", "java:S1192" })
     public void onClick(ButtonInteraction interaction) {
         if (ticketType.equals(TicketType.WHITELIST)) {
             handleWhitelist(interaction);

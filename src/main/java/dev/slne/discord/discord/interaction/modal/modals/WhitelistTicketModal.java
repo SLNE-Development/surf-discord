@@ -41,7 +41,6 @@ public class WhitelistTicketModal extends DiscordModal {
     }
 
     @Override
-    @SuppressWarnings({ "java:S3776", "java:S1192" })
     public void execute(ModalInteractionEvent event) {
         ModalInteraction modalInteraction = event.getInteraction();
 

@@ -194,7 +194,6 @@ public class TicketMessage {
      *
      * @return the parameters of the ticket message
      */
-    @SuppressWarnings("java:S1192")
     public Map<String, Object> toParameters() {
         Map<String, Object> parameters = new HashMap<>();
 

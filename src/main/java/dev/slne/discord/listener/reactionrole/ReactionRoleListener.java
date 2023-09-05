@@ -128,7 +128,6 @@ public class ReactionRoleListener extends ListenerAdapter {
      * @param user  The user.
      * @param guild The guild.
      */
-    @SuppressWarnings("java:S3776")
     private void addReactionRole(User user, Guild guild, Channel channel, String messageId,
                                  MessageReaction messageReaction) {
         if (channel == null || messageId == null || guild == null || user == null
@@ -210,7 +209,6 @@ public class ReactionRoleListener extends ListenerAdapter {
      * @param user  The user.
      * @param guild The guild.
      */
-    @SuppressWarnings("java:S3776")
     private void removeReactionRole(User user, Guild guild, Channel channel, String messageId,
                                     MessageReaction messageReaction) {
         if (messageId == null || guild == null || user == null

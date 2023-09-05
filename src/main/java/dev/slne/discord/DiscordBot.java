@@ -59,7 +59,6 @@ public class DiscordBot {
     /**
      * Called when the bot is loaded.
      */
-    @SuppressWarnings({ "java:S2696", "java:S2142", "java:S125" })
     public void onLoad() {
         instance = this;
 

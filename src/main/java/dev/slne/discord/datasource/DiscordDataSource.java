@@ -19,7 +19,6 @@ public class DiscordDataSource implements DataSource {
     }
 
     @Override
-    @SuppressWarnings({ "java:S2696", "java:S2440" })
     public void onLoad() {
         instance = this;
 

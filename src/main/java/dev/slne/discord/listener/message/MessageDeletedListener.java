@@ -41,7 +41,6 @@ public class MessageDeletedListener extends ListenerAdapter {
      * @param channel    The channel the message was deleted from.
      * @param messageIds The message ids of the deleted messages.
      */
-    @SuppressWarnings("java:S135")
     private void deleteMessage(MessageChannel channel, List<String> messageIds) {
         if (!channel.getType().equals(ChannelType.TEXT)) {
             return;

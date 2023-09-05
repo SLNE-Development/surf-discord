@@ -61,7 +61,6 @@ public class WhitelistCommand extends DiscordCommand {
     }
 
     @Override
-    @SuppressWarnings("java:S3776")
     public void execute(SlashCommandInteractionEvent interaction) {
         if (!(interaction.getChannel() instanceof TextChannel channel)) {
             interaction.reply("Dieser Befehl kann nur in Textkanälen verwendet werden.").setEphemeral(true).queue();

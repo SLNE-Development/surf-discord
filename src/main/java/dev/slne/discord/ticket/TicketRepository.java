@@ -80,7 +80,6 @@ public class TicketRepository {
      *
      * @return The ticket
      */
-    @SuppressWarnings({ "java:S1192", "java:S1141" })
     public static Ticket getTicketByChannel(String channelId) {
         return DiscordBot.getInstance().getTicketManager().getTicket(channelId);
     }

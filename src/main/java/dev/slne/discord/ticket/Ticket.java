@@ -512,7 +512,6 @@ public class Ticket {
      *
      * @return The result of the ticket opening
      */
-    @SuppressWarnings({ "java:S3776", "java:S1602" })
     private CompletableFuture<TicketCreateResult> open(Runnable runnable) {
         CompletableFuture<TicketCreateResult> future = new CompletableFuture<>();
 

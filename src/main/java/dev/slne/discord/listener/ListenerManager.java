@@ -78,7 +78,6 @@ public class ListenerManager {
      *
      * @param event the event
      */
-    @SuppressWarnings("java:S3776")
     public <T extends Event> void broadcastEvent(T event) {
         for (Listener listener : listeners) {
             Class<? extends Listener> eventClass = listener.getClass();
