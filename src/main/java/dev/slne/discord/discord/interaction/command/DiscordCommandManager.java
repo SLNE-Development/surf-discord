@@ -1,6 +1,6 @@
 package dev.slne.discord.discord.interaction.command;
 
-import dev.slne.discord.Launcher;
+import dev.slne.data.api.DataApi;
 import dev.slne.discord.discord.interaction.command.commands.reactionrole.ReactionRoleTextCommand;
 import dev.slne.discord.discord.interaction.command.commands.ticket.TicketButtonCommand;
 import dev.slne.discord.discord.interaction.command.commands.ticket.TicketCloseCommand;
@@ -80,15 +80,16 @@ public class DiscordCommandManager {
 //        updateAction.addCommands(commandDatas).queue(
 //                cmds -> {
 //                    String cmdNames = cmds.stream().map(Command::getName).reduce((a, b) -> a + ", " + b).orElse("");
-//                    Launcher.getLogger(getClass()).info("Registered commands [{}] to guild {}.", cmdNames,
-//                            guild.getName());
+//                    DataApi.getDataInstance().logInfo(getClass(), String.format("Registered commands [%s] to guild %s.",
+//                            cmdNames, guild.getName()));
 //                },
 //                throwable -> {
-//                    Launcher.getLogger(getClass()).error("Failed to register commands to guild {}", guild.getName());
-//                    throwable.printStackTrace();
+//                    DataApi.getDataInstance().logError(getClass(), String.format("Failed to register commands to " +
+//                            "guild %s", guild.getName()), throwable);
 //                });
 
-        Launcher.getLogger(getClass()).info("Registered commands [{}] to guild {}.", commandDatas,
-                guild.getName());
+        DataApi.getDataInstance()
+                .logInfo(getClass(),
+                        String.format("Registered commands [%s] to guild %s.", commandDatas, guild.getName()));
     }
 }

@@ -109,7 +109,7 @@ public class DiscordBot {
         DiscordBot.getInstance().getTicketManager().fetchActiveTickets();
 
         listenerManager.broadcastEvent(new BotStartEvent());
-        Launcher.getLogger(getClass()).info("Discord Bot is ready");
+        DataApi.getDataInstance().logInfo(getClass(), "Discord Bot is ready");
     }
 
     /**
@@ -117,7 +117,8 @@ public class DiscordBot {
      */
     public void onEnable() {
         if (botToken == null) {
-            Launcher.getLogger(getClass()).error("Bot token is null. Please check your bot-connection.json file.");
+            DataApi.getDataInstance()
+                    .logError(getClass(), "Bot token is null. Please check your bot-connection.json file.");
             System.exit(1000);
             return;
         }

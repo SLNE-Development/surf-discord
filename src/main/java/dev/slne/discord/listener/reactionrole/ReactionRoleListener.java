@@ -1,8 +1,6 @@
 package dev.slne.discord.listener.reactionrole;
 
-import javax.annotation.Nonnull;
-
-import dev.slne.discord.Launcher;
+import dev.slne.data.api.DataApi;
 import dev.slne.discord.discord.guild.DiscordGuild;
 import dev.slne.discord.discord.guild.DiscordGuilds;
 import dev.slne.discord.discord.guild.reactionrole.ReactionRoleConfig;
@@ -22,6 +20,8 @@ import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.RestAction;
+
+import javax.annotation.Nonnull;
 
 public class ReactionRoleListener extends ListenerAdapter {
 
@@ -130,15 +130,14 @@ public class ReactionRoleListener extends ListenerAdapter {
      */
     @SuppressWarnings("java:S3776")
     private void addReactionRole(User user, Guild guild, Channel channel, String messageId,
-            MessageReaction messageReaction) {
+                                 MessageReaction messageReaction) {
         if (channel == null || messageId == null || guild == null || user == null
-                || !(channel instanceof TextChannel) || messageReaction == null) {
+                || !(channel instanceof TextChannel textChannel) || messageReaction == null) {
             return;
         }
 
         Emoji emoji = messageReaction.getEmoji();
 
-        TextChannel textChannel = (TextChannel) channel;
         textChannel.retrieveMessageById(messageId).queue(message -> {
             if (message == null) {
                 return;
@@ -192,15 +191,14 @@ public class ReactionRoleListener extends ListenerAdapter {
 
                     guild.addRoleToMember(member, role).queue();
                 }, throwable -> {
-                    if (throwable instanceof ErrorResponseException) {
-                        ErrorResponseException errorResponseException = (ErrorResponseException) throwable;
+                    if (throwable instanceof ErrorResponseException errorResponseException) {
 
                         if (errorResponseException.getErrorCode() == 10007) {
                             return;
                         }
                     }
 
-                    Launcher.getLogger(getClass()).error("Error while adding reaction role", throwable);
+                    DataApi.getDataInstance().logError(getClass(), "Error while adding reaction role", throwable);
                 });
             });
         });
@@ -214,15 +212,14 @@ public class ReactionRoleListener extends ListenerAdapter {
      */
     @SuppressWarnings("java:S3776")
     private void removeReactionRole(User user, Guild guild, Channel channel, String messageId,
-            MessageReaction messageReaction) {
-        if (channel == null || messageId == null || guild == null || user == null
-                || !(channel instanceof TextChannel) || messageReaction == null) {
+                                    MessageReaction messageReaction) {
+        if (messageId == null || guild == null || user == null
+                || !(channel instanceof TextChannel textChannel) || messageReaction == null) {
             return;
         }
 
         Emoji emoji = messageReaction.getEmoji();
 
-        TextChannel textChannel = (TextChannel) channel;
         textChannel.retrieveMessageById(messageId).queue(message -> {
             if (message == null) {
                 return;
@@ -276,15 +273,14 @@ public class ReactionRoleListener extends ListenerAdapter {
 
                     guild.removeRoleFromMember(member, role).queue();
                 }, throwable -> {
-                    if (throwable instanceof ErrorResponseException) {
-                        ErrorResponseException errorResponseException = (ErrorResponseException) throwable;
+                    if (throwable instanceof ErrorResponseException errorResponseException) {
 
                         if (errorResponseException.getErrorCode() == 10007) {
                             return;
                         }
                     }
 
-                    Launcher.getLogger(getClass()).error("Error while removing reaction role", throwable);
+                    DataApi.getDataInstance().logError(getClass(), "Error while removing reaction role", throwable);
                 });
             });
         });

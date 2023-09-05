@@ -405,16 +405,13 @@ public class TicketChannel {
                 return;
             }
 
-//            channel.createWebhook("Ticket Webhook").queue(webhook -> {
-//                ticket.setWebhookId(webhook.getId());
-//                ticket.setWebhookName(webhook.getName());
-//                ticket.setWebhookUrl(webhook.getUrl());
-//
-//                long end = System.currentTimeMillis();
-//                Launcher.getLogger(TicketChannel.class).info("Ticket webhook creation took {}ms", end - start);
-//                future.complete(null);
-//            }, future::completeExceptionally);
-            future.complete(null);
+            channel.createWebhook("Ticket Webhook").queue(webhook -> {
+                ticket.setWebhookId(webhook.getId());
+                ticket.setWebhookName(webhook.getName());
+                ticket.setWebhookUrl(webhook.getUrl());
+
+                future.complete(null);
+            }, future::completeExceptionally);
         });
 
         return future;

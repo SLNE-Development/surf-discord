@@ -3,10 +3,10 @@ package dev.slne.discord.ticket;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import dev.slne.data.api.DataApi;
 import dev.slne.data.api.gson.GsonConverter;
 import dev.slne.data.api.web.WebRequest;
 import dev.slne.discord.DiscordBot;
-import dev.slne.discord.Launcher;
 import dev.slne.discord.datasource.API;
 
 import java.util.ArrayList;
@@ -64,7 +64,7 @@ public class TicketRepository {
 
                 future.complete(tickets);
             }).exceptionally(throwable -> {
-                Launcher.getLogger(TicketRepository.class).error("Could not get active tickets", throwable);
+                DataApi.getDataInstance().logError(TicketRepository.class, "Could not get active tickets", throwable);
                 future.completeExceptionally(throwable);
                 return null;
             });
@@ -109,7 +109,7 @@ public class TicketRepository {
 
                 future.complete(ticket);
             }).exceptionally(throwable -> {
-                Launcher.getLogger(TicketRepository.class).error("Could not create ticket", throwable);
+                DataApi.getDataInstance().logError(TicketRepository.class, "Could not create ticket", throwable);
                 future.completeExceptionally(throwable);
                 return null;
             });
@@ -144,7 +144,7 @@ public class TicketRepository {
 
                 future.complete(ticket);
             }).exceptionally(throwable -> {
-                Launcher.getLogger(TicketRepository.class).error("Could not update ticket", throwable);
+                DataApi.getDataInstance().logError(TicketRepository.class, "Could not update ticket", throwable);
                 future.completeExceptionally(throwable);
                 return null;
             });
@@ -180,7 +180,7 @@ public class TicketRepository {
 
                 future.complete(ticket);
             }).exceptionally(throwable -> {
-                Launcher.getLogger(TicketRepository.class).error("Could not close ticket", throwable);
+                DataApi.getDataInstance().logError(TicketRepository.class, "Could not close ticket", throwable);
                 future.completeExceptionally(throwable);
                 return null;
             });

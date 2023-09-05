@@ -1,6 +1,6 @@
 package dev.slne.discord.discord.interaction.modal.modals;
 
-import dev.slne.discord.Launcher;
+import dev.slne.data.api.DataApi;
 import dev.slne.discord.discord.interaction.modal.DiscordModal;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketType;
@@ -59,7 +59,7 @@ public class WhitelistTicketModal extends DiscordModal {
             ModalMapping minecraftNameValue = modalInteraction.getValue("minecraft-name");
             if (minecraftNameValue == null) {
                 hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
-                Launcher.getLogger(getClass()).error("Error while creating ticket: minecraftNameOption is null");
+                DataApi.getDataInstance().logError(getClass(), "minecraftNameValue is null");
                 return;
             }
             String minecraftName = minecraftNameValue.getAsString();
@@ -72,8 +72,7 @@ public class WhitelistTicketModal extends DiscordModal {
             ModalMapping discordTwitchVerifiedValue = modalInteraction.getValue("discord-twitch-verified");
             if (discordTwitchVerifiedValue == null) {
                 hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
-                Launcher.getLogger(getClass())
-                        .error("Error while creating ticket: discordTwitchVerifiedOption is null");
+                DataApi.getDataInstance().logError(getClass(), "discordTwitchVerifiedValue is null");
                 return;
             }
             String discordTwitchVerifiedString = discordTwitchVerifiedValue.getAsString();
@@ -109,15 +108,11 @@ public class WhitelistTicketModal extends DiscordModal {
                             message.append(channel.getAsMention());
                         }
 
-                        String messageString = message.toString();
-                        if (messageString != null) {
-                            hook.editOriginal(messageString).queue();
-                        }
+                        hook.editOriginal(message.toString()).queue();
 
-                        if (minecraftName != null && channel != null) {
+                        if (channel != null) {
                             channel.sendMessage("Minecraft-Name: `" + minecraftName + "`").queue();
                         }
-
                     } else if (result.equals(TicketCreateResult.ALREADY_EXISTS)) {
                         hook.editOriginal(
                                         "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo.")
@@ -127,15 +122,18 @@ public class WhitelistTicketModal extends DiscordModal {
                                 .queue();
                     } else {
                         hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
-                        Launcher.getLogger(getClass()).error("Error while creating ticket: {}", result);
+                        DataApi.getDataInstance()
+                                .logError(getClass(), String.format("Error while creating ticket: %s", result));
                     }
-                }, failure -> {
+                }).exceptionally(failure -> {
                     hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
-                    Launcher.getLogger(getClass()).error("Error while creating ticket", failure);
+                    DataApi.getDataInstance().logError(getClass(), "Error while creating ticket", failure);
+
+                    return null;
                 });
             }).exceptionally(uuidMinecraftNameFailure -> {
                 hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
-                Launcher.getLogger(getClass()).error("Error while creating ticket", uuidMinecraftNameFailure);
+                DataApi.getDataInstance().logError(getClass(), "Error while creating ticket", uuidMinecraftNameFailure);
 
                 return null;
             });

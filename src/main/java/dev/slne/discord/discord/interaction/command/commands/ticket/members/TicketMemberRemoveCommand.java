@@ -1,7 +1,7 @@
 package dev.slne.discord.discord.interaction.command.commands.ticket.members;
 
+import dev.slne.data.api.DataApi;
 import dev.slne.discord.DiscordBot;
-import dev.slne.discord.Launcher;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand;
 import dev.slne.discord.ticket.TicketChannel;
@@ -89,13 +89,13 @@ public class TicketMemberRemoveCommand extends TicketCommand {
                                     user.getAsMention() + " wurde von " + interaction.getUser().getAsMention() + " entfernt.")
                             .queue();
                 }).exceptionally(exception -> {
-                    Launcher.getLogger(getClass()).error("Error while removing ticket member", exception);
+                    DataApi.getDataInstance().logError(getClass(), "Error while removing ticket member", exception);
                     hook.editOriginal("Der Nutzer konnte nicht entfernt werden.").queue();
 
                     return null;
                 });
             }).exceptionally(exception -> {
-                Launcher.getLogger(getClass()).error("Error while removing ticket member", exception);
+                DataApi.getDataInstance().logError(getClass(), "Error while removing ticket member", exception);
                 hook.editOriginal("Der Nutzer konnte nicht entfernt werden.").queue();
 
                 return null;

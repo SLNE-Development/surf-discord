@@ -1,6 +1,6 @@
 package dev.slne.discord.discord.interaction.command.commands.whitelist;
 
-import dev.slne.discord.Launcher;
+import dev.slne.data.api.DataApi;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.whitelist.UUIDResolver;
@@ -129,7 +129,8 @@ public class WhitelistQueryCommand extends DiscordCommand {
      */
     public void errorHandler(InteractionHook hook, Throwable throwable) {
         hook.editOriginal("Es ist ein Fehler aufgetreten.").queue();
-        Launcher.getLogger(getClass()).error("Error while executing wlquery command", throwable);
+
+        DataApi.getDataInstance().logError(getClass(), "Error while executing wlquery command", throwable);
     }
 
     /**
@@ -151,7 +152,7 @@ public class WhitelistQueryCommand extends DiscordCommand {
                         channel.sendMessageEmbeds(embed).queue();
                     }
                 }).exceptionally(throwable -> {
-                    Launcher.getLogger(getClass()).error("Error while executing wlquery command", throwable);
+                    DataApi.getDataInstance().logError(getClass(), "Error while executing wlquery command", throwable);
                     return null;
                 });
             }

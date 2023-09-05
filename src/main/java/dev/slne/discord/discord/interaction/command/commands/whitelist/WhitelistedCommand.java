@@ -1,6 +1,6 @@
 package dev.slne.discord.discord.interaction.command.commands.whitelist;
 
-import dev.slne.discord.Launcher;
+import dev.slne.data.api.DataApi;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand;
 import dev.slne.discord.ticket.result.TicketCloseResult;
@@ -46,10 +46,11 @@ public class WhitelistedCommand extends TicketCommand {
                 .queue(deferedReply -> getTicket().close(closer, reason).thenAcceptAsync(result -> {
                     if (result != TicketCloseResult.SUCCESS) {
                         deferedReply.editOriginal("Fehler beim Schließen des Tickets.").queue();
+                        DataApi.getDataInstance().logError(getClass(), "Error while closing ticket: " + result.name());
                     }
                 }).exceptionally(exception -> {
                     deferedReply.editOriginal("Fehler beim Schließen des Tickets.").queue();
-                    Launcher.getLogger(getClass()).error("Error while closing ticket", exception);
+                    DataApi.getDataInstance().logError(getClass(), "Error while closing ticket", exception);
 
                     return null;
                 }));

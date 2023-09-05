@@ -1,6 +1,6 @@
 package dev.slne.discord.ticket;
 
-import dev.slne.discord.Launcher;
+import dev.slne.data.api.DataApi;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,12 +36,13 @@ public class TicketManager {
             long end = System.currentTimeMillis();
             long time = end - start;
 
-            Launcher.getLogger(getClass()).info("Fetched {} tickets in {}ms.", tickets.size(), time);
+            DataApi.getDataInstance()
+                    .logInfo(getClass(), String.format("Fetched %d tickets in %dms.", tickets.size(), time));
 
             fetched = true;
             popQueue();
         }).exceptionally(throwable -> {
-            Launcher.getLogger(getClass()).error("Failed to fetch tickets.", throwable);
+            DataApi.getDataInstance().logError(getClass(), "Failed to fetch tickets.", throwable);
             return null;
         });
     }

@@ -5,10 +5,10 @@ import club.minnced.discord.webhook.send.WebhookMessageBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
+import dev.slne.data.api.DataApi;
 import dev.slne.data.api.gson.GsonConverter;
 import dev.slne.data.api.web.WebRequest;
 import dev.slne.discord.DiscordBot;
-import dev.slne.discord.Launcher;
 import dev.slne.discord.datasource.API;
 import dev.slne.discord.datasource.Times;
 import dev.slne.discord.ticket.Ticket;
@@ -180,7 +180,7 @@ public class TicketMessage {
             newMessage.messageDeletedAt = Times.now();
 
             newMessage.create().thenAcceptAsync(future::complete).exceptionally(throwable -> {
-                Launcher.getLogger(getClass()).error("Ticket message could not be deleted: ");
+                DataApi.getDataInstance().logError(getClass(), "Ticket message could not be deleted", throwable);
                 future.complete(null);
                 return null;
             });
@@ -307,7 +307,7 @@ public class TicketMessage {
 
                 future.complete(this);
             }).exceptionally(throwable -> {
-                Launcher.getLogger(getClass()).error("Ticket message could not be created: ", throwable);
+                DataApi.getDataInstance().logError(getClass(), "Ticket message could not be created", throwable);
                 future.completeExceptionally(throwable);
                 return null;
             });
@@ -351,7 +351,7 @@ public class TicketMessage {
         }
 
         newTicketMessage.create().thenAcceptAsync(future::complete).exceptionally(throwable -> {
-            Launcher.getLogger(getClass()).error("Ticket message could not be updated: ", throwable);
+            DataApi.getDataInstance().logError(getClass(), "Ticket message could not be updated", throwable);
             future.completeExceptionally(throwable);
             return null;
         });

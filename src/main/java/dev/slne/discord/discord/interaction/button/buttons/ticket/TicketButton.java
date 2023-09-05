@@ -1,7 +1,6 @@
 package dev.slne.discord.discord.interaction.button.buttons.ticket;
 
 import dev.slne.data.api.DataApi;
-import dev.slne.discord.Launcher;
 import dev.slne.discord.discord.interaction.button.DiscordButton;
 import dev.slne.discord.discord.interaction.modal.modals.WhitelistTicketModal;
 import dev.slne.discord.ticket.Ticket;
@@ -119,7 +118,8 @@ public abstract class TicketButton extends DiscordButton {
                                 .queue();
                     } else {
                         hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
-                        Launcher.getLogger(getClass()).error("Error while creating ticket: {}", result);
+                        DataApi.getDataInstance()
+                                .logError(getClass(), String.format("Error while creating ticket: %s", result));
                     }
                 }).exceptionally(failure -> {
                     hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();

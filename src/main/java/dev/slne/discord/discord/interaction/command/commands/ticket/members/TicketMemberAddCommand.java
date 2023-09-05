@@ -1,7 +1,7 @@
 package dev.slne.discord.discord.interaction.command.commands.ticket.members;
 
+import dev.slne.data.api.DataApi;
 import dev.slne.discord.DiscordBot;
-import dev.slne.discord.Launcher;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand;
 import dev.slne.discord.ticket.TicketChannel;
@@ -85,13 +85,12 @@ public class TicketMemberAddCommand extends TicketCommand {
                     getChannel().sendMessage(user.getAsMention()).setEmbeds(getAddedEmbed(interaction.getUser()))
                             .queue();
                 }).exceptionally(exception -> {
-                    Launcher.getLogger(getClass())
-                            .error("Error while updating channel permissions: {}", exception.getMessage());
+                    DataApi.getDataInstance().logError(getClass(), "Error while adding ticket member", exception);
                     hook.editOriginal("Der Nutzer konnte nicht hinzugefügt werden.").queue();
                     return null;
                 });
             }).exceptionally(exception -> {
-                Launcher.getLogger(getClass()).error("Error while adding ticket member: {}", exception.getMessage());
+                DataApi.getDataInstance().logError(getClass(), "Error while adding ticket member", exception);
                 hook.editOriginal("Der Nutzer konnte nicht hinzugefügt werden.").queue();
                 return null;
             });

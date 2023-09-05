@@ -1,6 +1,6 @@
 package dev.slne.discord.discord.interaction.command.commands.ticket;
 
-import dev.slne.discord.Launcher;
+import dev.slne.data.api.DataApi;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand;
 import dev.slne.discord.ticket.result.TicketCloseResult;
@@ -50,14 +50,14 @@ public class TicketCloseCommand extends TicketCommand {
         String reason = reasonOption == null ? "No reason provided." : reasonOption.getAsString();
 
         interaction.reply("Schließe Ticket...").setEphemeral(true)
-                .queue(deferedReply -> getTicket().close(closer, reason).thenAcceptAsync(result -> {
+                .queue(deferredReply -> getTicket().close(closer, reason).thenAcceptAsync(result -> {
                     if (result != TicketCloseResult.SUCCESS) {
-                        deferedReply.editOriginal("Fehler beim Schließen des Tickets.").queue();
-                        Launcher.getLogger(getClass()).error("Error while closing ticket: {}", result.name());
+                        deferredReply.editOriginal("Fehler beim Schließen des Tickets.").queue();
+                        DataApi.getDataInstance().logError(getClass(), "Error while closing ticket: " + result.name());
                     }
                 }).exceptionally(exception -> {
-                    deferedReply.editOriginal("Fehler beim Schließen des Tickets.").queue();
-                    Launcher.getLogger(getClass()).error("Error while closing ticket", exception);
+                    deferredReply.editOriginal("Fehler beim Schließen des Tickets.").queue();
+                    DataApi.getDataInstance().logError(getClass(), "Error while closing ticket", exception);
 
                     return null;
                 }));

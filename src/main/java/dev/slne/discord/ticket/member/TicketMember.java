@@ -2,10 +2,10 @@ package dev.slne.discord.ticket.member;
 
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
+import dev.slne.data.api.DataApi;
 import dev.slne.data.api.gson.GsonConverter;
 import dev.slne.data.api.web.WebRequest;
 import dev.slne.discord.DiscordBot;
-import dev.slne.discord.Launcher;
 import dev.slne.discord.datasource.API;
 import dev.slne.discord.ticket.Ticket;
 import net.dv8tion.jda.api.entities.User;
@@ -108,7 +108,7 @@ public class TicketMember {
                     future.complete(null);
                 }
             }).exceptionally(exception -> {
-                Launcher.getLogger(getClass()).error("Ticket member could not be deleted: ", exception);
+                DataApi.getDataInstance().logError(getClass(), "Ticket member could not be deleted", exception);
                 future.completeExceptionally(exception);
                 return null;
             });
@@ -217,7 +217,7 @@ public class TicketMember {
 
                 future.complete(this);
             }).exceptionally(exception -> {
-                Launcher.getLogger(getClass()).error("Ticket member could not be created", exception);
+                DataApi.getDataInstance().logError(getClass(), "Ticket member could not be created", exception);
                 future.completeExceptionally(exception);
                 return null;
             });
