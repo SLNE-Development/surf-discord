@@ -64,14 +64,14 @@ public class DiscordBot {
         try {
             botConnectionFile = new BotConnectionFile();
         } catch (FileNotFoundException exception) {
-            exception.printStackTrace();
+            DataApi.getDataInstance().logError(getClass(), "Bot connection file not found.", exception);
         }
 
         try {
             BotConnectionSettings settings = botConnectionFile.readObject(BotConnectionSettings.class);
             botToken = settings.getBotToken();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException exception) {
+            DataApi.getDataInstance().logError(getClass(), "Failed to read bot connection file.", exception);
         }
 
         JDABuilder builder = JDABuilder.createDefault(botToken);
@@ -88,7 +88,7 @@ public class DiscordBot {
         try {
             this.jda.awaitReady();
         } catch (InterruptedException exception) {
-            exception.printStackTrace();
+            DataApi.getDataInstance().logError(getClass(), "Failed to await ready.", exception);
         }
 
         roleManager = new DiscordRoleManager();

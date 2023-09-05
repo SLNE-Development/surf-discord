@@ -1,14 +1,15 @@
 package dev.slne.discord.discord.interaction.modal;
 
+import dev.slne.data.api.DataApi;
+import dev.slne.discord.discord.interaction.modal.modals.WhitelistTicketModal;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
-import dev.slne.discord.discord.interaction.modal.modals.WhitelistTicketModal;
-
 public class DiscordModalManager {
 
-    private Map<String, Class<? extends DiscordModal>> modals;
+    private final Map<String, Class<? extends DiscordModal>> modals;
 
     /**
      * Create a new modal manager
@@ -43,7 +44,9 @@ public class DiscordModalManager {
      * Get the modal by the class
      *
      * @param clazz The class of the modal
+     *
      * @return DiscordModal
+     *
      * @throws IllegalArgumentException If the class doesn't have a constructor
      */
     private DiscordModal getModalByClass(Class<? extends DiscordModal> clazz) throws IllegalArgumentException {
@@ -56,8 +59,9 @@ public class DiscordModalManager {
         try {
             discordModal = (DiscordModal) clazz.getDeclaredConstructors()[0].newInstance();
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-                | SecurityException exception) {
-            exception.printStackTrace();
+                 | SecurityException exception) {
+            DataApi.getDataInstance().logError(getClass(), "Failed to create a new instance of the modal class.",
+                    exception);
         }
 
         if (discordModal == null) {
@@ -71,6 +75,7 @@ public class DiscordModalManager {
      * Get the modal by the custom id
      *
      * @param customId The custom id of the modal
+     *
      * @return DiscordModal
      */
     public DiscordModal getModal(String customId) {
@@ -80,7 +85,7 @@ public class DiscordModalManager {
     /**
      * Get the map of modals
      *
-     * @return Map<String, Class<? extends DiscordModal>>
+     * @return Map<String, Class < ? extends DiscordModal>>
      */
     public Map<String, Class<? extends DiscordModal>> getModals() {
         return modals;
