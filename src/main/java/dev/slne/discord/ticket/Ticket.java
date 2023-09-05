@@ -37,49 +37,35 @@ import java.util.concurrent.CompletableFuture;
 
 public class Ticket {
 
+    private final List<TicketMember> removedMembers;
     @SerializedName("id")
     private long id;
-
     @SerializedName("ticket_id")
     private String ticketId;
-
     @SerializedName("opened_at")
     private LocalDateTime openedAt;
-
     @SerializedName("guild_id")
     private String guildId;
-
     @SerializedName("channel_id")
     private String channelId;
-
     @SerializedName("type")
     private String ticketTypeString;
-
     @SerializedName("author_id")
     private String ticketAuthorId;
-
     @SerializedName("author_name")
     private String ticketAuthorName;
-
     @SerializedName("author_avatar_url")
     private String ticketAuthorAvatarUrl;
-
     @SerializedName("closed_by_id")
     private String closedById;
-
     @SerializedName("closed_reason")
     private String closedReason;
-
     @SerializedName("closed_at")
     private LocalDateTime closedAt;
-
     @SerializedName("messages")
     private List<TicketMessage> messages;
-
     @SerializedName("members")
     private List<TicketMember> members;
-    private List<TicketMember> removedMembers;
-
     @SerializedName("webhook_id")
     private String webhookId;
 
@@ -133,7 +119,7 @@ public class Ticket {
      * After the ticket is closed
      */
     public void afterClose() {
-        // Mainly mplemented by subclasses
+        // Mainly implemented by subclasses
     }
 
     /**
@@ -143,6 +129,7 @@ public class Ticket {
      *
      * @return The result of the ticket message adding
      */
+    @SuppressWarnings("UnusedReturnValue")
     public CompletableFuture<TicketMessage> addTicketMessage(TicketMessage ticketMessage) {
         CompletableFuture<TicketMessage> future = new CompletableFuture<>();
 
@@ -384,9 +371,7 @@ public class Ticket {
                                 if (memberIsAuthor || !isAdminUser) {
                                     memberUser.openPrivateChannel()
                                             .queue(privateChannel -> privateChannel.sendMessageEmbeds(embed)
-                                                            .queue(v -> {
-                                                                memberFuture.complete(null);
-                                                            }, failure -> {
+                                                            .queue(v -> memberFuture.complete(null), failure -> {
                                                                 if (failure instanceof ErrorResponseException errorResponseException
                                                                         && errorResponseException.getErrorCode() == 50007) {
                                                                     memberFuture.complete(null);
@@ -614,6 +599,7 @@ public class Ticket {
      *
      * @return The result of the ticket opening
      */
+    @SuppressWarnings("UnusedReturnValue")
     public CompletableFuture<TicketCreateResult> openFromPusher() {
         return this.open(this::printAllPreviousMessages);
     }
@@ -763,6 +749,7 @@ public class Ticket {
      *
      * @return The ticket message
      */
+    @SuppressWarnings("unused")
     public TicketMessage getTicketMessage(Message message) {
         return messages.stream().filter(ticketMessage -> ticketMessage.getMessageId().equals(message.getId()))
                 .findFirst().orElse(null);
@@ -787,6 +774,7 @@ public class Ticket {
      *
      * @return The ticket member
      */
+    @SuppressWarnings("unused")
     public TicketMember getTicketMember(User user) {
         return members.stream().filter(ticketMember -> ticketMember.getMemberId().equals(user.getId())).findFirst()
                 .orElse(null);
@@ -812,6 +800,7 @@ public class Ticket {
      *
      * @return The ticket member
      */
+    @SuppressWarnings("unused")
     public TicketMember getTicketMember(String userId) {
         return members.stream().filter(ticketMember -> ticketMember.getMemberId().equals(userId)).findFirst()
                 .orElse(null);
@@ -854,13 +843,6 @@ public class Ticket {
     }
 
     /**
-     * @param ticketAuthorId the ticketAuthorId to set
-     */
-    public void setTicketAuthorId(String ticketAuthorId) {
-        this.ticketAuthorId = ticketAuthorId;
-    }
-
-    /**
      * Get the type of the ticket
      *
      * @return The type of the ticket
@@ -876,13 +858,6 @@ public class Ticket {
      */
     public String getTicketTypeString() {
         return ticketTypeString;
-    }
-
-    /**
-     * @param ticketTypeString the ticketTypeString to set
-     */
-    public void setTicketTypeString(String ticketTypeString) {
-        this.ticketTypeString = ticketTypeString;
     }
 
     /**
@@ -908,13 +883,6 @@ public class Ticket {
      */
     public String getGuildId() {
         return guildId;
-    }
-
-    /**
-     * @param guildId the guildId to set
-     */
-    public void setGuildId(String guildId) {
-        this.guildId = guildId;
     }
 
     /**
@@ -969,13 +937,6 @@ public class Ticket {
     }
 
     /**
-     * @param closedById the closedById to set
-     */
-    public void setClosedById(String closedById) {
-        this.closedById = closedById;
-    }
-
-    /**
      * @return the closedBy
      */
     public RestAction<User> getClosedBy() {
@@ -993,13 +954,6 @@ public class Ticket {
      */
     public String getClosedReason() {
         return closedReason;
-    }
-
-    /**
-     * @param closedReason the closedReason to set
-     */
-    public void setClosedReason(String closedReason) {
-        this.closedReason = closedReason;
     }
 
     /**
@@ -1042,27 +996,6 @@ public class Ticket {
     }
 
     /**
-     * @param messages the messages to set
-     */
-    public void setMessages(List<TicketMessage> messages) {
-        this.messages = messages;
-    }
-
-    /**
-     * @return the members
-     */
-    public List<TicketMember> getMembers() {
-        return members;
-    }
-
-    /**
-     * @param members the members to set
-     */
-    public void setMembers(List<TicketMember> members) {
-        this.members = members;
-    }
-
-    /**
      * @return the ticketAuthorAvatarUrl
      */
     public String getTicketAuthorAvatarUrl() {
@@ -1070,38 +1003,10 @@ public class Ticket {
     }
 
     /**
-     * @param ticketAuthorAvatarUrl the ticketAuthorAvatarUrl to set
-     */
-    public void setTicketAuthorAvatarUrl(String ticketAuthorAvatarUrl) {
-        this.ticketAuthorAvatarUrl = ticketAuthorAvatarUrl;
-    }
-
-    /**
      * @return the ticketAuthorName
      */
     public String getTicketAuthorName() {
         return ticketAuthorName;
-    }
-
-    /**
-     * @param ticketAuthorName the ticketAuthorName to set
-     */
-    public void setTicketAuthorName(String ticketAuthorName) {
-        this.ticketAuthorName = ticketAuthorName;
-    }
-
-    /**
-     * @return the removedMembers
-     */
-    public List<TicketMember> getRemovedMembers() {
-        return removedMembers;
-    }
-
-    /**
-     * @param removedMembers the removedMembers to set
-     */
-    public void setRemovedMembers(List<TicketMember> removedMembers) {
-        this.removedMembers = removedMembers;
     }
 
     /**

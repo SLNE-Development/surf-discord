@@ -226,7 +226,8 @@ public class TicketChannel {
         TicketPermissionOverride override = new TicketPermissionOverride(Type.USER, author.getIdLong(),
                 defaultRole.getDiscordAllowedPermissions(), new ArrayList<>());
 
-        channelAction.addMemberPermissionOverride(author.getIdLong(), override.getAllow(), override.getDeny());
+        //noinspection ResultOfMethodCallIgnored
+        channelAction.addMemberPermissionOverride(author.getIdLong(), override.allow(), override.deny());
 
         return ticket.addTicketMember(ticketMember);
     }
@@ -295,36 +296,37 @@ public class TicketChannel {
             try {
                 ChannelAction<TextChannel> channelAction = channelCategory.createTextChannel(ticketName);
 
-                ticket.getTicketAuthor().queue(author -> {
-                    createAuthorTicketMember(ticket, author, channelAction).thenAcceptAsync(v -> {
-                        List<TicketPermissionOverride> overrides = getChannelPermissions(ticket, author);
-                        for (TicketPermissionOverride override : overrides) {
-                            if (override.getType() == Type.ROLE) {
-                                channelAction.addRolePermissionOverride(override.getId(),
-                                        override.getAllow(), override.getDeny());
-                            } else if (override.getType() == Type.USER) {
-                                channelAction.addMemberPermissionOverride(override.getId(),
-                                        override.getAllow(), override.getDeny());
+                ticket.getTicketAuthor()
+                        .queue(author -> createAuthorTicketMember(ticket, author, channelAction).thenAcceptAsync(v -> {
+                            List<TicketPermissionOverride> overrides = getChannelPermissions(ticket, author);
+                            for (TicketPermissionOverride override : overrides) {
+                                if (override.type() == Type.ROLE) {
+                                    //noinspection ResultOfMethodCallIgnored
+                                    channelAction.addRolePermissionOverride(override.id(),
+                                            override.allow(), override.deny());
+                                } else if (override.type() == Type.USER) {
+                                    //noinspection ResultOfMethodCallIgnored
+                                    channelAction.addMemberPermissionOverride(override.id(),
+                                            override.allow(), override.deny());
+                                }
                             }
-                        }
 
-                        channelAction.queue(ticketChannel -> {
-                            ticket.setChannelId(ticketChannel.getId());
-                            CompletableFuture
-                                    .allOf(createWebhook(ticket), TicketRepository.updateTicket(ticket))
-                                    .thenAccept(v1 -> future.complete(TicketCreateResult.SUCCESS));
-                        }, exception -> handleException(exception, future));
-                    }).exceptionally(throwable -> {
-                        future.complete(TicketCreateResult.ERROR);
-                        DataApi.getDataInstance()
-                                .logError(TicketChannel.class, "Failed to create ticket channel.", throwable);
-                        return null;
-                    });
-                }, failure -> {
-                    future.complete(TicketCreateResult.ERROR);
-                    DataApi.getDataInstance()
-                            .logError(TicketChannel.class, "Failed to create ticket channel.", failure);
-                });
+                            channelAction.queue(ticketChannel -> {
+                                ticket.setChannelId(ticketChannel.getId());
+                                CompletableFuture
+                                        .allOf(createWebhook(ticket), TicketRepository.updateTicket(ticket))
+                                        .thenAccept(v1 -> future.complete(TicketCreateResult.SUCCESS));
+                            }, exception -> handleException(exception, future));
+                        }).exceptionally(throwable -> {
+                            future.complete(TicketCreateResult.ERROR);
+                            DataApi.getDataInstance()
+                                    .logError(TicketChannel.class, "Failed to create ticket channel.", throwable);
+                            return null;
+                        }), failure -> {
+                            future.complete(TicketCreateResult.ERROR);
+                            DataApi.getDataInstance()
+                                    .logError(TicketChannel.class, "Failed to create ticket channel.", failure);
+                        });
             } catch (Exception exception) {
                 handleException(exception, future);
             }

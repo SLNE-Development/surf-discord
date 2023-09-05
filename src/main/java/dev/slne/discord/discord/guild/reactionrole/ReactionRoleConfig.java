@@ -3,7 +3,6 @@ package dev.slne.discord.discord.guild.reactionrole;
 import dev.slne.discord.DiscordBot;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.requests.RestAction;
@@ -26,7 +25,7 @@ public record ReactionRoleConfig(String messageId, String channelId, String reac
             return null;
         }
 
-        return channel.retrieveMessageById(this.messageId() + "");
+        return channel.retrieveMessageById(this.messageId());
     }
 
     /**
@@ -39,13 +38,13 @@ public record ReactionRoleConfig(String messageId, String channelId, String reac
             return null;
         }
 
-        Channel channel = DiscordBot.getInstance().getJda().getTextChannelById(this.channelId() + "");
+        TextChannel channel = DiscordBot.getInstance().getJda().getTextChannelById(this.channelId());
 
         if (channel == null || !channel.getType().isMessage()) {
             return null;
         }
 
-        return (TextChannel) channel;
+        return channel;
     }
 
     /**
@@ -58,7 +57,7 @@ public record ReactionRoleConfig(String messageId, String channelId, String reac
             return null;
         }
 
-        return DiscordBot.getInstance().getJda().getRoleById(this.roleId() + "");
+        return DiscordBot.getInstance().getJda().getRoleById(this.roleId());
     }
 
     /**
@@ -71,7 +70,7 @@ public record ReactionRoleConfig(String messageId, String channelId, String reac
             return null;
         }
 
-        return Emoji.fromFormatted(this.reaction() + "");
+        return Emoji.fromFormatted(this.reaction());
     }
 
 }

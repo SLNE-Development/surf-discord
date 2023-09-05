@@ -82,13 +82,4 @@ public class DiscordModalManager {
         return getModalByClass(this.modals.get(customId));
     }
 
-    /**
-     * Get the map of modals
-     *
-     * @return Map<String, Class < ? extends DiscordModal>>
-     */
-    public Map<String, Class<? extends DiscordModal>> getModals() {
-        return modals;
-    }
-
 }

@@ -1,11 +1,5 @@
 package dev.slne.discord.discord.interaction.command.commands.ticket;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.discord.interaction.button.DiscordButton;
@@ -18,6 +12,11 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
+
+import javax.annotation.Nonnull;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TicketButtonCommand extends DiscordCommand {
 
@@ -116,31 +115,25 @@ public class TicketButtonCommand extends DiscordCommand {
      * @return The whitelist text
      */
     public String getWhitelistText() {
-        StringBuilder builder = new StringBuilder();
-
-        builder.append(
-                "Um eine Whitelist Anfrage zu stellen reicht es, euren Discord Account mit eurem Twitch Account zu verbinden und danach ein **Whitelist Ticket** zu eröffnen.");
-
-        builder.append("\n\n");
-        builder.append("**Voraussetzungen**:\r\n" + //
+        return "Um eine Whitelist Anfrage zu stellen reicht es, euren Discord Account mit eurem Twitch Account zu verbinden und danach ein **Whitelist Ticket** zu eröffnen." +
+                "\n\n" +
+                "**Voraussetzungen**:\r\n" + //
                 "- Ihr müsst CastCrafter auf Twitch folgen\r\n" + //
-                "- Ihr müsst euren Discord Account mit Twitch verbunden haben");
-        builder.append("\n\n");
-        builder.append("**Wie verbinde ich meinen Twitch Account?**\r\n" + //
+                "- Ihr müsst euren Discord Account mit Twitch verbunden haben" +
+                "\n\n" +
+                "**Wie verbinde ich meinen Twitch Account?**\r\n" + //
                 "1. Klickt auf Benutzereinstellungen.\r\n" + //
                 "2. Klickt auf den Punkt \"Verknüpfungen\".\r\n" + //
                 "3. Klickt auf das \"Twitchsymbol\".\r\n" + //
                 "4. Loggt euch mit eurem Twitch ein und wartet ab bis die Meldung erscheint:\r\n" + //
-                "\"Connected your Twitch to Discord\"");
-        builder.append("\n\n");
-        builder.append("Achtet bitte darauf, dass eure verknüpften Accounts auch **öffentlich einsehbar** sind!");
-        builder.append("\n\n");
-        builder.append("**Wie trete ich dem Server bei und was gibt es zu beachten?**\r\n" + //
-                "Die IP Adresse des Servers, sowie eine Übersicht über dessen Funktionen und Regeln findet ihr hier:");
-        builder.append("\n\n");
-        builder.append("https://www.castcrafter.de/server");
-
-        return builder.toString();
+                "\"Connected your Twitch to Discord\"" +
+                "\n\n" +
+                "Achtet bitte darauf, dass eure verknüpften Accounts auch **öffentlich einsehbar** sind!" +
+                "\n\n" +
+                "**Wie trete ich dem Server bei und was gibt es zu beachten?**\r\n" + //
+                "Die IP Adresse des Servers, sowie eine Übersicht über dessen Funktionen und Regeln findet ihr hier:" +
+                "\n\n" +
+                "https://www.castcrafter.de/server";
     }
 
     /**
@@ -149,17 +142,12 @@ public class TicketButtonCommand extends DiscordCommand {
      * @return The bugreport text
      */
     public String getBugreportText() {
-        StringBuilder builder = new StringBuilder();
+        return """
+                Ihr möchtet einen Fehler auf dem Server melden, so verwendet bitte das **Bugreport Ticket**.
 
-        builder.append("Ihr möchtet einen Fehler auf dem Server melden, so verwendet bitte das **Bugreport Ticket**.");
-        builder.append("\n\n");
-        builder.append(
-                "Bitte stellt den Fehler so genau wie möglich dar, damit wir uns ein genaues Bild machen können. Ein einfaches \"X und Y funktioniert nicht\" hilft uns nicht weiter.");
-        builder.append("\n\n");
-        builder.append(
-                "Bitte beschreibt so genau wie möglich, **was ihr gemacht habt** und **was hätte passieren sollen**. Screenshots und vor allem Videos sind gerne gesehen.");
+                Bitte stellt den Fehler so genau wie möglich dar, damit wir uns ein genaues Bild machen können. Ein einfaches "X und Y funktioniert nicht" hilft uns nicht weiter.
 
-        return builder.toString();
+                Bitte beschreibt so genau wie möglich, **was ihr gemacht habt** und **was hätte passieren sollen**. Screenshots und vor allem Videos sind gerne gesehen.""";
     }
 
     /**
@@ -168,15 +156,10 @@ public class TicketButtonCommand extends DiscordCommand {
      * @return The server support text
      */
     public String getServerSupportText() {
-        StringBuilder builder = new StringBuilder();
-
-        builder.append(
-                "Ihr habt **Fragen bezüglich der Minecraft-Serverregeln, möchtet einen Spieler melden** oder einen** Bann anfechten**, so habt ihr die Möglichkeit ein **Server Support Ticket** zu erstellen.");
-        builder.append("\n\n");
-        builder.append(
-                "Bitte beachtet, dass diese Tickets nur für Anliegen auf dem Community-Server gedacht sind. Bei anderen Anliegen können wir euch nicht helfen!");
-
-        return builder.toString();
+        return """
+                Ihr habt **Fragen bezüglich der Minecraft-Serverregeln, möchtet einen Spieler melden** oder einen** Bann anfechten**, so habt ihr die Möglichkeit ein **Server Support Ticket** zu erstellen.
+                                
+                Bitte beachtet, dass diese Tickets nur für Anliegen auf dem Community-Server gedacht sind. Bei anderen Anliegen können wir euch nicht helfen!""";
     }
 
     /**
@@ -185,12 +168,8 @@ public class TicketButtonCommand extends DiscordCommand {
      * @return The discord support text
      */
     public String getDiscordSupportText() {
-        StringBuilder builder = new StringBuilder();
 
-        builder.append(
-                "Ihr habt **Fragen bezüglich der Discord-Serverregeln** oder **möchtet einen Spieler melden**, so habt ihr die Möglichkeit ein **Discord Support Ticket** zu erstellen.");
-
-        return builder.toString();
+        return "Ihr habt **Fragen bezüglich der Discord-Serverregeln** oder **möchtet einen Spieler melden**, so habt ihr die Möglichkeit ein **Discord Support Ticket** zu erstellen.";
     }
 
 }

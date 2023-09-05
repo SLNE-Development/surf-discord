@@ -58,17 +58,19 @@ public enum DiscordPermission {
     USE_COMMAND_TICKET_STATISTIC("USE_COMMAND_TICKET_STATISTIC", true, false, null),
     USE_COMMAND_REACTION_ROLE_TEXT("USE_COMMAND_REACTION_ROLE_TEXT", true, false, null);
 
-    private String name;
-    private boolean rolePermission;
-    private boolean dcPermission;
-    private Permission permission;
+    private final String name;
+    private final boolean rolePermission;
+    private final boolean dcPermission;
+    private final Permission permission;
 
     /**
      * Returns the name
      *
-     * @param name
+     * @param name           The name.
+     * @param rolePermission The role permission.
+     * @param dcPermission   The dc permission.
      */
-    private DiscordPermission(String name, boolean rolePermission, boolean dcPermission, Permission permission) {
+    DiscordPermission(String name, boolean rolePermission, boolean dcPermission, Permission permission) {
         this.name = name;
         this.rolePermission = rolePermission;
         this.dcPermission = dcPermission;
@@ -78,6 +80,7 @@ public enum DiscordPermission {
     /**
      * @return the name
      */
+    @SuppressWarnings("unused")
     public String getName() {
         return name;
     }
@@ -99,6 +102,7 @@ public enum DiscordPermission {
     /**
      * @return the rolePermission
      */
+    @SuppressWarnings("unused")
     public boolean isRolePermission() {
         return rolePermission;
     }

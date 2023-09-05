@@ -9,14 +9,14 @@ public enum TicketType {
     BUGREPORT("Bug Report"),
     WHITELIST("Whitelist");
 
-    private @Nonnull String name;
+    private final @Nonnull String name;
 
     /**
      * Creates a new {@link TicketType}.
      *
      * @param name The name of the ticket type.
      */
-    private TicketType(@Nonnull String name) {
+    TicketType(@Nonnull String name) {
         this.name = name;
     }
 
@@ -24,6 +24,7 @@ public enum TicketType {
      * Returns the ticket type by the given name.
      *
      * @param name The name of the ticket type.
+     *
      * @return The ticket type.
      */
     public static TicketType getByName(String name) {

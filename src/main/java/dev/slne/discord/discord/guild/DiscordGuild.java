@@ -99,11 +99,10 @@ public class DiscordGuild {
                 return;
             }
 
-            role.getGuild().retrieveMember(user).queue(member -> {
-                future.complete(member != null && member.getRoles().contains(role));
-            }, failure -> {
-                DataApi.getDataInstance().logError(getClass(), "Failed to retrieve member", failure);
-            });
+            role.getGuild().retrieveMember(user)
+                    .queue(member -> future.complete(member != null && member.getRoles().contains(role)),
+                            failure -> DataApi.getDataInstance()
+                                    .logError(getClass(), "Failed to retrieve member", failure));
         });
 
         return future;
@@ -192,12 +191,11 @@ public class DiscordGuild {
     public CompletableFuture<List<DiscordRole>> getGuildRoles(String userId) {
         CompletableFuture<List<DiscordRole>> roles = new CompletableFuture<>();
 
-        DiscordBot.getInstance().getJda().retrieveUserById(userId).queue(user -> {
-            getGuildRoles(user).thenAcceptAsync(roles::complete).exceptionally(throwable -> {
-                roles.completeExceptionally(throwable);
-                return null;
-            });
-        }, roles::completeExceptionally);
+        DiscordBot.getInstance().getJda().retrieveUserById(userId)
+                .queue(user -> getGuildRoles(user).thenAcceptAsync(roles::complete).exceptionally(throwable -> {
+                    roles.completeExceptionally(throwable);
+                    return null;
+                }), roles::completeExceptionally);
 
         return roles;
     }
@@ -285,6 +283,7 @@ public class DiscordGuild {
      *
      * @return The discord support admin role.
      */
+    @SuppressWarnings("unused")
     public String getDiscordSupportAdminRoleId() {
         return discordSupportAdminRoleId;
     }
@@ -294,6 +293,7 @@ public class DiscordGuild {
      *
      * @return The server support admin role.
      */
+    @SuppressWarnings("unused")
     public String getServerSupportAdminRoleId() {
         return serverSupportAdminRoleId;
     }
@@ -303,6 +303,7 @@ public class DiscordGuild {
      *
      * @return The discord support moderator role.
      */
+    @SuppressWarnings("unused")
     public String getDiscordSupportModeratorRoleId() {
         return discordSupportModeratorRoleId;
     }
@@ -312,6 +313,7 @@ public class DiscordGuild {
      *
      * @return The server support moderator role.
      */
+    @SuppressWarnings("unused")
     public String getServerSupportModeratorRoleId() {
         return serverSupportModeratorRoleId;
     }

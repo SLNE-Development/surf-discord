@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public class UUIDCache {
 
-    private List<UuidMinecraftName> cache;
+    private final List<UuidMinecraftName> cache;
 
     /**
      * Creates a new {@link UUIDCache}.
@@ -19,6 +19,7 @@ public class UUIDCache {
      * Hits the cache.
      *
      * @param uuidOrMinecraftName The UUID or minecraft name.
+     *
      * @return The {@link UuidMinecraftName} if found.
      */
     public UuidMinecraftName hitCache(Object uuidOrMinecraftName) {

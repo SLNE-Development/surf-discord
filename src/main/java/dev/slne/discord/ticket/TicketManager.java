@@ -99,20 +99,6 @@ public class TicketManager {
     }
 
     /**
-     * @return the ticketQueue
-     */
-    public List<Ticket> getTicketQueue() {
-        return ticketQueue;
-    }
-
-    /**
-     * @return the fetched
-     */
-    public boolean isFetched() {
-        return fetched;
-    }
-
-    /**
      * Returns a ticket by its id
      *
      * @param ticketId The id of the ticket

@@ -1,5 +1,6 @@
 package dev.slne.discord.ticket.result;
 
+@SuppressWarnings("unused")
 public enum TicketCloseResult {
 
     /**
@@ -25,5 +26,5 @@ public enum TicketCloseResult {
     /**
      * There was an error while closing the ticket
      */
-    ERROR;
+    ERROR
 }

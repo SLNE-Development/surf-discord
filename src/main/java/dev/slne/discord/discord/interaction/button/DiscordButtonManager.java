@@ -1,16 +1,16 @@
 package dev.slne.discord.discord.interaction.button;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import dev.slne.discord.discord.interaction.button.buttons.ticket.TicketButton.BugreportTicketButton;
 import dev.slne.discord.discord.interaction.button.buttons.ticket.TicketButton.DiscordSupportTicketButton;
 import dev.slne.discord.discord.interaction.button.buttons.ticket.TicketButton.ServerSupportTicketButton;
 import dev.slne.discord.discord.interaction.button.buttons.ticket.TicketButton.WhitelistTicketButton;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DiscordButtonManager {
 
-    private List<DiscordButton> buttons;
+    private final List<DiscordButton> buttons;
 
     /**
      * The DiscordButtonManager
@@ -37,17 +37,11 @@ public class DiscordButtonManager {
      * Gets a button by its id
      *
      * @param id the id of the button
+     *
      * @return the button
      */
     public DiscordButton getButton(String id) {
         return buttons.stream().filter(button -> button.getId().equals(id)).findFirst().orElse(null);
-    }
-
-    /**
-     * @return the buttons
-     */
-    public List<DiscordButton> getButtons() {
-        return buttons;
     }
 
 }

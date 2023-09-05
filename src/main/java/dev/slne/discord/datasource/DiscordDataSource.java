@@ -7,7 +7,6 @@ public class DiscordDataSource implements DataSource {
 
     private static DiscordDataSource instance;
     private DiscordDataInstance dataInstance;
-    private DataApi dataApi;
 
     /**
      * Returns the instance.
@@ -19,11 +18,12 @@ public class DiscordDataSource implements DataSource {
     }
 
     @Override
+    @SuppressWarnings("InstantiationOfUtilityClass")
     public void onLoad() {
         instance = this;
 
         dataInstance = new DiscordDataInstance();
-        dataApi = new DataApi(dataInstance);
+        new DataApi(dataInstance);
 
         dataInstance.getDataModuleLoader().loadModules();
     }
@@ -45,15 +45,6 @@ public class DiscordDataSource implements DataSource {
      */
     public DiscordDataInstance getDataInstance() {
         return dataInstance;
-    }
-
-    /**
-     * Returns the data api.
-     *
-     * @return the data api
-     */
-    public DataApi getDataApi() {
-        return dataApi;
     }
 
 }

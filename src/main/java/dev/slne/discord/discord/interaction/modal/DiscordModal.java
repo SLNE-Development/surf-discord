@@ -1,19 +1,18 @@
 package dev.slne.discord.discord.interaction.modal;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.ActionComponent;
 import net.dv8tion.jda.api.interactions.modals.Modal;
 
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class DiscordModal {
 
-    private @Nonnull String title;
-    protected @Nonnull List<ActionComponent> components;
+    protected final @Nonnull List<ActionComponent> components;
+    private final @Nonnull String title;
 
     /**
      * Creates a new DiscordModal.
@@ -27,7 +26,7 @@ public abstract class DiscordModal {
     }
 
     /**
-     * Fills the components of the modal.
+     * Fills the components with the modal.
      */
     public abstract void fillComponents();
 
@@ -69,6 +68,7 @@ public abstract class DiscordModal {
      *
      * @param event The event.
      */
+    @SuppressWarnings("unused")
     public void open(SlashCommandInteractionEvent event) {
         Modal modal = this.buildModal();
         event.replyModal(modal).queue();
@@ -79,6 +79,7 @@ public abstract class DiscordModal {
      *
      * @return The title of the modal.
      */
+    @SuppressWarnings("unused")
     public @Nonnull String getTitle() {
         return title;
     }
@@ -88,6 +89,7 @@ public abstract class DiscordModal {
      *
      * @return The components of the modal.
      */
+    @SuppressWarnings("unused")
     public @Nonnull List<ActionComponent> getComponents() {
         return components;
     }

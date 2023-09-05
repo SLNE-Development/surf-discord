@@ -39,13 +39,14 @@ public class Launcher {
      *
      * @return The logger
      */
-    public static final Logger getLogger(Class<?> clazz) {
+    public static Logger getLogger(Class<?> clazz) {
         return LoggerFactory.getLogger(clazz);
     }
 
     /**
      * @return the random
      */
+    @SuppressWarnings("unused")
     public static Random getRandom() {
         return random;
     }
@@ -79,6 +80,7 @@ public class Launcher {
      *
      * @return The data source
      */
+    @SuppressWarnings("unused")
     public DiscordDataSource getDataSource() {
         return dataSource;
     }
@@ -88,6 +90,7 @@ public class Launcher {
      *
      * @return The discord bot
      */
+    @SuppressWarnings("unused")
     public DiscordBot getDiscordBot() {
         return discordBot;
     }

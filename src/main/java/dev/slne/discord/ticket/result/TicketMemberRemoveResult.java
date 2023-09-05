@@ -15,6 +15,6 @@ public enum TicketMemberRemoveResult {
     /**
      * The user was not added
      */
-    ERROR;
+    ERROR
 
 }

@@ -72,6 +72,7 @@ public class DiscordRole {
      *
      * @return true if the role has the given permission
      */
+    @SuppressWarnings("unused")
     public boolean hasDiscordPermission(Permission permission) {
         if (permissions.contains(DiscordPermission.ALL) || permissions.contains(DiscordPermission.ALL_DISCORD)) {
             return true;
@@ -107,6 +108,7 @@ public class DiscordRole {
      *
      * @return the permissions
      */
+    @SuppressWarnings("unused")
     public List<DiscordPermission> getPermissions() {
         return permissions;
     }

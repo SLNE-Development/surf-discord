@@ -90,6 +90,7 @@ public abstract class DiscordCommand {
      *
      * @return Whether the checks were successful.
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     protected boolean performDiscordCommandChecks(User user, Guild guild, SlashCommandInteractionEvent interaction) {
         if (guild == null) {
             interaction.reply("Es ist ein Fehler aufgetreten (dhwfm4nD)").setEphemeral(true).queue();
@@ -137,6 +138,7 @@ public abstract class DiscordCommand {
      *
      * @return The default member permissions of the command.
      */
+    @SuppressWarnings("unused")
     public @Nonnull DefaultMemberPermissions getDefaultMemberPermissions() {
         return defaultMemberPermissions;
     }
@@ -146,6 +148,7 @@ public abstract class DiscordCommand {
      *
      * @return The description of the command.
      */
+    @SuppressWarnings("unused")
     public @Nonnull String getDescription() {
         return description;
     }
@@ -155,6 +158,7 @@ public abstract class DiscordCommand {
      *
      * @return Whether the command is guild only.
      */
+    @SuppressWarnings("unused")
     public boolean isGuildOnly() {
         return guildOnly;
     }
@@ -164,6 +168,7 @@ public abstract class DiscordCommand {
      *
      * @return Whether the command is NSFW.
      */
+    @SuppressWarnings("unused")
     public boolean isNsfw() {
         return nsfw;
     }
@@ -173,6 +178,7 @@ public abstract class DiscordCommand {
      *
      * @return The SlashCommandData of the command.
      */
+    @SuppressWarnings("unused")
     public SlashCommandData getCommandData() {
         return commandData;
     }

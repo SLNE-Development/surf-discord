@@ -164,6 +164,7 @@ public class DiscordBot {
      *
      * @return the listener manager
      */
+    @SuppressWarnings("unused")
     public ListenerManager getListenerManager() {
         return listenerManager;
     }
@@ -193,15 +194,6 @@ public class DiscordBot {
      */
     public JDA getJda() {
         return jda;
-    }
-
-    /**
-     * Gets the bot connection file.
-     *
-     * @return the bot connection file
-     */
-    public BotConnectionFile getBotConnectionFile() {
-        return botConnectionFile;
     }
 
     /**

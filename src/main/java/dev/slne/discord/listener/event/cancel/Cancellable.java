@@ -1,5 +1,6 @@
 package dev.slne.discord.listener.event.cancel;
 
+@SuppressWarnings("unused")
 public interface Cancellable {
 
     /**
@@ -7,13 +8,13 @@ public interface Cancellable {
      *
      * @return whether the event is cancelled
      */
-    public boolean isCancelled();
+    boolean isCancelled();
 
     /**
      * Sets whether the event should be cancelled.
      *
      * @param cancelled whether the event should be cancelled
      */
-    public void setCancelled(boolean cancelled);
+    void setCancelled(boolean cancelled);
 
 }

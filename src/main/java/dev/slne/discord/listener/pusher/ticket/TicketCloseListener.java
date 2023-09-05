@@ -9,6 +9,7 @@ import dev.slne.discord.listener.event.EventHandler;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketChannel;
 
+@SuppressWarnings("unused")
 public class TicketCloseListener implements Listener {
 
     @EventHandler

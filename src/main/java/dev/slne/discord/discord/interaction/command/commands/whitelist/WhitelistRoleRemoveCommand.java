@@ -1,11 +1,5 @@
 package dev.slne.discord.discord.interaction.command.commands.whitelist;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
-import javax.annotation.Nonnull;
-
 import dev.slne.discord.discord.guild.DiscordGuild;
 import dev.slne.discord.discord.guild.DiscordGuilds;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
@@ -15,6 +9,11 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class WhitelistRoleRemoveCommand extends DiscordCommand {
 
@@ -75,7 +74,7 @@ public class WhitelistRoleRemoveCommand extends DiscordCommand {
                     futures.add(guild.removeRoleFromMember(member, whitelistedRole).submit());
                 });
 
-                CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]))
+                CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))
                         .thenRun(() -> hook
                                 .editOriginal(futures.size() + " Benutzer wurden aus der Whitelist Rolle entfernt.")
                                 .queue());

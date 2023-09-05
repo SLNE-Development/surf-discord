@@ -80,7 +80,7 @@ public class WhitelistQueryCommand extends DiscordCommand {
                 return;
             }
 
-            if (twitchOption != null && twitchOption.getAsString() != null) {
+            if (twitchOption != null) {
                 String twitch = twitchOption.getAsString();
 
                 Whitelist.getWhitelists(null, null, twitch).thenAcceptAsync(whitelists -> {
@@ -143,6 +143,7 @@ public class WhitelistQueryCommand extends DiscordCommand {
     public void printWlQuery(TextChannel channel, String title, List<Whitelist> whitelists) {
         title = title.replace("\"", "");
 
+        //noinspection ResultOfMethodCallIgnored
         channel.sendMessage("WlQuery für: \"" + title + "\"");
 
         if (whitelists != null) {

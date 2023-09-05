@@ -2,7 +2,7 @@ package dev.slne.discord.listener.event;
 
 public abstract class Event {
 
-    private boolean async;
+    private final boolean async;
 
     /**
      * Creates a new event.
@@ -25,6 +25,7 @@ public abstract class Event {
      *
      * @return whether the event should be executed asynchronously
      */
+    @SuppressWarnings("unused")
     public boolean isAsync() {
         return async;
     }

@@ -90,7 +90,7 @@ public class UUIDResolver {
     }
 
     /**
-     * Converts a undashed UUID to a dashed UUID.
+     * Converts an undashed UUID to a dashed UUID.
      *
      * @param undashedUuid The undashed UUID.
      *

@@ -1,9 +1,9 @@
 package dev.slne.discord.discord.settings;
 
+import net.dv8tion.jda.api.requests.GatewayIntent;
+
 import java.util.Collection;
 import java.util.List;
-
-import net.dv8tion.jda.api.requests.GatewayIntent;
 
 public class GatewayIntents {
 
@@ -18,7 +18,7 @@ public class GatewayIntents {
      *
      * @return The gateway intents.
      */
-    public static final Collection<GatewayIntent> getGatewayIntents() {
+    public static Collection<GatewayIntent> getGatewayIntents() {
         return List.of(
                 // Emoji
                 GatewayIntent.GUILD_EMOJIS_AND_STICKERS,

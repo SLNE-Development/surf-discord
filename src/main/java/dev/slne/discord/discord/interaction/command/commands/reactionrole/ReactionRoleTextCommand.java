@@ -1,11 +1,5 @@
 package dev.slne.discord.discord.interaction.command.commands.reactionrole;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
 import dev.slne.discord.discord.guild.DiscordGuild;
 import dev.slne.discord.discord.guild.DiscordGuilds;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
@@ -21,13 +15,16 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
+import javax.annotation.Nonnull;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+
+@SuppressWarnings("UnnecessaryUnicodeEscape")
 public class ReactionRoleTextCommand extends DiscordCommand {
 
     /**
      * Creates a new ReactionRoleTextCommand.
-     *
-     * @param name        The name.
-     * @param description The description.
      */
     public ReactionRoleTextCommand() {
         super("reactionrole", "Posted den reaction role text.");
@@ -67,17 +64,16 @@ public class ReactionRoleTextCommand extends DiscordCommand {
 
             Channel channel = interaction.getChannel();
 
-            if (!(channel instanceof TextChannel)) {
+            if (!(channel instanceof TextChannel textChannel)) {
                 hook.editOriginal("Dieser Command kann nur in Textkanälen ausgeführt werden!").queue();
                 return;
             }
 
-            TextChannel textChannel = (TextChannel) channel;
             MessageEmbed embed = getEmbed();
 
             textChannel.sendMessageEmbeds(embed).queue(message -> {
                 ReactionRoleConfig currentConfig = discordGuild.getReactionRoleConfig();
-                String reaction = "";
+                String reaction;
 
                 if (currentConfig != null) {
                     reaction = currentConfig.reaction();
@@ -85,7 +81,7 @@ public class ReactionRoleTextCommand extends DiscordCommand {
                     reaction = "\u1F514";
                 }
 
-                Emoji emoji = Emoji.fromFormatted(reaction + "");
+                Emoji emoji = Emoji.fromFormatted(reaction);
 
                 hook.deleteOriginal().queue();
                 message.addReaction(emoji).queue();

@@ -20,6 +20,6 @@ public enum TicketMemberAddResult {
     /**
      * There was an error while adding the user
      */
-    ERROR;
+    ERROR
 
 }

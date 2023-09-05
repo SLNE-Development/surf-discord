@@ -4,6 +4,7 @@ import dev.slne.data.core.instance.CoreDataInstance;
 import dev.slne.discord.Launcher;
 
 import java.nio.file.Path;
+import java.util.logging.Logger;
 
 public class DiscordDataInstance extends CoreDataInstance {
 
@@ -13,10 +14,11 @@ public class DiscordDataInstance extends CoreDataInstance {
     }
 
     @Override
-    public void logError(Class<?> caller, String message, Throwable... throwables) {
+    public void logError(Class<?> caller, String message, Throwable... throwable) {
         Launcher.getLogger(caller).error(message);
-        for (Throwable throwable : throwables) {
-            throwable.printStackTrace();
+        
+        for (Throwable throwItem : throwable) {
+            Logger.getLogger(caller.getName()).throwing(caller.getName(), "logError", throwItem);
         }
     }
 

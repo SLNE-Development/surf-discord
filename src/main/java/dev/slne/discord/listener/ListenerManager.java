@@ -103,13 +103,4 @@ public class ListenerManager {
         }
     }
 
-    /**
-     * Returns the listeners.
-     *
-     * @return the listeners
-     */
-    public List<Listener> getListeners() {
-        return listeners;
-    }
-
 }

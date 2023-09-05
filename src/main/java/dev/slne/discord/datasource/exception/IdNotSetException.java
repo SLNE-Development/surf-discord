@@ -1,5 +1,6 @@
 package dev.slne.discord.datasource.exception;
 
+@SuppressWarnings("unused")
 public class IdNotSetException extends Exception {
 
     /**
@@ -42,11 +43,11 @@ public class IdNotSetException extends Exception {
      *
      * @param message            the message
      * @param cause              the cause
-     * @param enableSuppression  whether or not suppression is enabled
-     * @param writableStackTrace whether or not the stack trace is writable
+     * @param enableSuppression  whether suppression is enabled
+     * @param writableStackTrace whether the stack trace is writable
      */
     public IdNotSetException(String message, Throwable cause, boolean enableSuppression,
-            boolean writableStackTrace) {
+                             boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 

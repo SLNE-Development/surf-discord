@@ -22,6 +22,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.RestAction;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 
 public class ReactionRoleListener extends ListenerAdapter {
 
@@ -130,7 +131,7 @@ public class ReactionRoleListener extends ListenerAdapter {
      */
     private void addReactionRole(User user, Guild guild, Channel channel, String messageId,
                                  MessageReaction messageReaction) {
-        if (channel == null || messageId == null || guild == null || user == null
+        if (messageId == null || guild == null || user == null
                 || !(channel instanceof TextChannel textChannel) || messageReaction == null) {
             return;
         }
@@ -169,7 +170,7 @@ public class ReactionRoleListener extends ListenerAdapter {
                     return;
                 }
 
-                if (reactionRoleConfig.getEmoji().hashCode() != emoji.hashCode()) {
+                if (Objects.requireNonNull(reactionRoleConfig.getEmoji()).hashCode() != emoji.hashCode()) {
                     return;
                 }
 
@@ -250,7 +251,7 @@ public class ReactionRoleListener extends ListenerAdapter {
                     return;
                 }
 
-                if (reactionRoleConfig.getEmoji().hashCode() != emoji.hashCode()) {
+                if (Objects.requireNonNull(reactionRoleConfig.getEmoji()).hashCode() != emoji.hashCode()) {
                     return;
                 }
 

@@ -8,6 +8,7 @@ import net.kyori.adventure.text.Component;
 
 import java.util.UUID;
 
+@SuppressWarnings("unused")
 public class SocialChatListener implements Listener {
 
     @EventHandler

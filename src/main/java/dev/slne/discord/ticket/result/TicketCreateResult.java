@@ -25,6 +25,11 @@ public enum TicketCreateResult {
     /**
      * The channel could not be created
      */
-    ERROR, MISSING_PERMISSIONS;
+    ERROR,
+
+    /**
+     * The user is missing permissions
+     */
+    MISSING_PERMISSIONS
 
 }

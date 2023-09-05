@@ -25,6 +25,7 @@ public class DiscordPusherEvent extends Event implements PusherPacketEvent {
      * @param userId          The user id
      * @param async           Whether the event is async
      */
+    @SuppressWarnings("unused")
     public DiscordPusherEvent(PusherPacket packet, LocalDateTime timestamp, String channelName, String pusherEventName,
                               String userId, boolean async) {
         super(async);

@@ -1,7 +1,5 @@
 package dev.slne.discord.discord.interaction.command.commands;
 
-import javax.annotation.Nonnull;
-
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketRepository;
@@ -9,6 +7,8 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+
+import javax.annotation.Nonnull;
 
 public abstract class TicketCommand extends DiscordCommand {
 
@@ -31,12 +31,11 @@ public abstract class TicketCommand extends DiscordCommand {
             return;
         }
 
-        if (!(interaction.getChannel() instanceof TextChannel)) {
+        if (!(interaction.getChannel() instanceof TextChannel textChannel)) {
             interaction.reply("Dieser Befehl kann nur in einem Ticket verwendet werden.").setEphemeral(true).queue();
             return;
         }
 
-        TextChannel textChannel = (TextChannel) interaction.getChannel();
         Ticket ticketGet = TicketRepository.getTicketByChannel(textChannel.getId());
 
         if (ticketGet == null) {

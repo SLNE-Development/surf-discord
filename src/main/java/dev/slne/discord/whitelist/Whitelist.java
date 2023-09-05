@@ -23,30 +23,23 @@ import java.util.concurrent.CompletableFuture;
 
 public class Whitelist {
 
+    private final String minecraftName;
     @SerializedName("id")
     private long id;
-
     @SerializedName("uuid")
     private UUID uuid;
-
     @SerializedName("twitch_link")
     private String twitchLink;
-
     @SerializedName("discord_id")
     private String discordId;
-
     @SerializedName("added_by_id")
     private String addedById;
-
     @SerializedName("added_by_name")
     private String addedByName;
-
     @SerializedName("added_by_avatar_url")
     private String addedByAvatarUrl;
-
     @SerializedName("blocked")
     private boolean blocked;
-    private String minecraftName;
 
     /**
      * Creates a new {@link Whitelist}.
@@ -88,6 +81,7 @@ public class Whitelist {
         this.id = copy.id;
         this.uuid = copy.uuid;
         this.twitchLink = copy.twitchLink;
+        this.minecraftName = copy.minecraftName;
 
         this.discordId = copy.discordId;
 
@@ -214,7 +208,7 @@ public class Whitelist {
     }
 
     /**
-     * Finds any {@link Whitelist}s by a uuid, discord id or twitch link.
+     * Finds any {@link Whitelist}s by an uuid, discord id or twitch link.
      *
      * @param uuid       The uuid.
      * @param discordId  The discord id.
@@ -284,7 +278,7 @@ public class Whitelist {
     }
 
     /**
-     * Finds a {@link Whitelist} by a uuid.
+     * Finds a {@link Whitelist} by an uuid.
      *
      * @param uuid The uuid.
      *
@@ -297,12 +291,12 @@ public class Whitelist {
             String url = String.format(API.WHITELIST, uuid.toString());
             WebRequest request = WebRequest.builder().json(true).url(url).build();
 
-            request.executeGet().thenAccept(response -> {
-                future.complete(fromJsonObject(response.bodyObject(DiscordBot.getInstance().getGsonConverter())));
-            }).exceptionally(exception -> {
-                future.completeExceptionally(exception);
-                return null;
-            });
+            request.executeGet().thenAccept(response -> future.complete(
+                            fromJsonObject(response.bodyObject(DiscordBot.getInstance().getGsonConverter()))))
+                    .exceptionally(exception -> {
+                        future.completeExceptionally(exception);
+                        return null;
+                    });
         });
 
         return future;
@@ -322,12 +316,12 @@ public class Whitelist {
             String url = String.format(API.WHITELIST_BY_DISCORD_ID, discordId);
             WebRequest request = WebRequest.builder().json(true).url(url).build();
 
-            request.executeGet().thenAccept(response -> {
-                future.complete(fromJsonObject(response.bodyObject(DiscordBot.getInstance().getGsonConverter())));
-            }).exceptionally(exception -> {
-                future.completeExceptionally(exception);
-                return null;
-            });
+            request.executeGet().thenAccept(response -> future.complete(
+                            fromJsonObject(response.bodyObject(DiscordBot.getInstance().getGsonConverter()))))
+                    .exceptionally(exception -> {
+                        future.completeExceptionally(exception);
+                        return null;
+                    });
         });
 
         return future;
