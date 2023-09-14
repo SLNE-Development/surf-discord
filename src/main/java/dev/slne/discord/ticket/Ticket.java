@@ -3,7 +3,6 @@ package dev.slne.discord.ticket;
 import com.google.gson.annotations.SerializedName;
 import dev.slne.data.api.DataApi;
 import dev.slne.discord.DiscordBot;
-import dev.slne.discord.datasource.Times;
 import dev.slne.discord.discord.guild.DiscordGuild;
 import dev.slne.discord.discord.guild.DiscordGuilds;
 import dev.slne.discord.discord.guild.role.DiscordRole;
@@ -28,7 +27,7 @@ import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.PermissionOverrideAction;
 
 import java.awt.*;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -43,7 +42,7 @@ public class Ticket {
     @SerializedName("ticket_id")
     private String ticketId;
     @SerializedName("opened_at")
-    private LocalDateTime openedAt;
+    private ZonedDateTime openedAt;
     @SerializedName("guild_id")
     private String guildId;
     @SerializedName("channel_id")
@@ -61,7 +60,7 @@ public class Ticket {
     @SerializedName("closed_reason")
     private String closedReason;
     @SerializedName("closed_at")
-    private LocalDateTime closedAt;
+    private ZonedDateTime closedAt;
     @SerializedName("messages")
     private List<TicketMessage> messages;
     @SerializedName("members")
@@ -76,7 +75,7 @@ public class Ticket {
     private String webhookUrl;
 
     @SerializedName("created_at")
-    private LocalDateTime createdAt;
+    private ZonedDateTime createdAt;
 
     /**
      * Constructor for a ticket
@@ -86,7 +85,7 @@ public class Ticket {
      * @param ticketType   The type of the ticket
      */
     public Ticket(Guild guild, User ticketAuthor, TicketType ticketType) {
-        this.openedAt = Times.now();
+        this.openedAt = ZonedDateTime.now();
 
         if (guild != null) {
             this.guildId = guild.getId();
@@ -280,11 +279,11 @@ public class Ticket {
 
         embedBuilder.setColor(Color.decode("#ff6600"));
 
-        LocalDateTime openedAtDateTime = getCreatedAt();
-        LocalDateTime closedAtDateTime = getClosedAt();
+        ZonedDateTime openedAtDateTime = getCreatedAt();
+        ZonedDateTime closedAtDateTime = getClosedAt();
 
         if (closedAtDateTime == null) {
-            closedAtDateTime = Times.now();
+            closedAtDateTime = ZonedDateTime.now();
         }
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
@@ -428,8 +427,8 @@ public class Ticket {
      *
      * @return The time difference between two dates
      */
-    private long[] toTempUnits(LocalDateTime start, LocalDateTime end) {
-        LocalDateTime tempDateTime = LocalDateTime.from(start);
+    private long[] toTempUnits(ZonedDateTime start, ZonedDateTime end) {
+        ZonedDateTime tempDateTime = ZonedDateTime.from(start);
 
         long years = tempDateTime.until(end, ChronoUnit.YEARS);
         tempDateTime = tempDateTime.plusYears(years);
@@ -865,14 +864,14 @@ public class Ticket {
      *
      * @return The opened at date of the ticket
      */
-    public LocalDateTime getOpenedAt() {
+    public ZonedDateTime getOpenedAt() {
         return openedAt;
     }
 
     /**
      * @param openedAt the openedAt to set
      */
-    public void setOpenedAt(LocalDateTime openedAt) {
+    public void setOpenedAt(ZonedDateTime openedAt) {
         this.openedAt = openedAt;
     }
 
@@ -961,14 +960,14 @@ public class Ticket {
      *
      * @return The date the ticket was closed
      */
-    public LocalDateTime getClosedAt() {
+    public ZonedDateTime getClosedAt() {
         return closedAt;
     }
 
     /**
      * @param closedAt the closedAt to set
      */
-    public void setClosedAt(LocalDateTime closedAt) {
+    public void setClosedAt(ZonedDateTime closedAt) {
         this.closedAt = closedAt;
     }
 
@@ -1061,14 +1060,14 @@ public class Ticket {
     /**
      * @return the createdAt
      */
-    public LocalDateTime getCreatedAt() {
+    public ZonedDateTime getCreatedAt() {
         return createdAt;
     }
 
     /**
      * @param createdAt the createdAt to set
      */
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(ZonedDateTime createdAt) {
         this.createdAt = createdAt;
     }
 

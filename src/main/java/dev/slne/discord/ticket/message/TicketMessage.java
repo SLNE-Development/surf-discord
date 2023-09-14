@@ -21,6 +21,8 @@ import net.dv8tion.jda.api.requests.RestAction;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,13 +54,13 @@ public class TicketMessage {
     private String authorAvatarUrl;
 
     @SerializedName("message_created_at")
-    private LocalDateTime messageCreatedAt;
+    private ZonedDateTime messageCreatedAt;
 
     @SerializedName("message_edited_at")
-    private LocalDateTime messageEditedAt;
+    private ZonedDateTime messageEditedAt;
 
     @SerializedName("message_deleted_at")
-    private LocalDateTime messageDeletedAt;
+    private ZonedDateTime messageDeletedAt;
 
     @SerializedName("references_message_id")
     private String referencesMessageId;
@@ -109,10 +111,12 @@ public class TicketMessage {
         this.authorName = message.getAuthor().getName();
         this.authorAvatarUrl = message.getAuthor().getAvatarUrl();
 
-        this.messageCreatedAt = message.getTimeCreated().toLocalDateTime();
+        LocalDateTime createdUTC = message.getTimeCreated().toLocalDateTime();
+        this.messageCreatedAt = Times.convertFromLocalDateTime(createdUTC);
 
         OffsetDateTime timeEdited = message.getTimeEdited();
-        this.messageEditedAt = message.isEdited() && timeEdited != null ? timeEdited.toLocalDateTime() : null;
+        LocalDateTime editedUTC = timeEdited != null ? timeEdited.toLocalDateTime() : null;
+        this.messageEditedAt = editedUTC != null ? Times.convertFromLocalDateTime(editedUTC) : null;
 
         TextChannel channel = ticket.getChannel();
         MessageReference reference = message.getMessageReference();
@@ -177,7 +181,7 @@ public class TicketMessage {
             }
 
             TicketMessage newMessage = new TicketMessage(this);
-            newMessage.messageDeletedAt = Times.now();
+            newMessage.messageDeletedAt = ZonedDateTime.now();
 
             newMessage.create().thenAcceptAsync(future::complete).exceptionally(throwable -> {
                 DataApi.getDataInstance().logError(getClass(), "Ticket message could not be deleted", throwable);
@@ -222,16 +226,18 @@ public class TicketMessage {
             parameters.put("content", content);
         }
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
         if (messageCreatedAt != null) {
-            parameters.put("message_created_at", messageCreatedAt.toString());
+            parameters.put("message_created_at", Times.convertToLocalDateTime(messageCreatedAt).format(formatter));
         }
 
         if (messageEditedAt != null) {
-            parameters.put("message_edited_at", messageEditedAt.toString());
+            parameters.put("message_edited_at", Times.convertToLocalDateTime(messageEditedAt).format(formatter));
         }
 
         if (messageDeletedAt != null) {
-            parameters.put("message_deleted_at", messageDeletedAt.toString());
+            parameters.put("message_deleted_at", Times.convertToLocalDateTime(messageDeletedAt).format(formatter));
         }
 
         parameters.put("bot_message", botMessage ? "1" : "0");
@@ -328,11 +334,12 @@ public class TicketMessage {
         TicketMessage newTicketMessage = new TicketMessage(this);
 
         newTicketMessage.jsonContent = updatedMessage.getContentDisplay();
-        newTicketMessage.messageCreatedAt = updatedMessage.getTimeCreated().toLocalDateTime();
+        newTicketMessage.messageCreatedAt =
+                Times.convertFromLocalDateTime(updatedMessage.getTimeCreated().toLocalDateTime());
 
         OffsetDateTime timeEdited = updatedMessage.getTimeEdited();
         newTicketMessage.messageEditedAt = updatedMessage.isEdited() && timeEdited != null
-                ? timeEdited.toLocalDateTime()
+                ? Times.convertFromLocalDateTime(timeEdited.toLocalDateTime())
                 : null;
 
         newTicketMessage.attachments = new ArrayList<>();
@@ -419,14 +426,14 @@ public class TicketMessage {
      *
      * @return The creation date of the ticket message
      */
-    public LocalDateTime getMessageCreatedAt() {
+    public ZonedDateTime getMessageCreatedAt() {
         return messageCreatedAt;
     }
 
     /**
      * @param messageCreatedAt the messageCreatedAt to set
      */
-    public void setMessageCreatedAt(LocalDateTime messageCreatedAt) {
+    public void setMessageCreatedAt(ZonedDateTime messageCreatedAt) {
         this.messageCreatedAt = messageCreatedAt;
     }
 
@@ -435,14 +442,14 @@ public class TicketMessage {
      *
      * @return The date of the last edit of the ticket message
      */
-    public LocalDateTime getMessageEditedAt() {
+    public ZonedDateTime getMessageEditedAt() {
         return messageEditedAt;
     }
 
     /**
      * @param messageEditedAt the messageEditedAt to set
      */
-    public void setMessageEditedAt(LocalDateTime messageEditedAt) {
+    public void setMessageEditedAt(ZonedDateTime messageEditedAt) {
         this.messageEditedAt = messageEditedAt;
     }
 
@@ -451,14 +458,14 @@ public class TicketMessage {
      *
      * @return The date of the deletion of the ticket message
      */
-    public LocalDateTime getMessageDeletedAt() {
+    public ZonedDateTime getMessageDeletedAt() {
         return messageDeletedAt;
     }
 
     /**
      * @param messageDeletedAt the messageDeletedAt to set
      */
-    public void setMessageDeletedAt(LocalDateTime messageDeletedAt) {
+    public void setMessageDeletedAt(ZonedDateTime messageDeletedAt) {
         this.messageDeletedAt = messageDeletedAt;
     }
 
