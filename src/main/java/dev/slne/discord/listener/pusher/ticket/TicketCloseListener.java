@@ -1,23 +1,17 @@
 package dev.slne.discord.listener.pusher.ticket;
 
 import dev.slne.data.api.DataApi;
+import dev.slne.data.api.event.Subscribe;
 import dev.slne.discord.DiscordBot;
-import dev.slne.discord.datasource.pusher.event.DiscordPusherEvent;
 import dev.slne.discord.datasource.pusher.packets.TicketClosePacket;
-import dev.slne.discord.listener.Listener;
-import dev.slne.discord.listener.event.EventHandler;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketChannel;
 
 @SuppressWarnings("unused")
-public class TicketCloseListener implements Listener {
+public class TicketCloseListener {
 
-    @EventHandler
-    public void onTicketClose(DiscordPusherEvent event) {
-        if (!(event.packet() instanceof TicketClosePacket packet)) {
-            return;
-        }
-
+    @Subscribe
+    public void onTicketClose(TicketClosePacket packet) {
         Ticket ticket = packet.getTicket();
         if (ticket == null) {
             return;

@@ -1,19 +1,13 @@
 package dev.slne.discord.listener.pusher.ticket;
 
+import dev.slne.data.api.event.Subscribe;
 import dev.slne.discord.DiscordBot;
-import dev.slne.discord.datasource.pusher.event.DiscordPusherEvent;
 import dev.slne.discord.datasource.pusher.packets.TicketOpenPacket;
-import dev.slne.discord.listener.Listener;
-import dev.slne.discord.listener.event.EventHandler;
 
-public class TicketOpenListener implements Listener {
+public class TicketOpenListener {
 
-    @EventHandler
-    public void onTicketOpen(DiscordPusherEvent event) {
-        if (!(event.packet() instanceof TicketOpenPacket packet)) {
-            return;
-        }
-
+    @Subscribe
+    public void onTicketOpen(TicketOpenPacket packet) {
         if (packet.getTicket() != null) {
             packet.getTicket().openFromPusher();
 

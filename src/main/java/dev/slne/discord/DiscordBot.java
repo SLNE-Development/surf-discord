@@ -111,7 +111,7 @@ public class DiscordBot {
 
         DiscordBot.getInstance().getTicketManager().fetchActiveTickets();
 
-        listenerManager.broadcastEvent(new BotStartEvent());
+        DataApi.getEventManager().callEvent(new BotStartEvent());
         DataApi.getDataInstance().logInfo(getClass(), "Discord Bot is ready");
     }
 
