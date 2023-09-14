@@ -120,8 +120,11 @@ public class TicketMessage {
 
         TextChannel channel = ticket.getChannel();
         MessageReference reference = message.getMessageReference();
-        if (reference != null && channel != null) {
-            reference.resolve().queue(referencedMessage -> this.referencesMessageId = referencedMessage.getId());
+        if (reference != null && channel != null && reference.getChannel() != null) {
+            reference.resolve().queue(referencedMessage -> this.referencesMessageId = referencedMessage.getId(),
+                    failure -> {
+                        DataApi.getDataInstance().logError(getClass(), "Failed to resolve message reference", failure);
+                    });
         }
 
         this.attachments = new ArrayList<>();
