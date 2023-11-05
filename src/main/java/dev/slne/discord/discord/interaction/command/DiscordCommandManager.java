@@ -8,6 +8,7 @@ import dev.slne.discord.discord.interaction.command.commands.ticket.TicketDepend
 import dev.slne.discord.discord.interaction.command.commands.ticket.members.TicketMemberAddCommand;
 import dev.slne.discord.discord.interaction.command.commands.ticket.members.TicketMemberRemoveCommand;
 import dev.slne.discord.discord.interaction.command.commands.ticket.utils.TwitchConnectCommand;
+import dev.slne.discord.discord.interaction.command.commands.ticket.utils.TwitchFollowCommand;
 import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistCommand;
 import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistQueryCommand;
 import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistRoleRemoveCommand;
@@ -38,6 +39,7 @@ public class DiscordCommandManager {
         this.commands.add(new TicketMemberRemoveCommand());
 
         this.commands.add(new TwitchConnectCommand());
+        this.commands.add(new TwitchFollowCommand());
         this.commands.add(new TicketDependenciesNotMetCommand());
 
         this.commands.add(new WhitelistCommand());

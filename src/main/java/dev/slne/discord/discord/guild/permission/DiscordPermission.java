@@ -42,6 +42,7 @@ public enum DiscordPermission {
     // Commands
     USE_COMMAND_NO_INTEREST("USE_COMMAND_NO_INTEREST", true, false, null),
     USE_COMMAND_TWITCH_CONNECT("USE_COMMAND_TWITCH_CONNECT", true, false, null),
+    USE_COMMAND_TWITCH_FOLLOW("USE_COMMAND_TWITCH_FOLLOW", true, false, null),
     USE_COMMAND_WHITELIST("USE_COMMAND_WHITELIST", true, false, null),
     USE_COMMAND_WHITELISTED("USE_COMMAND_WHITELISTED", true, false, null),
     USE_COMMAND_WHITELIST_QUERY("USE_COMMAND_WHITELIST_QUERY", true, false, null),
