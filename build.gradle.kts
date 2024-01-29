@@ -19,18 +19,30 @@ repositories {
         name = "space-maven"
         url = uri("https://packages.slne.dev/maven/p/surf/maven")
     }
+
+    maven {
+        name = "codemc-releases"
+        url = uri("https://repo.codemc.io/repository/maven-releases/")
+    }
 }
 
 dependencies {
-    implementation("com.github.johnrengelman:shadow:8.1.1")
-    implementation("org.hibernate.build:gradle-maven-publish-auth:3.0.4")
-
-    api(libs.org.slf4j.slf4j.api)
-    api(libs.ch.qos.logback.logback.classic)
-    api(libs.ch.qos.logback.logback.core)
-    api(libs.net.dv8tion.jda)
-    api(libs.dev.slne.surf.data.api)
-    api(libs.club.minnced.discord.webhooks)
+    api(libs.dev.slne.surf.surf.api.core.api)
+    api(libs.net.dv8tion.jda) {
+        exclude(group = "org.slf4j", module = "slf4j-api")
+        exclude(group = "ch.qos.logback", module = "logback-classic")
+        exclude(group = "ch.qos.logback", module = "logback-core")
+    }
+    api(libs.dev.slne.surf.data.core) {
+        exclude(group = "org.slf4j", module = "slf4j-api")
+        exclude(group = "ch.qos.logback", module = "logback-classic")
+        exclude(group = "ch.qos.logback", module = "logback-core")
+    }
+    api(libs.club.minnced.discord.webhooks) {
+        exclude(group = "org.slf4j", module = "slf4j-api")
+        exclude(group = "ch.qos.logback", module = "logback-classic")
+        exclude(group = "ch.qos.logback", module = "logback-core")
+    }
 }
 
 group = "dev.slne"

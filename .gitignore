@@ -40,3 +40,5 @@ build/
 .gradle/**/*
 buildSrc/.gradle/**/*
 .idea
+
+data/

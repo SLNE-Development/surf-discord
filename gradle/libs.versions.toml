@@ -2,17 +2,13 @@
 # https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
 
 [versions]
-ch-qos-logback-logback-classic = "1.4.14"
-ch-qos-logback-logback-core = "1.4.14"
 club-minnced-discord-webhooks = "0.8.4"
-dev-slne-surf-data-api = "5.3.2-SNAPSHOT"
+dev-slne-surf-data-core = "5.3.10-SNAPSHOT"
 net-dv8tion-jda = "5.0.0-beta.20"
-org-slf4j-slf4j-api = "2.0.11"
+dev-slne-surf-surf-api-core-api = "1.0-SNAPSHOT"
 
 [libraries]
-ch-qos-logback-logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "ch-qos-logback-logback-classic" }
-ch-qos-logback-logback-core = { module = "ch.qos.logback:logback-core", version.ref = "ch-qos-logback-logback-core" }
 club-minnced-discord-webhooks = { module = "club.minnced:discord-webhooks", version.ref = "club-minnced-discord-webhooks" }
-dev-slne-surf-data-api = { module = "dev.slne:surf-data-api", version.ref = "dev-slne-surf-data-api" }
+dev-slne-surf-data-core = { module = "dev.slne:surf-data-core", version.ref = "dev-slne-surf-data-core" }
 net-dv8tion-jda = { module = "net.dv8tion:JDA", version.ref = "net-dv8tion-jda" }
-org-slf4j-slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "org-slf4j-slf4j-api" }
+dev-slne-surf-surf-api-core-api = { module = "dev.slne.surf:surf-api-core-api", version.ref = "dev-slne-surf-surf-api-core-api" }
