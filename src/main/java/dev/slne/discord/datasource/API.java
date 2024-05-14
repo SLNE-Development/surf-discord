@@ -5,12 +5,14 @@ package dev.slne.discord.datasource;
  */
 public class API {
 
-
 	/**
-	 * The constant API_PREFIX.
+	 * The constant LOCAL_API_PREFIX.
 	 */
-	public static final String API_PREFIX = "https://dapi.slne.dev/api/";
-
+	public static final String LOCAL_API_PREFIX = "http://localhost:3000/api/";
+	/**
+	 * The constant GLOBAL_API_PREFIX.
+	 */
+	public static final String GLOBAL_API_PREFIX = "https://dapi.slne.dev/api/";
 	/**
 	 * The constant TICKETS.
 	 */
@@ -32,21 +34,29 @@ public class API {
 	 */
 	public static final String TICKET_MEMBERS = "ticket/{ticketId}/member";
 	/**
+	 * The constant TICKET_MEMBER.
+	 */
+	public static final String TICKET_MEMBER = "ticket/{ticketId}/member/{memberId}";
+	/**
 	 * The constant WHITELISTS.
 	 */
-	public static final String WHITELISTS = "whitelist";
+	public static final String WHITELISTS = "freebuild/whitelist";
 	/**
 	 * The constant WHITELIST.
 	 */
-	public static final String WHITELIST = "whitelist/%s";
+	public static final String WHITELIST = "freebuild/whitelist/{uuid}";
 	/**
 	 * The constant WHITELIST_CHECK.
 	 */
-	public static final String WHITELIST_CHECK = "whitelist/check";
+	public static final String WHITELIST_CHECK = "freebuild/whitelist/check";
 	/**
 	 * The constant WHITELIST_BY_DISCORD_ID.
 	 */
-	public static final String WHITELIST_BY_DISCORD_ID = "whitelist/discord/%s";
+	public static final String WHITELIST_BY_DISCORD_ID = "freebuild/whitelist/discord/{discordId}";
+	/**
+	 * The constant API_PREFIX.
+	 */
+	public static final String API_PREFIX = LOCAL_API_PREFIX;
 
 	/**
 	 * Private constructor to prevent instantiation.

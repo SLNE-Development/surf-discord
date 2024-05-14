@@ -14,380 +14,388 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * The type Discord guild.
+ */
 public class DiscordGuild {
 
-    private final @Nonnull String guildId;
-    private final @Nonnull String categoryId;
+	private final @Nonnull String guildId;
+	private final @Nonnull String categoryId;
 
-    private final @Nonnull String whitelistedRoleId;
-    private final Role whitelistedRole;
+	private final @Nonnull String whitelistedRoleId;
+	private final Role whitelistedRole;
 
-    private final String discordSupportAdminRoleId;
-    private final String serverSupportAdminRoleId;
-    private final String discordSupportModeratorRoleId;
-    private final String serverSupportModeratorRoleId;
+	private final String discordSupportAdminRoleId;
+	private final String serverSupportAdminRoleId;
+	private final String discordSupportModeratorRoleId;
+	private final String serverSupportModeratorRoleId;
 
-    private Role discordSupportAdminRole;
-    private Role serverSupportAdminRole;
-    private Role discordSupportModeratorRole;
-    private Role serverSupportModeratorRole;
+	private Role discordSupportAdminRole;
+	private Role serverSupportAdminRole;
+	private Role discordSupportModeratorRole;
+	private Role serverSupportModeratorRole;
 
-    private ReactionRoleConfig reactionRoleConfig;
+	private ReactionRoleConfig reactionRoleConfig;
 
-    /**
-     * Construct a new DiscordGuild.
-     *
-     * @param guildId                     The guild id.
-     * @param categoryId                  The category id .
-     * @param discordSupportAdminRole     The discord support admins.
-     * @param serverSupportAdminRole      The server support admins.
-     * @param discordSupportModeratorRole The discord support moderators.
-     * @param serverSupportModeratorRole  The server support moderators.
-     * @param whitelistedRoleId           The whitelisted role id.
-     * @param rrConfig                    The reaction role config.
-     */
-    public DiscordGuild(@Nonnull String guildId, @Nonnull String categoryId, String discordSupportAdminRole,
-                        String serverSupportAdminRole, String discordSupportModeratorRole,
-                        String serverSupportModeratorRole, @Nonnull String whitelistedRoleId,
-                        ReactionRoleConfig rrConfig) {
-        this.guildId = guildId;
-        this.categoryId = categoryId;
+	/**
+	 * Construct a new DiscordGuild.
+	 *
+	 * @param guildId                     The guild id.
+	 * @param categoryId                  The category id .
+	 * @param discordSupportAdminRole     The discord support admins.
+	 * @param serverSupportAdminRole      The server support admins.
+	 * @param discordSupportModeratorRole The discord support moderators.
+	 * @param serverSupportModeratorRole  The server support moderators.
+	 * @param whitelistedRoleId           The whitelisted role id.
+	 * @param rrConfig                    The reaction role config.
+	 */
+	public DiscordGuild(
+			@Nonnull String guildId, @Nonnull String categoryId, String discordSupportAdminRole,
+			String serverSupportAdminRole, String discordSupportModeratorRole,
+			String serverSupportModeratorRole, @Nonnull String whitelistedRoleId,
+			ReactionRoleConfig rrConfig
+	) {
+		this.guildId = guildId;
+		this.categoryId = categoryId;
 
-        this.discordSupportAdminRoleId = discordSupportAdminRole;
-        this.serverSupportAdminRoleId = serverSupportAdminRole;
-        this.discordSupportModeratorRoleId = discordSupportModeratorRole;
-        this.serverSupportModeratorRoleId = serverSupportModeratorRole;
+		this.discordSupportAdminRoleId = discordSupportAdminRole;
+		this.serverSupportAdminRoleId = serverSupportAdminRole;
+		this.discordSupportModeratorRoleId = discordSupportModeratorRole;
+		this.serverSupportModeratorRoleId = serverSupportModeratorRole;
 
-        if (discordSupportAdminRoleId != null) {
-            this.discordSupportAdminRole = DiscordBot.getInstance().getJda().getRoleById(discordSupportAdminRoleId);
-        }
+		if (discordSupportAdminRoleId != null) {
+			this.discordSupportAdminRole = DiscordBot.getInstance().getJda().getRoleById(discordSupportAdminRoleId);
+		}
 
-        if (serverSupportAdminRoleId != null) {
-            this.serverSupportAdminRole = DiscordBot.getInstance().getJda().getRoleById(serverSupportAdminRoleId);
-        }
+		if (serverSupportAdminRoleId != null) {
+			this.serverSupportAdminRole = DiscordBot.getInstance().getJda().getRoleById(serverSupportAdminRoleId);
+		}
 
-        if (discordSupportModeratorRoleId != null) {
-            this.discordSupportModeratorRole =
-                    DiscordBot.getInstance().getJda().getRoleById(discordSupportModeratorRoleId);
-        }
+		if (discordSupportModeratorRoleId != null) {
+			this.discordSupportModeratorRole =
+					DiscordBot.getInstance().getJda().getRoleById(discordSupportModeratorRoleId);
+		}
 
-        if (serverSupportModeratorRoleId != null) {
-            this.serverSupportModeratorRole =
-                    DiscordBot.getInstance().getJda().getRoleById(serverSupportModeratorRoleId);
-        }
+		if (serverSupportModeratorRoleId != null) {
+			this.serverSupportModeratorRole =
+					DiscordBot.getInstance().getJda().getRoleById(serverSupportModeratorRoleId);
+		}
 
-        this.whitelistedRoleId = whitelistedRoleId;
-        this.whitelistedRole = DiscordBot.getInstance().getJda().getRoleById(whitelistedRoleId);
+		this.whitelistedRoleId = whitelistedRoleId;
+		this.whitelistedRole = DiscordBot.getInstance().getJda().getRoleById(whitelistedRoleId);
 
-        this.reactionRoleConfig = rrConfig;
-    }
+		this.reactionRoleConfig = rrConfig;
+	}
 
-    /**
-     * Returns if the user has the given role
-     *
-     * @param role The role
-     * @param user The user
-     *
-     * @return if the user has the given role
-     */
-    private CompletableFuture<Boolean> roleHasUser(Role role, User user) {
-        CompletableFuture<Boolean> future = new CompletableFuture<>();
+	/**
+	 * Returns if the user has the given role
+	 *
+	 * @param role The role
+	 * @param user The user
+	 *
+	 * @return if the user has the given role
+	 */
+	private CompletableFuture<Boolean> roleHasUser(Role role, User user) {
+		CompletableFuture<Boolean> future = new CompletableFuture<>();
 
-        CompletableFuture.runAsync(() -> {
-            if (role == null) {
-                future.complete(false);
-                return;
-            }
+		CompletableFuture.runAsync(() -> {
+			if (role == null) {
+				future.complete(false);
+				return;
+			}
 
-            role.getGuild().retrieveMember(user)
-                    .queue(member -> future.complete(member != null && member.getRoles().contains(role)),
-                            failure -> DataApi.getDataInstance()
-                                    .logError(getClass(), "Failed to retrieve member", failure));
-        });
+			role.getGuild().retrieveMember(user)
+				.queue(
+						member -> future.complete(member != null && member.getRoles().contains(role)),
+						failure -> DataApi.getDataInstance()
+										  .logError(getClass(), "Failed to retrieve member", failure)
+				);
+		});
 
-        return future;
-    }
+		return future;
+	}
 
-    /**
-     * Returns if the user is a support admin.
-     *
-     * @param user The user.
-     *
-     * @return If the user is a support admin.
-     */
-    public CompletableFuture<Boolean> isAdminUser(User user) {
-        CompletableFuture<Boolean> discordAdminFuture = roleHasUser(discordSupportAdminRole, user);
-        CompletableFuture<Boolean> serverAdminFuture = roleHasUser(serverSupportAdminRole, user);
-        CompletableFuture<Boolean> discordModFuture = roleHasUser(discordSupportModeratorRole, user);
-        CompletableFuture<Boolean> serverModFuture = roleHasUser(serverSupportModeratorRole, user);
+	/**
+	 * Returns if the user is a support admin.
+	 *
+	 * @param user The user.
+	 *
+	 * @return If the user is a support admin.
+	 */
+	public CompletableFuture<Boolean> isAdminUser(User user) {
+		CompletableFuture<Boolean> discordAdminFuture = roleHasUser(discordSupportAdminRole, user);
+		CompletableFuture<Boolean> serverAdminFuture = roleHasUser(serverSupportAdminRole, user);
+		CompletableFuture<Boolean> discordModFuture = roleHasUser(discordSupportModeratorRole, user);
+		CompletableFuture<Boolean> serverModFuture = roleHasUser(serverSupportModeratorRole, user);
 
-        return CompletableFuture.allOf(discordAdminFuture, serverAdminFuture, discordModFuture, serverModFuture)
-                .thenApplyAsync(
-                        unused -> discordAdminFuture.join() || serverAdminFuture.join() || discordModFuture.join()
-                                || serverModFuture.join());
-    }
+		return CompletableFuture.allOf(discordAdminFuture, serverAdminFuture, discordModFuture, serverModFuture)
+								.thenApplyAsync(
+										unused -> discordAdminFuture.join() || serverAdminFuture.join() ||
+												  discordModFuture.join()
+												  || serverModFuture.join());
+	}
 
-    /**
-     * Returns the discord role by the role.
-     *
-     * @param role The role.
-     *
-     * @return The discord role.
-     */
-    public DiscordRole getDiscordRoleByRole(Role role) {
-        if (role == null) {
-            return null;
-        }
+	/**
+	 * Returns the discord role by the role.
+	 *
+	 * @param role The role.
+	 *
+	 * @return The discord role.
+	 */
+	public DiscordRole getDiscordRoleByRole(Role role) {
+		if (role == null) {
+			return null;
+		}
 
-        if (role.getId().equals(discordSupportAdminRoleId)) {
-            return DiscordBot.getInstance().getRoleManager()
-                    .getRoleByName(DiscordRole.DISCORD_ADMIN_ROLE);
-        }
+		if (role.getId().equals(discordSupportAdminRoleId)) {
+			return DiscordBot.getInstance().getRoleManager()
+							 .getRoleByName(DiscordRole.DISCORD_ADMIN_ROLE);
+		}
 
-        if (role.getId().equals(discordSupportModeratorRoleId)) {
-            return DiscordBot.getInstance().getRoleManager()
-                    .getRoleByName(DiscordRole.DISCORD_MOD_ROLE);
-        }
+		if (role.getId().equals(discordSupportModeratorRoleId)) {
+			return DiscordBot.getInstance().getRoleManager()
+							 .getRoleByName(DiscordRole.DISCORD_MOD_ROLE);
+		}
 
-        if (role.getId().equals(serverSupportAdminRoleId)) {
-            return DiscordBot.getInstance().getRoleManager()
-                    .getRoleByName(DiscordRole.SERVER_ADMIN_ROLE);
-        }
+		if (role.getId().equals(serverSupportAdminRoleId)) {
+			return DiscordBot.getInstance().getRoleManager()
+							 .getRoleByName(DiscordRole.SERVER_ADMIN_ROLE);
+		}
 
-        if (role.getId().equals(serverSupportModeratorRoleId)) {
-            return DiscordBot.getInstance().getRoleManager()
-                    .getRoleByName(DiscordRole.SERVER_MOD_ROLE);
-        }
+		if (role.getId().equals(serverSupportModeratorRoleId)) {
+			return DiscordBot.getInstance().getRoleManager()
+							 .getRoleByName(DiscordRole.SERVER_MOD_ROLE);
+		}
 
-        return DiscordBot.getInstance().getRoleManager()
-                .getRoleByName(DiscordRole.DEFAULT_ROLE);
-    }
+		return DiscordBot.getInstance().getRoleManager()
+						 .getRoleByName(DiscordRole.DEFAULT_ROLE);
+	}
 
-    /**
-     * Returns if the role can view the ticket channel.
-     *
-     * @param role       The role.
-     * @param ticketType The ticket type.
-     *
-     * @return If the role can view the ticket channel.
-     */
-    public boolean canRoleViewTicket(Role role, TicketType ticketType) {
-        DiscordRole discordRole = getDiscordRoleByRole(role);
+	/**
+	 * Returns if the role can view the ticket channel.
+	 *
+	 * @param role       The role.
+	 * @param ticketType The ticket type.
+	 *
+	 * @return If the role can view the ticket channel.
+	 */
+	public boolean canRoleViewTicket(Role role, TicketType ticketType) {
+		DiscordRole discordRole = getDiscordRoleByRole(role);
 
-        if (discordRole == null) {
-            return false;
-        }
+		if (discordRole == null) {
+			return false;
+		}
 
-        return discordRole.canViewTicketChannel(ticketType);
-    }
+		return discordRole.canViewTicketChannel(ticketType);
+	}
 
-    /**
-     * Returns the guild roles of a user.
-     *
-     * @param userId The userid.
-     *
-     * @return The guild roles.
-     */
-    public CompletableFuture<List<DiscordRole>> getGuildRoles(String userId) {
-        CompletableFuture<List<DiscordRole>> roles = new CompletableFuture<>();
+	/**
+	 * Returns the guild roles of a user.
+	 *
+	 * @param userId The userid.
+	 *
+	 * @return The guild roles.
+	 */
+	public CompletableFuture<List<DiscordRole>> getGuildRoles(String userId) {
+		CompletableFuture<List<DiscordRole>> roles = new CompletableFuture<>();
 
-        DiscordBot.getInstance().getJda().retrieveUserById(userId)
-                .queue(user -> getGuildRoles(user).thenAcceptAsync(roles::complete).exceptionally(throwable -> {
-                    roles.completeExceptionally(throwable);
-                    return null;
-                }), roles::completeExceptionally);
+		DiscordBot.getInstance().getJda().retrieveUserById(userId)
+				  .queue(user -> getGuildRoles(user).thenAcceptAsync(roles::complete).exceptionally(throwable -> {
+					  roles.completeExceptionally(throwable);
+					  return null;
+				  }), roles::completeExceptionally);
 
-        return roles;
-    }
+		return roles;
+	}
 
-    /**
-     * Returns the guild roles of a user.
-     *
-     * @param user The user.
-     *
-     * @return The guild roles.
-     */
-    public CompletableFuture<List<DiscordRole>> getGuildRoles(User user) {
-        CompletableFuture<List<DiscordRole>> roles = new CompletableFuture<>();
-        List<DiscordRole> roleList = new ArrayList<>();
+	/**
+	 * Returns the guild roles of a user.
+	 *
+	 * @param user The user.
+	 *
+	 * @return The guild roles.
+	 */
+	public CompletableFuture<List<DiscordRole>> getGuildRoles(User user) {
+		CompletableFuture<List<DiscordRole>> roles = new CompletableFuture<>();
+		List<DiscordRole> roleList = new ArrayList<>();
 
-        DiscordRole discordAdminRole = DiscordBot.getInstance().getRoleManager()
-                .getRoleByName(DiscordRole.DISCORD_ADMIN_ROLE);
-        DiscordRole discordModRole = DiscordBot.getInstance().getRoleManager()
-                .getRoleByName(DiscordRole.DISCORD_MOD_ROLE);
-        DiscordRole serverAdminRole = DiscordBot.getInstance().getRoleManager()
-                .getRoleByName(DiscordRole.SERVER_ADMIN_ROLE);
-        DiscordRole serverModRole = DiscordBot.getInstance().getRoleManager()
-                .getRoleByName(DiscordRole.SERVER_MOD_ROLE);
+		DiscordRole discordAdminRole = DiscordBot.getInstance().getRoleManager()
+												 .getRoleByName(DiscordRole.DISCORD_ADMIN_ROLE);
+		DiscordRole discordModRole = DiscordBot.getInstance().getRoleManager()
+											   .getRoleByName(DiscordRole.DISCORD_MOD_ROLE);
+		DiscordRole serverAdminRole = DiscordBot.getInstance().getRoleManager()
+												.getRoleByName(DiscordRole.SERVER_ADMIN_ROLE);
+		DiscordRole serverModRole = DiscordBot.getInstance().getRoleManager()
+											  .getRoleByName(DiscordRole.SERVER_MOD_ROLE);
 
-        DiscordRole defaultRole = DiscordBot.getInstance().getRoleManager()
-                .getRoleByName(DiscordRole.DEFAULT_ROLE);
+		DiscordRole defaultRole = DiscordBot.getInstance().getRoleManager()
+											.getRoleByName(DiscordRole.DEFAULT_ROLE);
 
-        if (user == null) {
-            roles.completeExceptionally(new NullPointerException("User is null"));
-        }
+		if (user == null) {
+			roles.completeExceptionally(new NullPointerException("User is null"));
+		}
 
-        CompletableFuture<Boolean> discordAdminFuture = roleHasUser(discordSupportAdminRole, user);
-        CompletableFuture<Boolean> discordModFuture = roleHasUser(discordSupportModeratorRole, user);
-        CompletableFuture<Boolean> serverAdminFuture = roleHasUser(serverSupportAdminRole, user);
-        CompletableFuture<Boolean> serverModFuture = roleHasUser(serverSupportModeratorRole, user);
+		CompletableFuture<Boolean> discordAdminFuture = roleHasUser(discordSupportAdminRole, user);
+		CompletableFuture<Boolean> discordModFuture = roleHasUser(discordSupportModeratorRole, user);
+		CompletableFuture<Boolean> serverAdminFuture = roleHasUser(serverSupportAdminRole, user);
+		CompletableFuture<Boolean> serverModFuture = roleHasUser(serverSupportModeratorRole, user);
 
-        CompletableFuture.allOf(discordAdminFuture, discordModFuture, serverAdminFuture, serverModFuture)
-                .thenAcceptAsync(unused -> {
-                    if (discordAdminFuture.join()) {
-                        roleList.add(discordAdminRole);
-                    }
+		CompletableFuture.allOf(discordAdminFuture, discordModFuture, serverAdminFuture, serverModFuture)
+						 .thenAcceptAsync(unused -> {
+							 if (discordAdminFuture.join()) {
+								 roleList.add(discordAdminRole);
+							 }
 
-                    if (discordModFuture.join()) {
-                        roleList.add(discordModRole);
-                    }
+							 if (discordModFuture.join()) {
+								 roleList.add(discordModRole);
+							 }
 
-                    if (serverAdminFuture.join()) {
-                        roleList.add(serverAdminRole);
-                    }
+							 if (serverAdminFuture.join()) {
+								 roleList.add(serverAdminRole);
+							 }
 
-                    if (serverModFuture.join()) {
-                        roleList.add(serverModRole);
-                    }
+							 if (serverModFuture.join()) {
+								 roleList.add(serverModRole);
+							 }
 
-                    if (roleList.isEmpty() && defaultRole != null) {
-                        roleList.add(defaultRole);
-                    }
+							 if (roleList.isEmpty() && defaultRole != null) {
+								 roleList.add(defaultRole);
+							 }
 
-                    roles.complete(roleList);
-                });
+							 roles.complete(roleList);
+						 });
 
-        return roles;
-    }
+		return roles;
+	}
 
-    /**
-     * Returns the guild id.
-     *
-     * @return The guild id.
-     */
-    public @NotNull String getGuildId() {
-        return guildId;
-    }
+	/**
+	 * Returns the guild id.
+	 *
+	 * @return The guild id.
+	 */
+	public @NotNull String getGuildId() {
+		return guildId;
+	}
 
-    /**
-     * Returns the category id.
-     *
-     * @return The category id.
-     */
-    public @NotNull String getCategoryId() {
-        return categoryId;
-    }
+	/**
+	 * Returns the category id.
+	 *
+	 * @return The category id.
+	 */
+	public @NotNull String getCategoryId() {
+		return categoryId;
+	}
 
-    /**
-     * Returns the discord support admin role.
-     *
-     * @return The discord support admin role.
-     */
-    @SuppressWarnings("unused")
-    public String getDiscordSupportAdminRoleId() {
-        return discordSupportAdminRoleId;
-    }
+	/**
+	 * Returns the discord support admin role.
+	 *
+	 * @return The discord support admin role.
+	 */
+	@SuppressWarnings("unused")
+	public String getDiscordSupportAdminRoleId() {
+		return discordSupportAdminRoleId;
+	}
 
-    /**
-     * Returns the server support admin role.
-     *
-     * @return The server support admin role.
-     */
-    @SuppressWarnings("unused")
-    public String getServerSupportAdminRoleId() {
-        return serverSupportAdminRoleId;
-    }
+	/**
+	 * Returns the server support admin role.
+	 *
+	 * @return The server support admin role.
+	 */
+	@SuppressWarnings("unused")
+	public String getServerSupportAdminRoleId() {
+		return serverSupportAdminRoleId;
+	}
 
-    /**
-     * Returns the discord support moderator role.
-     *
-     * @return The discord support moderator role.
-     */
-    @SuppressWarnings("unused")
-    public String getDiscordSupportModeratorRoleId() {
-        return discordSupportModeratorRoleId;
-    }
+	/**
+	 * Returns the discord support moderator role.
+	 *
+	 * @return The discord support moderator role.
+	 */
+	@SuppressWarnings("unused")
+	public String getDiscordSupportModeratorRoleId() {
+		return discordSupportModeratorRoleId;
+	}
 
-    /**
-     * Returns the server support moderator role.
-     *
-     * @return The server support moderator role.
-     */
-    @SuppressWarnings("unused")
-    public String getServerSupportModeratorRoleId() {
-        return serverSupportModeratorRoleId;
-    }
+	/**
+	 * Returns the server support moderator role.
+	 *
+	 * @return The server support moderator role.
+	 */
+	@SuppressWarnings("unused")
+	public String getServerSupportModeratorRoleId() {
+		return serverSupportModeratorRoleId;
+	}
 
-    /**
-     * Returns the whitelisted role.
-     *
-     * @return the whitelistedRole
-     */
-    public Role getWhitelistedRole() {
-        return whitelistedRole;
-    }
+	/**
+	 * Returns the whitelisted role.
+	 *
+	 * @return the whitelistedRole
+	 */
+	public Role getWhitelistedRole() {
+		return whitelistedRole;
+	}
 
-    /**
-     * Returns the whitelisted role id.
-     *
-     * @return the whitelistedRoleId
-     */
-    public @Nonnull String getWhitelistedRoleId() {
-        return whitelistedRoleId;
-    }
+	/**
+	 * Returns the whitelisted role id.
+	 *
+	 * @return the whitelistedRoleId
+	 */
+	public @Nonnull String getWhitelistedRoleId() {
+		return whitelistedRoleId;
+	}
 
-    /**
-     * Returns the reaction role config.
-     *
-     * @return the rrConfig
-     */
-    public ReactionRoleConfig getReactionRoleConfig() {
-        return reactionRoleConfig;
-    }
+	/**
+	 * Returns the reaction role config.
+	 *
+	 * @return the rrConfig
+	 */
+	public ReactionRoleConfig getReactionRoleConfig() {
+		return reactionRoleConfig;
+	}
 
-    /**
-     * Sets the reaction role config.
-     *
-     * @param reactionRoleConfig the rrConfig to set
-     */
-    public void setReactionRoleConfig(ReactionRoleConfig reactionRoleConfig) {
-        this.reactionRoleConfig = reactionRoleConfig;
-    }
+	/**
+	 * Sets the reaction role config.
+	 *
+	 * @param reactionRoleConfig the rrConfig to set
+	 */
+	public void setReactionRoleConfig(ReactionRoleConfig reactionRoleConfig) {
+		this.reactionRoleConfig = reactionRoleConfig;
+	}
 
-    /**
-     * Returns the discord support admin role.
-     *
-     * @return The discord support admin role.
-     */
-    public Role getDiscordSupportAdminRole() {
-        return discordSupportAdminRole;
-    }
+	/**
+	 * Returns the discord support admin role.
+	 *
+	 * @return The discord support admin role.
+	 */
+	public Role getDiscordSupportAdminRole() {
+		return discordSupportAdminRole;
+	}
 
-    /**
-     * Returns the server support admin role.
-     *
-     * @return The server support admin role.
-     */
-    public Role getServerSupportAdminRole() {
-        return serverSupportAdminRole;
-    }
+	/**
+	 * Returns the server support admin role.
+	 *
+	 * @return The server support admin role.
+	 */
+	public Role getServerSupportAdminRole() {
+		return serverSupportAdminRole;
+	}
 
-    /**
-     * Returns the discord support moderator role.
-     *
-     * @return The discord support moderator role.
-     */
-    public Role getDiscordSupportModeratorRole() {
-        return discordSupportModeratorRole;
-    }
+	/**
+	 * Returns the discord support moderator role.
+	 *
+	 * @return The discord support moderator role.
+	 */
+	public Role getDiscordSupportModeratorRole() {
+		return discordSupportModeratorRole;
+	}
 
-    /**
-     * Returns the server support moderator role.
-     *
-     * @return The server support moderator role.
-     */
-    public Role getServerSupportModeratorRole() {
-        return serverSupportModeratorRole;
-    }
+	/**
+	 * Returns the server support moderator role.
+	 *
+	 * @return The server support moderator role.
+	 */
+	public Role getServerSupportModeratorRole() {
+		return serverSupportModeratorRole;
+	}
 
 }

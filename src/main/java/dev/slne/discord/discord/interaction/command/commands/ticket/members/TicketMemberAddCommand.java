@@ -16,103 +16,108 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
 import javax.annotation.Nonnull;
-import java.awt.*;
+import java.awt.Color;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The type Ticket member add command.
+ */
 public class TicketMemberAddCommand extends TicketCommand {
 
-    /**
-     * Creates a new TicketMemberAddCommand.
-     */
-    public TicketMemberAddCommand() {
-        super("add", "Füge einen Nutzer zu einem Ticket hinzu.");
-    }
+	/**
+	 * Creates a new TicketMemberAddCommand.
+	 */
+	public TicketMemberAddCommand() {
+		super("add", "Füge einen Nutzer zu einem Ticket hinzu.");
+	}
 
-    @Override
-    public @Nonnull List<SubcommandData> getSubCommands() {
-        return new ArrayList<>();
-    }
+	@Override
+	public @Nonnull List<SubcommandData> getSubCommands() {
+		return new ArrayList<>();
+	}
 
-    @Override
-    public @Nonnull List<OptionData> getOptions() {
-        List<OptionData> options = new ArrayList<>();
+	@Override
+	public @Nonnull List<OptionData> getOptions() {
+		List<OptionData> options = new ArrayList<>();
 
-        options.add(new OptionData(OptionType.USER, "user", "Der Nutzer, der hinzugefügt werden soll.", true, false));
+		options.add(new OptionData(OptionType.USER, "user", "Der Nutzer, der hinzugefügt werden soll.", true, false));
 
-        return options;
-    }
+		return options;
+	}
 
-    @Override
-    public @Nonnull DiscordPermission getPermission() {
-        return DiscordPermission.USE_COMMAND_TICKET_ADD_USER;
-    }
+	@Override
+	public @Nonnull DiscordPermission getPermission() {
+		return DiscordPermission.USE_COMMAND_TICKET_ADD_USER;
+	}
 
-    @Override
-    public void execute(SlashCommandInteractionEvent interaction) {
-        interaction.deferReply(true).queue(hook -> {
-            OptionMapping userOption = interaction.getOption("user");
+	@Override
+	public void execute(SlashCommandInteractionEvent interaction) {
+		interaction.deferReply(true).queue(hook -> {
+			OptionMapping userOption = interaction.getOption("user");
 
-            if (userOption == null) {
-                hook.editOriginal("Du musst einen Nutzer angeben.").queue();
-                return;
-            }
+			if (userOption == null) {
+				hook.editOriginal("Du musst einen Nutzer angeben.").queue();
+				return;
+			}
 
-            User user = userOption.getAsUser();
+			User user = userOption.getAsUser();
 
-            if (user.equals(DiscordBot.getInstance().getJda().getSelfUser())) {
-                hook.editOriginal("Du kannst den Bot nicht hinzufügen.").queue();
-                return;
-            }
+			if (user.equals(DiscordBot.getInstance().getJda().getSelfUser())) {
+				hook.editOriginal("Du kannst den Bot nicht hinzufügen.").queue();
+				return;
+			}
 
-            TicketMember ticketMember = getTicket().getActiveTicketMember(user);
+			TicketMember ticketMember = getTicket().getActiveTicketMember(user);
 
-            if (ticketMember != null) {
-                hook.editOriginal("Dieser Nutzer ist bereits in diesem Ticket.").queue();
-                return;
-            }
+			if (ticketMember != null) {
+				hook.editOriginal("Dieser Nutzer ist bereits in diesem Ticket.").queue();
+				return;
+			}
 
-            TicketMember newTicketMember = new TicketMember(getTicket(), user, interaction.getUser());
-            getTicket().addTicketMember(newTicketMember).thenAcceptAsync(createdTicketMember -> {
-                if (createdTicketMember == null) {
-                    hook.editOriginal("Der Nutzer konnte nicht hinzugefügt werden.").queue();
-                    return;
-                }
+			TicketMember newTicketMember = new TicketMember(getTicket(), user, interaction.getUser());
+			getTicket().addTicketMember(newTicketMember).thenAcceptAsync(createdTicketMember -> {
+				if (createdTicketMember == null) {
+					hook.editOriginal("Der Nutzer konnte nicht hinzugefügt werden.").queue();
+					return;
+				}
 
-                TicketChannel.addTicketMember(getTicket(), newTicketMember).thenAcceptAsync(v -> {
-                    hook.editOriginal("Der Nutzer wurde erfolgreich hinzugefügt.").queue();
-                    getChannel().sendMessage(user.getAsMention()).setEmbeds(getAddedEmbed(interaction.getUser()))
-                            .queue();
-                }).exceptionally(exception -> {
-                    DataApi.getDataInstance().logError(getClass(), "Error while adding ticket member", exception);
-                    hook.editOriginal("Der Nutzer konnte nicht hinzugefügt werden.").queue();
-                    return null;
-                });
-            }).exceptionally(exception -> {
-                DataApi.getDataInstance().logError(getClass(), "Error while adding ticket member", exception);
-                hook.editOriginal("Der Nutzer konnte nicht hinzugefügt werden.").queue();
-                return null;
-            });
-        });
-    }
+				TicketChannel.addTicketMember(getTicket(), newTicketMember).thenAcceptAsync(v -> {
+					hook.editOriginal("Der Nutzer wurde erfolgreich hinzugefügt.").queue();
+					getChannel().sendMessage(user.getAsMention()).setEmbeds(getAddedEmbed(interaction.getUser()))
+								.queue();
+				}).exceptionally(exception -> {
+					DataApi.getDataInstance().logError(getClass(), "Error while adding ticket member", exception);
+					hook.editOriginal("Der Nutzer konnte nicht hinzugefügt werden.").queue();
+					return null;
+				});
+			}).exceptionally(exception -> {
+				DataApi.getDataInstance().logError(getClass(), "Error while adding ticket member", exception);
+				hook.editOriginal("Der Nutzer konnte nicht hinzugefügt werden.").queue();
+				return null;
+			});
+		});
+	}
 
-    /**
-     * Returns the embed that is sent when a user is added to a ticket.
-     *
-     * @return The embed that is sent when a user is added to a ticket.
-     */
-    public MessageEmbed getAddedEmbed(User adder) {
-        EmbedBuilder builder = new EmbedBuilder();
+	/**
+	 * Returns the embed that is sent when a user is added to a ticket.
+	 *
+	 * @param adder the adder
+	 *
+	 * @return The embed that is sent when a user is added to a ticket.
+	 */
+	public MessageEmbed getAddedEmbed(User adder) {
+		EmbedBuilder builder = new EmbedBuilder();
 
-        builder.setTitle("Willkommen im Ticket!");
-        builder.setDescription(
-                "Du wurdest zu einem Ticket hinzugefügt. Bitte sieh dir den Verlauf des Tickets an und warte auf eine Nachricht eines Teammitglieds.");
-        builder.setTimestamp(Instant.now());
-        builder.setColor(Color.WHITE);
-        builder.setFooter("Hinzugefügt von " + adder.getName(), adder.getAvatarUrl());
+		builder.setTitle("Willkommen im Ticket!");
+		builder.setDescription(
+				"Du wurdest zu einem Ticket hinzugefügt. Bitte sieh dir den Verlauf des Tickets an und warte auf eine Nachricht eines Teammitglieds.");
+		builder.setTimestamp(Instant.now());
+		builder.setColor(Color.WHITE);
+		builder.setFooter("Hinzugefügt von " + adder.getName(), adder.getAvatarUrl());
 
-        return builder.build();
-    }
+		return builder.build();
+	}
 
 }

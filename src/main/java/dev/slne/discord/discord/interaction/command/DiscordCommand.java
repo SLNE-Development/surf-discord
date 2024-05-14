@@ -17,170 +17,173 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import javax.annotation.Nonnull;
 import java.util.List;
 
+/**
+ * The type Discord command.
+ */
 public abstract class DiscordCommand {
 
-    private final @Nonnull String name;
-    private final @Nonnull DefaultMemberPermissions defaultMemberPermissions;
-    private final @Nonnull String description;
-    private final boolean guildOnly;
-    private final boolean nsfw;
+	private final @Nonnull String name;
+	private final @Nonnull DefaultMemberPermissions defaultMemberPermissions;
+	private final @Nonnull String description;
+	private final boolean guildOnly;
+	private final boolean nsfw;
 
-    private final SlashCommandData commandData;
+	private final SlashCommandData commandData;
 
-    /**
-     * Creates a new DiscordCommand.
-     *
-     * @param name        The name of the command.
-     * @param description The description of the command.
-     */
-    protected DiscordCommand(@Nonnull String name, @Nonnull String description) {
-        this.name = name;
-        this.description = description;
+	/**
+	 * Creates a new DiscordCommand.
+	 *
+	 * @param name        The name of the command.
+	 * @param description The description of the command.
+	 */
+	protected DiscordCommand(@Nonnull String name, @Nonnull String description) {
+		this.name = name;
+		this.description = description;
 
-        this.guildOnly = true;
-        this.nsfw = false;
+		this.guildOnly = true;
+		this.nsfw = false;
 
-        this.defaultMemberPermissions = DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR);
-        this.commandData = Commands.slash(name, description);
-    }
+		this.defaultMemberPermissions = DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR);
+		this.commandData = Commands.slash(name, description);
+	}
 
-    /**
-     * Returns the subcommands of the command.
-     *
-     * @return The subcommands of the command.
-     */
-    public abstract @Nonnull List<SubcommandData> getSubCommands();
+	/**
+	 * Returns the subcommands of the command.
+	 *
+	 * @return The subcommands of the command.
+	 */
+	public abstract @Nonnull List<SubcommandData> getSubCommands();
 
-    /**
-     * Returns the options of the command.
-     *
-     * @return The options of the command.
-     */
-    public abstract @Nonnull List<OptionData> getOptions();
+	/**
+	 * Returns the options of the command.
+	 *
+	 * @return The options of the command.
+	 */
+	public abstract @Nonnull List<OptionData> getOptions();
 
-    /**
-     * Returns the permission needed to run this command
-     *
-     * @return the permission
-     */
-    public abstract @Nonnull DiscordPermission getPermission();
+	/**
+	 * Returns the permission needed to run this command
+	 *
+	 * @return the permission
+	 */
+	public abstract @Nonnull DiscordPermission getPermission();
 
-    /**
-     * Executes the command internally
-     *
-     * @param interaction the interaction event
-     */
-    public void internalExecute(SlashCommandInteractionEvent interaction) {
-        User user = interaction.getUser();
-        Guild guild = interaction.getGuild();
+	/**
+	 * Executes the command internally
+	 *
+	 * @param interaction the interaction event
+	 */
+	public void internalExecute(SlashCommandInteractionEvent interaction) {
+		User user = interaction.getUser();
+		Guild guild = interaction.getGuild();
 
-        if (!performDiscordCommandChecks(user, guild, interaction)) {
-            return;
-        }
+		if (!performDiscordCommandChecks(user, guild, interaction)) {
+			return;
+		}
 
-        execute(interaction);
-    }
+		execute(interaction);
+	}
 
-    /**
-     * Performs the checks for the command.
-     *
-     * @param user        The user.
-     * @param guild       The guild.
-     * @param interaction The interaction.
-     *
-     * @return Whether the checks were successful.
-     */
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    protected boolean performDiscordCommandChecks(User user, Guild guild, SlashCommandInteractionEvent interaction) {
-        if (guild == null) {
-            interaction.reply("Es ist ein Fehler aufgetreten (dhwfm4nD)").setEphemeral(true).queue();
-            return false;
-        }
+	/**
+	 * Performs the checks for the command.
+	 *
+	 * @param user        The user.
+	 * @param guild       The guild.
+	 * @param interaction The interaction.
+	 *
+	 * @return Whether the checks were successful.
+	 */
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	protected boolean performDiscordCommandChecks(User user, Guild guild, SlashCommandInteractionEvent interaction) {
+		if (guild == null) {
+			interaction.reply("Es ist ein Fehler aufgetreten (dhwfm4nD)").setEphemeral(true).queue();
+			return false;
+		}
 
-        DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
-        List<DiscordRole> userRoles = discordGuild.getGuildRoles(user.getId()).join();
+		DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
+		List<DiscordRole> userRoles = discordGuild.getGuildRoles(user.getId()).join();
 
-        boolean hasPermission = false;
+		boolean hasPermission = false;
 
-        for (DiscordRole userRole : userRoles) {
-            if (userRole.hasRolePermission(getPermission())) {
-                hasPermission = true;
-                break;
-            }
-        }
+		for (DiscordRole userRole : userRoles) {
+			if (userRole.hasRolePermission(getPermission())) {
+				hasPermission = true;
+				break;
+			}
+		}
 
-        if (!hasPermission) {
-            interaction.reply("Du besitzt keine Berechtigung diesen Befehl zu verwenden.").setEphemeral(true).queue();
-            return false;
-        }
+		if (!hasPermission) {
+			interaction.reply("Du besitzt keine Berechtigung diesen Befehl zu verwenden.").setEphemeral(true).queue();
+			return false;
+		}
 
-        return true;
-    }
+		return true;
+	}
 
-    /**
-     * Executes the command.
-     *
-     * @param interaction The interaction.
-     */
-    public abstract void execute(SlashCommandInteractionEvent interaction);
+	/**
+	 * Executes the command.
+	 *
+	 * @param interaction The interaction.
+	 */
+	public abstract void execute(SlashCommandInteractionEvent interaction);
 
-    /**
-     * Returns the name of the command.
-     *
-     * @return The name of the command.
-     */
-    public @Nonnull String getName() {
-        return name;
-    }
+	/**
+	 * Returns the name of the command.
+	 *
+	 * @return The name of the command.
+	 */
+	public @Nonnull String getName() {
+		return name;
+	}
 
-    /**
-     * Returns the default member permissions of the command.
-     *
-     * @return The default member permissions of the command.
-     */
-    @SuppressWarnings("unused")
-    public @Nonnull DefaultMemberPermissions getDefaultMemberPermissions() {
-        return defaultMemberPermissions;
-    }
+	/**
+	 * Returns the default member permissions of the command.
+	 *
+	 * @return The default member permissions of the command.
+	 */
+	@SuppressWarnings("unused")
+	public @Nonnull DefaultMemberPermissions getDefaultMemberPermissions() {
+		return defaultMemberPermissions;
+	}
 
-    /**
-     * Returns the description of the command.
-     *
-     * @return The description of the command.
-     */
-    @SuppressWarnings("unused")
-    public @Nonnull String getDescription() {
-        return description;
-    }
+	/**
+	 * Returns the description of the command.
+	 *
+	 * @return The description of the command.
+	 */
+	@SuppressWarnings("unused")
+	public @Nonnull String getDescription() {
+		return description;
+	}
 
-    /**
-     * Returns whether the command is guild only.
-     *
-     * @return Whether the command is guild only.
-     */
-    @SuppressWarnings("unused")
-    public boolean isGuildOnly() {
-        return guildOnly;
-    }
+	/**
+	 * Returns whether the command is guild only.
+	 *
+	 * @return Whether the command is guild only.
+	 */
+	@SuppressWarnings("unused")
+	public boolean isGuildOnly() {
+		return guildOnly;
+	}
 
-    /**
-     * Returns whether the command is NSFW.
-     *
-     * @return Whether the command is NSFW.
-     */
-    @SuppressWarnings("unused")
-    public boolean isNsfw() {
-        return nsfw;
-    }
+	/**
+	 * Returns whether the command is NSFW.
+	 *
+	 * @return Whether the command is NSFW.
+	 */
+	@SuppressWarnings("unused")
+	public boolean isNsfw() {
+		return nsfw;
+	}
 
-    /**
-     * Returns the SlashCommandData of the command.
-     *
-     * @return The SlashCommandData of the command.
-     */
-    @SuppressWarnings("unused")
-    public SlashCommandData getCommandData() {
-        return commandData;
-    }
+	/**
+	 * Returns the SlashCommandData of the command.
+	 *
+	 * @return The SlashCommandData of the command.
+	 */
+	@SuppressWarnings("unused")
+	public SlashCommandData getCommandData() {
+		return commandData;
+	}
 
 }

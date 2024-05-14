@@ -12,42 +12,45 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 import javax.annotation.Nonnull;
 
+/**
+ * The type Message updated listener.
+ */
 public class MessageUpdatedListener extends ListenerAdapter {
 
-    @Override
-    public void onMessageUpdate(@Nonnull MessageUpdateEvent event) {
-        MessageChannelUnion channel = event.getChannel();
-        Message message = event.getMessage();
+	@Override
+	public void onMessageUpdate(@Nonnull MessageUpdateEvent event) {
+		MessageChannelUnion channel = event.getChannel();
+		Message message = event.getMessage();
 
-        if (!channel.getType().equals(ChannelType.TEXT)) {
-            return;
-        }
+		if (!channel.getType().equals(ChannelType.TEXT)) {
+			return;
+		}
 
-        if (event.getMessage().isWebhookMessage()) {
-            return;
-        }
+		if (event.getMessage().isWebhookMessage()) {
+			return;
+		}
 
-        Ticket ticket = DiscordBot.getInstance().getTicketManager().getTicket(channel.getId());
+		Ticket ticket = DiscordBot.getInstance().getTicketManager().getTicket(channel.getId());
 
-        if (ticket == null) {
-            return;
-        }
+		if (ticket == null) {
+			return;
+		}
 
-        TicketMessage ticketMessage = ticket.getTicketMessage(message.getId());
+		TicketMessage ticketMessage = ticket.getTicketMessage(message.getId());
 
-        if (ticketMessage == null) {
-            return;
-        }
+		if (ticketMessage == null) {
+			return;
+		}
 
-        ticketMessage.update(message).thenAcceptAsync(updatedTicketMessage -> {
-            if (updatedTicketMessage == null) {
-                return;
-            }
+		ticketMessage.update(message).thenAcceptAsync(updatedTicketMessage -> {
+			if (updatedTicketMessage == null) {
+				return;
+			}
 
-            ticket.addRawTicketMessage(updatedTicketMessage);
-        }).exceptionally(throwable -> {
-            DataApi.getDataInstance().logError(getClass(), "Failed to update ticket message.", throwable);
-            return null;
-        });
-    }
+			ticket.addRawTicketMessage(updatedTicketMessage);
+		}).exceptionally(throwable -> {
+			DataApi.getDataInstance().logError(getClass(), "Failed to update ticket message.", throwable);
+			return null;
+		});
+	}
 }

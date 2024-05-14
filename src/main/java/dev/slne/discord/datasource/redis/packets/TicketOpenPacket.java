@@ -1,8 +1,11 @@
-package dev.slne.discord.datasource.pusher.packets;
+package dev.slne.discord.datasource.redis.packets;
 
 import dev.slne.data.api.spring.redis.event.RedisEvent;
 import dev.slne.discord.ticket.Ticket;
 
+/**
+ * The type Ticket open packet.
+ */
 public class TicketOpenPacket extends RedisEvent {
 
 	private Ticket ticket;
@@ -26,6 +29,8 @@ public class TicketOpenPacket extends RedisEvent {
 	}
 
 	/**
+	 * Gets ticket.
+	 *
 	 * @return the ticket
 	 */
 	public Ticket getTicket() {

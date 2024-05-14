@@ -1,9 +1,7 @@
 package dev.slne.discord.ticket;
 
-import dev.slne.discord.TestTicket;
 import dev.slne.discord.datasource.API;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -13,8 +11,7 @@ import java.util.List;
 /**
  * The interface Ticket member client.
  */
-@Service
-@FeignClient(url = API.API_PREFIX, name = "ticket-client")
+@FeignClient(url = API.API_PREFIX, name = "ticket-service")
 public interface TicketClient {
 
 	/**
@@ -25,7 +22,7 @@ public interface TicketClient {
 	 * @return the ticket
 	 */
 	@PostMapping(value = API.TICKETS)
-	TestTicket createTicket(TestTicket ticket);
+	Ticket createTicket(Ticket ticket);
 
 	/**
 	 * Remove member ticket.
@@ -35,7 +32,7 @@ public interface TicketClient {
 	 * @return the ticket
 	 */
 	@PutMapping(value = API.TICKETS)
-	TestTicket updateTicket(TestTicket ticket);
+	Ticket updateTicket(Ticket ticket);
 
 	/**
 	 * Gets tickets.
@@ -43,7 +40,7 @@ public interface TicketClient {
 	 * @return the tickets
 	 */
 	@GetMapping(value = API.TICKETS)
-	TestTicket[] getTickets();
+	List<Ticket> getTickets();
 
 	/**
 	 * Gets tickets.
@@ -51,6 +48,6 @@ public interface TicketClient {
 	 * @return the tickets
 	 */
 	@GetMapping(value = API.ACTIVE_TICKETS)
-	List<TestTicket> getActiveTickets();
+	List<Ticket> getActiveTickets();
 
 }

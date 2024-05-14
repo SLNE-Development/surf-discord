@@ -8,40 +8,43 @@ import dev.slne.discord.discord.interaction.button.buttons.ticket.TicketButton.W
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The type Discord button manager.
+ */
 public class DiscordButtonManager {
 
-    private final List<DiscordButton> buttons;
+	private final List<DiscordButton> buttons;
 
-    /**
-     * The DiscordButtonManager
-     */
-    public DiscordButtonManager() {
-        this.buttons = new ArrayList<>();
+	/**
+	 * The DiscordButtonManager
+	 */
+	public DiscordButtonManager() {
+		this.buttons = new ArrayList<>();
 
-        addButton(new WhitelistTicketButton());
-        addButton(new ServerSupportTicketButton());
-        addButton(new DiscordSupportTicketButton());
-        addButton(new BugreportTicketButton());
-    }
+		addButton(new WhitelistTicketButton());
+		addButton(new ServerSupportTicketButton());
+		addButton(new DiscordSupportTicketButton());
+		addButton(new BugreportTicketButton());
+	}
 
-    /**
-     * Adds a button
-     *
-     * @param button the button
-     */
-    public void addButton(DiscordButton button) {
-        buttons.add(button);
-    }
+	/**
+	 * Adds a button
+	 *
+	 * @param button the button
+	 */
+	public void addButton(DiscordButton button) {
+		buttons.add(button);
+	}
 
-    /**
-     * Gets a button by its id
-     *
-     * @param id the id of the button
-     *
-     * @return the button
-     */
-    public DiscordButton getButton(String id) {
-        return buttons.stream().filter(button -> button.getId().equals(id)).findFirst().orElse(null);
-    }
+	/**
+	 * Gets a button by its id
+	 *
+	 * @param id the id of the button
+	 *
+	 * @return the button
+	 */
+	public DiscordButton getButton(String id) {
+		return buttons.stream().filter(button -> button.getId().equals(id)).findFirst().orElse(null);
+	}
 
 }

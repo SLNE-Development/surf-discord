@@ -1,7 +1,6 @@
 package dev.slne.discord;
 
 import dev.slne.data.api.DataApi;
-import dev.slne.data.api.gson.GsonConverter;
 import dev.slne.discord.config.BotConfig;
 import dev.slne.discord.config.ConfigUtil;
 import dev.slne.discord.discord.guild.role.DiscordRoleManager;
@@ -10,9 +9,7 @@ import dev.slne.discord.discord.interaction.command.DiscordCommandManager;
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager;
 import dev.slne.discord.discord.settings.GatewayIntents;
 import dev.slne.discord.listener.ListenerManager;
-import dev.slne.discord.listener.event.events.BotStartEvent;
 import dev.slne.discord.ticket.TicketManager;
-import dev.slne.discord.whitelist.UUIDCache;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -32,8 +29,6 @@ public class DiscordBot {
 	private DiscordCommandManager commandManager;
 	private TicketManager ticketManager;
 	private DiscordButtonManager buttonManager;
-	private UUIDCache uuidCache;
-	private GsonConverter gsonConverter;
 
 	/**
 	 * Gets the instance of the discord bot.
@@ -50,7 +45,6 @@ public class DiscordBot {
 	public void onLoad() {
 		instance = this;
 
-		this.gsonConverter = new GsonConverter();
 		BotConfig botConfig = ConfigUtil.getConfig();
 		botToken = botConfig.discordBotConfig().botToken();
 
@@ -74,7 +68,6 @@ public class DiscordBot {
 
 		roleManager = new DiscordRoleManager();
 
-		uuidCache = new UUIDCache();
 		commandManager = new DiscordCommandManager();
 		listenerManager = new ListenerManager();
 		modalManager = new DiscordModalManager();
@@ -88,8 +81,6 @@ public class DiscordBot {
 		}
 
 		DiscordBot.getInstance().getTicketManager().fetchActiveTickets();
-
-		DataApi.getEventManager().callEvent(new BotStartEvent());
 		DataApi.getDataInstance().logInfo(getClass(), "Discord Bot is ready");
 	}
 
@@ -170,25 +161,9 @@ public class DiscordBot {
 	}
 
 	/**
-	 * @return the uuidCache
-	 */
-	public UUIDCache getUuidCache() {
-		return uuidCache;
-	}
-
-	/**
 	 * @return the roleManager
 	 */
 	public DiscordRoleManager getRoleManager() {
 		return roleManager;
-	}
-
-	/**
-	 * Returns the GsonConverter.
-	 *
-	 * @return the GsonConverter
-	 */
-	public GsonConverter getGsonConverter() {
-		return gsonConverter;
 	}
 }

@@ -16,92 +16,95 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The type Twitch follow command.
+ */
 public class TwitchFollowCommand extends TicketCommand {
 
-    /**
-     * Creates a new TwitchFollowCommand.
-     */
-    public TwitchFollowCommand() {
-        super("twitch-follow", "Fordere einen Benutzer auf CastCrafter auf Twitch zu folgen.");
-    }
+	/**
+	 * Creates a new TwitchFollowCommand.
+	 */
+	public TwitchFollowCommand() {
+		super("twitch-follow", "Fordere einen Benutzer auf CastCrafter auf Twitch zu folgen.");
+	}
 
-    /**
-     * Returns the subcommands of the command.
-     *
-     * @return The subcommands of the command.
-     */
-    @NotNull
-    @Override
-    public List<SubcommandData> getSubCommands() {
-        return new ArrayList<>();
-    }
+	/**
+	 * Returns the subcommands of the command.
+	 *
+	 * @return The subcommands of the command.
+	 */
+	@NotNull
+	@Override
+	public List<SubcommandData> getSubCommands() {
+		return new ArrayList<>();
+	}
 
-    /**
-     * Returns the options of the command.
-     *
-     * @return The options of the command.
-     */
-    @NotNull
-    @Override
-    public List<OptionData> getOptions() {
-        final List<OptionData> options = new ArrayList<>();
+	/**
+	 * Returns the options of the command.
+	 *
+	 * @return The options of the command.
+	 */
+	@NotNull
+	@Override
+	public List<OptionData> getOptions() {
+		final List<OptionData> options = new ArrayList<>();
 
-        options.add(new OptionData(
-                OptionType.USER,
-                "user",
-                "Der Nutzer, der CastCrafter nicht auf Twitch folgt.",
-                true,
-                false
-        ));
+		options.add(new OptionData(
+				OptionType.USER,
+				"user",
+				"Der Nutzer, der CastCrafter nicht auf Twitch folgt.",
+				true,
+				false
+		));
 
-        return options;
-    }
+		return options;
+	}
 
-    /**
-     * Returns the permission needed to run this command
-     *
-     * @return the permission
-     */
-    @NotNull
-    @Override
-    public DiscordPermission getPermission() {
-        return DiscordPermission.USE_COMMAND_TWITCH_FOLLOW;
-    }
+	/**
+	 * Returns the permission needed to run this command
+	 *
+	 * @return the permission
+	 */
+	@NotNull
+	@Override
+	public DiscordPermission getPermission() {
+		return DiscordPermission.USE_COMMAND_TWITCH_FOLLOW;
+	}
 
-    /**
-     * Executes the command.
-     *
-     * @param interaction The interaction.
-     */
-    @Override
-    public void execute(SlashCommandInteractionEvent interaction) {
-        interaction.deferReply(true).queue(hook -> {
-            final OptionMapping userMapping = interaction.getOption("user");
+	/**
+	 * Executes the command.
+	 *
+	 * @param interaction The interaction.
+	 */
+	@Override
+	public void execute(SlashCommandInteractionEvent interaction) {
+		interaction.deferReply(true).queue(hook -> {
+			final OptionMapping userMapping = interaction.getOption("user");
 
-            if (userMapping == null) {
-                hook.editOriginal("Du musst einen Nutzer angeben.").queue();
-                return;
-            }
+			if (userMapping == null) {
+				hook.editOriginal("Du musst einen Nutzer angeben.").queue();
+				return;
+			}
 
-            final User user = userMapping.getAsUser();
-            getChannel().sendMessage(user.getAsMention()).setEmbeds(getEmbed()).queue();
+			final User user = userMapping.getAsUser();
+			getChannel().sendMessage(user.getAsMention()).setEmbeds(getEmbed()).queue();
 
-            hook.deleteOriginal().queue();
-        });
-    }
+			hook.deleteOriginal().queue();
+		});
+	}
 
-    /**
-     * Returns the embed for the command.
-     *
-     * @return The embed.
-     */
-    private @NotNull MessageEmbed getEmbed() {
-        return new EmbedBuilder()
-                .setTitle("CastCrafter auf Twitch folgen")
-                .setDescription("Du folgst CastCrafter nicht auf Twitch." +
-                        " Bitte folge CastCrafter auf Twitch, um auf dem Server zu spielen.")
-                .setColor(0x6441A5)
-                .setTimestamp(Instant.now())
-                .build();
-    }
+	/**
+	 * Returns the embed for the command.
+	 *
+	 * @return The embed.
+	 */
+	private @NotNull MessageEmbed getEmbed() {
+		return new EmbedBuilder()
+				.setTitle("CastCrafter auf Twitch folgen")
+				.setDescription("Du folgst CastCrafter nicht auf Twitch." +
+								" Bitte folge CastCrafter auf Twitch, um auf dem Server zu spielen.")
+				.setColor(0x6441A5)
+				.setTimestamp(Instant.now())
+				.build();
+	}
 }

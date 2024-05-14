@@ -1,98 +1,88 @@
 package dev.slne.discord;
 
-import dev.slne.discord.datasource.DiscordDataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import dev.slne.data.api.DataApi;
+import dev.slne.discord.datasource.DiscordDataInstance;
+import lombok.Getter;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import java.util.Random;
 
+/**
+ * The type Launcher.
+ */
 public class Launcher {
+	
+	private static Random random;
 
-    private static Random random;
-    private final DiscordBot discordBot;
-    private final DiscordDataSource dataSource;
+	@Getter
+	private static ConfigurableApplicationContext context;
+	private final DiscordBot discordBot;
+	private DiscordDataInstance dataInstance;
 
-    /**
-     * Constructor for the launcher
-     */
-    public Launcher() {
-        dataSource = new DiscordDataSource();
-        discordBot = new DiscordBot();
+	/**
+	 * Constructor for the launcher
+	 */
+	public Launcher() {
+		discordBot = new DiscordBot();
 
-        random = new Random();
-    }
+		random = new Random();
+	}
 
-    /**
-     * Main method
-     *
-     * @param args The arguments
-     */
-    public static void main(String[] args) {
-        Launcher launcher = new Launcher();
+	/**
+	 * Main method
+	 *
+	 * @param args The arguments
+	 */
+	public static void main(String[] args) {
+		Launcher launcher = new Launcher();
 
-        launcher.onLoad();
-        launcher.onEnable();
-    }
+		launcher.onLoad();
+		launcher.onEnable();
+	}
 
-    /**
-     * Returns the logger
-     *
-     * @return The logger
-     */
-    public static Logger getLogger(Class<?> clazz) {
-        return LoggerFactory.getLogger(clazz);
-    }
+	/**
+	 * Gets random.
+	 *
+	 * @return the random
+	 */
+	@SuppressWarnings("unused")
+	public static Random getRandom() {
+		return random;
+	}
 
-    /**
-     * @return the random
-     */
-    @SuppressWarnings("unused")
-    public static Random getRandom() {
-        return random;
-    }
+	/**
+	 * Method called when the launcher is loaded
+	 */
+	public void onLoad() {
+		dataInstance = new DiscordDataInstance();
+		new DataApi(dataInstance);
 
-    /**
-     * Method called when the launcher is loaded
-     */
-    public void onLoad() {
-        dataSource.onLoad();
-        discordBot.onLoad();
-    }
+		context = DiscordSpringApplication.run();
 
-    /**
-     * Method called when the launcher is enabled
-     */
-    public void onEnable() {
-        dataSource.onEnable();
-        discordBot.onEnable();
-    }
+		discordBot.onLoad();
+	}
 
-    /**
-     * Method called when the launcher is disabled
-     */
-    public void onDisable() {
-        dataSource.onDisable();
-        discordBot.onDisable();
-    }
+	/**
+	 * Method called when the launcher is enabled
+	 */
+	public void onEnable() {
+		discordBot.onEnable();
+	}
 
-    /**
-     * Retuns the data source
-     *
-     * @return The data source
-     */
-    @SuppressWarnings("unused")
-    public DiscordDataSource getDataSource() {
-        return dataSource;
-    }
+	/**
+	 * Method called when the launcher is disabled
+	 */
+	public void onDisable() {
+		discordBot.onDisable();
+	}
 
-    /**
-     * Returns the discord bot
-     *
-     * @return The discord bot
-     */
-    @SuppressWarnings("unused")
-    public DiscordBot getDiscordBot() {
-        return discordBot;
-    }
-
+	/**
+	 * Returns the discord bot
+	 *
+	 * @return The discord bot
+	 */
+	@SuppressWarnings("unused")
+	public DiscordBot getDiscordBot() {
+		return discordBot;
+	}
 }

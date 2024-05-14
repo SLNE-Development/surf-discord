@@ -13,48 +13,52 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The type Ticket dependencies not met command.
+ */
 public class TicketDependenciesNotMetCommand extends TicketCommand {
 
-    /**
-     * Creates a new {@link TicketCloseCommand}.
-     */
-    public TicketDependenciesNotMetCommand() {
-        super("no-dependencies", "Closes a ticket whilst telling the user that they do not have met the dependencies.");
-    }
+	/**
+	 * Creates a new {@link TicketCloseCommand}.
+	 */
+	public TicketDependenciesNotMetCommand() {
+		super("no-dependencies", "Closes a ticket whilst telling the user that they do not have met the dependencies.");
+	}
 
-    @Override
-    public @Nonnull List<SubcommandData> getSubCommands() {
-        return new ArrayList<>();
-    }
+	@Override
+	public @Nonnull List<SubcommandData> getSubCommands() {
+		return new ArrayList<>();
+	}
 
-    @Override
-    public @Nonnull List<OptionData> getOptions() {
-        return new ArrayList<>();
-    }
+	@Override
+	public @Nonnull List<OptionData> getOptions() {
+		return new ArrayList<>();
+	}
 
-    @Override
-    public @Nonnull DiscordPermission getPermission() {
-        return DiscordPermission.USE_COMMAND_TICKET_CLOSE;
-    }
+	@Override
+	public @Nonnull DiscordPermission getPermission() {
+		return DiscordPermission.USE_COMMAND_TICKET_CLOSE;
+	}
 
-    @Override
-    public void execute(SlashCommandInteractionEvent interaction) {
-        User closer = interaction.getUser();
-        String reason =
-                "Du erfüllst nicht die Voraussetzungen. Bitte lies dir diese genauer durch, bevor du ein neues Ticket eröffnest.";
+	@Override
+	public void execute(SlashCommandInteractionEvent interaction) {
+		User closer = interaction.getUser();
+		String reason =
+				"Du erfüllst nicht die Voraussetzungen. Bitte lies dir diese genauer durch, bevor du ein neues Ticket eröffnest.";
 
-        interaction.reply("Schließe Ticket...").setEphemeral(true)
-                .queue(deferredReply -> getTicket().close(closer, reason).thenAcceptAsync(result -> {
-                    if (result != TicketCloseResult.SUCCESS) {
-                        deferredReply.editOriginal("Fehler beim Schließen des Tickets.").queue();
-                        DataApi.getDataInstance().logError(getClass(), "Error while closing ticket: " + result.name());
-                    }
-                }).exceptionally(exception -> {
-                    deferredReply.editOriginal("Fehler beim Schließen des Tickets.").queue();
-                    DataApi.getDataInstance().logError(getClass(), "Error while closing ticket", exception);
+		interaction.reply("Schließe Ticket...").setEphemeral(true)
+				   .queue(deferredReply -> getTicket().close(closer, reason).thenAcceptAsync(result -> {
+					   if (result != TicketCloseResult.SUCCESS) {
+						   deferredReply.editOriginal("Fehler beim Schließen des Tickets.").queue();
+						   DataApi.getDataInstance()
+								  .logError(getClass(), "Error while closing ticket: " + result.name());
+					   }
+				   }).exceptionally(exception -> {
+					   deferredReply.editOriginal("Fehler beim Schließen des Tickets.").queue();
+					   DataApi.getDataInstance().logError(getClass(), "Error while closing ticket", exception);
 
-                    return null;
-                }));
-    }
+					   return null;
+				   }));
+	}
 
 }

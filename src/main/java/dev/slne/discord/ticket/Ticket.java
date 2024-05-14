@@ -12,6 +12,11 @@ import dev.slne.discord.ticket.message.TicketMessage;
 import dev.slne.discord.ticket.result.TicketCloseResult;
 import dev.slne.discord.ticket.result.TicketCreateResult;
 import dev.slne.discord.whitelist.Whitelist;
+import dev.slne.discord.whitelist.WhitelistService;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
@@ -26,7 +31,6 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.PermissionOverrideAction;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.awt.Color;
 import java.time.ZonedDateTime;
@@ -34,28 +38,36 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * The type Ticket.
  */
+@Getter
+@ToString
+@EqualsAndHashCode
 public class Ticket {
 
 	private final List<TicketMember> removedMembers;
 
 	@JsonProperty("id")
+	@Setter
 	private long id;
 
 	@JsonProperty("ticket_id")
-	private String ticketId;
+	@Setter
+	private UUID ticketId;
 
 	@JsonProperty("opened_at")
+	@Setter
 	private ZonedDateTime openedAt;
 
 	@JsonProperty("guild_id")
 	private String guildId;
 
 	@JsonProperty("channel_id")
+	@Setter
 	private String channelId;
 
 	@JsonProperty("type")
@@ -77,6 +89,7 @@ public class Ticket {
 	private String closedReason;
 
 	@JsonProperty("closed_at")
+	@Setter
 	private ZonedDateTime closedAt;
 
 	@JsonProperty("messages")
@@ -86,15 +99,19 @@ public class Ticket {
 	private List<TicketMember> members;
 
 	@JsonProperty("webhook_id")
+	@Setter
 	private String webhookId;
 
 	@JsonProperty("webhook_name")
+	@Setter
 	private String webhookName;
 
 	@JsonProperty("webhook_avatar_url")
+	@Setter
 	private String webhookUrl;
 
 	@JsonProperty("created_at")
+	@Setter
 	private ZonedDateTime createdAt;
 
 	/**
@@ -310,7 +327,7 @@ public class Ticket {
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
-		embedBuilder.addField("Ticket-ID", getTicketId(), true);
+		embedBuilder.addField("Ticket-Id", getTicketId().toString(), true);
 		embedBuilder.addField("Ticket-Type", getTicketTypeString(), true);
 		embedBuilder.addField("Ticket-Author", author.getAsMention(), true);
 
@@ -576,53 +593,8 @@ public class Ticket {
 												   return;
 											   }
 
-											   TicketRepository.createTicket(this)
-															   .thenAcceptAsync(ticketCreateResult -> {
-																   if (ticketCreateResult == null) {
-																	   future.complete(TicketCreateResult.ERROR);
-																	   return;
-																   }
-
-																   DiscordBot.getInstance().getTicketManager()
-																			 .addTicket(this);
-
-																   TicketChannel.createTicketChannel(
-																						this, ticketName, channelCategory)
-																				.thenAcceptAsync(
-																						ticketChannelCreateResult -> {
-																							if (ticketChannelCreateResult ==
-																								null) {
-																								future.complete(
-																										TicketCreateResult.ERROR);
-																								return;
-																							}
-
-																							if (ticketChannelCreateResult !=
-																								TicketCreateResult.SUCCESS) {
-																								future.complete(
-																										ticketChannelCreateResult);
-																								return;
-																							}
-
-																							afterOpen().thenAcceptAsync(
-																									v -> {
-																										runnable.run();
-																										future.complete(
-																												TicketCreateResult.SUCCESS);
-																									}).exceptionally(
-																									exception -> {
-																										future.completeExceptionally(
-																												exception);
-																										return null;
-																									});
-																						}).exceptionally(exception -> {
-																					future.completeExceptionally(exception);
-																					return null;
-																				});
-															   }).exceptionally(exception -> {
-																   future.completeExceptionally(exception);
-																   return null;
-															   });
+											   TicketCreator.createTicket(
+													   future, this, ticketName, channelCategory, runnable);
 										   }).exceptionally(exception -> {
 								future.completeExceptionally(exception);
 								return null;
@@ -634,6 +606,7 @@ public class Ticket {
 
 		return future;
 	}
+
 
 	/**
 	 * Opens the ticket from the button
@@ -651,7 +624,7 @@ public class Ticket {
 	 * @return The result of the ticket opening
 	 */
 	@SuppressWarnings("UnusedReturnValue")
-	public CompletableFuture<TicketCreateResult> openFromPusher() {
+	public CompletableFuture<TicketCreateResult> openFromRedis() {
 		return this.open(this::printAllPreviousMessages);
 	}
 
@@ -686,7 +659,7 @@ public class Ticket {
 			this.closedById = user.getId();
 			this.closedReason = reason;
 
-			TicketRepository.closeTicket(this).thenAcceptAsync(newTicket -> {
+			TicketService.INSTANCE.closeTicket(this).thenAcceptAsync(newTicket -> {
 				if (newTicket == null) {
 					future.complete(TicketCloseResult.TICKET_REPOSITORY_ERROR);
 					return;
@@ -749,13 +722,21 @@ public class Ticket {
 				return;
 			}
 
-			Whitelist.getWhitelists(null, ticketAuthorId, null).thenAcceptAsync(
-							 whitelists -> printWlQuery(getChannel(), "\"" + ticketAuthor.getName() + "\"", whitelists))
-					 .exceptionally(throwable -> {
-						 DataApi.getDataInstance()
-								.logError(getClass(), "Error while printing wl query embeds", throwable);
-						 return null;
-					 });
+			WhitelistService.INSTANCE.checkWhitelists(null, ticketAuthorId, null).thenAcceptAsync(whitelist -> {
+				if (whitelist.isEmpty()) {
+					getChannel().sendMessage(
+							"Es wurden keine Whitelist Einträge für " + ticketAuthor.getName() + " gefunden.").queue();
+				} else {
+					printWlQuery(getChannel(), "\"" + ticketAuthor.getName() + "\"", whitelist);
+				}
+			}).exceptionally(throwable -> {
+				getChannel().sendMessage(
+						"Es wurden keine Whitelist Einträge für " + ticketAuthor.getName() + " gefunden.").queue();
+
+				DataApi.getDataInstance()
+					   .logError(getClass(), "Error while printing wl query embeds", throwable);
+				return null;
+			});
 		});
 	}
 
@@ -770,11 +751,13 @@ public class Ticket {
 		title = title.replace("\"", "");
 
 		String finalTitle = title;
-		channel.sendMessage("WlQuery für: \"" + title + "\"").queue(v -> {
+		channel.sendMessage("WlQuery für: `" + title + "`").queue(v -> {
 			if (whitelists != null) {
 				for (Whitelist whitelist : whitelists) {
 					Whitelist.getWhitelistQueryEmbed(whitelist).thenAcceptAsync(embed -> {
+						System.out.println("Embed: " + embed);
 						if (embed != null) {
+							System.out.println("embed not null");
 							channel.sendMessageEmbeds(embed).queue();
 						}
 					}).exceptionally(throwable -> {
@@ -790,6 +773,8 @@ public class Ticket {
 			} else {
 				channel.sendMessage("Es wurden keine Whitelist Einträge für " + finalTitle + " gefunden.").queue();
 			}
+		}, error -> {
+			DataApi.getDataInstance().logError(getClass(), "Error while printing wl query embeds", error);
 		});
 	}
 
@@ -882,6 +867,7 @@ public class Ticket {
 	 *
 	 * @return The type of the ticket
 	 */
+	@JsonIgnore
 	public TicketType getTicketType() {
 		return TicketType.valueOf(ticketTypeString);
 	}
@@ -938,215 +924,4 @@ public class Ticket {
 		return DiscordBot.getInstance().getJda().retrieveWebhookById(webhookId);
 	}
 
-	@Override
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-	}
-
-	/**
-	 * Gets removed members.
-	 *
-	 * @return the removed members
-	 */
-	public List<TicketMember> getRemovedMembers() {
-		return removedMembers;
-	}
-
-	/**
-	 * Gets id.
-	 *
-	 * @return the id
-	 */
-	public long getId() {
-		return id;
-	}
-
-	/**
-	 * Gets ticket id.
-	 *
-	 * @return the ticket id
-	 */
-	public String getTicketId() {
-		return ticketId;
-	}
-
-	/**
-	 * Gets opened at.
-	 *
-	 * @return the opened at
-	 */
-	public ZonedDateTime getOpenedAt() {
-		return openedAt;
-	}
-
-	/**
-	 * Gets guild id.
-	 *
-	 * @return the guild id
-	 */
-	public String getGuildId() {
-		return guildId;
-	}
-
-	/**
-	 * Gets channel id.
-	 *
-	 * @return the channel id
-	 */
-	public String getChannelId() {
-		return channelId;
-	}
-
-	/**
-	 * Sets channel id.
-	 *
-	 * @param channelId the channel id
-	 */
-	public void setChannelId(String channelId) {
-		this.channelId = channelId;
-	}
-
-	/**
-	 * Gets ticket type string.
-	 *
-	 * @return the ticket type string
-	 */
-	public String getTicketTypeString() {
-		return ticketTypeString;
-	}
-
-	/**
-	 * Gets ticket author id.
-	 *
-	 * @return the ticket author id
-	 */
-	public String getTicketAuthorId() {
-		return ticketAuthorId;
-	}
-
-	/**
-	 * Gets ticket author name.
-	 *
-	 * @return the ticket author name
-	 */
-	public String getTicketAuthorName() {
-		return ticketAuthorName;
-	}
-
-	/**
-	 * Gets ticket author avatar url.
-	 *
-	 * @return the ticket author avatar url
-	 */
-	public String getTicketAuthorAvatarUrl() {
-		return ticketAuthorAvatarUrl;
-	}
-
-	/**
-	 * Gets closed by id.
-	 *
-	 * @return the closed by id
-	 */
-	public String getClosedById() {
-		return closedById;
-	}
-
-	/**
-	 * Gets closed reason.
-	 *
-	 * @return the closed reason
-	 */
-	public String getClosedReason() {
-		return closedReason;
-	}
-
-	/**
-	 * Gets closed at.
-	 *
-	 * @return the closed at
-	 */
-	public ZonedDateTime getClosedAt() {
-		return closedAt;
-	}
-
-	/**
-	 * Gets messages.
-	 *
-	 * @return the messages
-	 */
-	public List<TicketMessage> getMessages() {
-		return messages;
-	}
-
-	/**
-	 * Gets members.
-	 *
-	 * @return the members
-	 */
-	public List<TicketMember> getMembers() {
-		return members;
-	}
-
-	/**
-	 * Gets webhook id.
-	 *
-	 * @return the webhook id
-	 */
-	public String getWebhookId() {
-		return webhookId;
-	}
-
-	/**
-	 * Sets webhook id.
-	 *
-	 * @param webhookId the webhook id
-	 */
-	public void setWebhookId(String webhookId) {
-		this.webhookId = webhookId;
-	}
-
-	/**
-	 * Gets webhook name.
-	 *
-	 * @return the webhook name
-	 */
-	public String getWebhookName() {
-		return webhookName;
-	}
-
-	/**
-	 * Sets webhook name.
-	 *
-	 * @param webhookName the webhook name
-	 */
-	public void setWebhookName(String webhookName) {
-		this.webhookName = webhookName;
-	}
-
-	/**
-	 * Gets webhook url.
-	 *
-	 * @return the webhook url
-	 */
-	public String getWebhookUrl() {
-		return webhookUrl;
-	}
-
-	/**
-	 * Sets webhook url.
-	 *
-	 * @param webhookUrl the webhook url
-	 */
-	public void setWebhookUrl(String webhookUrl) {
-		this.webhookUrl = webhookUrl;
-	}
-
-	/**
-	 * Gets created at.
-	 *
-	 * @return the created at
-	 */
-	public ZonedDateTime getCreatedAt() {
-		return createdAt;
-	}
 }

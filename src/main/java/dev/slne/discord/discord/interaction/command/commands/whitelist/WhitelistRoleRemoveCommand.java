@@ -15,71 +15,75 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * The type Whitelist role remove command.
+ */
 public class WhitelistRoleRemoveCommand extends DiscordCommand {
 
-    /**
-     * Creates a new WhitelistRoleRemoveCommand.
-     */
-    public WhitelistRoleRemoveCommand() {
-        super("wlrole", "Entfernt alle Benutzer aus der Whitelist Rolle.");
-    }
+	/**
+	 * Creates a new WhitelistRoleRemoveCommand.
+	 */
+	public WhitelistRoleRemoveCommand() {
+		super("wlrole", "Entfernt alle Benutzer aus der Whitelist Rolle.");
+	}
 
-    @Override
-    public @Nonnull List<SubcommandData> getSubCommands() {
-        return new ArrayList<>();
-    }
+	@Override
+	public @Nonnull List<SubcommandData> getSubCommands() {
+		return new ArrayList<>();
+	}
 
-    @Override
-    public @Nonnull List<OptionData> getOptions() {
-        return new ArrayList<>();
-    }
+	@Override
+	public @Nonnull List<OptionData> getOptions() {
+		return new ArrayList<>();
+	}
 
-    @Override
-    public @Nonnull DiscordPermission getPermission() {
-        return DiscordPermission.USE_COMMAND_WHITELIST_ROLE;
-    }
+	@Override
+	public @Nonnull DiscordPermission getPermission() {
+		return DiscordPermission.USE_COMMAND_WHITELIST_ROLE;
+	}
 
-    @Override
-    public void execute(SlashCommandInteractionEvent interaction) {
-        interaction.deferReply(true).queue(hook -> {
-            Guild guild = interaction.getGuild();
+	@Override
+	public void execute(SlashCommandInteractionEvent interaction) {
+		interaction.deferReply(true).queue(hook -> {
+			Guild guild = interaction.getGuild();
 
-            if (guild == null) {
-                hook.editOriginal("Du musst auf einem Server sein, um diesen Command auszuführen.").queue();
-                return;
-            }
+			if (guild == null) {
+				hook.editOriginal("Du musst auf einem Server sein, um diesen Command auszuführen.").queue();
+				return;
+			}
 
-            DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
+			DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
 
-            if (discordGuild == null) {
-                hook.editOriginal("Dieser Server ist nicht registriert.").queue();
-                return;
-            }
+			if (discordGuild == null) {
+				hook.editOriginal("Dieser Server ist nicht registriert.").queue();
+				return;
+			}
 
-            Role whitelistedRole = guild.getRoleById(discordGuild.getWhitelistedRoleId());
+			Role whitelistedRole = guild.getRoleById(discordGuild.getWhitelistedRoleId());
 
-            if (whitelistedRole == null) {
-                hook.editOriginal("Die Whitelist Rolle ist nicht registriert.").queue();
-                return;
-            }
+			if (whitelistedRole == null) {
+				hook.editOriginal("Die Whitelist Rolle ist nicht registriert.").queue();
+				return;
+			}
 
-            List<CompletableFuture<?>> futures = new ArrayList<>();
+			List<CompletableFuture<?>> futures = new ArrayList<>();
 
-            guild.findMembersWithRoles(whitelistedRole).onSuccess(members -> {
-                members.forEach(member -> {
-                    if (member == null) {
-                        return;
-                    }
+			guild.findMembersWithRoles(whitelistedRole).onSuccess(members -> {
+				members.forEach(member -> {
+					if (member == null) {
+						return;
+					}
 
-                    futures.add(guild.removeRoleFromMember(member, whitelistedRole).submit());
-                });
+					futures.add(guild.removeRoleFromMember(member, whitelistedRole).submit());
+				});
 
-                CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))
-                        .thenRun(() -> hook
-                                .editOriginal(futures.size() + " Benutzer wurden aus der Whitelist Rolle entfernt.")
-                                .queue());
-            }).onError(Throwable::printStackTrace);
-        });
-    }
+				CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))
+								 .thenRun(() -> hook
+										 .editOriginal(
+												 futures.size() + " Benutzer wurden aus der Whitelist Rolle entfernt.")
+										 .queue());
+			}).onError(Throwable::printStackTrace);
+		});
+	}
 
 }

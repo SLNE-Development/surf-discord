@@ -3,10 +3,7 @@ package dev.slne.discord;
 import dev.slne.data.api.DataApi;
 import dev.slne.data.api.spring.SurfSpringApplication;
 import dev.slne.discord.datasource.DiscordDataInstance;
-import dev.slne.discord.ticket.TicketClient;
 import org.springframework.context.ConfigurableApplicationContext;
-
-import java.util.List;
 
 /**
  * The type Discord spring application.
@@ -15,26 +12,15 @@ import java.util.List;
 public class DiscordSpringApplication {
 
 	/**
-	 * The entry point of application.
+	 * Run.
 	 *
-	 * @param args the input arguments
+	 * @return the configurable application context
 	 */
-	public static void main(String[] args) {
-		DiscordDataInstance dataInstance = new DiscordDataInstance();
-		new DataApi(dataInstance);
-
-		ConfigurableApplicationContext context = DataApi.run(
+	public static ConfigurableApplicationContext run() {
+		return DataApi.run(
 				DiscordSpringApplication.class,
-				DiscordSpringApplication.class.getClassLoader()
+				DiscordDataInstance.class.getClassLoader()
 		);
-
-		TicketClient ticketMemberClient = context.getBean(TicketClient.class);
-		List<TestTicket> activeTickets = ticketMemberClient.getActiveTickets();
-
-		for (TestTicket activeTicket : activeTickets) {
-			System.out.println(activeTicket);
-			System.out.println("#######################");
-		}
 	}
 
 }

@@ -4,6 +4,9 @@ import dev.slne.data.api.DataApi;
 import dev.slne.data.api.config.ConfigManager;
 import org.jetbrains.annotations.ApiStatus;
 
+/**
+ * The type Config util.
+ */
 @ApiStatus.Internal
 public class ConfigUtil {
 

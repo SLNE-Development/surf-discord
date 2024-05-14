@@ -2,7 +2,7 @@ package dev.slne.discord.discord.interaction.command.commands;
 
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.ticket.Ticket;
-import dev.slne.discord.ticket.TicketRepository;
+import dev.slne.discord.ticket.TicketService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -10,58 +10,68 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 
 import javax.annotation.Nonnull;
 
+/**
+ * The type Ticket command.
+ */
 public abstract class TicketCommand extends DiscordCommand {
 
-    private Ticket ticket;
-    private TextChannel channel;
+	private Ticket ticket;
+	private TextChannel channel;
 
-    /**
-     * Creates a new TicketCommand.
-     */
-    protected TicketCommand(@Nonnull String name, @Nonnull String description) {
-        super(name, description);
-    }
+	/**
+	 * Creates a new TicketCommand.
+	 *
+	 * @param name        the name
+	 * @param description the description
+	 */
+	protected TicketCommand(@Nonnull String name, @Nonnull String description) {
+		super(name, description);
+	}
 
-    @Override
-    public void internalExecute(SlashCommandInteractionEvent interaction) {
-        User user = interaction.getUser();
-        Guild guild = interaction.getGuild();
+	@Override
+	public void internalExecute(SlashCommandInteractionEvent interaction) {
+		User user = interaction.getUser();
+		Guild guild = interaction.getGuild();
 
-        if (!performDiscordCommandChecks(user, guild, interaction)) {
-            return;
-        }
+		if (!performDiscordCommandChecks(user, guild, interaction)) {
+			return;
+		}
 
-        if (!(interaction.getChannel() instanceof TextChannel textChannel)) {
-            interaction.reply("Dieser Befehl kann nur in einem Ticket verwendet werden.").setEphemeral(true).queue();
-            return;
-        }
+		if (!( interaction.getChannel() instanceof TextChannel textChannel )) {
+			interaction.reply("Dieser Befehl kann nur in einem Ticket verwendet werden.").setEphemeral(true).queue();
+			return;
+		}
 
-        Ticket ticketGet = TicketRepository.getTicketByChannel(textChannel.getId());
+		Ticket ticketGet = TicketService.INSTANCE.getTicketByChannel(textChannel.getId());
 
-        if (ticketGet == null) {
-            interaction.reply("Dieser Befehl kann nur in einem Ticket verwendet werden.").setEphemeral(true)
-                    .queue();
-            return;
-        }
+		if (ticketGet == null) {
+			interaction.reply("Dieser Befehl kann nur in einem Ticket verwendet werden.").setEphemeral(true)
+					   .queue();
+			return;
+		}
 
-        this.ticket = ticketGet;
-        this.channel = textChannel;
+		this.ticket = ticketGet;
+		this.channel = textChannel;
 
-        execute(interaction);
-    }
+		execute(interaction);
+	}
 
-    /**
-     * @return the ticket
-     */
-    public Ticket getTicket() {
-        return ticket;
-    }
+	/**
+	 * Gets ticket.
+	 *
+	 * @return the ticket
+	 */
+	public Ticket getTicket() {
+		return ticket;
+	}
 
-    /**
-     * @return the channel
-     */
-    public TextChannel getChannel() {
-        return channel;
-    }
+	/**
+	 * Gets channel.
+	 *
+	 * @return the channel
+	 */
+	public TextChannel getChannel() {
+		return channel;
+	}
 
 }

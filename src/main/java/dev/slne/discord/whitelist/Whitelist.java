@@ -1,9 +1,14 @@
 package dev.slne.discord.whitelist;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.gson.JsonObject;
-import dev.slne.data.api.gson.GsonConverter;
+import dev.slne.data.api.DataApi;
 import dev.slne.discord.DiscordBot;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
@@ -11,32 +16,50 @@ import net.dv8tion.jda.api.requests.RestAction;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * The type Whitelist.
+ */
+@Getter
+@ToString
+@EqualsAndHashCode
+@NoArgsConstructor
 public class Whitelist {
 
-	private final String minecraftName;
 	@JsonProperty("id")
 	private long id;
+
 	@JsonProperty("uuid")
 	private UUID uuid;
+
+	@JsonProperty("minecraft_name")
+	private String minecraftName;
+
 	@JsonProperty("twitch_link")
 	private String twitchLink;
+
 	@JsonProperty("discord_id")
 	private String discordId;
+
 	@JsonProperty("added_by_id")
 	private String addedById;
+
 	@JsonProperty("added_by_name")
 	private String addedByName;
+
 	@JsonProperty("added_by_avatar_url")
 	private String addedByAvatarUrl;
+
 	@JsonProperty("blocked")
+	@Setter
 	private boolean blocked;
+
+	@JsonProperty("created_at")
+	private ZonedDateTime createdAt;
 
 	/**
 	 * Creates a new {@link Whitelist}.
@@ -70,36 +93,18 @@ public class Whitelist {
 	}
 
 	/**
-	 * Creates a new {@link Whitelist}.
+	 * Instantiates a new Whitelist.
 	 *
-	 * @param copy The {@link Whitelist} to copy.
+	 * @param uuid       the uuid
+	 * @param twitchLink the twitch link
+	 * @param discordId  the discord id
+	 * @param addedById  the added by id
 	 */
-	public Whitelist(Whitelist copy) {
-		this.id = copy.id;
-		this.uuid = copy.uuid;
-		this.twitchLink = copy.twitchLink;
-		this.minecraftName = copy.minecraftName;
-
-		this.discordId = copy.discordId;
-
-		this.addedById = copy.addedById;
-		this.addedByName = copy.addedByName;
-		this.addedByAvatarUrl = copy.addedByAvatarUrl;
-
-		this.blocked = copy.blocked;
-	}
-
-	/**
-	 * Returns a {@link Whitelist} from a {@link JsonObject}.
-	 *
-	 * @param jsonObject The {@link JsonObject}.
-	 *
-	 * @return The {@link Whitelist}.
-	 */
-	private static Whitelist fromJsonObject(JsonObject jsonObject) {
-		GsonConverter gson = DiscordBot.getInstance().getGsonConverter();
-
-		return gson.fromJson(jsonObject.toString(), Whitelist.class);
+	public Whitelist(UUID uuid, String twitchLink, String discordId, String addedById) {
+		this.uuid = uuid;
+		this.twitchLink = twitchLink;
+		this.discordId = discordId;
+		this.addedById = addedById;
 	}
 
 	/**
@@ -110,15 +115,8 @@ public class Whitelist {
 	 * @return The {@link CompletableFuture}.
 	 */
 	public static CompletableFuture<Boolean> isWhitelisted(User user) {
-		CompletableFuture<Boolean> future = new CompletableFuture<>();
-
-		getWhitelists(null, user.getId(), null).thenAcceptAsync(
-				whitelists -> future.complete(whitelists != null && !whitelists.isEmpty())).exceptionally(exception -> {
-			future.completeExceptionally(exception);
-			return null;
-		});
-
-		return future;
+		return WhitelistService.INSTANCE.getWhitelistByDiscordId(user.getId()).thenApply(Objects::nonNull)
+										.exceptionally(e -> false);
 	}
 
 	/**
@@ -139,13 +137,7 @@ public class Whitelist {
 		builder.setColor(0x000000);
 		builder.setTimestamp(Instant.now());
 
-		UUIDResolver.resolve(whitelist.getUuid()).thenAcceptAsync(uuidMinecraftName -> {
-			String minecraftName = null;
-
-			if (uuidMinecraftName != null) {
-				minecraftName = uuidMinecraftName.minecraftName();
-			}
-
+		DataApi.getNameByPlayerUuid(whitelist.getUuid()).thenAcceptAsync(name -> {
 			UUID uuid = whitelist.getUuid();
 			String twitchLink = whitelist.getTwitchLink();
 			RestAction<User> discordUserRest = whitelist.getDiscordUser();
@@ -169,13 +161,12 @@ public class Whitelist {
 			final CompletableFuture<User> finaldiscordUserFuture = discordUserFuture;
 			final CompletableFuture<User> finalAddedByFuture = addedByFuture;
 
-			final String finalMinecraftName = minecraftName;
 			CompletableFuture.allOf(finaldiscordUserFuture, finalAddedByFuture).thenAccept(v -> {
 				User discordUser = finaldiscordUserFuture.join();
 				User addedBy = finalAddedByFuture.join();
 
-				if (finalMinecraftName != null) {
-					builder.addField("Minecraft Name", finalMinecraftName, true);
+				if (name != null) {
+					builder.addField("Minecraft Name", name, true);
 				}
 
 				if (twitchLink != null) {
@@ -205,179 +196,12 @@ public class Whitelist {
 	}
 
 	/**
-	 * Finds any {@link Whitelist}s by an uuid, discord id or twitch link.
-	 *
-	 * @param uuid       The uuid.
-	 * @param discordId  The discord id.
-	 * @param twitchLink The twitch link.
-	 *
-	 * @return The {@link Whitelist}.
-	 */
-	public static CompletableFuture<List<Whitelist>> getWhitelists(
-			UUID uuid, String discordId,
-			String twitchLink
-	) {
-		CompletableFuture<List<Whitelist>> future = new CompletableFuture<>();
-
-		CompletableFuture.runAsync(() -> {
-			List<Whitelist> whitelists = new ArrayList<>();
-
-			Map<String, Object> parameters = new HashMap<>();
-			parameters.put("uuid", uuid != null ? uuid.toString() : "");
-			parameters.put("discord_id", discordId != null ? discordId : "");
-			parameters.put("twitch_link", twitchLink != null ? twitchLink : "");
-
-//			WebRequest request = WebRequest.builder().json(true).url(API.WHITELIST_CHECK).parameters(parameters)
-//										   .build();
-//			request.executePost().thenAccept(response -> {
-//				JsonArray jsonArray = response.bodyArray(DiscordBot.getInstance().getGsonConverter());
-//				for (int i = 0; i < jsonArray.size(); i++) {
-//					JsonObject jsonObject = (JsonObject) jsonArray.get(i);
-//					whitelists.add(fromJsonObject(jsonObject));
-//				}
-//
-//				future.complete(whitelists);
-//			}).exceptionally(exception -> {
-//				future.completeExceptionally(exception);
-//				return null;
-//			}); // FIXME: 28.01.2024 00:06 feign
-		});
-
-		return future;
-	}
-
-	/**
-	 * Finds a {@link Whitelist} by a minecraft name.
-	 *
-	 * @param minecraftName The minecraft name.
-	 *
-	 * @return The {@link Whitelist}.
-	 */
-	public static CompletableFuture<Whitelist> getWhitelistByMinecraftName(String minecraftName) {
-		CompletableFuture<Whitelist> future = new CompletableFuture<>();
-
-		UUIDResolver.resolve(minecraftName).thenAcceptAsync(uuidMinecraftName -> {
-			if (uuidMinecraftName == null) {
-				future.complete(null);
-				return;
-			}
-
-			UUID uuid = uuidMinecraftName.uuid();
-
-			getWhitelistByUUID(uuid).thenAcceptAsync(future::complete).exceptionally(exception -> {
-				future.completeExceptionally(exception);
-				return null;
-			});
-		}).exceptionally(exception -> {
-			future.completeExceptionally(exception);
-			return null;
-		});
-
-		return future;
-	}
-
-	/**
-	 * Finds a {@link Whitelist} by an uuid.
-	 *
-	 * @param uuid The uuid.
-	 *
-	 * @return The {@link Whitelist}.
-	 */
-	public static CompletableFuture<Whitelist> getWhitelistByUUID(UUID uuid) {
-		CompletableFuture<Whitelist> future = new CompletableFuture<>();
-
-		CompletableFuture.runAsync(() -> {
-//			String url = String.format(API.WHITELIST, uuid.toString());
-//			WebRequest request = WebRequest.builder().json(true).url(url).build();
-//
-//			request.executeGet().thenAccept(response -> future.complete(
-//						   fromJsonObject(response.bodyObject(DiscordBot.getInstance().getGsonConverter()))))
-//				   .exceptionally(exception -> {
-//					   future.completeExceptionally(exception);
-//					   return null;
-//				   }); // FIXME: 28.01.2024 00:06 feign
-		});
-
-		return future;
-	}
-
-	/**
-	 * Finds a {@link Whitelist} by a discordId.
-	 *
-	 * @param discordId The discordId.
-	 *
-	 * @return The {@link Whitelist}.
-	 */
-	public static CompletableFuture<Whitelist> getWhitelistByDiscordId(String discordId) {
-		CompletableFuture<Whitelist> future = new CompletableFuture<>();
-
-		CompletableFuture.runAsync(() -> {
-//			String url = String.format(API.WHITELIST_BY_DISCORD_ID, discordId);
-//			WebRequest request = WebRequest.builder().json(true).url(url).build();
-//
-//			request.executeGet().thenAccept(response -> future.complete(
-//						   fromJsonObject(response.bodyObject(DiscordBot.getInstance().getGsonConverter()))))
-//				   .exceptionally(exception -> {
-//					   future.completeExceptionally(exception);
-//					   return null;
-//				   }); // FIXME: 28.01.2024 00:05 feign
-		});
-
-		return future;
-	}
-
-	/**
-	 * Returns all whitelists
-	 *
-	 * @return The List of {@link Whitelist}.
-	 */
-	public static CompletableFuture<List<Whitelist>> getAllWhitelists() {
-		CompletableFuture<List<Whitelist>> future = new CompletableFuture<>();
-
-		CompletableFuture.runAsync(() -> {
-//			WebRequest request = WebRequest.builder().json(true).url(API.WHITELISTS).build();
-//			request.executeGet().thenAccept(response -> {
-//				List<Whitelist> whitelists = new ArrayList<>();
-//				JsonArray jsonArray = response.bodyArray(DiscordBot.getInstance().getGsonConverter());
-//
-//				for (int i = 0; i < jsonArray.size(); i++) {
-//					JsonObject jsonObject = (JsonObject) jsonArray.get(i);
-//					whitelists.add(fromJsonObject(jsonObject));
-//				}
-//
-//				future.complete(whitelists);
-//			}).exceptionally(exception -> {
-//				future.completeExceptionally(exception);
-//				return null;
-//			}); // FIXME: 28.01.2024 00:05 feign
-		});
-
-		return future;
-	}
-
-	/**
 	 * Creates a new {@link Whitelist}.
 	 *
 	 * @return The {@link CompletableFuture}.
 	 */
 	public CompletableFuture<Whitelist> create() {
-		CompletableFuture<Whitelist> future = new CompletableFuture<>();
-
-		CompletableFuture.runAsync(() -> {
-//			WebRequest request = WebRequest.builder().json(true).parameters(toParameters()).url(API.WHITELISTS).build();
-//			request.executePost().thenAccept(response -> {
-//				Whitelist tempWhitelist =
-//						fromJsonObject(response.bodyObject(DiscordBot.getInstance().getGsonConverter()));
-//				id = tempWhitelist.id;
-//
-//				future.complete(this);
-//			}).exceptionally(exception -> {
-//				future.completeExceptionally(exception);
-//				return null;
-//			}); // FIXME: 28.01.2024 00:05 feign
-		});
-
-		return future;
+		return WhitelistService.INSTANCE.addWhitelist(this);
 	}
 
 	/**
@@ -386,67 +210,15 @@ public class Whitelist {
 	 * @return The {@link CompletableFuture}.
 	 */
 	public CompletableFuture<Whitelist> update() {
-		CompletableFuture<Whitelist> future = new CompletableFuture<>();
-
-		CompletableFuture.runAsync(() -> {
-//			String url = String.format(API.WHITELIST, uuid.toString());
-//			WebRequest request = WebRequest.builder().json(true).parameters(toParameters()).url(url).build();
-//			request.executePost().thenAccept(response -> {
-//				response.bodyObject(DiscordBot.getInstance().getGsonConverter());
-//				future.complete(this);
-//			}).exceptionally(exception -> {
-//				future.completeExceptionally(exception);
-//				return null;
-//			}); // FIXME: 28.01.2024 00:05 feign
-		});
-
-		return future;
+		return WhitelistService.INSTANCE.updateWhitelist(this);
 	}
 
 	/**
-	 * Converts the {@link Whitelist} to a {@link Map} of parameters.
+	 * Gets added by.
 	 *
-	 * @return The {@link Map} of parameters.
-	 */
-	public Map<String, Object> toParameters() {
-		Map<String, Object> parameters = new HashMap<>();
-
-		if (uuid != null) {
-			parameters.put("uuid", uuid.toString());
-		}
-
-		if (twitchLink != null) {
-			parameters.put("twitch_link", twitchLink);
-		}
-
-		if (discordId != null) {
-			parameters.put("discord_id", discordId);
-		}
-
-		if (addedById != null) {
-			parameters.put("added_by_id", addedById);
-		}
-
-		if (addedByName != null) {
-			parameters.put("added_by_name", addedByName);
-		}
-
-		if (addedByAvatarUrl != null) {
-			parameters.put("added_by_avatar_url", addedByAvatarUrl);
-		}
-
-		if (minecraftName != null) {
-			parameters.put("minecraft_name", minecraftName);
-		}
-
-		parameters.put("blocked", blocked ? "1" : "0");
-
-		return parameters;
-	}
-
-	/**
 	 * @return the addedBy
 	 */
+	@JsonIgnore
 	public RestAction<User> getAddedBy() {
 		if (addedById == null) {
 			return null;
@@ -456,78 +228,11 @@ public class Whitelist {
 	}
 
 	/**
-	 * @return the addedByAvatarUrl
-	 */
-	public String getAddedByAvatarUrl() {
-		return addedByAvatarUrl;
-	}
-
-	/**
-	 * @return the addedById
-	 */
-	public String getAddedById() {
-		return addedById;
-	}
-
-	/**
-	 * @return the addedByName
-	 */
-	public String getAddedByName() {
-		return addedByName;
-	}
-
-	/**
-	 * @return the discordId
-	 */
-	public String getDiscordId() {
-		return discordId;
-	}
-
-	/**
-	 * @return the id
-	 */
-	public long getId() {
-		return id;
-	}
-
-	/**
-	 * @return the twitchLink
-	 */
-	public String getTwitchLink() {
-		return twitchLink;
-	}
-
-	/**
-	 * @return the uuid
-	 */
-	public UUID getUuid() {
-		return uuid;
-	}
-
-	/**
-	 * @return the minecraftName
-	 */
-	public String getMinecraftName() {
-		return minecraftName;
-	}
-
-	/**
-	 * @return the blocked
-	 */
-	public boolean isBlocked() {
-		return blocked;
-	}
-
-	/**
-	 * @param blocked the blocked to set
-	 */
-	public void setBlocked(boolean blocked) {
-		this.blocked = blocked;
-	}
-
-	/**
+	 * Gets discord user.
+	 *
 	 * @return the discordUser
 	 */
+	@JsonIgnore
 	public RestAction<User> getDiscordUser() {
 		if (discordId == null) {
 			return null;
@@ -535,5 +240,4 @@ public class Whitelist {
 
 		return DiscordBot.getInstance().getJda().retrieveUserById(discordId);
 	}
-
 }

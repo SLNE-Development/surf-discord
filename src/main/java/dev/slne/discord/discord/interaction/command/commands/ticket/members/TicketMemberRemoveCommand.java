@@ -17,90 +17,93 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The type Ticket member remove command.
+ */
 public class TicketMemberRemoveCommand extends TicketCommand {
 
-    /**
-     * Creates a new TicketMemberRemoveCommand.
-     */
-    public TicketMemberRemoveCommand() {
-        super("remove", "Entferne einen Nutzer von einem Ticket.");
-    }
+	/**
+	 * Creates a new TicketMemberRemoveCommand.
+	 */
+	public TicketMemberRemoveCommand() {
+		super("remove", "Entferne einen Nutzer von einem Ticket.");
+	}
 
-    @Override
-    public @Nonnull List<SubcommandData> getSubCommands() {
-        return new ArrayList<>();
-    }
+	@Override
+	public @Nonnull List<SubcommandData> getSubCommands() {
+		return new ArrayList<>();
+	}
 
-    @Override
-    public @Nonnull List<OptionData> getOptions() {
-        List<OptionData> options = new ArrayList<>();
+	@Override
+	public @Nonnull List<OptionData> getOptions() {
+		List<OptionData> options = new ArrayList<>();
 
-        options.add(new OptionData(OptionType.USER, "user", "Der Nutzer, der hinzugefügt werden soll.", true, false));
+		options.add(new OptionData(OptionType.USER, "user", "Der Nutzer, der hinzugefügt werden soll.", true, false));
 
-        return options;
-    }
+		return options;
+	}
 
-    @Override
-    public @Nonnull DiscordPermission getPermission() {
-        return DiscordPermission.USE_COMMAND_TICKET_REMOVE_USER;
-    }
+	@Override
+	public @Nonnull DiscordPermission getPermission() {
+		return DiscordPermission.USE_COMMAND_TICKET_REMOVE_USER;
+	}
 
-    @Override
-    public void execute(SlashCommandInteractionEvent interaction) {
-        interaction.deferReply(true).queue(hook -> {
-            OptionMapping userOption = interaction.getOption("user");
+	@Override
+	public void execute(SlashCommandInteractionEvent interaction) {
+		interaction.deferReply(true).queue(hook -> {
+			OptionMapping userOption = interaction.getOption("user");
 
-            if (userOption == null) {
-                hook.editOriginal("Du musst einen Nutzer angeben.").queue();
-                return;
-            }
+			if (userOption == null) {
+				hook.editOriginal("Du musst einen Nutzer angeben.").queue();
+				return;
+			}
 
-            User user = userOption.getAsUser();
+			User user = userOption.getAsUser();
 
-            if (user.equals(DiscordBot.getInstance().getJda().getSelfUser())) {
-                hook.editOriginal("Du kannst den Bot nicht entfernen.").queue();
-                return;
-            }
+			if (user.equals(DiscordBot.getInstance().getJda().getSelfUser())) {
+				hook.editOriginal("Du kannst den Bot nicht entfernen.").queue();
+				return;
+			}
 
-            TicketMember ticketMember = getTicket().getActiveTicketMember(user);
+			TicketMember ticketMember = getTicket().getActiveTicketMember(user);
 
-            if (ticketMember == null) {
-                hook.editOriginal("Dieser Nutzer ist nicht in diesem Ticket.").queue();
-                return;
-            }
+			if (ticketMember == null) {
+				hook.editOriginal("Dieser Nutzer ist nicht in diesem Ticket.").queue();
+				return;
+			}
 
-            if (ticketMember.isRemoved()) {
-                hook.editOriginal("Dieser Nutzer wurde bereits entfernt.").queue();
-                return;
-            }
+			if (ticketMember.isRemoved()) {
+				hook.editOriginal("Dieser Nutzer wurde bereits entfernt.").queue();
+				return;
+			}
 
-            ticketMember.setRemovedByAvatarUrl(interaction.getUser().getAvatarUrl());
-            ticketMember.setRemovedById(interaction.getUser().getId());
-            ticketMember.setRemovedByName(interaction.getUser().getName());
-            getTicket().removeTicketMember(ticketMember).thenAcceptAsync(ticketMemberRemoved -> {
-                if (ticketMemberRemoved == null) {
-                    hook.editOriginal("Der Nutzer konnte nicht entfernt werden.").queue();
-                    return;
-                }
+			ticketMember.setRemovedByAvatarUrl(interaction.getUser().getAvatarUrl());
+			ticketMember.setRemovedById(interaction.getUser().getId());
+			ticketMember.setRemovedByName(interaction.getUser().getName());
+			getTicket().removeTicketMember(ticketMember).thenAcceptAsync(ticketMemberRemoved -> {
+				if (ticketMemberRemoved == null) {
+					hook.editOriginal("Der Nutzer konnte nicht entfernt werden.").queue();
+					return;
+				}
 
-                TicketChannel.removeTicketMember(getTicket(), ticketMember).thenAcceptAsync(v -> {
-                    hook.editOriginal("Der Nutzer wurde entfernt.").queue();
-                    getChannel().sendMessage(
-                                    user.getAsMention() + " wurde von " + interaction.getUser().getAsMention() + " entfernt.")
-                            .queue();
-                }).exceptionally(exception -> {
-                    DataApi.getDataInstance().logError(getClass(), "Error while removing ticket member", exception);
-                    hook.editOriginal("Der Nutzer konnte nicht entfernt werden.").queue();
+				TicketChannel.removeTicketMember(getTicket(), ticketMember).thenAcceptAsync(v -> {
+					hook.editOriginal("Der Nutzer wurde entfernt.").queue();
+					getChannel().sendMessage(
+										user.getAsMention() + " wurde von " + interaction.getUser().getAsMention() + " entfernt.")
+								.queue();
+				}).exceptionally(exception -> {
+					DataApi.getDataInstance().logError(getClass(), "Error while removing ticket member", exception);
+					hook.editOriginal("Der Nutzer konnte nicht entfernt werden.").queue();
 
-                    return null;
-                });
-            }).exceptionally(exception -> {
-                DataApi.getDataInstance().logError(getClass(), "Error while removing ticket member", exception);
-                hook.editOriginal("Der Nutzer konnte nicht entfernt werden.").queue();
+					return null;
+				});
+			}).exceptionally(exception -> {
+				DataApi.getDataInstance().logError(getClass(), "Error while removing ticket member", exception);
+				hook.editOriginal("Der Nutzer konnte nicht entfernt werden.").queue();
 
-                return null;
-            });
-        });
-    }
+				return null;
+			});
+		});
+	}
 
 }

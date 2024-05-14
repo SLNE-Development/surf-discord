@@ -1,16 +1,24 @@
-package dev.slne.discord.listener.pusher.ticket;
+package dev.slne.discord.listener.redis.ticket;
 
 import dev.slne.data.api.DataApi;
 import dev.slne.data.api.spring.redis.event.annotation.DataListener;
 import dev.slne.data.api.spring.redis.event.annotation.DataListeners;
 import dev.slne.discord.DiscordBot;
-import dev.slne.discord.datasource.pusher.packets.TicketClosePacket;
+import dev.slne.discord.datasource.redis.packets.TicketClosePacket;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketChannel;
 
+/**
+ * The type Ticket close listener.
+ */
 @DataListeners
 public class TicketCloseListener {
 
+	/**
+	 * On ticket close.
+	 *
+	 * @param packet the packet
+	 */
 	@DataListener(channels = "ticket:close")
 	public void onTicketClose(TicketClosePacket packet) {
 		Ticket ticket = packet.getTicket();

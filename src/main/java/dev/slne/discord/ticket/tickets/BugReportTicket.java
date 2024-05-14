@@ -1,5 +1,6 @@
 package dev.slne.discord.ticket.tickets;
 
+import dev.slne.discord.config.ConfigUtil;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketType;
 import net.dv8tion.jda.api.entities.Guild;
@@ -8,6 +9,9 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * The type Bug report ticket.
+ */
 public class BugReportTicket extends Ticket {
 
 	/**
@@ -29,7 +33,7 @@ public class BugReportTicket extends Ticket {
 		}
 
 		getTicketAuthor().queue(author -> {
-			String message = ""; // FIXME: 27.01.2024 21:58 add config
+			String message = ConfigUtil.getConfig().ticketConfig().bugreportMessage();
 			message = message.replace("%author%", author.getAsMention());
 
 			channel.sendMessage(message).queue();

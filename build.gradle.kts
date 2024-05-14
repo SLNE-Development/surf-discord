@@ -9,6 +9,7 @@ plugins {
 
     id("org.hibernate.build.maven-repo-auth") version "3.0.4"
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("io.freefair.lombok") version "8.6"
 }
 
 repositories {
@@ -24,11 +25,20 @@ repositories {
         name = "codemc-releases"
         url = uri("https://repo.codemc.io/repository/maven-releases/")
     }
+    
+    maven("https://libraries.minecraft.net")
+}
+
+configurations.all {
+    resolutionStrategy {
+        cacheChangingModulesFor(0, "seconds")
+    }
 }
 
 dependencies {
     api(libs.dev.slne.surf.surf.api.core.api)
     api(libs.net.dv8tion.jda) {
+        isChanging = true
         exclude(group = "org.slf4j", module = "slf4j-api")
         exclude(group = "ch.qos.logback", module = "logback-classic")
         exclude(group = "ch.qos.logback", module = "logback-core")

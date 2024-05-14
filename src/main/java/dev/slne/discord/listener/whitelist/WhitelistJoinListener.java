@@ -3,7 +3,8 @@ package dev.slne.discord.listener.whitelist;
 import dev.slne.data.api.DataApi;
 import dev.slne.discord.discord.guild.DiscordGuild;
 import dev.slne.discord.discord.guild.DiscordGuilds;
-import dev.slne.discord.whitelist.Whitelist;
+import dev.slne.discord.whitelist.WhitelistService;
+import feign.FeignException;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
@@ -11,42 +12,50 @@ import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 import javax.annotation.Nonnull;
+import java.util.concurrent.CompletionException;
 
+/**
+ * The type Whitelist join listener.
+ */
 public class WhitelistJoinListener extends ListenerAdapter {
 
-    @Override
-    public void onGuildMemberJoin(@Nonnull GuildMemberJoinEvent event) {
-        User user = event.getUser();
+	@Override
+	public void onGuildMemberJoin(@Nonnull GuildMemberJoinEvent event) {
+		User user = event.getUser();
 
-        Whitelist.getWhitelistByDiscordId(user.getId()).thenAcceptAsync(whitelist -> {
-            if (whitelist == null) {
-                return;
-            }
+		WhitelistService.INSTANCE.getWhitelistByDiscordId(user.getId()).thenAcceptAsync(whitelist -> {
+			if (whitelist == null) {
+				return;
+			}
 
-            Guild guild = event.getGuild();
-            DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
+			Guild guild = event.getGuild();
+			DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
 
-            if (discordGuild == null) {
-                return;
-            }
+			if (discordGuild == null) {
+				return;
+			}
 
-            Role whitelistedRole = discordGuild.getWhitelistedRole();
+			Role whitelistedRole = discordGuild.getWhitelistedRole();
 
-            if (whitelistedRole == null) {
-                return;
-            }
+			if (whitelistedRole == null) {
+				return;
+			}
 
-            guild.retrieveMember(user).queue(member -> {
-                if (member == null) {
-                    return;
-                }
+			guild.retrieveMember(user).queue(member -> {
+				if (member == null) {
+					return;
+				}
 
-                guild.addRoleToMember(member, whitelistedRole).queue();
-            });
-        }).exceptionally(throwable -> {
-            DataApi.getDataInstance().logError(getClass(), "Failed to get whitelist by discord id.", throwable);
-            return null;
-        });
-    }
+				guild.addRoleToMember(member, whitelistedRole).queue();
+			});
+		}).exceptionally(throwable -> {
+			if (throwable instanceof CompletionException && throwable.getCause() instanceof FeignException.NotFound) {
+				return null; // User is not whitelisted - ignore
+			}
+
+			DataApi.getDataInstance().logError(getClass(), "Failed to get whitelist by discord id.", throwable);
+			return null;
+		});
+	}
 
 }

@@ -8,6 +8,11 @@ import dev.slne.data.api.DataApi;
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.datasource.Times;
 import dev.slne.discord.ticket.Ticket;
+import dev.slne.discord.ticket.message.attachment.TicketMessageAttachment;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Message.Attachment;
 import net.dv8tion.jda.api.entities.MessageReference;
@@ -21,18 +26,23 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * The type Ticket message.
  */
+@Getter
+@ToString
+@EqualsAndHashCode
+@NoArgsConstructor
 public class TicketMessage {
 
 	@JsonProperty("id")
 	private long id;
 
 	@JsonProperty("ticket_id")
-	private long ticketRawId;
+	private UUID ticketId;
 
 	@JsonProperty("content")
 	private String jsonContent;
@@ -62,40 +72,10 @@ public class TicketMessage {
 	private String referencesMessageId;
 
 	@JsonProperty("attachments")
-	private List<TicketMessageAttachement> attachments;
+	private List<TicketMessageAttachment> attachments;
 
 	@JsonProperty("bot_message")
 	private boolean botMessage;
-
-	/**
-	 * Instantiates a new Ticket message.
-	 */
-	public TicketMessage() {
-	}
-
-	/**
-	 * Constructor for a ticket message
-	 *
-	 * @param clone The ticket message to clone
-	 */
-	public TicketMessage(TicketMessage clone) {
-		this.ticketRawId = clone.ticketRawId;
-		this.messageId = clone.messageId;
-		this.jsonContent = clone.jsonContent;
-
-		this.authorId = clone.authorId;
-		this.authorName = clone.authorName;
-		this.authorAvatarUrl = clone.authorAvatarUrl;
-
-		this.messageCreatedAt = clone.messageCreatedAt;
-		this.messageEditedAt = clone.messageEditedAt;
-		this.messageDeletedAt = clone.messageDeletedAt;
-
-		this.referencesMessageId = clone.referencesMessageId;
-
-		this.attachments = new ArrayList<>(clone.attachments);
-		this.botMessage = clone.botMessage;
-	}
 
 	/**
 	 * Constructor for a ticket message
@@ -104,7 +84,7 @@ public class TicketMessage {
 	 * @param message The message to create the ticket message from
 	 */
 	public TicketMessage(Ticket ticket, Message message) {
-		this.ticketRawId = ticket.getId();
+		this.ticketId = ticket.getTicketId();
 
 		this.messageId = message.getId();
 		this.jsonContent = message.getContentDisplay();
@@ -140,13 +120,39 @@ public class TicketMessage {
 
 			String description = attachment.getDescription();
 
-			TicketMessageAttachement attachement = new TicketMessageAttachement(this, name, url, extension, size,
-																				description
+			TicketMessageAttachment attachement = new TicketMessageAttachment(this, name, url, extension, size,
+																			  description
 			);
 			this.attachments.add(attachement);
 		}
 
 		this.botMessage = message.getAuthor().isBot();
+	}
+
+	/**
+	 * Copy ticket message.
+	 *
+	 * @param clone the clone
+	 *
+	 * @return the ticket message
+	 */
+	public static TicketMessage copy(TicketMessage clone) {
+		TicketMessage ticketMessage = new TicketMessage();
+
+		ticketMessage.ticketId = clone.ticketId;
+		ticketMessage.messageId = clone.messageId;
+		ticketMessage.jsonContent = clone.jsonContent;
+		ticketMessage.authorId = clone.authorId;
+		ticketMessage.authorName = clone.authorName;
+		ticketMessage.authorAvatarUrl = clone.authorAvatarUrl;
+		ticketMessage.messageCreatedAt = clone.messageCreatedAt;
+		ticketMessage.messageEditedAt = clone.messageEditedAt;
+		ticketMessage.messageDeletedAt = clone.messageDeletedAt;
+		ticketMessage.referencesMessageId = clone.referencesMessageId;
+		ticketMessage.attachments = new ArrayList<>(clone.attachments);
+		ticketMessage.botMessage = clone.botMessage;
+
+		return ticketMessage;
 	}
 
 	/**
@@ -177,7 +183,7 @@ public class TicketMessage {
 				return;
 			}
 
-			TicketMessage newMessage = new TicketMessage(this);
+			TicketMessage newMessage = TicketMessage.copy(this);
 			newMessage.messageDeletedAt = ZonedDateTime.now();
 
 			newMessage.create().thenAcceptAsync(future::complete).exceptionally(throwable -> {
@@ -228,32 +234,22 @@ public class TicketMessage {
 		Ticket ticket = getTicket();
 
 		if (ticket == null) {
-			future.complete(null);
+			future.completeExceptionally(new IllegalStateException("Ticket not found"));
 			return future;
 		}
 
-		String ticketId = ticket.getTicketId();
+		UUID ticketId = ticket.getTicketId();
 
 		if (ticketId == null) {
-			future.complete(null);
+			future.completeExceptionally(new IllegalStateException("Ticket Id not found"));
 			return future;
 		}
 
-		CompletableFuture.runAsync(() -> {
-//			String url = String.format(API.TICKET_MESSAGES, ticketId);
-//			WebRequest request = WebRequest.builder().url(url).json(true).parameters(toParameters()).build();
-//			request.executePost().thenAccept(response -> {
-//				TicketMessage tempMessage =
-//						fromJsonObject(response.bodyObject(DiscordBot.getInstance().getGsonConverter()));
-//				id = tempMessage.id;
-//
-//				future.complete(this);
-//			}).exceptionally(throwable -> {
-//				DataApi.getDataInstance().logError(getClass(), "Ticket message could not be created", throwable);
-//				future.completeExceptionally(throwable);
-//				return null;
-//			}); // FIXME: 28.01.2024 00:06 feign
-		});
+		TicketMessageService.INSTANCE.createTicketMessage(ticket, this).thenAcceptAsync(future::complete)
+									 .exceptionally(exception -> {
+										 future.completeExceptionally(exception);
+										 return null;
+									 });
 
 		return future;
 	}
@@ -267,7 +263,7 @@ public class TicketMessage {
 	 */
 	public CompletableFuture<TicketMessage> update(Message updatedMessage) {
 		CompletableFuture<TicketMessage> future = new CompletableFuture<>();
-		TicketMessage newTicketMessage = new TicketMessage(this);
+		TicketMessage newTicketMessage = TicketMessage.copy(this);
 
 		newTicketMessage.jsonContent = updatedMessage.getContentDisplay();
 		newTicketMessage.messageCreatedAt =
@@ -288,8 +284,8 @@ public class TicketMessage {
 
 			String description = attachment.getDescription();
 
-			TicketMessageAttachement attachement = new TicketMessageAttachement(newTicketMessage, name, url, extension,
-																				size, description
+			TicketMessageAttachment attachement = new TicketMessageAttachment(newTicketMessage, name, url, extension,
+																			  size, description
 			);
 			newTicketMessage.attachments.add(attachement);
 		}
@@ -358,7 +354,7 @@ public class TicketMessage {
 	 * @return the ticket
 	 */
 	public Ticket getTicket() {
-		return DiscordBot.getInstance().getTicketManager().getTicketById(ticketRawId);
+		return DiscordBot.getInstance().getTicketManager().getTicketById(ticketId);
 	}
 
 	/**
@@ -388,122 +384,5 @@ public class TicketMessage {
 		});
 
 		return future;
-	}
-
-	/**
-	 * Gets id.
-	 *
-	 * @return the id
-	 */
-	public long getId() {
-		return id;
-	}
-
-	/**
-	 * Gets ticket raw id.
-	 *
-	 * @return the ticket raw id
-	 */
-	public long getTicketRawId() {
-		return ticketRawId;
-	}
-
-	/**
-	 * Gets json content.
-	 *
-	 * @return the json content
-	 */
-	public String getJsonContent() {
-		return jsonContent;
-	}
-
-	/**
-	 * Gets message id.
-	 *
-	 * @return the message id
-	 */
-	public String getMessageId() {
-		return messageId;
-	}
-
-	/**
-	 * Gets author id.
-	 *
-	 * @return the author id
-	 */
-	public String getAuthorId() {
-		return authorId;
-	}
-
-	/**
-	 * Gets author name.
-	 *
-	 * @return the author name
-	 */
-	public String getAuthorName() {
-		return authorName;
-	}
-
-	/**
-	 * Gets author avatar url.
-	 *
-	 * @return the author avatar url
-	 */
-	public String getAuthorAvatarUrl() {
-		return authorAvatarUrl;
-	}
-
-	/**
-	 * Gets message created at.
-	 *
-	 * @return the message created at
-	 */
-	public ZonedDateTime getMessageCreatedAt() {
-		return messageCreatedAt;
-	}
-
-	/**
-	 * Gets message edited at.
-	 *
-	 * @return the message edited at
-	 */
-	public ZonedDateTime getMessageEditedAt() {
-		return messageEditedAt;
-	}
-
-	/**
-	 * Gets message deleted at.
-	 *
-	 * @return the message deleted at
-	 */
-	public ZonedDateTime getMessageDeletedAt() {
-		return messageDeletedAt;
-	}
-
-	/**
-	 * Gets references message id.
-	 *
-	 * @return the references message id
-	 */
-	public String getReferencesMessageId() {
-		return referencesMessageId;
-	}
-
-	/**
-	 * Gets attachments.
-	 *
-	 * @return the attachments
-	 */
-	public List<TicketMessageAttachement> getAttachments() {
-		return attachments;
-	}
-
-	/**
-	 * Is bot message boolean.
-	 *
-	 * @return the boolean
-	 */
-	public boolean isBotMessage() {
-		return botMessage;
 	}
 }
