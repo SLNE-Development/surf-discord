@@ -1,8 +1,7 @@
 package dev.slne.discord.discord.interaction.command.commands.whitelist;
 
-import dev.slne.discord.discord.guild.DiscordGuild;
-import dev.slne.discord.discord.guild.DiscordGuilds;
-import dev.slne.discord.discord.guild.permission.DiscordPermission;
+import dev.slne.discord.config.discord.GuildConfig;
+import dev.slne.discord.discord.guild.permission.CommandPermission;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
@@ -38,8 +37,8 @@ public class WhitelistRoleRemoveCommand extends DiscordCommand {
 	}
 
 	@Override
-	public @Nonnull DiscordPermission getPermission() {
-		return DiscordPermission.USE_COMMAND_WHITELIST_ROLE;
+	public @Nonnull CommandPermission getPermission() {
+		return CommandPermission.WHITELIST_ROLE;
 	}
 
 	@Override
@@ -52,14 +51,14 @@ public class WhitelistRoleRemoveCommand extends DiscordCommand {
 				return;
 			}
 
-			DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
+			GuildConfig guildConfig = GuildConfig.getConfig(guild.getId());
 
-			if (discordGuild == null) {
+			if (guildConfig == null) {
 				hook.editOriginal("Dieser Server ist nicht registriert.").queue();
 				return;
 			}
 
-			Role whitelistedRole = guild.getRoleById(discordGuild.getWhitelistedRoleId());
+			Role whitelistedRole = guild.getRoleById(guildConfig.getWhitelistRoleId());
 
 			if (whitelistedRole == null) {
 				hook.editOriginal("Die Whitelist Rolle ist nicht registriert.").queue();

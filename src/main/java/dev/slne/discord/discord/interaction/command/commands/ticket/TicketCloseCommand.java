@@ -1,7 +1,7 @@
 package dev.slne.discord.discord.interaction.command.commands.ticket;
 
 import dev.slne.data.api.DataApi;
-import dev.slne.discord.discord.guild.permission.DiscordPermission;
+import dev.slne.discord.discord.guild.permission.CommandPermission;
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand;
 import dev.slne.discord.ticket.result.TicketCloseResult;
 import net.dv8tion.jda.api.entities.User;
@@ -42,8 +42,8 @@ public class TicketCloseCommand extends TicketCommand {
 	}
 
 	@Override
-	public @Nonnull DiscordPermission getPermission() {
-		return DiscordPermission.USE_COMMAND_TICKET_CLOSE;
+	public @Nonnull CommandPermission getPermission() {
+		return CommandPermission.TICKET_CLOSE;
 	}
 
 	@Override

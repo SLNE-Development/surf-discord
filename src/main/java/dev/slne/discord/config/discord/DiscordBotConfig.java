@@ -1,22 +1,23 @@
 package dev.slne.discord.config.discord;
 
-import space.arim.dazzleconf.annote.ConfDefault;
-import space.arim.dazzleconf.annote.ConfHeader;
-import space.arim.dazzleconf.sorter.AnnotationBasedSorter;
+import lombok.Getter;
+import lombok.ToString;
+import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 
 /**
  * The interface Discord bot config.
  */
-@ConfHeader("Discord Bot Config")
-public interface DiscordBotConfig {
+@ConfigSerializable
+@Getter
+@ToString
+public class DiscordBotConfig {
+
+	private String botToken;
 
 	/**
-	 * Bot token string.
-	 *
-	 * @return the string
+	 * Instantiates a new Discord bot config.
 	 */
-	@AnnotationBasedSorter.Order(0)
-	@ConfDefault.DefaultString("")
-	String botToken();
+	public DiscordBotConfig() {
+	}
 
 }

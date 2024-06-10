@@ -1,9 +1,13 @@
 package dev.slne.discord.ticket;
 
 import dev.slne.discord.DiscordBot;
+import dev.slne.discord.config.BotConfig;
+import dev.slne.discord.config.ticket.TicketTypeConfig;
 import dev.slne.discord.ticket.result.TicketCreateResult;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
+import space.arim.dazzleconf.annote.SubSection;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -83,9 +87,25 @@ public class TicketCreator {
 	 * @param runnable the runnable
 	 */
 	private static void runAfterOpen(CompletableFuture<TicketCreateResult> future, Ticket ticket, Runnable runnable) {
-		ticket.afterOpen().thenAcceptAsync(v -> {
-			runnable.run();
-			future.complete(TicketCreateResult.SUCCESS);
+		Map<String, @SubSection TicketTypeConfig> configMap =
+				BotConfig.getConfig().getTicketConfig().getTicketTypes();
+
+		System.out.println(configMap);
+
+		TicketTypeConfig ticketTypeConfig = TicketTypeConfig.getConfig(ticket.getTicketType());
+
+		ticket.printOpeningMessages(ticketTypeConfig).thenAcceptAsync(v -> {
+			if (ticketTypeConfig.isShouldPrintWlQuery()) {
+				ticket.printWlQueryEmbeds();
+			}
+
+			ticket.afterOpen().thenAcceptAsync(v1 -> {
+				runnable.run();
+				future.complete(TicketCreateResult.SUCCESS);
+			}).exceptionally(exception -> {
+				future.completeExceptionally(exception);
+				return null;
+			});
 		}).exceptionally(exception -> {
 			future.completeExceptionally(exception);
 			return null;

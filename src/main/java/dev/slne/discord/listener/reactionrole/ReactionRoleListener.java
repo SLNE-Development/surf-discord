@@ -1,9 +1,8 @@
 package dev.slne.discord.listener.reactionrole;
 
 import dev.slne.data.api.DataApi;
-import dev.slne.discord.discord.guild.DiscordGuild;
-import dev.slne.discord.discord.guild.DiscordGuilds;
-import dev.slne.discord.discord.guild.reactionrole.ReactionRoleConfig;
+import dev.slne.discord.config.discord.GuildConfig;
+import dev.slne.discord.config.discord.ReactionRoleConfig;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -58,13 +57,13 @@ public class ReactionRoleListener extends ListenerAdapter {
 	@Override
 	public void onMessageReactionRemoveAll(@Nonnull MessageReactionRemoveAllEvent event) {
 		Guild guild = event.getGuild();
-		DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
+		GuildConfig guildConfig = GuildConfig.getConfig(guild.getId());
 
-		if (discordGuild == null) {
+		if (guildConfig == null) {
 			return;
 		}
 
-		ReactionRoleConfig reactionRoleConfig = discordGuild.getReactionRoleConfig();
+		ReactionRoleConfig reactionRoleConfig = guildConfig.getReactionRole();
 
 		if (reactionRoleConfig == null) {
 			return;
@@ -90,16 +89,16 @@ public class ReactionRoleListener extends ListenerAdapter {
 	@Override
 	public void onMessageReactionRemoveEmoji(@Nonnull MessageReactionRemoveEmojiEvent event) {
 		Guild guild = event.getGuild();
-		DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
+		GuildConfig guildConfig = GuildConfig.getConfig(guild.getId());
 
 		Emoji emoji = event.getEmoji();
 		String formatted = emoji.getName();
 
-		if (discordGuild == null) {
+		if (guildConfig == null) {
 			return;
 		}
 
-		ReactionRoleConfig reactionRoleConfig = discordGuild.getReactionRoleConfig();
+		ReactionRoleConfig reactionRoleConfig = guildConfig.getReactionRole();
 
 		if (reactionRoleConfig == null) {
 			return;
@@ -111,7 +110,7 @@ public class ReactionRoleListener extends ListenerAdapter {
 			return;
 		}
 
-		if (!reactionRoleConfig.reaction().equals(formatted)) {
+		if (!reactionRoleConfig.getReaction().equals(formatted)) {
 			return;
 		}
 
@@ -146,18 +145,18 @@ public class ReactionRoleListener extends ListenerAdapter {
 
 		Emoji emoji = messageReaction.getEmoji();
 
+		GuildConfig guildConfig = GuildConfig.getConfig(guild.getId());
+
+		if (guildConfig == null) {
+			return;
+		}
+
 		textChannel.retrieveMessageById(messageId).queue(message -> {
 			if (message == null) {
 				return;
 			}
 
-			DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
-
-			if (discordGuild == null) {
-				return;
-			}
-
-			ReactionRoleConfig reactionRoleConfig = discordGuild.getReactionRoleConfig();
+			ReactionRoleConfig reactionRoleConfig = guildConfig.getReactionRole();
 
 			if (reactionRoleConfig == null) {
 				return;
@@ -178,7 +177,7 @@ public class ReactionRoleListener extends ListenerAdapter {
 					return;
 				}
 
-				if (Objects.requireNonNull(reactionRoleConfig.getEmoji()).hashCode() != emoji.hashCode()) {
+				if (Objects.requireNonNull(reactionRoleConfig.getReaction()).hashCode() != emoji.hashCode()) {
 					return;
 				}
 
@@ -237,13 +236,13 @@ public class ReactionRoleListener extends ListenerAdapter {
 				return;
 			}
 
-			DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
+			GuildConfig guildConfig = GuildConfig.getConfig(guild.getId());
 
-			if (discordGuild == null) {
+			if (guildConfig == null) {
 				return;
 			}
 
-			ReactionRoleConfig reactionRoleConfig = discordGuild.getReactionRoleConfig();
+			ReactionRoleConfig reactionRoleConfig = guildConfig.getReactionRole();
 
 			if (reactionRoleConfig == null) {
 				return;
@@ -264,7 +263,7 @@ public class ReactionRoleListener extends ListenerAdapter {
 					return;
 				}
 
-				if (Objects.requireNonNull(reactionRoleConfig.getEmoji()).hashCode() != emoji.hashCode()) {
+				if (Objects.requireNonNull(reactionRoleConfig.getReaction()).hashCode() != emoji.hashCode()) {
 					return;
 				}
 

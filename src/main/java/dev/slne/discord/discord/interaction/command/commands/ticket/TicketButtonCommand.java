@@ -1,7 +1,7 @@
 package dev.slne.discord.discord.interaction.command.commands.ticket;
 
 import dev.slne.discord.DiscordBot;
-import dev.slne.discord.discord.guild.permission.DiscordPermission;
+import dev.slne.discord.discord.guild.permission.CommandPermission;
 import dev.slne.discord.discord.interaction.button.DiscordButton;
 import dev.slne.discord.discord.interaction.button.DiscordButtonManager;
 import dev.slne.discord.discord.interaction.button.buttons.ticket.TicketButton;
@@ -43,8 +43,8 @@ public class TicketButtonCommand extends DiscordCommand {
 	}
 
 	@Override
-	public @Nonnull DiscordPermission getPermission() {
-		return DiscordPermission.USE_COMMAND_TICKET_BUTTONS;
+	public @Nonnull CommandPermission getPermission() {
+		return CommandPermission.TICKET_BUTTONS;
 	}
 
 	@Override

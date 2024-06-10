@@ -2,14 +2,15 @@ package dev.slne.discord.ticket;
 
 import dev.slne.data.api.DataApi;
 import dev.slne.discord.DiscordBot;
-import dev.slne.discord.discord.guild.DiscordGuild;
-import dev.slne.discord.discord.guild.DiscordGuilds;
-import dev.slne.discord.discord.guild.role.DiscordRole;
+import dev.slne.discord.config.BotConfig;
+import dev.slne.discord.config.role.RoleConfig;
+import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.ticket.TicketPermissionOverride.Type;
 import dev.slne.discord.ticket.member.TicketMember;
 import dev.slne.discord.ticket.result.TicketCreateResult;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.Channel;
@@ -20,13 +21,18 @@ import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.managers.channel.concrete.TextChannelManager;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.ChannelAction;
+import space.arim.dazzleconf.annote.SubSection;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * The type Ticket channel.
+ */
 public class TicketChannel {
 
 	/**
@@ -55,13 +61,7 @@ public class TicketChannel {
 			return future;
 		}
 
-		DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
 		TextChannelManager manager = channel.getManager();
-
-		if (discordGuild == null) {
-			future.complete(null);
-			return future;
-		}
 
 		userRest.queue(user -> {
 			if (user == null) {
@@ -69,24 +69,32 @@ public class TicketChannel {
 				return;
 			}
 
-			CompletableFuture<List<DiscordRole>> rolesFuture = discordGuild.getGuildRoles(user.getId());
+			Member member = guild.getMember(user);
+
+			if (member == null) {
+				future.completeExceptionally(new RuntimeException("Member not found"));
+				return;
+			}
+
+			List<Role> userDiscordRoles = member.getRoles();
+			List<RoleConfig> userRoles = userDiscordRoles.stream()
+														 .map(role -> RoleConfig.getDiscordRoleRoles(role.getId()))
+														 .flatMap(List::stream)
+														 .toList();
 			List<Permission> permissions = new ArrayList<>();
 
-			rolesFuture.thenAcceptAsync(roles -> {
-				for (DiscordRole role : roles) {
-					for (Permission permission : role.getDiscordAllowedPermissions()) {
-						if (!permissionAdded(permissions, permission)) {
-							permissions.add(permission);
-						}
+			for (RoleConfig role : userRoles) {
+				for (DiscordPermission discordPermission : role.getDiscordAllowedPermissions()) {
+					Permission permission = discordPermission.getPermission();
+
+					if (!permissionAdded(permissions, permission)) {
+						permissions.add(permission);
 					}
 				}
+			}
 
-				manager.putMemberPermissionOverride(user.getIdLong(), permissions, new ArrayList<>())
-					   .queue(future::complete, future::completeExceptionally);
-			}).exceptionally(throwable -> {
-				future.completeExceptionally(throwable);
-				return null;
-			});
+			manager.putMemberPermissionOverride(user.getIdLong(), permissions, new ArrayList<>())
+				   .queue(future::complete, future::completeExceptionally);
 		}, future::completeExceptionally);
 
 		return future;
@@ -159,67 +167,48 @@ public class TicketChannel {
 			));
 		}
 
-		// Deny support roles
-		DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
+		Map<String, @SubSection RoleConfig> roleConfig = BotConfig.getConfig().getRoleConfig();
+		for (Map.Entry<String, RoleConfig> entry : roleConfig.entrySet()) {
+			RoleConfig config = entry.getValue();
 
-		if (!discordGuild.canRoleViewTicket(discordGuild.getDiscordSupportAdminRole(), ticketType)) {
-			overrides.add(new TicketPermissionOverride(Type.ROLE, discordGuild.getDiscordSupportAdminRole().getIdLong(),
-													   new ArrayList<>(), allPermissions
-			));
+			if (config == null) {
+				continue;
+			}
+
+			if (RoleConfig.getDefaultRole() == null) {
+				continue;
+			}
+
+			if (!config.canViewTicketType(ticketType)) {
+				for (String roleId : config.getDiscordRoleIds()) {
+					Role role = guild.getRoleById(roleId);
+					if (role != null) {
+						overrides.add(new TicketPermissionOverride(Type.ROLE, role.getIdLong(), new ArrayList<>(),
+																   allPermissions
+						));
+					}
+				}
+			} else {
+				for (String roleId : config.getDiscordRoleIds()) {
+					Role role = guild.getRoleById(roleId);
+					if (role != null) {
+						overrides.add(new TicketPermissionOverride(Type.ROLE, role.getIdLong(), allPermissions,
+																   new ArrayList<>()
+						));
+					}
+				}
+			}
 		}
 
-		if (!discordGuild.canRoleViewTicket(discordGuild.getDiscordSupportModeratorRole(), ticketType)) {
-			overrides.add(
-					new TicketPermissionOverride(Type.ROLE, discordGuild.getDiscordSupportModeratorRole().getIdLong(),
-												 new ArrayList<>(), allPermissions
-					));
-		}
+		RoleConfig defaultRole = RoleConfig.getDefaultRole();
 
-		if (!discordGuild.canRoleViewTicket(discordGuild.getServerSupportAdminRole(), ticketType)) {
-			overrides.add(new TicketPermissionOverride(Type.ROLE, discordGuild.getServerSupportAdminRole().getIdLong(),
-													   new ArrayList<>(), allPermissions
-			));
-		}
-
-		if (!discordGuild.canRoleViewTicket(discordGuild.getServerSupportModeratorRole(), ticketType)) {
-			overrides.add(
-					new TicketPermissionOverride(Type.ROLE, discordGuild.getServerSupportModeratorRole().getIdLong(),
-												 new ArrayList<>(), allPermissions
-					));
-		}
-
-		// Apply support roles
-		if (discordGuild.canRoleViewTicket(discordGuild.getDiscordSupportAdminRole(), ticketType)) {
-			overrides.add(new TicketPermissionOverride(Type.ROLE, discordGuild.getDiscordSupportAdminRole().getIdLong(),
-													   allPermissions, new ArrayList<>()
-			));
-		}
-
-		if (discordGuild.canRoleViewTicket(discordGuild.getDiscordSupportModeratorRole(), ticketType)) {
-			overrides.add(
-					new TicketPermissionOverride(Type.ROLE, discordGuild.getDiscordSupportModeratorRole().getIdLong(),
-												 allPermissions, new ArrayList<>()
-					));
-		}
-
-		if (discordGuild.canRoleViewTicket(discordGuild.getServerSupportAdminRole(), ticketType)) {
-			overrides.add(new TicketPermissionOverride(Type.ROLE, discordGuild.getServerSupportAdminRole().getIdLong(),
-													   allPermissions, new ArrayList<>()
-			));
-		}
-
-		if (discordGuild.canRoleViewTicket(discordGuild.getServerSupportModeratorRole(), ticketType)) {
-			overrides.add(
-					new TicketPermissionOverride(Type.ROLE, discordGuild.getServerSupportModeratorRole().getIdLong(),
-												 allPermissions, new ArrayList<>()
-					));
-		}
-
-		DiscordRole defaultRole = DiscordBot.getInstance().getRoleManager().getRoleByName(DiscordRole.DEFAULT_ROLE);
 		// Apply author
 		overrides.add(
-				new TicketPermissionOverride(Type.USER, author.getIdLong(), defaultRole.getDiscordAllowedPermissions(),
-											 new ArrayList<>()
+				new TicketPermissionOverride(
+						Type.USER, author.getIdLong(),
+						defaultRole.getDiscordAllowedPermissions().stream().map(DiscordPermission::getPermission)
+								   .toList(),
+						new ArrayList<>()
 				));
 
 		return overrides;
@@ -228,8 +217,9 @@ public class TicketChannel {
 	/**
 	 * Creates the author ticket member
 	 *
-	 * @param ticket The ticket
-	 * @param author The author of the ticket
+	 * @param ticket        The ticket
+	 * @param author        The author of the ticket
+	 * @param channelAction the channel action
 	 *
 	 * @return The result of the ticket member creation
 	 */
@@ -238,9 +228,12 @@ public class TicketChannel {
 			ChannelAction<TextChannel> channelAction
 	) {
 		TicketMember ticketMember = new TicketMember(ticket, author, DiscordBot.getInstance().getJda().getSelfUser());
-		DiscordRole defaultRole = DiscordBot.getInstance().getRoleManager().getRoleByName(DiscordRole.DEFAULT_ROLE);
+		RoleConfig defaultRole = RoleConfig.getDefaultRole();
 		TicketPermissionOverride override = new TicketPermissionOverride(Type.USER, author.getIdLong(),
-																		 defaultRole.getDiscordAllowedPermissions(),
+																		 defaultRole.getDiscordAllowedPermissions()
+																					.stream().map(
+																							DiscordPermission::getPermission)
+																					.toList(),
 																		 new ArrayList<>()
 		);
 
@@ -263,6 +256,7 @@ public class TicketChannel {
 				allPermissions.add(perm);
 			}
 		}
+
 		allPermissions.add(Permission.VIEW_CHANNEL);
 		allPermissions.add(Permission.MANAGE_WEBHOOKS);
 		allPermissions.add(Permission.MANAGE_CHANNEL);
@@ -395,7 +389,7 @@ public class TicketChannel {
 			future.complete(TicketCreateResult.MISSING_PERMISSIONS);
 			return;
 		}
-		
+
 		future.complete(TicketCreateResult.ERROR);
 		DataApi.getDataInstance().logError(TicketChannel.class, "Failed to create ticket channel.", throwable);
 	}
@@ -437,6 +431,8 @@ public class TicketChannel {
 	 * Creates the webhook for the ticket channel
 	 *
 	 * @param ticket The ticket to create the webhook for
+	 *
+	 * @return the completable future
 	 */
 	public static CompletableFuture<Void> createWebhook(Ticket ticket) {
 		CompletableFuture<Void> future = new CompletableFuture<>();
@@ -488,6 +484,8 @@ public class TicketChannel {
 	 *
 	 * @param newTicketName   The name of the ticket
 	 * @param channelCategory The category the ticket should be created in
+	 * @param newTicketType   the new ticket type
+	 * @param newAuthor       the new author
 	 *
 	 * @return If the ticket exists
 	 */

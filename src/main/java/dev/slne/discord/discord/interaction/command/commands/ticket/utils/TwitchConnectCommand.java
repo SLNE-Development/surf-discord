@@ -1,6 +1,6 @@
 package dev.slne.discord.discord.interaction.command.commands.ticket.utils;
 
-import dev.slne.discord.discord.guild.permission.DiscordPermission;
+import dev.slne.discord.discord.guild.permission.CommandPermission;
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -49,8 +49,8 @@ public class TwitchConnectCommand extends TicketCommand {
 	}
 
 	@Override
-	public @Nonnull DiscordPermission getPermission() {
-		return DiscordPermission.USE_COMMAND_TWITCH_CONNECT;
+	public @Nonnull CommandPermission getPermission() {
+		return CommandPermission.TWITCH_CONNECT;
 	}
 
 	@Override

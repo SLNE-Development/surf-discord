@@ -25,6 +25,9 @@ configurations.all {
 }
 
 dependencies {
+    api(libs.fastutil)
+    api(libs.configurate.yaml)
+    api(libs.configurate.jackson)
     api(libs.dev.slne.surf.surf.api.core.api)
     api(libs.net.dv8tion.jda) {
         isChanging = true

@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import dev.slne.data.api.DataApi;
 import dev.slne.discord.DiscordBot;
-import dev.slne.discord.discord.guild.DiscordGuild;
-import dev.slne.discord.discord.guild.DiscordGuilds;
-import dev.slne.discord.discord.guild.role.DiscordRole;
+import dev.slne.discord.config.discord.GuildConfig;
+import dev.slne.discord.config.role.RoleConfig;
+import dev.slne.discord.config.ticket.TicketTypeConfig;
 import dev.slne.discord.ticket.member.TicketMember;
 import dev.slne.discord.ticket.message.TicketMessage;
 import dev.slne.discord.ticket.result.TicketCloseResult;
@@ -376,9 +376,9 @@ public class Ticket {
 					return;
 				}
 
-				DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
+				GuildConfig guildConfig = GuildConfig.getConfig(guildId);
 
-				if (discordGuild == null) {
+				if (guildConfig == null) {
 					future.complete(null);
 					return;
 				}
@@ -406,60 +406,51 @@ public class Ticket {
 								return;
 							}
 
-							discordGuild.isAdminUser(author).thenAcceptAsync(isAdminUser -> {
-								boolean memberIsAuthor = memberUser.equals(author);
+							boolean memberIsAuthor = memberUser.equals(author);
+							boolean isAdminUser = false; // TODO: Fixme
 
-								if (memberIsAuthor || !isAdminUser) {
-									memberUser.openPrivateChannel()
-											  .queue(
-													  privateChannel -> privateChannel.sendMessageEmbeds(embed)
-																					  .queue(v -> memberFuture.complete(
-																							  null), failure -> {
-																						  if (failure instanceof ErrorResponseException errorResponseException
-																							  &&
-																							  errorResponseException.getErrorCode() ==
-																							  50007) {
-																							  memberFuture.complete(
-																									  null);
-																							  return;
-																						  }
+							if (memberIsAuthor || !isAdminUser) {
+								memberUser.openPrivateChannel()
+										  .queue(
+												  privateChannel -> privateChannel.sendMessageEmbeds(embed)
+																				  .queue(v -> memberFuture.complete(
+																						  null), failure -> {
+																					  if (failure instanceof ErrorResponseException errorResponseException
+																						  &&
+																						  errorResponseException.getErrorCode() ==
+																						  50007) {
+																						  memberFuture.complete(
+																								  null);
+																						  return;
+																					  }
 
-																						  DataApi.getDataInstance()
-																								 .logError(
-																										 getClass(),
-																										 "Error while opening ticket closed message: ",
-																										 failure
-																								 );
-																						  memberFuture.completeExceptionally(
-																								  failure);
-																					  }),
-													  failure -> {
-														  if (failure instanceof ErrorResponseException errorResponseException
-															  && errorResponseException.getErrorCode() == 50007) {
-															  memberFuture.complete(null);
-															  return;
-														  }
-
-														  DataApi.getDataInstance().logError(
-																  getClass(),
-																  "Error while opening ticket closed message: ",
-																  failure
-														  );
-														  memberFuture.completeExceptionally(failure);
+																					  DataApi.getDataInstance()
+																							 .logError(
+																									 getClass(),
+																									 "Error while opening ticket closed message: ",
+																									 failure
+																							 );
+																					  memberFuture.completeExceptionally(
+																							  failure);
+																				  }),
+												  failure -> {
+													  if (failure instanceof ErrorResponseException errorResponseException
+														  && errorResponseException.getErrorCode() == 50007) {
+														  memberFuture.complete(null);
+														  return;
 													  }
-											  );
-								} else {
-									memberFuture.complete(null);
-								}
-							}).exceptionally(throwable -> {
-								DataApi.getDataInstance().logError(
-										getClass(),
-										"Error while opening ticket closed message: ",
-										throwable
-								);
-								memberFuture.completeExceptionally(throwable);
-								return null;
-							});
+
+													  DataApi.getDataInstance().logError(
+															  getClass(),
+															  "Error while opening ticket closed message: ",
+															  failure
+													  );
+													  memberFuture.completeExceptionally(failure);
+												  }
+										  );
+							} else {
+								memberFuture.complete(null);
+							}
 						});
 					}
 				}
@@ -568,14 +559,14 @@ public class Ticket {
 				return;
 			}
 
-			DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
+			GuildConfig guildConfig = GuildConfig.getConfig(guild.getId());
 
-			if (discordGuild == null) {
+			if (guildConfig == null) {
 				future.complete(TicketCreateResult.GUILD_NOT_FOUND);
 				return;
 			}
 
-			String categoryId = discordGuild.getCategoryId();
+			String categoryId = guildConfig.getCategoryId();
 			Category channelCategory = guild.getCategoryById(categoryId);
 
 			if (channelCategory == null) {
@@ -702,8 +693,10 @@ public class Ticket {
 			return CompletableFuture.completedFuture(null);
 		}
 
-		DiscordRole discordRole = DiscordGuilds.getGuild(getGuild()).getDiscordRoleByRole(role);
-		List<Permission> allowedPermissions = discordRole.getDiscordAllowedPermissions();
+		RoleConfig roleConfig = RoleConfig.getConfig(role.getId());
+//		DiscordRole discordRole = DiscordGuilds.getGuild(getGuild()).getDiscordRoleByRole(role);
+//		List<Permission> allowedPermissions = discordRole.getDiscordAllowedPermissions();
+		List<Permission> allowedPermissions = new ArrayList<>(); // TODO: Fixme
 
 		PermissionOverrideAction permissionOverrideAction = channel.upsertPermissionOverride(role);
 		permissionOverrideAction = permissionOverrideAction.resetAllow();
@@ -755,9 +748,7 @@ public class Ticket {
 			if (whitelists != null) {
 				for (Whitelist whitelist : whitelists) {
 					Whitelist.getWhitelistQueryEmbed(whitelist).thenAcceptAsync(embed -> {
-						System.out.println("Embed: " + embed);
 						if (embed != null) {
-							System.out.println("embed not null");
 							channel.sendMessageEmbeds(embed).queue();
 						}
 					}).exceptionally(throwable -> {
@@ -776,6 +767,45 @@ public class Ticket {
 		}, error -> {
 			DataApi.getDataInstance().logError(getClass(), "Error while printing wl query embeds", error);
 		});
+	}
+
+	/**
+	 * Print opening messages completable future.
+	 *
+	 * @param ticketTypeConfig the ticket type config
+	 *
+	 * @return the completable future
+	 */
+	public CompletableFuture<Void> printOpeningMessages(TicketTypeConfig ticketTypeConfig) {
+		CompletableFuture<Void> future = new CompletableFuture<>();
+		List<CompletableFuture<Message>> messageFutures = new ArrayList<>();
+
+		TextChannel channel = getChannel();
+		if (channel == null) {
+			return CompletableFuture.completedFuture(null);
+		}
+
+		getTicketAuthor().queue(author -> {
+			if (author == null) {
+				return;
+			}
+
+			List<String> messages = ticketTypeConfig.getOpeningMessages();
+
+			for (String message : messages) {
+				message = message.replace("%author%", author.getAsMention());
+				messageFutures.add(channel.sendMessage(message).submit());
+			}
+		}, future::completeExceptionally);
+
+		CompletableFuture.allOf(messageFutures.toArray(CompletableFuture[]::new))
+						 .thenAcceptAsync(v -> future.complete(null)).exceptionally(throwable -> {
+							 future.completeExceptionally(throwable);
+
+							 return null;
+						 });
+
+		return future;
 	}
 
 	/**

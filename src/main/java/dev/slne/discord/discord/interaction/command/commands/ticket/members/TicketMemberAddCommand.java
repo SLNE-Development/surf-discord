@@ -2,7 +2,7 @@ package dev.slne.discord.discord.interaction.command.commands.ticket.members;
 
 import dev.slne.data.api.DataApi;
 import dev.slne.discord.DiscordBot;
-import dev.slne.discord.discord.guild.permission.DiscordPermission;
+import dev.slne.discord.discord.guild.permission.CommandPermission;
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand;
 import dev.slne.discord.ticket.TicketChannel;
 import dev.slne.discord.ticket.member.TicketMember;
@@ -48,8 +48,8 @@ public class TicketMemberAddCommand extends TicketCommand {
 	}
 
 	@Override
-	public @Nonnull DiscordPermission getPermission() {
-		return DiscordPermission.USE_COMMAND_TICKET_ADD_USER;
+	public @Nonnull CommandPermission getPermission() {
+		return CommandPermission.TICKET_ADD_USER;
 	}
 
 	@Override

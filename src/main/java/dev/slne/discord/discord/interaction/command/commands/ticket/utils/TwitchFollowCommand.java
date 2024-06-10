@@ -1,6 +1,6 @@
 package dev.slne.discord.discord.interaction.command.commands.ticket.utils;
 
-import dev.slne.discord.discord.guild.permission.DiscordPermission;
+import dev.slne.discord.discord.guild.permission.CommandPermission;
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -67,8 +67,8 @@ public class TwitchFollowCommand extends TicketCommand {
 	 */
 	@NotNull
 	@Override
-	public DiscordPermission getPermission() {
-		return DiscordPermission.USE_COMMAND_TWITCH_FOLLOW;
+	public CommandPermission getPermission() {
+		return CommandPermission.TWITCH_FOLLOW;
 	}
 
 	/**

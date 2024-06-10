@@ -2,8 +2,6 @@ package dev.slne.discord;
 
 import dev.slne.data.api.DataApi;
 import dev.slne.discord.config.BotConfig;
-import dev.slne.discord.config.ConfigUtil;
-import dev.slne.discord.discord.guild.role.DiscordRoleManager;
 import dev.slne.discord.discord.interaction.button.DiscordButtonManager;
 import dev.slne.discord.discord.interaction.command.DiscordCommandManager;
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager;
@@ -33,19 +31,25 @@ public class DiscordBot {
 	private ListenerManager listenerManager;
 	private TicketManager ticketManager;
 
-	private DiscordRoleManager roleManager;
 	private DiscordModalManager modalManager;
 	private DiscordCommandManager commandManager;
 	private DiscordButtonManager buttonManager;
-	
+
 	/**
 	 * Called when the bot is loaded.
 	 */
 	public void onLoad() {
 		instance = this;
 
-		BotConfig botConfig = ConfigUtil.getConfig();
-		botToken = botConfig.discordBotConfig().botToken();
+		BotConfig botConfig = BotConfig.getConfig();
+		botToken = botConfig.getDiscordBotConfig().getBotToken();
+
+		Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+			DataApi.getDataInstance()
+				   .logError(getClass(), "Uncaught exception in thread " + thread.getName(), throwable);
+		});
+
+		System.out.println(botConfig);
 
 		JDABuilder builder = JDABuilder.createDefault(botToken);
 
@@ -64,8 +68,6 @@ public class DiscordBot {
 		} catch (InterruptedException exception) {
 			DataApi.getDataInstance().logError(getClass(), "Failed to await ready.", exception);
 		}
-
-		roleManager = new DiscordRoleManager();
 
 		commandManager = new DiscordCommandManager();
 		listenerManager = new ListenerManager();

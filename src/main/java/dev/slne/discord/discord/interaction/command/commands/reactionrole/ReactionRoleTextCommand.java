@@ -1,9 +1,8 @@
 package dev.slne.discord.discord.interaction.command.commands.reactionrole;
 
-import dev.slne.discord.discord.guild.DiscordGuild;
-import dev.slne.discord.discord.guild.DiscordGuilds;
-import dev.slne.discord.discord.guild.permission.DiscordPermission;
-import dev.slne.discord.discord.guild.reactionrole.ReactionRoleConfig;
+import dev.slne.discord.config.discord.GuildConfig;
+import dev.slne.discord.config.discord.ReactionRoleConfig;
+import dev.slne.discord.discord.guild.permission.CommandPermission;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -44,8 +43,8 @@ public class ReactionRoleTextCommand extends DiscordCommand {
 	}
 
 	@Override
-	public @Nonnull DiscordPermission getPermission() {
-		return DiscordPermission.USE_COMMAND_REACTION_ROLE_TEXT;
+	public @Nonnull CommandPermission getPermission() {
+		return CommandPermission.REACTION_ROLE_TEXT;
 	}
 
 	@Override
@@ -58,9 +57,9 @@ public class ReactionRoleTextCommand extends DiscordCommand {
 				return;
 			}
 
-			DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
+			GuildConfig guildConfig = GuildConfig.getByGuildId(guild.getId());
 
-			if (discordGuild == null) {
+			if (guildConfig == null) {
 				hook.editOriginal("Dieser Server ist nicht registriert!").queue();
 				return;
 			}
@@ -75,11 +74,11 @@ public class ReactionRoleTextCommand extends DiscordCommand {
 			MessageEmbed embed = getEmbed();
 
 			textChannel.sendMessageEmbeds(embed).queue(message -> {
-				ReactionRoleConfig currentConfig = discordGuild.getReactionRoleConfig();
+				ReactionRoleConfig reactionRoleConfig = guildConfig.getReactionRole();
 				String reaction;
 
-				if (currentConfig != null) {
-					reaction = currentConfig.reaction();
+				if (reactionRoleConfig != null) {
+					reaction = reactionRoleConfig.getReaction();
 				} else {
 					reaction = "\u1F514";
 				}
@@ -88,15 +87,6 @@ public class ReactionRoleTextCommand extends DiscordCommand {
 
 				hook.deleteOriginal().queue();
 				message.addReaction(emoji).queue();
-
-				if (currentConfig != null) {
-					String roleId = currentConfig.roleId();
-
-					discordGuild
-							.setReactionRoleConfig(new ReactionRoleConfig(message.getId(), message.getChannel().getId(),
-																		  reaction, roleId
-							));
-				}
 			});
 		});
 	}

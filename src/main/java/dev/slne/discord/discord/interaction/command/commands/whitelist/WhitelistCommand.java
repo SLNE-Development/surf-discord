@@ -1,9 +1,8 @@
 package dev.slne.discord.discord.interaction.command.commands.whitelist;
 
 import dev.slne.data.api.DataApi;
-import dev.slne.discord.discord.guild.DiscordGuild;
-import dev.slne.discord.discord.guild.DiscordGuilds;
-import dev.slne.discord.discord.guild.permission.DiscordPermission;
+import dev.slne.discord.config.discord.GuildConfig;
+import dev.slne.discord.discord.guild.permission.CommandPermission;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.whitelist.Whitelist;
 import dev.slne.discord.whitelist.WhitelistService;
@@ -57,8 +56,8 @@ public class WhitelistCommand extends DiscordCommand {
 	}
 
 	@Override
-	public @Nonnull DiscordPermission getPermission() {
-		return DiscordPermission.USE_COMMAND_WHITELIST;
+	public @Nonnull CommandPermission getPermission() {
+		return CommandPermission.WHITELIST;
 	}
 
 	@Override
@@ -138,11 +137,14 @@ public class WhitelistCommand extends DiscordCommand {
 
 					Guild guild = interaction.getGuild();
 					if (guild != null) {
-						DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
-						Role whitelistedRole = discordGuild.getWhitelistedRole();
+						GuildConfig guildConfig = GuildConfig.getConfig(guild.getId());
 
-						if (whitelistedRole != null) {
-							guild.addRoleToMember(user, whitelistedRole).queue();
+						if (guildConfig != null) {
+							Role whitelistedRole = guildConfig.getWhitelistedRole();
+
+							if (whitelistedRole != null) {
+								guild.addRoleToMember(user, whitelistedRole).queue();
+							}
 						}
 					}
 

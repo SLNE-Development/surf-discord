@@ -1,5 +1,6 @@
 package dev.slne.discord.ticket;
 
+import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import lombok.Getter;
 
 import javax.annotation.Nonnull;
@@ -14,30 +15,39 @@ public enum TicketType {
 	/**
 	 * The Discord support.
 	 */
-	DISCORD_SUPPORT("Discord Support"),
+	DISCORD_SUPPORT("Discord Support", "discordSupport", DiscordPermission.VIEW_DISCORD_SUPPORT_TICKETS),
 	/**
 	 * The Server support.
 	 */
-	SERVER_SUPPORT("Server Support"),
+	SERVER_SUPPORT("Server Support", "serverSupport", DiscordPermission.VIEW_SERVER_SUPPORT_TICKETS),
 	/**
 	 * The Bugreport.
 	 */
-	BUGREPORT("Bug Report"),
+	BUGREPORT("Bug Report", "bugreport", DiscordPermission.VIEW_BUGREPORT_TICKETS),
 	/**
 	 * Whitelist ticket type.
 	 */
-	WHITELIST("Whitelist");
+	WHITELIST("Whitelist", "whitelist", DiscordPermission.VIEW_WHITELIST_TICKETS);
 
 	@Nonnull
 	private final String name;
 
+	@Nonnull
+	private final String configName;
+
+	private final DiscordPermission viewPermission;
+
 	/**
 	 * Creates a new {@link TicketType}.
 	 *
-	 * @param name The name of the ticket type.
+	 * @param name           The name of the ticket type.
+	 * @param configName     the config name
+	 * @param viewPermission the view permission
 	 */
-	TicketType(@Nonnull String name) {
+	TicketType(@Nonnull String name, @Nonnull String configName, DiscordPermission viewPermission) {
 		this.name = name;
+		this.configName = configName;
+		this.viewPermission = viewPermission;
 	}
 
 	/**

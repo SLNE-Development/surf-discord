@@ -1,12 +1,12 @@
 package dev.slne.discord.discord.interaction.command;
 
-import dev.slne.discord.discord.guild.DiscordGuild;
-import dev.slne.discord.discord.guild.DiscordGuilds;
-import dev.slne.discord.discord.guild.permission.DiscordPermission;
-import dev.slne.discord.discord.guild.role.DiscordRole;
+import dev.slne.discord.config.role.RoleConfig;
+import dev.slne.discord.discord.guild.permission.CommandPermission;
 import lombok.Getter;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
@@ -71,7 +71,7 @@ public abstract class DiscordCommand {
 	 *
 	 * @return the permission
 	 */
-	public abstract @Nonnull DiscordPermission getPermission();
+	public abstract @Nonnull CommandPermission getPermission();
 
 	/**
 	 * Executes the command internally
@@ -105,13 +105,23 @@ public abstract class DiscordCommand {
 			return false;
 		}
 
-		DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
-		List<DiscordRole> userRoles = discordGuild.getGuildRoles(user.getId()).join();
+		Member member = guild.getMember(user);
+
+		if (member == null) {
+			interaction.reply("Es ist ein Fehler aufgetreten (9348934dwjkdjw)").setEphemeral(true).queue();
+			return false;
+		}
+
+		List<Role> userDiscordRoles = member.getRoles();
+		List<RoleConfig> userRoles = userDiscordRoles.stream()
+													 .map(role -> RoleConfig.getDiscordRoleRoles(role.getId()))
+													 .flatMap(List::stream)
+													 .toList();
 
 		boolean hasPermission = false;
 
-		for (DiscordRole userRole : userRoles) {
-			if (userRole.hasRolePermission(getPermission())) {
+		for (RoleConfig userRole : userRoles) {
+			if (userRole.hasCommandPermission(getPermission())) {
 				hasPermission = true;
 				break;
 			}

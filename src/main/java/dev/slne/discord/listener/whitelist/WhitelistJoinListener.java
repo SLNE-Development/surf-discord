@@ -1,8 +1,7 @@
 package dev.slne.discord.listener.whitelist;
 
 import dev.slne.data.api.DataApi;
-import dev.slne.discord.discord.guild.DiscordGuild;
-import dev.slne.discord.discord.guild.DiscordGuilds;
+import dev.slne.discord.config.discord.GuildConfig;
 import dev.slne.discord.whitelist.WhitelistService;
 import feign.FeignException;
 import net.dv8tion.jda.api.entities.Guild;
@@ -29,13 +28,13 @@ public class WhitelistJoinListener extends ListenerAdapter {
 			}
 
 			Guild guild = event.getGuild();
-			DiscordGuild discordGuild = DiscordGuilds.getGuild(guild);
+			GuildConfig guildConfig = GuildConfig.getConfig(guild.getId());
 
-			if (discordGuild == null) {
+			if (guildConfig == null) {
 				return;
 			}
 
-			Role whitelistedRole = discordGuild.getWhitelistedRole();
+			Role whitelistedRole = guildConfig.getWhitelistedRole();
 
 			if (whitelistedRole == null) {
 				return;

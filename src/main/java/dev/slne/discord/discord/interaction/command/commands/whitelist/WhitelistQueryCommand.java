@@ -1,7 +1,7 @@
 package dev.slne.discord.discord.interaction.command.commands.whitelist;
 
 import dev.slne.data.api.DataApi;
-import dev.slne.discord.discord.guild.permission.DiscordPermission;
+import dev.slne.discord.discord.guild.permission.CommandPermission;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.whitelist.Whitelist;
 import dev.slne.discord.whitelist.WhitelistService;
@@ -55,8 +55,8 @@ public class WhitelistQueryCommand extends DiscordCommand {
 	}
 
 	@Override
-	public @Nonnull DiscordPermission getPermission() {
-		return DiscordPermission.USE_COMMAND_WHITELIST_QUERY;
+	public @Nonnull CommandPermission getPermission() {
+		return CommandPermission.WHITELIST_QUERY;
 	}
 
 	@Override

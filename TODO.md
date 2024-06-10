@@ -1,0 +1,4 @@
+- [ ] Check FIXME
+- [ ] Check TODO
+- [ ] Check Timezones
+- [ ] Check if reaction role is still working
