@@ -10,6 +10,7 @@ import java.util.UUID;
 /**
  * The type Ticket manager.
  */
+@Getter
 public class TicketManager {
 
 	private final List<Ticket> ticketQueue;

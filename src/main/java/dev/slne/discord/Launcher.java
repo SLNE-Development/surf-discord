@@ -10,8 +10,10 @@ import java.util.Random;
 /**
  * The type Launcher.
  */
+@Getter
 public class Launcher {
-	
+
+	@Getter
 	private static Random random;
 
 	@Getter
@@ -41,16 +43,6 @@ public class Launcher {
 	}
 
 	/**
-	 * Gets random.
-	 *
-	 * @return the random
-	 */
-	@SuppressWarnings("unused")
-	public static Random getRandom() {
-		return random;
-	}
-
-	/**
 	 * Method called when the launcher is loaded
 	 */
 	public void onLoad() {
@@ -76,13 +68,4 @@ public class Launcher {
 		discordBot.onDisable();
 	}
 
-	/**
-	 * Returns the discord bot
-	 *
-	 * @return The discord bot
-	 */
-	@SuppressWarnings("unused")
-	public DiscordBot getDiscordBot() {
-		return discordBot;
-	}
 }

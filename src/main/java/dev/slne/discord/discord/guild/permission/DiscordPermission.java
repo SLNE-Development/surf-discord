@@ -1,10 +1,12 @@
 package dev.slne.discord.discord.guild.permission;
 
+import lombok.Getter;
 import net.dv8tion.jda.api.Permission;
 
 /**
  * The enum Discord permission.
  */
+@Getter
 public enum DiscordPermission {
 
 	ALL("*", true, true, null),
@@ -82,41 +84,4 @@ public enum DiscordPermission {
 		this.permission = permission;
 	}
 
-	/**
-	 * Gets name.
-	 *
-	 * @return the name
-	 */
-	@SuppressWarnings("unused")
-	public String getName() {
-		return name;
-	}
-
-	/**
-	 * Gets permission.
-	 *
-	 * @return the permission
-	 */
-	public Permission getPermission() {
-		return permission;
-	}
-
-	/**
-	 * Is discord permission boolean.
-	 *
-	 * @return the dcPermission
-	 */
-	public boolean isDiscordPermission() {
-		return dcPermission;
-	}
-
-	/**
-	 * Is role permission boolean.
-	 *
-	 * @return the rolePermission
-	 */
-	@SuppressWarnings("unused")
-	public boolean isRolePermission() {
-		return rolePermission;
-	}
 }

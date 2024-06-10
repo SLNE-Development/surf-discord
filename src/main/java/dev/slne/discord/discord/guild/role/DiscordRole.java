@@ -3,6 +3,7 @@ package dev.slne.discord.discord.guild.role;
 import com.google.common.base.MoreObjects;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.ticket.TicketType;
+import lombok.Getter;
 import net.dv8tion.jda.api.Permission;
 
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.List;
 /**
  * The type Discord role.
  */
+@Getter
 public class DiscordRole {
 
 	public static final String SERVER_ADMIN_ROLE = "ServerSupportAdmin";
@@ -38,7 +40,7 @@ public class DiscordRole {
 	 * @return the list of permissions that are allowed in discord
 	 */
 	public List<Permission> getDiscordAllowedPermissions() {
-		return permissions.stream().filter(DiscordPermission::isDiscordPermission).map(DiscordPermission::getPermission)
+		return permissions.stream().filter(DiscordPermission::isDcPermission).map(DiscordPermission::getPermission)
 						  .toList();
 	}
 
@@ -104,25 +106,6 @@ public class DiscordRole {
 	public boolean hasRolePermission(DiscordPermission permission) {
 		return permissions.contains(permission) || permissions.contains(DiscordPermission.ALL_ROLE)
 			   || permissions.contains(DiscordPermission.ALL);
-	}
-
-	/**
-	 * Returns the permissions of the role.
-	 *
-	 * @return the permissions
-	 */
-	@SuppressWarnings("unused")
-	public List<DiscordPermission> getPermissions() {
-		return permissions;
-	}
-
-	/**
-	 * Returns the name of the role.
-	 *
-	 * @return the name
-	 */
-	public String getName() {
-		return name;
 	}
 
 	@Override

@@ -1,10 +1,10 @@
 package dev.slne.discord.discord.interaction.button;
 
+import lombok.Getter;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -12,12 +12,17 @@ import javax.annotation.Nullable;
 /**
  * The type Discord button.
  */
+@Getter
 public abstract class DiscordButton {
 
-	private final @Nonnull String id;
-	private final @Nonnull String label;
-	private final @Nullable Emoji emoji;
-	private final @Nonnull ButtonStyle style;
+	@Nonnull
+	private final String id;
+	@Nonnull
+	private final String label;
+	@Nullable
+	private final Emoji emoji;
+	@Nonnull
+	private final ButtonStyle style;
 
 	/**
 	 * The DiscordButton
@@ -52,45 +57,5 @@ public abstract class DiscordButton {
 	 * @param interaction the interaction
 	 */
 	public abstract void onClick(ButtonInteraction interaction);
-
-	/**
-	 * Gets id.
-	 *
-	 * @return the id
-	 */
-	@SuppressWarnings("unused")
-	public @NotNull String getId() {
-		return id;
-	}
-
-	/**
-	 * Gets emoji.
-	 *
-	 * @return the emoji
-	 */
-	@SuppressWarnings("unused")
-	public @Nullable Emoji getEmoji() {
-		return emoji;
-	}
-
-	/**
-	 * Gets style.
-	 *
-	 * @return the style
-	 */
-	@SuppressWarnings("unused")
-	public @NotNull ButtonStyle getStyle() {
-		return style;
-	}
-
-	/**
-	 * Gets label.
-	 *
-	 * @return the label
-	 */
-	@SuppressWarnings("unused")
-	public @NotNull String getLabel() {
-		return label;
-	}
 
 }

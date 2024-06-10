@@ -3,6 +3,7 @@ package dev.slne.discord.discord.interaction.command.commands;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketService;
+import lombok.Getter;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -13,6 +14,7 @@ import javax.annotation.Nonnull;
 /**
  * The type Ticket command.
  */
+@Getter
 public abstract class TicketCommand extends DiscordCommand {
 
 	private Ticket ticket;
@@ -54,24 +56,6 @@ public abstract class TicketCommand extends DiscordCommand {
 		this.channel = textChannel;
 
 		execute(interaction);
-	}
-
-	/**
-	 * Gets ticket.
-	 *
-	 * @return the ticket
-	 */
-	public Ticket getTicket() {
-		return ticket;
-	}
-
-	/**
-	 * Gets channel.
-	 *
-	 * @return the channel
-	 */
-	public TextChannel getChannel() {
-		return channel;
 	}
 
 }

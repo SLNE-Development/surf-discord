@@ -1,11 +1,14 @@
 package dev.slne.discord.ticket;
 
+import lombok.Getter;
+
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 
 /**
  * The enum Ticket type.
  */
+@Getter
 public enum TicketType {
 
 	/**
@@ -25,7 +28,8 @@ public enum TicketType {
 	 */
 	WHITELIST("Whitelist");
 
-	private final @Nonnull String name;
+	@Nonnull
+	private final String name;
 
 	/**
 	 * Creates a new {@link TicketType}.
@@ -48,15 +52,6 @@ public enum TicketType {
 					 .filter(type -> type.getName().equalsIgnoreCase(name))
 					 .findFirst()
 					 .orElse(null);
-	}
-
-	/**
-	 * Returns the name of the ticket type.
-	 *
-	 * @return The name of the ticket type.
-	 */
-	public @Nonnull String getName() {
-		return name;
 	}
 
 }

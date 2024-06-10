@@ -5,6 +5,8 @@ import dev.slne.discord.DiscordBot;
 import dev.slne.discord.discord.guild.reactionrole.ReactionRoleConfig;
 import dev.slne.discord.discord.guild.role.DiscordRole;
 import dev.slne.discord.ticket.TicketType;
+import lombok.Getter;
+import lombok.Setter;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.NotNull;
@@ -17,17 +19,25 @@ import java.util.concurrent.CompletableFuture;
 /**
  * The type Discord guild.
  */
+@Getter
 public class DiscordGuild {
 
+	@NotNull
 	private final @Nonnull String guildId;
+	@NotNull
 	private final @Nonnull String categoryId;
 
-	private final @Nonnull String whitelistedRoleId;
+	@Nonnull
+	private final String whitelistedRoleId;
 	private final Role whitelistedRole;
 
+	@SuppressWarnings("unused")
 	private final String discordSupportAdminRoleId;
+	@SuppressWarnings("unused")
 	private final String serverSupportAdminRoleId;
+	@SuppressWarnings("unused")
 	private final String discordSupportModeratorRoleId;
+	@SuppressWarnings("unused")
 	private final String serverSupportModeratorRoleId;
 
 	private Role discordSupportAdminRole;
@@ -35,6 +45,13 @@ public class DiscordGuild {
 	private Role discordSupportModeratorRole;
 	private Role serverSupportModeratorRole;
 
+	/**
+	 * -- SETTER --
+	 * Sets the reaction role config.
+	 *
+	 * @param reactionRoleConfig the rrConfig to set
+	 */
+	@Setter
 	private ReactionRoleConfig reactionRoleConfig;
 
 	/**
@@ -266,136 +283,6 @@ public class DiscordGuild {
 						 });
 
 		return roles;
-	}
-
-	/**
-	 * Returns the guild id.
-	 *
-	 * @return The guild id.
-	 */
-	public @NotNull String getGuildId() {
-		return guildId;
-	}
-
-	/**
-	 * Returns the category id.
-	 *
-	 * @return The category id.
-	 */
-	public @NotNull String getCategoryId() {
-		return categoryId;
-	}
-
-	/**
-	 * Returns the discord support admin role.
-	 *
-	 * @return The discord support admin role.
-	 */
-	@SuppressWarnings("unused")
-	public String getDiscordSupportAdminRoleId() {
-		return discordSupportAdminRoleId;
-	}
-
-	/**
-	 * Returns the server support admin role.
-	 *
-	 * @return The server support admin role.
-	 */
-	@SuppressWarnings("unused")
-	public String getServerSupportAdminRoleId() {
-		return serverSupportAdminRoleId;
-	}
-
-	/**
-	 * Returns the discord support moderator role.
-	 *
-	 * @return The discord support moderator role.
-	 */
-	@SuppressWarnings("unused")
-	public String getDiscordSupportModeratorRoleId() {
-		return discordSupportModeratorRoleId;
-	}
-
-	/**
-	 * Returns the server support moderator role.
-	 *
-	 * @return The server support moderator role.
-	 */
-	@SuppressWarnings("unused")
-	public String getServerSupportModeratorRoleId() {
-		return serverSupportModeratorRoleId;
-	}
-
-	/**
-	 * Returns the whitelisted role.
-	 *
-	 * @return the whitelistedRole
-	 */
-	public Role getWhitelistedRole() {
-		return whitelistedRole;
-	}
-
-	/**
-	 * Returns the whitelisted role id.
-	 *
-	 * @return the whitelistedRoleId
-	 */
-	public @Nonnull String getWhitelistedRoleId() {
-		return whitelistedRoleId;
-	}
-
-	/**
-	 * Returns the reaction role config.
-	 *
-	 * @return the rrConfig
-	 */
-	public ReactionRoleConfig getReactionRoleConfig() {
-		return reactionRoleConfig;
-	}
-
-	/**
-	 * Sets the reaction role config.
-	 *
-	 * @param reactionRoleConfig the rrConfig to set
-	 */
-	public void setReactionRoleConfig(ReactionRoleConfig reactionRoleConfig) {
-		this.reactionRoleConfig = reactionRoleConfig;
-	}
-
-	/**
-	 * Returns the discord support admin role.
-	 *
-	 * @return The discord support admin role.
-	 */
-	public Role getDiscordSupportAdminRole() {
-		return discordSupportAdminRole;
-	}
-
-	/**
-	 * Returns the server support admin role.
-	 *
-	 * @return The server support admin role.
-	 */
-	public Role getServerSupportAdminRole() {
-		return serverSupportAdminRole;
-	}
-
-	/**
-	 * Returns the discord support moderator role.
-	 *
-	 * @return The discord support moderator role.
-	 */
-	public Role getDiscordSupportModeratorRole() {
-		return discordSupportModeratorRole;
-	}
-
-	/**
-	 * Returns the server support moderator role.
-	 *
-	 * @return The server support moderator role.
-	 */
-	public Role getServerSupportModeratorRole() {
-		return serverSupportModeratorRole;
 	}
 
 }

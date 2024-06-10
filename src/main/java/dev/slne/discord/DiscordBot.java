@@ -10,35 +10,34 @@ import dev.slne.discord.discord.interaction.modal.DiscordModalManager;
 import dev.slne.discord.discord.settings.GatewayIntents;
 import dev.slne.discord.listener.ListenerManager;
 import dev.slne.discord.ticket.TicketManager;
+import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
+/**
+ * The type Discord bot.
+ */
+@Getter
 public class DiscordBot {
 
 	private static String botToken;
 
+	@Getter
 	private static DiscordBot instance;
+
 	private JDA jda;
 
-	private DiscordRoleManager roleManager;
 	private ListenerManager listenerManager;
+	private TicketManager ticketManager;
+
+	private DiscordRoleManager roleManager;
 	private DiscordModalManager modalManager;
 	private DiscordCommandManager commandManager;
-	private TicketManager ticketManager;
 	private DiscordButtonManager buttonManager;
-
-	/**
-	 * Gets the instance of the discord bot.
-	 *
-	 * @return the instance
-	 */
-	public static DiscordBot getInstance() {
-		return instance;
-	}
-
+	
 	/**
 	 * Called when the bot is loaded.
 	 */
@@ -107,63 +106,4 @@ public class DiscordBot {
 		// Currently empty
 	}
 
-	/**
-	 * Gets the command manager.
-	 *
-	 * @return the command manager
-	 */
-	public DiscordCommandManager getCommandManager() {
-		return commandManager;
-	}
-
-	/**
-	 * Gets the listener manager.
-	 *
-	 * @return the listener manager
-	 */
-	@SuppressWarnings("unused")
-	public ListenerManager getListenerManager() {
-		return listenerManager;
-	}
-
-	/**
-	 * Gets the modal manager.
-	 *
-	 * @return the modal manager
-	 */
-	public DiscordModalManager getModalManager() {
-		return modalManager;
-	}
-
-	/**
-	 * Gets the ticket manager.
-	 *
-	 * @return the ticket manager
-	 */
-	public TicketManager getTicketManager() {
-		return ticketManager;
-	}
-
-	/**
-	 * Gets the jda.
-	 *
-	 * @return the jda
-	 */
-	public JDA getJda() {
-		return jda;
-	}
-
-	/**
-	 * @return the buttonManager
-	 */
-	public DiscordButtonManager getButtonManager() {
-		return buttonManager;
-	}
-
-	/**
-	 * @return the roleManager
-	 */
-	public DiscordRoleManager getRoleManager() {
-		return roleManager;
-	}
 }

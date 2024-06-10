@@ -1,5 +1,6 @@
 package dev.slne.discord.discord.interaction.modal;
 
+import lombok.Getter;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.ActionComponent;
@@ -12,10 +13,13 @@ import java.util.List;
 /**
  * The type Discord modal.
  */
+@Getter
 public abstract class DiscordModal {
 
-	protected final @Nonnull List<ActionComponent> components;
-	private final @Nonnull String title;
+	@Nonnull
+	protected final List<ActionComponent> components;
+	@Nonnull
+	private final String title;
 
 	/**
 	 * Creates a new DiscordModal.
@@ -75,26 +79,6 @@ public abstract class DiscordModal {
 	public void open(SlashCommandInteractionEvent event) {
 		Modal modal = this.buildModal();
 		event.replyModal(modal).queue();
-	}
-
-	/**
-	 * Returns the title of the modal.
-	 *
-	 * @return The title of the modal.
-	 */
-	@SuppressWarnings("unused")
-	public @Nonnull String getTitle() {
-		return title;
-	}
-
-	/**
-	 * Returns the components of the modal.
-	 *
-	 * @return The components of the modal.
-	 */
-	@SuppressWarnings("unused")
-	public @Nonnull List<ActionComponent> getComponents() {
-		return components;
 	}
 
 }

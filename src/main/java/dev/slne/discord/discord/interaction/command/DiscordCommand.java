@@ -4,6 +4,7 @@ import dev.slne.discord.discord.guild.DiscordGuild;
 import dev.slne.discord.discord.guild.DiscordGuilds;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.discord.guild.role.DiscordRole;
+import lombok.Getter;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
@@ -20,11 +21,15 @@ import java.util.List;
 /**
  * The type Discord command.
  */
+@Getter
 public abstract class DiscordCommand {
 
-	private final @Nonnull String name;
-	private final @Nonnull DefaultMemberPermissions defaultMemberPermissions;
-	private final @Nonnull String description;
+	@Nonnull
+	private final String name;
+	@Nonnull
+	private final DefaultMemberPermissions defaultMemberPermissions;
+	@Nonnull
+	private final String description;
 	private final boolean guildOnly;
 	private final boolean nsfw;
 
@@ -126,64 +131,5 @@ public abstract class DiscordCommand {
 	 * @param interaction The interaction.
 	 */
 	public abstract void execute(SlashCommandInteractionEvent interaction);
-
-	/**
-	 * Returns the name of the command.
-	 *
-	 * @return The name of the command.
-	 */
-	public @Nonnull String getName() {
-		return name;
-	}
-
-	/**
-	 * Returns the default member permissions of the command.
-	 *
-	 * @return The default member permissions of the command.
-	 */
-	@SuppressWarnings("unused")
-	public @Nonnull DefaultMemberPermissions getDefaultMemberPermissions() {
-		return defaultMemberPermissions;
-	}
-
-	/**
-	 * Returns the description of the command.
-	 *
-	 * @return The description of the command.
-	 */
-	@SuppressWarnings("unused")
-	public @Nonnull String getDescription() {
-		return description;
-	}
-
-	/**
-	 * Returns whether the command is guild only.
-	 *
-	 * @return Whether the command is guild only.
-	 */
-	@SuppressWarnings("unused")
-	public boolean isGuildOnly() {
-		return guildOnly;
-	}
-
-	/**
-	 * Returns whether the command is NSFW.
-	 *
-	 * @return Whether the command is NSFW.
-	 */
-	@SuppressWarnings("unused")
-	public boolean isNsfw() {
-		return nsfw;
-	}
-
-	/**
-	 * Returns the SlashCommandData of the command.
-	 *
-	 * @return The SlashCommandData of the command.
-	 */
-	@SuppressWarnings("unused")
-	public SlashCommandData getCommandData() {
-		return commandData;
-	}
 
 }
