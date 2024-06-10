@@ -14,19 +14,8 @@ plugins {
 
 repositories {
     gradlePluginPortal()
-    mavenCentral()
 
-    maven {
-        name = "space-maven"
-        url = uri("https://packages.slne.dev/maven/p/surf/maven")
-    }
-
-    maven {
-        name = "codemc-releases"
-        url = uri("https://repo.codemc.io/repository/maven-releases/")
-    }
-    
-    maven("https://libraries.minecraft.net")
+    maven("https://repo.slne.dev/repository/maven-public/") { name = "maven-public" }
 }
 
 configurations.all {
@@ -56,7 +45,7 @@ dependencies {
 }
 
 group = "dev.slne"
-version = "2.0-SNAPSHOT"
+version = "3.0.0-SNAPSHOT"
 description = "surf-discord"
 
 java {
@@ -68,10 +57,7 @@ java {
 
 publishing {
     repositories {
-        maven {
-            name = "space-maven"
-            url = uri("https://packages.slne.dev/maven/p/surf/maven")
-        }
+        maven("https://repo.slne.dev/repository/maven-snapshots/") { name = "maven-snapshots" }
     }
 
     publications.create<MavenPublication>("maven") {
