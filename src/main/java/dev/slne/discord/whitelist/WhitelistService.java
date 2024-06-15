@@ -76,10 +76,22 @@ public class WhitelistService {
 	 */
 	public CompletableFuture<List<Whitelist>> checkWhitelists(UUID uuid, String discordId, String twitchLink) {
 		return CompletableFuture.supplyAsync(
-				() -> whitelistClient.get().checkWhitelists(new WhitelistClient.WhitelistCheckPostRequest(uuid,
-																										  discordId,
-																										  twitchLink
+				() -> whitelistClient.get().checkWhitelists(new WhitelistClient.WhitelistCheckPostRequest(
+						uuid,
+						discordId,
+						twitchLink
 				)));
+	}
+
+	/**
+	 * Gets uuid by minecraft name.
+	 *
+	 * @param minecraftName the minecraft name
+	 *
+	 * @return the uuid by minecraft name
+	 */
+	public CompletableFuture<WhitelistClient.ProxyUuidByMinecraftName> getUuidByMinecraftName(String minecraftName) {
+		return CompletableFuture.supplyAsync(() -> whitelistClient.get().getUuidByMinecraftName(minecraftName));
 	}
 
 }

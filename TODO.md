@@ -1,7 +1,5 @@
-- [ ] Check FIXME
-- [ ] Check TODO
 - [ ] Check Timezones
 - [ ] Check if reaction role is still working
-- [ ] Close message broken?
 - [ ] Implement enable in discord bot ticket types
 - [ ] Implement console application including commands
+- [ ] Man bekommt close messages doppelt bei bspw. whitelist?

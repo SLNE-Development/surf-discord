@@ -1,6 +1,8 @@
 package dev.slne.discord.whitelist;
 
 import dev.slne.discord.datasource.API;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -68,6 +70,16 @@ public interface WhitelistClient {
 	Whitelist updateWhitelist(@PathVariable UUID uuid, Whitelist whitelist);
 
 	/**
+	 * Gets uuid by minecraft name.
+	 *
+	 * @param minecraftName the minecraft name
+	 *
+	 * @return the uuid by minecraft name
+	 */
+	@GetMapping(value = API.WHITELIST_BY_MINECRAFT_NAME)
+	ProxyUuidByMinecraftName getUuidByMinecraftName(@PathVariable String minecraftName);
+
+	/**
 	 * Instantiates a new Whitelist check post request.
 	 *
 	 * @param uuid       the uuid
@@ -75,5 +87,30 @@ public interface WhitelistClient {
 	 * @param twitchLink the twitch link
 	 */
 	record WhitelistCheckPostRequest(UUID uuid, String discordId, String twitchLink) {
+	}
+
+	/**
+	 * The type Proxy uuid by minecraft name.
+	 */
+	@Getter
+	@NoArgsConstructor
+	class ProxyUuidByMinecraftName {
+		/**
+		 * -- GETTER --
+		 * Gets uuid.
+		 *
+		 * @return the uuid
+		 */
+		private UUID uuid;
+
+		/**
+		 * Instantiates a new Proxy uuid by minecraft name.
+		 *
+		 * @param uuid the uuid
+		 */
+		public ProxyUuidByMinecraftName(UUID uuid) {
+			this.uuid = uuid;
+		}
+
 	}
 }

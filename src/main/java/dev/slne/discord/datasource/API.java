@@ -54,6 +54,10 @@ public class API {
 	 */
 	public static final String WHITELIST_BY_DISCORD_ID = "freebuild/whitelist/discord/{discordId}";
 	/**
+	 * The constant WHITELIST_BY_MINECRAFT_NAME.
+	 */
+	public static final String WHITELIST_BY_MINECRAFT_NAME = "proxy/user/uuid/{minecraftName}";
+	/**
 	 * The constant API_PREFIX.
 	 */
 	public static final String API_PREFIX = LOCAL_API_PREFIX;
