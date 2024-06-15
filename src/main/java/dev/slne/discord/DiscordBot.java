@@ -49,8 +49,6 @@ public class DiscordBot {
 				   .logError(getClass(), "Uncaught exception in thread " + thread.getName(), throwable);
 		});
 
-		System.out.println(botConfig);
-
 		JDABuilder builder = JDABuilder.createDefault(botToken);
 
 		builder.setAutoReconnect(true);

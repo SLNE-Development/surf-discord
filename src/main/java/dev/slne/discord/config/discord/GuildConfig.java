@@ -2,10 +2,13 @@ package dev.slne.discord.config.discord;
 
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.config.BotConfig;
+import dev.slne.discord.config.role.RoleConfig;
 import lombok.Getter;
 import lombok.ToString;
 import net.dv8tion.jda.api.entities.Role;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
+
+import java.util.Map;
 
 /**
  * The interface Guild config.
@@ -19,6 +22,8 @@ public class GuildConfig {
 	private String categoryId;
 	private String whitelistRoleId;
 	private ReactionRoleConfig reactionRole;
+
+	private Map<String, RoleConfig> roleConfig;
 
 	/**
 	 * Instantiates a new Guild config.

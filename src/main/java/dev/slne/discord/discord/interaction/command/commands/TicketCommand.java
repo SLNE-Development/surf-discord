@@ -35,27 +35,33 @@ public abstract class TicketCommand extends DiscordCommand {
 		User user = interaction.getUser();
 		Guild guild = interaction.getGuild();
 
-		if (!performDiscordCommandChecks(user, guild, interaction)) {
-			return;
-		}
+		performDiscordCommandChecks(user, guild, interaction).thenAcceptAsync(success -> {
+			if (!success) {
+				return;
+			}
 
-		if (!( interaction.getChannel() instanceof TextChannel textChannel )) {
-			interaction.reply("Dieser Befehl kann nur in einem Ticket verwendet werden.").setEphemeral(true).queue();
-			return;
-		}
+			if (!( interaction.getChannel() instanceof TextChannel textChannel )) {
+				interaction.reply("Dieser Befehl kann nur in einem Ticket verwendet werden.").setEphemeral(true)
+						   .queue();
+				return;
+			}
 
-		Ticket ticketGet = TicketService.INSTANCE.getTicketByChannel(textChannel.getId());
+			Ticket ticketGet = TicketService.INSTANCE.getTicketByChannel(textChannel.getId());
 
-		if (ticketGet == null) {
-			interaction.reply("Dieser Befehl kann nur in einem Ticket verwendet werden.").setEphemeral(true)
-					   .queue();
-			return;
-		}
+			if (ticketGet == null) {
+				interaction.reply("Dieser Befehl kann nur in einem Ticket verwendet werden.").setEphemeral(true)
+						   .queue();
+				return;
+			}
 
-		this.ticket = ticketGet;
-		this.channel = textChannel;
+			this.ticket = ticketGet;
+			this.channel = textChannel;
 
-		execute(interaction);
+			execute(interaction);
+		}).exceptionally(throwable -> {
+			throwable.printStackTrace();
+			return null;
+		});
 	}
 
 }

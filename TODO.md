@@ -2,3 +2,4 @@
 - [ ] Check TODO
 - [ ] Check Timezones
 - [ ] Check if reaction role is still working
+- [ ] Close message broken?

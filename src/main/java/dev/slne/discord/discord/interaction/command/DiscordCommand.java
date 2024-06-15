@@ -5,7 +5,6 @@ import dev.slne.discord.discord.guild.permission.CommandPermission;
 import lombok.Getter;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -17,6 +16,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * The type Discord command.
@@ -82,11 +82,16 @@ public abstract class DiscordCommand {
 		User user = interaction.getUser();
 		Guild guild = interaction.getGuild();
 
-		if (!performDiscordCommandChecks(user, guild, interaction)) {
-			return;
-		}
+		performDiscordCommandChecks(user, guild, interaction).thenAcceptAsync(success -> {
+			if (!success) {
+				return;
+			}
 
-		execute(interaction);
+			execute(interaction);
+		}).exceptionally(throwable -> {
+			throwable.printStackTrace();
+			return null;
+		});
 	}
 
 	/**
@@ -98,41 +103,63 @@ public abstract class DiscordCommand {
 	 *
 	 * @return Whether the checks were successful.
 	 */
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-	protected boolean performDiscordCommandChecks(User user, Guild guild, SlashCommandInteractionEvent interaction) {
+	protected CompletableFuture<Boolean> performDiscordCommandChecks(
+			User user, Guild guild, SlashCommandInteractionEvent interaction
+	) {
+		CompletableFuture<Boolean> future = new CompletableFuture<>();
+
 		if (guild == null) {
 			interaction.reply("Es ist ein Fehler aufgetreten (dhwfm4nD)").setEphemeral(true).queue();
-			return false;
+
+			future.completeExceptionally(new IllegalStateException("Guild is null"));
+			return future;
 		}
 
-		Member member = guild.getMember(user);
+		if (user == null) {
+			interaction.reply("Es ist ein Fehler aufgetreten (dhwfm4nD)").setEphemeral(true).queue();
 
-		if (member == null) {
-			interaction.reply("Es ist ein Fehler aufgetreten (9348934dwjkdjw)").setEphemeral(true).queue();
-			return false;
+			future.completeExceptionally(new IllegalStateException("User is null"));
+			return future;
 		}
 
-		List<Role> userDiscordRoles = member.getRoles();
-		List<RoleConfig> userRoles = userDiscordRoles.stream()
-													 .map(role -> RoleConfig.getDiscordRoleRoles(role.getId()))
-													 .flatMap(List::stream)
-													 .toList();
+		guild.retrieveMember(user).submit().thenAcceptAsync(member -> {
+			if (member == null) {
+				interaction.reply("Es ist ein Fehler aufgetreten (9348934dwjkdjw)").setEphemeral(true).queue();
 
-		boolean hasPermission = false;
-
-		for (RoleConfig userRole : userRoles) {
-			if (userRole.hasCommandPermission(getPermission())) {
-				hasPermission = true;
-				break;
+				future.completeExceptionally(new IllegalStateException("Member is null"));
+				return;
 			}
-		}
 
-		if (!hasPermission) {
-			interaction.reply("Du besitzt keine Berechtigung diesen Befehl zu verwenden.").setEphemeral(true).queue();
-			return false;
-		}
+			List<Role> userDiscordRoles = member.getRoles();
+			List<RoleConfig> userRoles = userDiscordRoles.stream()
+														 .map(role -> RoleConfig.getDiscordRoleRoles(
+																 guild.getId(),
+																 role.getId()
+														 ))
+														 .flatMap(List::stream)
+														 .toList();
 
-		return true;
+			boolean hasPermission = false;
+
+			for (RoleConfig userRole : userRoles) {
+				if (userRole.hasCommandPermission(getPermission())) {
+					hasPermission = true;
+					break;
+				}
+			}
+
+			if (!hasPermission) {
+				interaction.reply("Du besitzt keine Berechtigung diesen Befehl zu verwenden.")
+						   .setEphemeral(true).queue();
+
+				future.complete(false);
+				return;
+			}
+
+			future.complete(true);
+		});
+
+		return future;
 	}
 
 	/**

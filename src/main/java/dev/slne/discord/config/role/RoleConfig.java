@@ -1,11 +1,12 @@
 package dev.slne.discord.config.role;
 
-import dev.slne.discord.config.BotConfig;
+import dev.slne.discord.config.discord.GuildConfig;
 import dev.slne.discord.discord.guild.permission.CommandPermission;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.ticket.TicketType;
 import lombok.Getter;
 import lombok.ToString;
+import net.dv8tion.jda.api.Permission;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 
 import java.util.List;
@@ -36,33 +37,40 @@ public class RoleConfig {
 	/**
 	 * Gets config.
 	 *
+	 * @param guildId  the guild id
 	 * @param roleName the role name
 	 *
 	 * @return the config
 	 */
-	public static RoleConfig getConfig(String roleName) {
-		return BotConfig.getConfig().getRoleConfig().get(roleName);
+	public static RoleConfig getConfig(String guildId, String roleName) {
+		return GuildConfig.getByGuildId(guildId).getRoleConfig().get(roleName);
 	}
 
 	/**
 	 * Gets discord role roles.
 	 *
-	 * @param roleId the role id
+	 * @param guildId the guild id
+	 * @param roleId  the role id
 	 *
 	 * @return the discord role roles
 	 */
-	public static List<RoleConfig> getDiscordRoleRoles(String roleId) {
-		return BotConfig.getConfig().getRoleConfig().values().stream()
-						.filter(roleConfig -> roleConfig.getDiscordRoleIds().contains(roleId)).toList();
+	public static List<RoleConfig> getDiscordRoleRoles(String guildId, String roleId) {
+		return GuildConfig.getByGuildId(guildId).getRoleConfig().values().stream()
+						  .filter(roleConfig -> roleConfig.getDiscordRoleIds().contains(roleId)).toList();
 	}
 
 	/**
 	 * Gets default role.
 	 *
+	 * @param guildId the guild id
+	 *
 	 * @return the default role
 	 */
-	public static RoleConfig getDefaultRole() {
-		return getConfig("default");
+	public static RoleConfig getDefaultRole(String guildId) {
+		return GuildConfig.getByGuildId(guildId).getRoleConfig().values().stream()
+						  .filter(RoleConfig::isDefaultRole)
+						  .findFirst()
+						  .orElse(null);
 	}
 
 	/**
@@ -98,6 +106,24 @@ public class RoleConfig {
 	 */
 	public boolean canViewTicketType(TicketType ticketType) {
 		return discordAllowedPermissions.contains(ticketType.getViewPermission());
+	}
+
+	/**
+	 * Gets discord permissions as jda.
+	 *
+	 * @return the discord permissions as jda
+	 */
+	public List<Permission> getDiscordPermissionsAsJDA() {
+		return discordAllowedPermissions.stream().map(DiscordPermission::getPermission).toList();
+	}
+
+	/**
+	 * Gets discord denied permissions as jda.
+	 *
+	 * @return the discord denied permissions as jda
+	 */
+	public List<Permission> getDiscordDeniedPermissionsAsJDA() {
+		return discordDeniedPermissions.stream().map(DiscordPermission::getPermission).toList();
 	}
 
 }

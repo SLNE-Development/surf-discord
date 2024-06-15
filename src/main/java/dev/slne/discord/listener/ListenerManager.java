@@ -8,8 +8,6 @@ import dev.slne.discord.listener.message.MessageDeletedListener;
 import dev.slne.discord.listener.message.MessageUpdatedListener;
 import dev.slne.discord.listener.reactionrole.ReactionRoleListener;
 import dev.slne.discord.listener.redis.ticket.TicketCloseListener;
-import dev.slne.discord.listener.redis.ticket.TicketOpenListener;
-import dev.slne.discord.listener.redis.ticket.TicketReOpenListener;
 import dev.slne.discord.listener.whitelist.WhitelistJoinListener;
 import dev.slne.discord.listener.whitelist.WhitelistQuitListener;
 import net.dv8tion.jda.api.JDA;
@@ -39,8 +37,6 @@ public class ListenerManager {
 	 */
 	public void registerListeners() {
 		listeners.add(new TicketCloseListener());
-		listeners.add(new TicketOpenListener());
-		listeners.add(new TicketReOpenListener());
 	}
 
 	/**

@@ -18,14 +18,12 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.PermissionOverride;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.Webhook;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
@@ -33,11 +31,13 @@ import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.PermissionOverrideAction;
 
 import java.awt.Color;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -88,6 +88,12 @@ public class Ticket {
 	@JsonProperty("closed_reason")
 	private String closedReason;
 
+	@JsonProperty("closed_by_avatar_url")
+	private String closedByAvatarUrl;
+
+	@JsonProperty("closed_by_name")
+	private String closedByName;
+
 	@JsonProperty("closed_at")
 	@Setter
 	private ZonedDateTime closedAt;
@@ -97,18 +103,6 @@ public class Ticket {
 
 	@JsonProperty("members")
 	private List<TicketMember> members;
-
-	@JsonProperty("webhook_id")
-	@Setter
-	private String webhookId;
-
-	@JsonProperty("webhook_name")
-	@Setter
-	private String webhookName;
-
-	@JsonProperty("webhook_avatar_url")
-	@Setter
-	private String webhookUrl;
 
 	@JsonProperty("created_at")
 	@Setter
@@ -318,38 +312,32 @@ public class Ticket {
 
 		embedBuilder.setColor(Color.decode("#ff6600"));
 
-		ZonedDateTime openedAtDateTime = getCreatedAt();
-		ZonedDateTime closedAtDateTime = getClosedAt();
+		ZonedDateTime openedAtDateTimeUtc = getCreatedAt();
+		ZonedDateTime closedAtDateTimeUtc = getClosedAt();
 
-		if (closedAtDateTime == null) {
-			closedAtDateTime = ZonedDateTime.now();
-		}
+		ZonedDateTime openedAtDateTime = openedAtDateTimeUtc.withZoneSameInstant(ZoneId.of("Europe/Berlin"));
+		ZonedDateTime closedAtDateTime = closedAtDateTimeUtc.withZoneSameInstant(ZoneId.of("Europe/Berlin"));
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
 		embedBuilder.addField("Ticket-Id", getTicketId().toString(), true);
 		embedBuilder.addField("Ticket-Type", getTicketTypeString(), true);
 		embedBuilder.addField("Ticket-Author", author.getAsMention(), true);
-
-		if (openedAtDateTime != null) {
-			embedBuilder.addField("Ticket-Eröffnungszeit", formatter.format(openedAtDateTime), true);
-		}
+		embedBuilder.addField("Ticket-Eröffnungszeit", formatter.format(openedAtDateTime), true);
 
 		embedBuilder.addField("Ticket-Schließzeit", formatter.format(closedAtDateTime), true);
 
-		if (openedAtDateTime != null) {
-			long[] tempDifferences = toTempUnits(openedAtDateTime, closedAtDateTime);
-			long days = tempDifferences[ 2 ];
-			long hours = tempDifferences[ 3 ];
-			long minutes = tempDifferences[ 4 ];
-			long seconds = tempDifferences[ 5 ];
+		long[] tempDifferences = toTempUnits(openedAtDateTime, closedAtDateTime);
+		long days = tempDifferences[ 2 ];
+		long hours = tempDifferences[ 3 ];
+		long minutes = tempDifferences[ 4 ];
+		long seconds = tempDifferences[ 5 ];
 
-			String differenceString = String.format("%d Tage, %d Stunden, %d Minuten, %d Sekunden", days,
-													hours,
-													minutes, seconds
-			);
-			embedBuilder.addField("Ticket-Dauer", differenceString, true);
-		}
+		String differenceString = String.format("%d Tage, %d Stunden, %d Minuten, %d Sekunden", days,
+												hours,
+												minutes, seconds
+		);
+		embedBuilder.addField("Ticket-Dauer", differenceString, true);
 
 		return embedBuilder.build();
 	}
@@ -376,7 +364,7 @@ public class Ticket {
 					return;
 				}
 
-				GuildConfig guildConfig = GuildConfig.getConfig(guildId);
+				GuildConfig guildConfig = GuildConfig.getByGuildId(guildId);
 
 				if (guildConfig == null) {
 					future.complete(null);
@@ -407,50 +395,64 @@ public class Ticket {
 							}
 
 							boolean memberIsAuthor = memberUser.equals(author);
-							boolean isAdminUser = false; // TODO: Fixme
+							Map<String, RoleConfig> roleConfigMap = guildConfig.getRoleConfig();
 
-							if (memberIsAuthor || !isAdminUser) {
-								memberUser.openPrivateChannel()
-										  .queue(
-												  privateChannel -> privateChannel.sendMessageEmbeds(embed)
-																				  .queue(v -> memberFuture.complete(
-																						  null), failure -> {
-																					  if (failure instanceof ErrorResponseException errorResponseException
-																						  &&
-																						  errorResponseException.getErrorCode() ==
-																						  50007) {
-																						  memberFuture.complete(
-																								  null);
-																						  return;
-																					  }
+							guild.retrieveMember(memberUser).submit().thenAcceptAsync(guildMember -> {
+								List<String> roleIds = guildMember.getRoles().stream().map(Role::getId).toList();
+								boolean isAdminUser =
+										roleIds.stream().anyMatch(roleId -> roleConfigMap.values().stream().anyMatch(
+												roleConfig1 -> roleConfig1.getDiscordRoleIds().contains(roleId)));
 
-																					  DataApi.getDataInstance()
-																							 .logError(
-																									 getClass(),
-																									 "Error while opening ticket closed message: ",
-																									 failure
-																							 );
-																					  memberFuture.completeExceptionally(
-																							  failure);
-																				  }),
-												  failure -> {
-													  if (failure instanceof ErrorResponseException errorResponseException
-														  && errorResponseException.getErrorCode() == 50007) {
-														  memberFuture.complete(null);
-														  return;
+								if (memberIsAuthor || !isAdminUser) {
+									memberUser.openPrivateChannel()
+											  .queue(
+													  privateChannel -> privateChannel.sendMessageEmbeds(embed)
+																					  .queue(v -> memberFuture.complete(
+																							  null), failure -> {
+																						  if (failure instanceof ErrorResponseException errorResponseException
+																							  &&
+																							  errorResponseException.getErrorCode() ==
+																							  50007) {
+																							  memberFuture.complete(
+																									  null);
+																							  return;
+																						  }
+
+																						  DataApi.getDataInstance()
+																								 .logError(
+																										 getClass(),
+																										 "Error while opening ticket closed message: ",
+																										 failure
+																								 );
+																						  memberFuture.completeExceptionally(
+																								  failure);
+																					  }),
+													  failure -> {
+														  if (failure instanceof ErrorResponseException errorResponseException
+															  && errorResponseException.getErrorCode() == 50007) {
+															  memberFuture.complete(null);
+															  return;
+														  }
+
+														  DataApi.getDataInstance().logError(
+																  getClass(),
+																  "Error while opening ticket closed message: ",
+																  failure
+														  );
+														  memberFuture.completeExceptionally(failure);
 													  }
-
-													  DataApi.getDataInstance().logError(
-															  getClass(),
-															  "Error while opening ticket closed message: ",
-															  failure
-													  );
-													  memberFuture.completeExceptionally(failure);
-												  }
-										  );
-							} else {
-								memberFuture.complete(null);
-							}
+											  );
+								} else {
+									memberFuture.complete(null);
+								}
+							}).exceptionally(throwable -> {
+								DataApi.getDataInstance()
+									   .logError(getClass(), "Error while sending ticket closed messages",
+												 throwable
+									   );
+								memberFuture.completeExceptionally(throwable);
+								return null;
+							});
 						});
 					}
 				}
@@ -559,10 +561,10 @@ public class Ticket {
 				return;
 			}
 
-			GuildConfig guildConfig = GuildConfig.getConfig(guild.getId());
+			GuildConfig guildConfig = GuildConfig.getByGuildId(guild.getId());
 
 			if (guildConfig == null) {
-				future.complete(TicketCreateResult.GUILD_NOT_FOUND);
+				future.complete(TicketCreateResult.GUILD_CONFIG_NOT_FOUND);
 				return;
 			}
 
@@ -610,25 +612,6 @@ public class Ticket {
 	}
 
 	/**
-	 * Open the ticket channel from pusher
-	 *
-	 * @return The result of the ticket opening
-	 */
-	@SuppressWarnings("UnusedReturnValue")
-	public CompletableFuture<TicketCreateResult> openFromRedis() {
-		return this.open(this::printAllPreviousMessages);
-	}
-
-	/**
-	 * Print all previous messages
-	 */
-	private void printAllPreviousMessages() {
-		for (TicketMessage message : messages) {
-			message.printMessage();
-		}
-	}
-
-	/**
 	 * Close the ticket channel
 	 *
 	 * @param user   The user that closed the ticket
@@ -648,6 +631,10 @@ public class Ticket {
 			}
 
 			this.closedById = user.getId();
+			this.closedByAvatarUrl = user.getAvatarUrl();
+			this.closedByName = user.getName();
+
+			this.closedAt = ZonedDateTime.now();
 			this.closedReason = reason;
 
 			TicketService.INSTANCE.closeTicket(this).thenAcceptAsync(newTicket -> {
@@ -659,7 +646,15 @@ public class Ticket {
 				TicketChannel.deleteTicketChannel(this).thenAcceptAsync(v -> {
 					future.complete(TicketCloseResult.SUCCESS);
 
-					sendTicketClosedMessages();
+					sendTicketClosedMessages().thenAcceptAsync(v1 -> {
+						DataApi.getDataInstance().logInfo(getClass(), "Ticket closed: " + newTicket.getTicketId());
+					}).exceptionally(throwable -> {
+						DataApi.getDataInstance().logError(getClass(), "Error while sending ticket closed messages",
+														   throwable
+						);
+						return null;
+					});
+
 					DiscordBot.getInstance().getTicketManager().removeTicket(this);
 					afterClose();
 				}).exceptionally(throwable -> {
@@ -693,15 +688,18 @@ public class Ticket {
 			return CompletableFuture.completedFuture(null);
 		}
 
-		RoleConfig roleConfig = RoleConfig.getConfig(role.getId());
-//		DiscordRole discordRole = DiscordGuilds.getGuild(getGuild()).getDiscordRoleByRole(role);
-//		List<Permission> allowedPermissions = discordRole.getDiscordAllowedPermissions();
-		List<Permission> allowedPermissions = new ArrayList<>(); // TODO: Fixme
+		GuildConfig guildConfig = GuildConfig.getConfig(getGuildId());
+
+		if (guildConfig == null) {
+			return CompletableFuture.completedFuture(null);
+		}
+
+		RoleConfig roleConfig = RoleConfig.getConfig(getGuildId(), role.getName());
 
 		PermissionOverrideAction permissionOverrideAction = channel.upsertPermissionOverride(role);
 		permissionOverrideAction = permissionOverrideAction.resetAllow();
 		permissionOverrideAction = permissionOverrideAction.resetDeny();
-		permissionOverrideAction = permissionOverrideAction.setAllowed(allowedPermissions);
+		permissionOverrideAction = permissionOverrideAction.setAllowed(roleConfig.getDiscordDeniedPermissionsAsJDA());
 
 		return permissionOverrideAction.submit();
 	}
@@ -942,16 +940,6 @@ public class Ticket {
 		}
 
 		return DiscordBot.getInstance().getJda().retrieveUserById(closedById);
-	}
-
-	/**
-	 * Gets webhook.
-	 *
-	 * @return the webhook
-	 */
-	@JsonIgnore
-	public RestAction<Webhook> getWebhook() {
-		return DiscordBot.getInstance().getJda().retrieveWebhookById(webhookId);
 	}
 
 }

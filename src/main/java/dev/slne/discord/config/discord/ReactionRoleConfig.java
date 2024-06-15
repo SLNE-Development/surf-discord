@@ -17,10 +17,10 @@ import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 @ToString
 public class ReactionRoleConfig {
 
-	private final String messageId = "0";
-	private final String channelId = "0";
-	private final String roleId = "0";
-	private final String reaction = "🔔";
+	private String messageId;
+	private String channelId;
+	private String roleId;
+	private String reaction;
 
 	/**
 	 * Instantiates a new Reaction role config.

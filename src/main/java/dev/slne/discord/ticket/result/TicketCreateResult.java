@@ -21,6 +21,11 @@ public enum TicketCreateResult {
 	GUILD_NOT_FOUND,
 
 	/**
+	 * The guild config was not found
+	 */
+	GUILD_CONFIG_NOT_FOUND,
+	
+	/**
 	 * The category was not found
 	 */
 	CATEGORY_NOT_FOUND,

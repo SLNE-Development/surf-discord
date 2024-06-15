@@ -15,11 +15,11 @@ public enum TicketType {
 	/**
 	 * The Discord support.
 	 */
-	DISCORD_SUPPORT("Discord Support", "discordSupport", DiscordPermission.VIEW_DISCORD_SUPPORT_TICKETS),
+	DISCORD_SUPPORT("Discord Support", "discord-support", DiscordPermission.VIEW_DISCORD_SUPPORT_TICKETS),
 	/**
 	 * The Server support.
 	 */
-	SERVER_SUPPORT("Server Support", "serverSupport", DiscordPermission.VIEW_SERVER_SUPPORT_TICKETS),
+	SERVER_SUPPORT("Server Support", "server-support", DiscordPermission.VIEW_SERVER_SUPPORT_TICKETS),
 	/**
 	 * The Bugreport.
 	 */

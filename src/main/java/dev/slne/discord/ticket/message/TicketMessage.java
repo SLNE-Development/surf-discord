@@ -1,7 +1,5 @@
 package dev.slne.discord.ticket.message;
 
-import club.minnced.discord.webhook.external.JDAWebhookClient;
-import club.minnced.discord.webhook.send.WebhookMessageBuilder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import dev.slne.data.api.DataApi;
@@ -194,34 +192,6 @@ public class TicketMessage {
 		});
 
 		return future;
-	}
-
-	/**
-	 * Prints the ticket message
-	 */
-	public void printMessage() {
-		String content = getContent().join();
-
-		if (getTicket().getChannel() == null || content == null) {
-			return;
-		}
-
-		getTicket().getWebhook().queue(webhook -> {
-			if (webhook == null) {
-				return;
-			}
-
-			String avatarUrl = authorAvatarUrl;
-
-			try (JDAWebhookClient client = JDAWebhookClient.from(webhook)) {
-				WebhookMessageBuilder builder = new WebhookMessageBuilder();
-				builder.setUsername(authorName);
-				builder.setAvatarUrl(avatarUrl);
-				builder.setContent(content);
-
-				client.send(builder.build());
-			}
-		});
 	}
 
 	/**

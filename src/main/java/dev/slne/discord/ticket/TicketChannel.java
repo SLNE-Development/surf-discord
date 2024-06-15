@@ -2,7 +2,7 @@ package dev.slne.discord.ticket;
 
 import dev.slne.data.api.DataApi;
 import dev.slne.discord.DiscordBot;
-import dev.slne.discord.config.BotConfig;
+import dev.slne.discord.config.discord.GuildConfig;
 import dev.slne.discord.config.role.RoleConfig;
 import dev.slne.discord.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.ticket.TicketPermissionOverride.Type;
@@ -10,7 +10,6 @@ import dev.slne.discord.ticket.member.TicketMember;
 import dev.slne.discord.ticket.result.TicketCreateResult;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.Channel;
@@ -69,32 +68,38 @@ public class TicketChannel {
 				return;
 			}
 
-			Member member = guild.getMember(user);
+			guild.retrieveMember(user).submit().thenAcceptAsync(member -> {
+				if (member == null) {
+					future.completeExceptionally(new RuntimeException("Member not found"));
+					return;
+				}
 
-			if (member == null) {
-				future.completeExceptionally(new RuntimeException("Member not found"));
-				return;
-			}
+				List<Role> userDiscordRoles = member.getRoles();
+				List<RoleConfig> userRoles = userDiscordRoles.stream()
+															 .map(role -> RoleConfig.getDiscordRoleRoles(
+																	 guild.getId(),
+																	 role.getId()
+															 ))
+															 .flatMap(List::stream)
+															 .toList();
+				List<Permission> permissions = new ArrayList<>();
 
-			List<Role> userDiscordRoles = member.getRoles();
-			List<RoleConfig> userRoles = userDiscordRoles.stream()
-														 .map(role -> RoleConfig.getDiscordRoleRoles(role.getId()))
-														 .flatMap(List::stream)
-														 .toList();
-			List<Permission> permissions = new ArrayList<>();
+				for (RoleConfig role : userRoles) {
+					for (DiscordPermission discordPermission : role.getDiscordAllowedPermissions()) {
+						Permission permission = discordPermission.getPermission();
 
-			for (RoleConfig role : userRoles) {
-				for (DiscordPermission discordPermission : role.getDiscordAllowedPermissions()) {
-					Permission permission = discordPermission.getPermission();
-
-					if (!permissionAdded(permissions, permission)) {
-						permissions.add(permission);
+						if (!permissionAdded(permissions, permission)) {
+							permissions.add(permission);
+						}
 					}
 				}
-			}
 
-			manager.putMemberPermissionOverride(user.getIdLong(), permissions, new ArrayList<>())
-				   .queue(future::complete, future::completeExceptionally);
+				manager.putMemberPermissionOverride(user.getIdLong(), permissions, new ArrayList<>())
+					   .queue(future::complete, future::completeExceptionally);
+			}).exceptionally(throwable -> {
+				future.completeExceptionally(throwable);
+				return null;
+			});
 		}, future::completeExceptionally);
 
 		return future;
@@ -167,21 +172,18 @@ public class TicketChannel {
 			));
 		}
 
-		Map<String, @SubSection RoleConfig> roleConfig = BotConfig.getConfig().getRoleConfig();
-		for (Map.Entry<String, RoleConfig> entry : roleConfig.entrySet()) {
-			RoleConfig config = entry.getValue();
+		Map<String, @SubSection RoleConfig> roleConfigMap = GuildConfig.getByGuildId(guild.getId()).getRoleConfig();
+		for (Map.Entry<String, RoleConfig> entry : roleConfigMap.entrySet()) {
+			RoleConfig roleConfig = entry.getValue();
 
-			if (config == null) {
+			if (roleConfig == null) {
 				continue;
 			}
 
-			if (RoleConfig.getDefaultRole() == null) {
-				continue;
-			}
-
-			if (!config.canViewTicketType(ticketType)) {
-				for (String roleId : config.getDiscordRoleIds()) {
+			if (!roleConfig.canViewTicketType(ticketType)) {
+				for (String roleId : roleConfig.getDiscordRoleIds()) {
 					Role role = guild.getRoleById(roleId);
+
 					if (role != null) {
 						overrides.add(new TicketPermissionOverride(Type.ROLE, role.getIdLong(), new ArrayList<>(),
 																   allPermissions
@@ -189,8 +191,9 @@ public class TicketChannel {
 					}
 				}
 			} else {
-				for (String roleId : config.getDiscordRoleIds()) {
+				for (String roleId : roleConfig.getDiscordRoleIds()) {
 					Role role = guild.getRoleById(roleId);
+
 					if (role != null) {
 						overrides.add(new TicketPermissionOverride(Type.ROLE, role.getIdLong(), allPermissions,
 																   new ArrayList<>()
@@ -200,7 +203,7 @@ public class TicketChannel {
 			}
 		}
 
-		RoleConfig defaultRole = RoleConfig.getDefaultRole();
+		RoleConfig defaultRole = RoleConfig.getDefaultRole(guild.getId());
 
 		// Apply author
 		overrides.add(
@@ -228,7 +231,7 @@ public class TicketChannel {
 			ChannelAction<TextChannel> channelAction
 	) {
 		TicketMember ticketMember = new TicketMember(ticket, author, DiscordBot.getInstance().getJda().getSelfUser());
-		RoleConfig defaultRole = RoleConfig.getDefaultRole();
+		RoleConfig defaultRole = RoleConfig.getDefaultRole(ticket.getGuildId());
 		TicketPermissionOverride override = new TicketPermissionOverride(Type.USER, author.getIdLong(),
 																		 defaultRole.getDiscordAllowedPermissions()
 																					.stream().map(
@@ -329,29 +332,15 @@ public class TicketChannel {
 
 						  channelAction.queue(ticketChannel -> {
 							  ticket.setChannelId(ticketChannel.getId());
-							  CompletableFuture<Void> webhookFuture = createWebhook(ticket);
-							  CompletableFuture<Ticket> updateFuture =
-									  TicketService.INSTANCE.updateTicket(ticket);
 
-							  webhookFuture.thenAcceptAsync(v1 -> {
-							  }).exceptionally(throwable -> {
-								  future.complete(TicketCreateResult.ERROR);
-								  DataApi.getDataInstance()
-										 .logError(TicketChannel.class, "Failed to create webhook.", throwable);
-								  return null;
-							  });
-
-							  updateFuture.thenAcceptAsync(v1 -> {
+							  TicketService.INSTANCE.updateTicket(ticket).thenAcceptAsync(v1 -> {
+								  future.complete(TicketCreateResult.SUCCESS);
 							  }).exceptionally(throwable -> {
 								  future.complete(TicketCreateResult.ERROR);
 								  DataApi.getDataInstance()
 										 .logError(TicketChannel.class, "Failed to update ticket.", throwable);
 								  return null;
 							  });
-
-							  CompletableFuture
-									  .allOf(webhookFuture, updateFuture)
-									  .thenAccept(v1 -> future.complete(TicketCreateResult.SUCCESS));
 						  }, exception -> handleException(exception, future));
 					  }).exceptionally(throwable -> {
 						  future.complete(TicketCreateResult.ERROR);
@@ -422,36 +411,6 @@ public class TicketChannel {
 			}
 
 			future.complete(ticketName);
-		});
-
-		return future;
-	}
-
-	/**
-	 * Creates the webhook for the ticket channel
-	 *
-	 * @param ticket The ticket to create the webhook for
-	 *
-	 * @return the completable future
-	 */
-	public static CompletableFuture<Void> createWebhook(Ticket ticket) {
-		CompletableFuture<Void> future = new CompletableFuture<>();
-
-		CompletableFuture.runAsync(() -> {
-			TextChannel channel = ticket.getChannel();
-
-			if (channel == null) {
-				future.complete(null);
-				return;
-			}
-
-			channel.createWebhook("Ticket Webhook").queue(webhook -> {
-				ticket.setWebhookId(webhook.getId());
-				ticket.setWebhookName(webhook.getName());
-				ticket.setWebhookUrl(webhook.getUrl());
-
-				future.complete(null);
-			}, future::completeExceptionally);
 		});
 
 		return future;

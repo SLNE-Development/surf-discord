@@ -2,7 +2,6 @@ package dev.slne.discord.config;
 
 import dev.slne.discord.config.discord.DiscordBotConfig;
 import dev.slne.discord.config.discord.GuildConfig;
-import dev.slne.discord.config.role.RoleConfig;
 import dev.slne.discord.config.ticket.TicketConfig;
 import lombok.Getter;
 import lombok.ToString;
@@ -25,7 +24,6 @@ public class BotConfig {
 	private static BotConfig instance;
 
 	private Map<String, GuildConfig> guildConfig;
-	private Map<String, RoleConfig> roleConfig;
 
 	private DiscordBotConfig discordBotConfig;
 	private TicketConfig ticketConfig;
