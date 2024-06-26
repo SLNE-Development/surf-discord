@@ -2,6 +2,7 @@ package dev.slne.discord.listener;
 
 import dev.slne.discord.listener.interaction.button.DiscordButtonListener;
 import dev.slne.discord.listener.interaction.command.CommandReceivedListener;
+import dev.slne.discord.listener.interaction.menu.DiscordSelectMenuListener;
 import dev.slne.discord.listener.interaction.modal.DiscordModalListener;
 import dev.slne.discord.listener.message.MessageCreatedListener;
 import dev.slne.discord.listener.message.MessageDeletedListener;
@@ -49,6 +50,7 @@ public class ListenerManager {
 		discordListeners.add(new CommandReceivedListener());
 		discordListeners.add(new DiscordModalListener());
 		discordListeners.add(new DiscordButtonListener());
+		discordListeners.add(new DiscordSelectMenuListener());
 
 		discordListeners.add(new MessageCreatedListener());
 		discordListeners.add(new MessageUpdatedListener());

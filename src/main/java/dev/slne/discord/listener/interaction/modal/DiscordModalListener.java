@@ -15,11 +15,18 @@ import javax.annotation.Nonnull;
  */
 public class DiscordModalListener extends ListenerAdapter {
 
+	private final DiscordModalManager modalManager;
+
+	/**
+	 * Instantiates a new Discord modal listener.
+	 */
+	public DiscordModalListener() {
+		this.modalManager = DiscordBot.getInstance().getModalManager();
+	}
+
 	@Override
 	public void onModalInteraction(@Nonnull ModalInteractionEvent event) {
 		ModalInteraction interaction = event.getInteraction();
-
-		DiscordModalManager modalManager = DiscordBot.getInstance().getModalManager();
 		DiscordModal modal = modalManager.getModal(interaction.getModalId());
 
 		if (modal != null) {

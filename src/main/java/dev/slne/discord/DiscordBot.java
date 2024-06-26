@@ -5,6 +5,7 @@ import dev.slne.discord.config.BotConfig;
 import dev.slne.discord.discord.interaction.button.DiscordButtonManager;
 import dev.slne.discord.discord.interaction.command.DiscordCommandManager;
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager;
+import dev.slne.discord.discord.interaction.select.DiscordSelectMenuManager;
 import dev.slne.discord.discord.settings.GatewayIntents;
 import dev.slne.discord.listener.ListenerManager;
 import dev.slne.discord.ticket.TicketManager;
@@ -34,6 +35,7 @@ public class DiscordBot {
 	private DiscordModalManager modalManager;
 	private DiscordCommandManager commandManager;
 	private DiscordButtonManager buttonManager;
+	private DiscordSelectMenuManager selectMenuManager;
 
 	/**
 	 * Called when the bot is loaded.
@@ -71,6 +73,8 @@ public class DiscordBot {
 		listenerManager = new ListenerManager();
 		modalManager = new DiscordModalManager();
 		ticketManager = new TicketManager();
+		selectMenuManager = new DiscordSelectMenuManager();
+		buttonManager = new DiscordButtonManager();
 
 		listenerManager.registerDiscordListeners();
 		listenerManager.registerListeners();
@@ -95,8 +99,6 @@ public class DiscordBot {
 		}
 
 		listenerManager.registerListenersToJda(this.jda);
-
-		buttonManager = new DiscordButtonManager();
 	}
 
 	/**

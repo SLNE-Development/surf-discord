@@ -13,9 +13,17 @@ import javax.annotation.Nonnull;
  */
 public class DiscordButtonListener extends ListenerAdapter {
 
+	private final DiscordButtonManager buttonManager;
+
+	/**
+	 * Instantiates a new Discord button listener.
+	 */
+	public DiscordButtonListener() {
+		this.buttonManager = DiscordBot.getInstance().getButtonManager();
+	}
+
 	@Override
 	public void onButtonInteraction(@Nonnull ButtonInteractionEvent event) {
-		DiscordButtonManager buttonManager = DiscordBot.getInstance().getButtonManager();
 		DiscordButton button = buttonManager.getButton(event.getButton().getId());
 
 		if (button != null) {

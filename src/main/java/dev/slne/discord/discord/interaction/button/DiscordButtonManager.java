@@ -1,9 +1,6 @@
 package dev.slne.discord.discord.interaction.button;
 
-import dev.slne.discord.discord.interaction.button.buttons.ticket.TicketButton.BugreportTicketButton;
-import dev.slne.discord.discord.interaction.button.buttons.ticket.TicketButton.DiscordSupportTicketButton;
-import dev.slne.discord.discord.interaction.button.buttons.ticket.TicketButton.ServerSupportTicketButton;
-import dev.slne.discord.discord.interaction.button.buttons.ticket.TicketButton.WhitelistTicketButton;
+import dev.slne.discord.discord.interaction.button.buttons.OpenTicketButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,11 +17,8 @@ public class DiscordButtonManager {
 	 */
 	public DiscordButtonManager() {
 		this.buttons = new ArrayList<>();
-
-		addButton(new WhitelistTicketButton());
-		addButton(new ServerSupportTicketButton());
-		addButton(new DiscordSupportTicketButton());
-		addButton(new BugreportTicketButton());
+		
+		addButton(new OpenTicketButton());
 	}
 
 	/**

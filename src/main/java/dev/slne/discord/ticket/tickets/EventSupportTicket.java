@@ -6,17 +6,17 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
 
 /**
- * The type Bug report ticket.
+ * The type event support ticket.
  */
-public class BugReportTicket extends Ticket {
+public class EventSupportTicket extends Ticket {
 
 	/**
-	 * Constructor for a bug report ticket
+	 * Constructor for a event support ticket
 	 *
 	 * @param guild        The guild the ticket is created in
 	 * @param ticketAuthor The author of the ticket
 	 */
-	public BugReportTicket(Guild guild, User ticketAuthor) {
-		super(guild, ticketAuthor, TicketType.BUGREPORT);
+	public EventSupportTicket(Guild guild, User ticketAuthor) {
+		super(guild, ticketAuthor, TicketType.EVENT_SUPPORT);
 	}
 }

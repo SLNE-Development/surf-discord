@@ -14,11 +14,18 @@ import javax.annotation.Nonnull;
  */
 public class CommandReceivedListener extends ListenerAdapter {
 
+	private final DiscordCommandManager commandManager;
+
+	/**
+	 * Instantiates a new Command received listener.
+	 */
+	public CommandReceivedListener() {
+		this.commandManager = DiscordBot.getInstance().getCommandManager();
+	}
+
 	@Override
 	public void onSlashCommandInteraction(@Nonnull SlashCommandInteractionEvent event) {
 		SlashCommandInteraction interaction = event.getInteraction();
-
-		DiscordCommandManager commandManager = DiscordBot.getInstance().getCommandManager();
 		DiscordCommand command = commandManager.findCommand(interaction.getName());
 
 		if (command != null) {
