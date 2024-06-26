@@ -41,7 +41,7 @@ public abstract class TicketCommand extends DiscordCommand {
 			}
 
 			if (!( interaction.getChannel() instanceof TextChannel textChannel )) {
-				interaction.reply("Dieser Befehl kann nur in einem Ticket verwendet werden.").setEphemeral(true)
+				interaction.reply("Dieser Befehl kann nur in einem Ticketkanal verwendet werden.").setEphemeral(true)
 						   .queue();
 				return;
 			}
