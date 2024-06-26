@@ -25,11 +25,11 @@ configurations.all {
 }
 
 dependencies {
-    compileOnly(libs.fastutil)
-    compileOnly(libs.configurate.yaml)
-    compileOnly(libs.configurate.jackson)
+    api(libs.fastutil)
+    api(libs.configurate.yaml)
+    api(libs.configurate.jackson)
     api(libs.dev.slne.surf.surf.api.core.api)
-    compileOnly(libs.net.dv8tion.jda) {
+    api(libs.net.dv8tion.jda) {
         isChanging = true
         exclude(group = "org.slf4j", module = "slf4j-api")
         exclude(group = "ch.qos.logback", module = "logback-classic")
