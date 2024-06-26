@@ -109,7 +109,7 @@ public class TicketsMenu extends DiscordSelectMenu {
 						if (ticket.getChannel() != null) {
 							message.append(ticket.getChannel().getAsMention());
 						}
-
+						
 						hook.editOriginal(message.toString()).queue();
 					} else if (result.equals(TicketCreateResult.ALREADY_EXISTS)) {
 						hook.editOriginal(

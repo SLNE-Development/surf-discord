@@ -2,7 +2,6 @@
 # https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
 
 [versions]
-club-minnced-discord-webhooks = "0.8.4"
 dev-slne-surf-data-core = "5.4.3-SNAPSHOT"
 net-dv8tion-jda = "5.0.0-beta.20"
 dev-slne-surf-surf-api-core-api = "1.0-SNAPSHOT"
@@ -10,7 +9,6 @@ fastutil-version = "8.5.13"
 configurate-version = "4.1.2"
 
 [libraries]
-club-minnced-discord-webhooks = { module = "club.minnced:discord-webhooks", version.ref = "club-minnced-discord-webhooks" }
 dev-slne-surf-data-core = { module = "dev.slne:surf-data-core", version.ref = "dev-slne-surf-data-core" }
 net-dv8tion-jda = { module = "net.dv8tion:JDA", version.ref = "net-dv8tion-jda" }
 dev-slne-surf-surf-api-core-api = { module = "dev.slne.surf:surf-api-core-server", version.ref = "dev-slne-surf-surf-api-core-api" }

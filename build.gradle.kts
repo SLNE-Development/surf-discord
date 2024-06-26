@@ -40,11 +40,6 @@ dependencies {
         exclude(group = "ch.qos.logback", module = "logback-classic")
         exclude(group = "ch.qos.logback", module = "logback-core")
     }
-    api(libs.club.minnced.discord.webhooks) {
-        exclude(group = "org.slf4j", module = "slf4j-api")
-        exclude(group = "ch.qos.logback", module = "logback-classic")
-        exclude(group = "ch.qos.logback", module = "logback-core")
-    }
 }
 
 group = "dev.slne"
