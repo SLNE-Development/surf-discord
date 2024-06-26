@@ -25,11 +25,11 @@ configurations.all {
 }
 
 dependencies {
-    api(libs.fastutil)
-    api(libs.configurate.yaml)
-    api(libs.configurate.jackson)
+    compileOnly(libs.fastutil)
+    compileOnly(libs.configurate.yaml)
+    compileOnly(libs.configurate.jackson)
     api(libs.dev.slne.surf.surf.api.core.api)
-    api(libs.net.dv8tion.jda) {
+    compileOnly(libs.net.dv8tion.jda) {
         isChanging = true
         exclude(group = "org.slf4j", module = "slf4j-api")
         exclude(group = "ch.qos.logback", module = "logback-classic")
@@ -62,6 +62,7 @@ publishing {
         from(components["java"])
     }
 }
+
 tasks {
     compileJava {
         options.encoding = Charsets.UTF_8.name()
@@ -70,4 +71,25 @@ tasks {
     javadoc {
         options.encoding = Charsets.UTF_8.name()
     }
+
+    jar {
+        manifest {
+            attributes["Main-Class"] = "dev.slne.discord.Launcher"
+        }
+    }
+
+    shadowJar {
+        archiveFileName.set("bot.jar")
+        manifest {
+            attributes["Main-Class"] = "dev.slne.discord.Launcher"
+        }
+    }
+}
+
+tasks.named<Jar>("jar") {
+    archiveFileName.set("bot.jar")
+}
+
+tasks.withType<Zip> {
+    isZip64 = true
 }
