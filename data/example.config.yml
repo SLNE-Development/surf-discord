@@ -5,7 +5,7 @@ discord-bot-config:
 ticket-config:
   enabled: true
   ticket-types:
-    server-support:
+    survival-support:
       enabled: false
       should-print-wl-query: false
       opening-messages:
@@ -128,7 +128,7 @@ guild-config:
         discord-denied-permissions: [ ]
         command-allowed-permissions: [ ]
         command-denied-permissions: [ ]
-      server-support:
+      survival-support:
         default-role: false
         discord-role-ids:
           - '1242929497041277099'

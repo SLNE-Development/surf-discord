@@ -70,7 +70,7 @@ public class TicketsMenu extends DiscordSelectMenu {
 			} else {
 				Whitelist.isWhitelisted(user).thenAcceptAsync(whitelisted -> {
 					List<TicketType> whitelistedTypes = List.of(
-							TicketType.SERVER_SUPPORT
+							TicketType.SURVIVAL_SUPPORT
 					);
 
 					if (!whitelisted && whitelistedTypes.contains(ticketType)) {
@@ -81,7 +81,7 @@ public class TicketsMenu extends DiscordSelectMenu {
 					Ticket ticket = null;
 					switch (ticketType) {
 						case EVENT_SUPPORT -> ticket = new EventSupportTicket(guild, user);
-						case SERVER_SUPPORT -> ticket = new ServerSupportTicket(guild, user);
+						case SURVIVAL_SUPPORT -> ticket = new ServerSupportTicket(guild, user);
 						case BUGREPORT -> ticket = new BugreportTicket(guild, user);
 						case UNBAN -> ticket = new UnbanTicket(guild, user);
 						default -> {
