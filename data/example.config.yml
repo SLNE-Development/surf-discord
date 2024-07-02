@@ -9,38 +9,40 @@ ticket-config:
       enabled: false
       should-print-wl-query: false
       opening-messages:
-        - 'Hello, how can we help you?'
         - '%author%'
+        - 'Vielen Dank für deine Whitelist Anfrage. Du wirst nun auf die Whitelist hinzugefügt, sobald jemand aus dem Team Zeit findet. Wir bitten um etwas Geduld.'
     survival-support:
       enabled: false
-      should-print-wl-query: false
+      should-print-wl-query: true
       opening-messages:
-        - 'Hello, how can we help you?'
         - '%author%'
+        - 'Willkommen beim Support für den Survival Server. Wie können wir dir helfen?'
     event-support:
       enabled: false
       should-print-wl-query: false
       opening-messages:
-        - 'Hello, how can we help you?'
         - '%author%'
+        - 'Willkommen beim Support für den Event Server. Wie können wir dir helfen?'
     bugreport:
       enabled: false
       should-print-wl-query: false
       opening-messages:
-        - 'Hello, how can we help you?'
         - '%author%'
+        - 'Wir freuen uns, dass du einen Fehler melden möchtest. **Bitte beschreibe das Problem so genau wie möglich**. Wann? Wie? Wo? Screenshots und Videos des Fehlers sind gerne gesehen.'
     unban:
       enabled: false
       should-print-wl-query: false
       opening-messages:
-        - 'Hello, how can we help you?'
         - '%author%'
+        - 'Du möchtest entbannt werden? Dann schreibe uns bitte eine **ausführliche** Entbannungsanfrage.'
+        - 'Bitte beschreibe genau, **warum du ausgeschlossen wurdest** und **warum wir den Ausschluss aufheben sollten**.'
+        - 'Du solltest dabei stets ehrlich sein und keine falschen Angaben machen. Sollte uns auffallen, dass du versuchst uns zu täuschen, wird deine Anfrage abgelehnt.'
     discord-support:
       enabled: false
       should-print-wl-query: false
       opening-messages:
-        - 'Hello, how can we help you?'
         - '%author%'
+        - 'Willkommen beim Discord Support. Wie können wir dir helfen?'
 
 guild-config:
   castcrafter:
