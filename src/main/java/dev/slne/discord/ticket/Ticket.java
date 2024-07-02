@@ -29,6 +29,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.PermissionOverrideAction;
+import org.gradle.internal.impldep.org.joda.time.DateTime;
 
 import java.awt.Color;
 import java.time.ZoneId;
@@ -315,13 +316,20 @@ public class Ticket {
 		ZonedDateTime openedAtDateTimeUtc = getCreatedAt();
 		ZonedDateTime closedAtDateTimeUtc = getClosedAt();
 
-		ZonedDateTime openedAtDateTime = openedAtDateTimeUtc.withZoneSameInstant(ZoneId.of("Europe/Berlin"));
-		ZonedDateTime closedAtDateTime = closedAtDateTimeUtc.withZoneSameInstant(ZoneId.of("Europe/Berlin"));
+		ZonedDateTime openedAtDateTime = ZonedDateTime.now();
+		if (openedAtDateTimeUtc != null) {
+			openedAtDateTime = openedAtDateTimeUtc.withZoneSameInstant(ZoneId.of("Europe/Berlin"));
+		}
+
+		ZonedDateTime closedAtDateTime = ZonedDateTime.now();
+		if (closedAtDateTimeUtc != null) {
+			closedAtDateTime = closedAtDateTimeUtc.withZoneSameInstant(ZoneId.of("Europe/Berlin"));
+		}
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
-		embedBuilder.addField("Ticket-Id", getTicketId().toString(), true);
-		embedBuilder.addField("Ticket-Type", getTicketTypeString(), true);
+		embedBuilder.addField("Ticket-Id", getTicketId() == null ? "null" : getTicketId().toString(), true);
+		embedBuilder.addField("Ticket-Type", getTicketTypeString() == null ? "null" : getTicketTypeString(), true);
 		embedBuilder.addField("Ticket-Author", author.getAsMention(), true);
 		embedBuilder.addField("Ticket-Eröffnungszeit", formatter.format(openedAtDateTime), true);
 

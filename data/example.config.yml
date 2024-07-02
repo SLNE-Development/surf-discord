@@ -5,19 +5,19 @@ discord-bot-config:
 ticket-config:
   enabled: true
   ticket-types:
+    whitelist:
+      enabled: false
+      should-print-wl-query: false
+      opening-messages:
+        - 'Hello, how can we help you?'
+        - '%author%'
     survival-support:
       enabled: false
       should-print-wl-query: false
       opening-messages:
         - 'Hello, how can we help you?'
         - '%author%'
-    discord-support:
-      enabled: false
-      should-print-wl-query: false
-      opening-messages:
-        - 'Hello, how can we help you?'
-        - '%author%'
-    whitelist:
+    event-support:
       enabled: false
       should-print-wl-query: false
       opening-messages:
@@ -35,7 +35,7 @@ ticket-config:
       opening-messages:
         - 'Hello, how can we help you?'
         - '%author%'
-    event-support:
+    discord-support:
       enabled: false
       should-print-wl-query: false
       opening-messages:
@@ -57,17 +57,69 @@ guild-config:
         default-role: false
         discord-role-ids:
           - '156159112416067584'
-        discord-allowed-permissions: [ ]
+        discord-allowed-permissions:
+          - "VIEW_CHANNEL"
+          - "MANAGE_CHANNEL"
+          - "SEND_MESSAGES"
+          - "EMBED_LINKS"
+          - "ATTACH_FILES"
+          - "ADD_REACTIONS"
+          - "USE_EXTERNAL_EMOJIS"
+          - "USE_EXTERNAL_STICKERS"
+          - "MANAGE_MESSAGES"
+          - "READ_MESSAGE_HISTORY"
+          - "USE_APPLICATION_COMMANDS"
+          - "VIEW_WHITELIST_TICKETS"
+          - "VIEW_DISCORD_SUPPORT_TICKETS"
+          - "VIEW_BUGREPORT_TICKETS"
+          - "VIEW_SURVIVAL_SUPPORT_TICKETS"
+          - "VIEW_UNBAN_TICKETS"
+          - "VIEW_EVENT_SUPPORT_TICKETS"
         discord-denied-permissions: [ ]
-        command-allowed-permissions: [ ]
+        command-allowed-permissions:
+          - "NO_INTEREST"
+          - "WHITELIST"
+          - "WHITELISTED"
+          - "TWITCH_CONNECT"
+          - "TWITCH_FOLLOW"
+          - "WHITELIST_QUERY"
+          - "TICKET_ADD_USER"
+          - "TICKET_REMOVE_USER"
+          - "TICKET_CLOSE"
         command-denied-permissions: [ ]
       discord-moderator:
         default-role: false
         discord-role-ids:
           - '156164562499010560'
-        discord-allowed-permissions: [ ]
+        discord-allowed-permissions:
+          - "VIEW_CHANNEL"
+          - "MANAGE_CHANNEL"
+          - "SEND_MESSAGES"
+          - "EMBED_LINKS"
+          - "ATTACH_FILES"
+          - "ADD_REACTIONS"
+          - "USE_EXTERNAL_EMOJIS"
+          - "USE_EXTERNAL_STICKERS"
+          - "MANAGE_MESSAGES"
+          - "READ_MESSAGE_HISTORY"
+          - "USE_APPLICATION_COMMANDS"
+          - "VIEW_WHITELIST_TICKETS"
+          - "VIEW_DISCORD_SUPPORT_TICKETS"
+          - "VIEW_BUGREPORT_TICKETS"
+          - "VIEW_SURVIVAL_SUPPORT_TICKETS"
+          - "VIEW_UNBAN_TICKETS"
+          - "VIEW_EVENT_SUPPORT_TICKETS"
         discord-denied-permissions: [ ]
-        command-allowed-permissions: [ ]
+        command-allowed-permissions:
+          - "NO_INTEREST"
+          - "WHITELIST"
+          - "WHITELISTED"
+          - "TWITCH_CONNECT"
+          - "TWITCH_FOLLOW"
+          - "WHITELIST_QUERY"
+          - "TICKET_ADD_USER"
+          - "TICKET_REMOVE_USER"
+          - "TICKET_CLOSE"
         command-denied-permissions: [ ]
       server-admin:
         default-role: false
@@ -88,7 +140,7 @@ guild-config:
           - "VIEW_WHITELIST_TICKETS"
           - "VIEW_DISCORD_SUPPORT_TICKETS"
           - "VIEW_BUGREPORT_TICKETS"
-          - "VIEW_SERVER_SUPPORT_TICKETS"
+          - "VIEW_SURVIVAL_SUPPORT_TICKETS"
           - "VIEW_UNBAN_TICKETS"
           - "VIEW_EVENT_SUPPORT_TICKETS"
         discord-denied-permissions: [ ]
@@ -116,31 +168,103 @@ guild-config:
         default-role: false
         discord-role-ids:
           - '1242929429747994664'
-        discord-allowed-permissions: [ ]
+        discord-allowed-permissions:
+          - "VIEW_CHANNEL"
+          - "SEND_MESSAGES"
+          - "EMBED_LINKS"
+          - "ATTACH_FILES"
+          - "ADD_REACTIONS"
+          - "USE_EXTERNAL_EMOJIS"
+          - "USE_EXTERNAL_STICKERS"
+          - "READ_MESSAGE_HISTORY"
+          - "USE_APPLICATION_COMMANDS"
+          - "VIEW_WHITELIST_TICKETS"
+          - "VIEW_EVENT_SUPPORT_TICKETS"
+          - "VIEW_SURVIVAL_SUPPORT_TICKETS"
+          - "VIEW_BUGREPORT_TICKETS"
+          - "VIEW_UNBAN_TICKETS"
         discord-denied-permissions: [ ]
-        command-allowed-permissions: [ ]
+        command-allowed-permissions:
+          - "NO_INTEREST"
+          - "WHITELIST"
+          - "WHITELISTED"
+          - "TWITCH_CONNECT"
+          - "TWITCH_FOLLOW"
+          - "WHITELIST_QUERY"
+          - "TICKET_ADD_USER"
+          - "TICKET_REMOVE_USER"
+          - "TICKET_CLOSE"
         command-denied-permissions: [ ]
       server-moderator:
         default-role: false
         discord-role-ids:
           - '1242929223593758811'
-        discord-allowed-permissions: [ ]
+        discord-allowed-permissions:
+          - "VIEW_CHANNEL"
+          - "SEND_MESSAGES"
+          - "EMBED_LINKS"
+          - "ATTACH_FILES"
+          - "ADD_REACTIONS"
+          - "USE_EXTERNAL_EMOJIS"
+          - "USE_EXTERNAL_STICKERS"
+          - "READ_MESSAGE_HISTORY"
+          - "USE_APPLICATION_COMMANDS"
+          - "VIEW_WHITELIST_TICKETS"
+          - "VIEW_SURVIVAL_SUPPORT_TICKETS"
+          - "VIEW_EVENT_SUPPORT_TICKETS"
+          - "VIEW_SURVIVAL_SUPPORT_TICKETS"
+          - "VIEW_UNBAN_TICKETS"
         discord-denied-permissions: [ ]
-        command-allowed-permissions: [ ]
+        command-allowed-permissions:
+          - "NO_INTEREST"
+          - "WHITELIST"
+          - "WHITELISTED"
+          - "TWITCH_CONNECT"
+          - "TWITCH_FOLLOW"
+          - "WHITELIST_QUERY"
+          - "TICKET_ADD_USER"
+          - "TICKET_REMOVE_USER"
+          - "TICKET_CLOSE"
         command-denied-permissions: [ ]
-      survival-support:
+      server-support:
         default-role: false
         discord-role-ids:
           - '1242929497041277099'
-        discord-allowed-permissions: [ ]
+        discord-allowed-permissions:
+          - "VIEW_CHANNEL"
+          - "SEND_MESSAGES"
+          - "EMBED_LINKS"
+          - "ATTACH_FILES"
+          - "ADD_REACTIONS"
+          - "USE_EXTERNAL_EMOJIS"
+          - "USE_EXTERNAL_STICKERS"
+          - "READ_MESSAGE_HISTORY"
+          - "USE_APPLICATION_COMMANDS"
+          - "VIEW_WHITELIST_TICKETS"
+          - "VIEW_EVENT_SUPPORT_TICKETS"
         discord-denied-permissions: [ ]
-        command-allowed-permissions: [ ]
+        command-allowed-permissions:
+          - "NO_INTEREST"
+          - "WHITELIST"
+          - "WHITELISTED"
+          - "TWITCH_CONNECT"
+          - "TWITCH_FOLLOW"
+          - "WHITELIST_QUERY"
+          - "TICKET_CLOSE"
         command-denied-permissions: [ ]
       server-builder:
         default-role: false
         discord-role-ids:
           - '1242929846481453107'
-        discord-allowed-permissions: [ ]
+        discord-allowed-permissions:
+          - "VIEW_CHANNEL"
+          - "SEND_MESSAGES"
+          - "EMBED_LINKS"
+          - "ATTACH_FILES"
+          - "ADD_REACTIONS"
+          - "USE_EXTERNAL_EMOJIS"
+          - "USE_EXTERNAL_STICKERS"
+          - "READ_MESSAGE_HISTORY"
         discord-denied-permissions: [ ]
         command-allowed-permissions: [ ]
         command-denied-permissions: [ ]
@@ -148,7 +272,15 @@ guild-config:
         default-role: true
         discord-role-ids:
           - '1052361599484170300'
-        discord-allowed-permissions: [ ]
+        discord-allowed-permissions:
+          - "VIEW_CHANNEL"
+          - "SEND_MESSAGES"
+          - "EMBED_LINKS"
+          - "ATTACH_FILES"
+          - "ADD_REACTIONS"
+          - "USE_EXTERNAL_EMOJIS"
+          - "USE_EXTERNAL_STICKERS"
+          - "READ_MESSAGE_HISTORY"
         discord-denied-permissions: [ ]
         command-allowed-permissions: [ ]
         command-denied-permissions: [ ]
