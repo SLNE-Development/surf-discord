@@ -53,7 +53,7 @@ public class UnbanTicketModal extends DiscordModal {
 
 			PunishmentService.INSTANCE.getBanByPunishmentId(punishmentId).thenAccept(ban -> {
 				if(ban == null) {
-					hook.editOriginal("Es konnte kein Bann mit der eingegeben ID gefunden werden!").queue();
+					hook.editOriginal("Es konnte kein Ausschluss mit der eingegeben ID gefunden werden!").queue();
 					return;
 				}
 
@@ -101,7 +101,7 @@ public class UnbanTicketModal extends DiscordModal {
 
 			}).exceptionally(failure -> {
 				if (failure instanceof CompletionException && failure.getCause() instanceof FeignException.NotFound) {
-					hook.editOriginal("Es konnte kein Bann mit der eingegeben ID gefunden werden!").queue();
+					hook.editOriginal("Es konnte kein Ausschluss mit der eingegeben ID gefunden werden!").queue();
 					return null;
 				}
 
