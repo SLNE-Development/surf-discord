@@ -54,7 +54,7 @@ public class WhitelistTicketModal extends DiscordModal {
 
 		TicketType ticketType = TicketType.getByName(modalInteraction.getModalId());
 		if (ticketType == null) {
-			event.reply("Es ist ein Fehler beim abrufen des Ticket-Typs aufgetreten.").setEphemeral(true).queue();
+			event.reply("Es ist ein Fehler beim Abrufen des Ticket-Typs aufgetreten.").setEphemeral(true).queue();
 			return;
 		}
 

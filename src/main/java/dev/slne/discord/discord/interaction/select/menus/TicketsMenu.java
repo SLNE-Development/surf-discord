@@ -1,6 +1,7 @@
 package dev.slne.discord.discord.interaction.select.menus;
 
 import dev.slne.data.api.DataApi;
+import dev.slne.discord.discord.interaction.modal.modals.UnbanTicketModal;
 import dev.slne.discord.discord.interaction.modal.modals.WhitelistTicketModal;
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenu;
 import dev.slne.discord.ticket.Ticket;
@@ -59,6 +60,11 @@ public class TicketsMenu extends DiscordSelectMenu {
 			return;
 		}
 
+		if (ticketType.equals(TicketType.UNBAN)) {
+			handleUnban(ticketType, interaction);
+			return;
+		}
+
 		interaction.deferReply(true).queue(hook -> {
 			User user = interaction.getUser();
 			Guild guild = interaction.getGuild();
@@ -83,7 +89,6 @@ public class TicketsMenu extends DiscordSelectMenu {
 						case EVENT_SUPPORT -> ticket = new EventSupportTicket(guild, user);
 						case SURVIVAL_SUPPORT -> ticket = new ServerSupportTicket(guild, user);
 						case BUGREPORT -> ticket = new BugreportTicket(guild, user);
-						case UNBAN -> ticket = new UnbanTicket(guild, user);
 						default -> {
 						}
 					}
@@ -169,6 +174,22 @@ public class TicketsMenu extends DiscordSelectMenu {
 
 			return null;
 		});
+	}
+
+	/**
+	 * Handles the unban button
+	 *
+	 * @param ticketType  the ticket type
+	 * @param interaction the interaction
+	 */
+	private void handleUnban(TicketType ticketType, StringSelectInteraction interaction) {
+		if (!ticketType.equals(TicketType.UNBAN)) {
+			return;
+		}
+
+		UnbanTicketModal unbanTicketModal = new UnbanTicketModal();
+		Modal modal = unbanTicketModal.buildModal();
+		interaction.replyModal(modal).queue();
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package dev.slne.discord.discord.interaction.modal;
 
 import dev.slne.data.api.DataApi;
+import dev.slne.discord.discord.interaction.modal.modals.UnbanTicketModal;
 import dev.slne.discord.discord.interaction.modal.modals.WhitelistTicketModal;
 
 import java.lang.reflect.InvocationTargetException;
@@ -21,6 +22,7 @@ public class DiscordModalManager {
 		this.modals = new HashMap<>();
 
 		registerModal(WhitelistTicketModal.class);
+		registerModal(UnbanTicketModal.class);
 	}
 
 	/**

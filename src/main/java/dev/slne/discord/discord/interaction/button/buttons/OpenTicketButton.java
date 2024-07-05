@@ -42,7 +42,7 @@ public class OpenTicketButton extends DiscordButton {
 		EmbedBuilder builder = new EmbedBuilder();
 		builder.setThumbnail("https://cdn.icon-icons.com/icons2/522/PNG/512/ticket_icon-icons.com_52351.png");
 		builder.setTitle("Ticket Typ auswählen");
-		builder.setDescription("Bitte wähle ein Ticket aus, welches du öffnen möchtest.");
+		builder.setDescription("Bitte wähle das passende Ticket aus, welches du öffnen möchtest.");
 		builder.setColor(Color.CYAN);
 
 		interaction.reply("").setActionRow(menu).setEmbeds(builder.build()).setEphemeral(true).queue();

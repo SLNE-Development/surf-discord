@@ -58,9 +58,13 @@ public class API {
 	 */
 	public static final String WHITELIST_BY_MINECRAFT_NAME = "proxy/user/uuid/{minecraftName}";
 	/**
+	 * The constant PUNISHMENT_BY_PUNISHMENT_ID.
+	 */
+	public static final String PUNISHMENT_BY_PUNISHMENT_ID = "punish/bans/{punishment_id}";
+	/**
 	 * The constant API_PREFIX.
 	 */
-	public static final String API_PREFIX = GLOBAL_API_PREFIX;
+	public static final String API_PREFIX = LOCAL_API_PREFIX;
 
 	/**
 	 * Private constructor to prevent instantiation.
