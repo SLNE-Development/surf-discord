@@ -64,7 +64,7 @@ public class API {
 	/**
 	 * The constant API_PREFIX.
 	 */
-	public static final String API_PREFIX = LOCAL_API_PREFIX;
+	public static final String API_PREFIX = GLOBAL_API_PREFIX;
 
 	/**
 	 * Private constructor to prevent instantiation.
