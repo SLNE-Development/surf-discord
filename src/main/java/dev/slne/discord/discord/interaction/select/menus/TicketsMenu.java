@@ -140,7 +140,9 @@ public class TicketsMenu extends DiscordSelectMenu {
 
 				return null;
 			});
+			interaction.editSelectMenu(interaction.getSelectMenu()).queue();
 		});
+
 	}
 
 
@@ -168,8 +170,10 @@ public class TicketsMenu extends DiscordSelectMenu {
 			WhitelistTicketModal whitelistModal = new WhitelistTicketModal();
 			Modal modal = whitelistModal.buildModal();
 			interaction.replyModal(modal).queue();
+			interaction.editSelectMenu(interaction.getSelectMenu()).queue();
 		}).exceptionally(failure -> {
 			interaction.reply("Es ist ein Fehler aufgetreten!").setEphemeral(true).queue();
+			interaction.editSelectMenu(interaction.getSelectMenu()).queue();
 			DataApi.getDataInstance().logError(getClass(), "Error while checking if user is whitelisted", failure);
 
 			return null;
@@ -190,6 +194,8 @@ public class TicketsMenu extends DiscordSelectMenu {
 		UnbanTicketModal unbanTicketModal = new UnbanTicketModal();
 		Modal modal = unbanTicketModal.buildModal();
 		interaction.replyModal(modal).queue();
+		interaction.editSelectMenu(interaction.getSelectMenu()).queue();
+
 	}
 
 	/**
