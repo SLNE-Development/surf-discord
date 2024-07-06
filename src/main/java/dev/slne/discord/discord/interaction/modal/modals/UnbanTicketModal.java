@@ -28,7 +28,7 @@ public class UnbanTicketModal extends DiscordModal {
 	@Override
 	public void fillComponents() {
 		TextInput punishmentIdInput =
-				TextInput.create("punishment-id", "Deine Punishment ID", TextInputStyle.SHORT).setRequired(true).setMinLength(6).setMaxLength(6).build();
+				TextInput.create("punishment-id", "Deine Punishment ID", TextInputStyle.SHORT).setRequired(true).setMinLength(6).setMaxLength(8).build();
 		components.add(punishmentIdInput);
 	}
 
