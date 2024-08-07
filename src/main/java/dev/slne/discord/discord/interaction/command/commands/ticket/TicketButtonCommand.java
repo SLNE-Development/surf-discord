@@ -67,10 +67,12 @@ public class TicketButtonCommand extends DiscordCommand {
 	 */
 	private void sendEmbed(Button button, TextChannel channel) {
 		EmbedBuilder builder = new EmbedBuilder();
-		builder.setThumbnail("https://cdn.icon-icons.com/icons2/522/PNG/512/ticket_icon-icons.com_52351.png");
-		builder.setTitle("Ticket Erstellen");
+		builder.setTitle("Ticket erstellen");
 		builder.setDescription(
-				"Hier kannst du ein Ticket erstellen.\n\nWeitere Informationen über die Tickets erhältst du auf https://server.castcrafter.de/docs/tickets"
+				"Du möchtest eine Whitelist-Anfrage stellen, einen Spieler bzw. ein Problem melden oder einen Entbannungsantrag für den Server erstellen, so kannst du hier ein Ticket erstellen.\n\n" +
+				"Bitte mache dich **vorher** mit unterschiedlichen Tickettypen vertraut! \nDie Übersicht findest du hier: https://server.castcrafter.de/support\n\n" +
+				"Allgemeine Fragen sollten in den dafür vorgesehenen öffentlichen Kanälen gestellt werden.\n\n" +
+				"Wir bemühen uns die Tickets schnellstmöglich zu bearbeiten, jedoch arbeitet das gesamte Team freiwillig, und gerade unter der Woche kann die Bearbeitung der Tickets länger dauern."
 		);
 		builder.setColor(Color.GREEN);
 

@@ -17,6 +17,6 @@ public class ServerSupportTicket extends Ticket {
 	 * @param ticketAuthor The author of the ticket
 	 */
 	public ServerSupportTicket(Guild guild, User ticketAuthor) {
-		super(guild, ticketAuthor, TicketType.SERVER_SUPPORT);
+		super(guild, ticketAuthor, TicketType.SURVIVAL_SUPPORT);
 	}
 }

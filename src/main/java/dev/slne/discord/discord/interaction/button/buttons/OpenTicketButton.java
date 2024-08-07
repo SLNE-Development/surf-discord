@@ -40,9 +40,8 @@ public class OpenTicketButton extends DiscordButton {
 	 */
 	private void sendEmbed(SelectMenu menu, ButtonInteraction interaction) {
 		EmbedBuilder builder = new EmbedBuilder();
-		builder.setThumbnail("https://cdn.icon-icons.com/icons2/522/PNG/512/ticket_icon-icons.com_52351.png");
-		builder.setTitle("Ticket Buttons");
-		builder.setDescription("Bitte wähle ein Ticket aus, welches du öffnen möchtest.");
+		builder.setTitle("Ticket Typ auswählen");
+		builder.setDescription("Bitte wähle das passende Ticket aus, welches du öffnen möchtest.\n\nInformationen zu den unterschiedlichen Tickettypen findest du auf https://server.castcrafter.de/support");
 		builder.setColor(Color.CYAN);
 
 		interaction.reply("").setActionRow(menu).setEmbeds(builder.build()).setEphemeral(true).queue();

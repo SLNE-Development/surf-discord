@@ -13,52 +13,52 @@ import java.util.Arrays;
 @Getter
 public enum TicketType {
 
-	DISCORD_SUPPORT(
-			"Discord Support",
-			"discord-support",
-			"Support für diesen Discord",
-			Emoji.fromUnicode("\uD83D\uDCAC"),
-			DiscordPermission.VIEW_DISCORD_SUPPORT_TICKETS
-	),
-
-	SERVER_SUPPORT(
-			"Server Support",
-			"server-support",
-			"Support für den Community Server",
-			Emoji.fromUnicode("\uD83D\uDEE0\uFE0F"),
-			DiscordPermission.VIEW_SERVER_SUPPORT_TICKETS
-	),
-
-	BUGREPORT(
-			"Bug Report",
-			"bugreport",
-			"Alle möglichen Bugreports",
-			Emoji.fromUnicode("\uD83D\uDC1E"),
-			DiscordPermission.VIEW_BUGREPORT_TICKETS
-	),
-
 	WHITELIST(
 			"Whitelist",
 			"whitelist",
-			"Whitelist für den Community Server",
+			"Whitelist Anfragen für den Survival Server",
 			Emoji.fromUnicode("\uD83D\uDCDC"),
 			DiscordPermission.VIEW_WHITELIST_TICKETS
+	),
+
+	SURVIVAL_SUPPORT(
+			"Survival Support",
+			"survival-support",
+			"Anliegen bezüglich des Survival Servers",
+			Emoji.fromUnicode("\uD83D\uDEE0\uFE0F"),
+			DiscordPermission.VIEW_SURVIVAL_SUPPORT_TICKETS
 	),
 
 	EVENT_SUPPORT(
 			"Event Support",
 			"event-support",
-			"Support für Events",
+			"Anliegen bezüglich des Event Servers",
 			Emoji.fromUnicode("\uD83C\uDF89"),
 			DiscordPermission.VIEW_EVENT_SUPPORT_TICKETS
+	),
+
+	BUGREPORT(
+			"Bug Report",
+			"bugreport",
+			"Fehler gefunden? Melde ihn hier.",
+			Emoji.fromUnicode("\uD83D\uDC1E"),
+			DiscordPermission.VIEW_BUGREPORT_TICKETS
 	),
 
 	UNBAN(
 			"Entbannungsantrag",
 			"unban",
-			"Entbannungsanträge für alle Server",
+			"Entbannungsanträge für den Community Server",
 			Emoji.fromUnicode("\uD83D\uDEAB"),
 			DiscordPermission.VIEW_UNBAN_TICKETS
+	),
+
+	DISCORD_SUPPORT(
+			"Discord Support",
+					"discord-support",
+					"Anliegen bezüglich des Discord Servers",
+			Emoji.fromUnicode("\uD83D\uDCAC"),
+	DiscordPermission.VIEW_DISCORD_SUPPORT_TICKETS
 	);
 	
 	@Nonnull

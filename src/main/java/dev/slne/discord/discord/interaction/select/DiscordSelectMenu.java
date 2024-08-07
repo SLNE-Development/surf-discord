@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.components.selections.SelectMenu;
+import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 
@@ -34,6 +35,8 @@ public abstract class DiscordSelectMenu {
 		for (DiscordSelectMenuOption option : options) {
 			builder.addOption(option.getLabel(), option.getValue(), option.getDescription(), option.getEmoji());
 		}
+
+
 
 		return builder.build();
 	}

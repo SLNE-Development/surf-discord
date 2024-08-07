@@ -1,6 +1,7 @@
 package dev.slne.discord.discord.interaction.select.menus;
 
 import dev.slne.data.api.DataApi;
+import dev.slne.discord.discord.interaction.modal.modals.UnbanTicketModal;
 import dev.slne.discord.discord.interaction.modal.modals.WhitelistTicketModal;
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenu;
 import dev.slne.discord.ticket.Ticket;
@@ -59,6 +60,11 @@ public class TicketsMenu extends DiscordSelectMenu {
 			return;
 		}
 
+		if (ticketType.equals(TicketType.UNBAN)) {
+			handleUnban(ticketType, interaction);
+			return;
+		}
+
 		interaction.deferReply(true).queue(hook -> {
 			User user = interaction.getUser();
 			Guild guild = interaction.getGuild();
@@ -70,7 +76,7 @@ public class TicketsMenu extends DiscordSelectMenu {
 			} else {
 				Whitelist.isWhitelisted(user).thenAcceptAsync(whitelisted -> {
 					List<TicketType> whitelistedTypes = List.of(
-							TicketType.SERVER_SUPPORT
+							TicketType.SURVIVAL_SUPPORT
 					);
 
 					if (!whitelisted && whitelistedTypes.contains(ticketType)) {
@@ -81,9 +87,8 @@ public class TicketsMenu extends DiscordSelectMenu {
 					Ticket ticket = null;
 					switch (ticketType) {
 						case EVENT_SUPPORT -> ticket = new EventSupportTicket(guild, user);
-						case SERVER_SUPPORT -> ticket = new ServerSupportTicket(guild, user);
+						case SURVIVAL_SUPPORT -> ticket = new ServerSupportTicket(guild, user);
 						case BUGREPORT -> ticket = new BugreportTicket(guild, user);
-						case UNBAN -> ticket = new UnbanTicket(guild, user);
 						default -> {
 						}
 					}
@@ -135,7 +140,9 @@ public class TicketsMenu extends DiscordSelectMenu {
 
 				return null;
 			});
+			interaction.editSelectMenu(interaction.getSelectMenu()).queue();
 		});
+
 	}
 
 
@@ -163,12 +170,32 @@ public class TicketsMenu extends DiscordSelectMenu {
 			WhitelistTicketModal whitelistModal = new WhitelistTicketModal();
 			Modal modal = whitelistModal.buildModal();
 			interaction.replyModal(modal).queue();
+			interaction.editSelectMenu(interaction.getSelectMenu()).queue();
 		}).exceptionally(failure -> {
 			interaction.reply("Es ist ein Fehler aufgetreten!").setEphemeral(true).queue();
+			interaction.editSelectMenu(interaction.getSelectMenu()).queue();
 			DataApi.getDataInstance().logError(getClass(), "Error while checking if user is whitelisted", failure);
 
 			return null;
 		});
+	}
+
+	/**
+	 * Handles the unban button
+	 *
+	 * @param ticketType  the ticket type
+	 * @param interaction the interaction
+	 */
+	private void handleUnban(TicketType ticketType, StringSelectInteraction interaction) {
+		if (!ticketType.equals(TicketType.UNBAN)) {
+			return;
+		}
+
+		UnbanTicketModal unbanTicketModal = new UnbanTicketModal();
+		Modal modal = unbanTicketModal.buildModal();
+		interaction.replyModal(modal).queue();
+		interaction.editSelectMenu(interaction.getSelectMenu()).queue();
+
 	}
 
 	/**
