@@ -32,6 +32,13 @@ public class TicketMessageService {
 	 */
 	public CompletableFuture<TicketMessage> createTicketMessage(Ticket ticket, TicketMessage ticketMessage) {
 		return CompletableFuture.supplyAsync(() -> ticketMessageClient.get().createTicketMessage(ticket.getTicketId()
-				, ticketMessage));
+				, ticketMessage)).exceptionally(exception -> {
+			exception.printStackTrace();
+			return null;
+		}).thenApplyAsync(message -> {
+
+			System.out.println("Message: " + message);
+			return message;
+		});
 	}
 }

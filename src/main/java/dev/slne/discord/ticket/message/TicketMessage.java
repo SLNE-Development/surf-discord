@@ -323,6 +323,7 @@ public class TicketMessage {
 	 *
 	 * @return the ticket
 	 */
+	@JsonIgnore
 	public Ticket getTicket() {
 		return DiscordBot.getInstance().getTicketManager().getTicketById(ticketId);
 	}
