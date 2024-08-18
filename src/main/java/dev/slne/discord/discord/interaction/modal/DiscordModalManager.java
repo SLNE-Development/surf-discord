@@ -4,9 +4,15 @@ import dev.slne.data.api.DataApi;
 import dev.slne.discord.discord.interaction.modal.modals.UnbanTicketModal;
 import dev.slne.discord.discord.interaction.modal.modals.WhitelistTicketModal;
 
+import dev.slne.discord.discord.interaction.modal.modals.report.ReportTicketChannelCreationModal;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
+import org.checkerframework.checker.units.qual.C;
 
 /**
  * The type Discord modal manager.
@@ -14,15 +20,18 @@ import java.util.Map;
 public class DiscordModalManager {
 
 	private final Map<String, Class<? extends DiscordModal>> modals;
+	private final Object2ObjectMap<String, Supplier<DiscordStepChannelCreationModal>> advancedModals;
 
 	/**
 	 * Create a new modal manager
 	 */
 	public DiscordModalManager() {
 		this.modals = new HashMap<>();
+		this.advancedModals = new Object2ObjectOpenHashMap<>();
 
 		registerModal(WhitelistTicketModal.class);
 		registerModal(UnbanTicketModal.class);
+		registerAdvancedModal(ReportTicketChannelCreationModal::new);
 	}
 
 	/**
@@ -43,6 +52,13 @@ public class DiscordModalManager {
 
 		String customId = discordModal.getCustomId();
 		this.modals.put(customId, modalClass);
+	}
+
+	public void registerAdvancedModal(Supplier<DiscordStepChannelCreationModal> creator) {
+		final DiscordStepChannelCreationModal modal = creator.get();
+		final String modalId = modal.getId();
+
+		advancedModals.putIfAbsent(modalId, creator);
 	}
 
 	/**
@@ -86,6 +102,16 @@ public class DiscordModalManager {
 	 */
 	public DiscordModal getModal(String customId) {
 		return getModalByClass(this.modals.get(customId));
+	}
+
+	public DiscordStepChannelCreationModal getAdvancedModal(String customId) {
+		final Supplier<DiscordStepChannelCreationModal> modalCreator = advancedModals.get(customId);
+
+		if (modalCreator == null) {
+			return null;
+		}
+
+		return modalCreator.get();
 	}
 
 }

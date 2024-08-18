@@ -9,7 +9,7 @@ plugins {
 
     id("org.hibernate.build.maven-repo-auth") version "3.0.4"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("io.freefair.lombok") version "8.6"
+    id("io.freefair.lombok") version "8.7.1"
 }
 
 repositories {

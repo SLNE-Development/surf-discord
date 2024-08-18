@@ -45,6 +45,14 @@ public enum TicketType {
 			DiscordPermission.VIEW_BUGREPORT_TICKETS
 	),
 
+	REPORT(
+			"Report",
+			"report",
+			"Melde Griefing, Cheating oder andere Regelverstöße.",
+			Emoji.fromUnicode("📢"),
+			DiscordPermission.VIEW_REPORT_TICKETS
+	),
+
 	UNBAN(
 			"Entbannungsantrag",
 			"unban",

@@ -2,9 +2,9 @@
 # https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
 
 [versions]
-dev-slne-surf-data-core = "5.4.3-SNAPSHOT"
+dev-slne-surf-data-core = "1.21+"
 net-dv8tion-jda = "5.0.0-beta.20"
-dev-slne-surf-surf-api-core-api = "1.0-SNAPSHOT"
+dev-slne-surf-surf-api-core-api = "1.21+"
 fastutil-version = "8.5.13"
 configurate-version = "4.1.2"
 

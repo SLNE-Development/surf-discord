@@ -3,6 +3,7 @@ package dev.slne.discord.discord.interaction.select.menus;
 import dev.slne.data.api.DataApi;
 import dev.slne.discord.discord.interaction.modal.modals.UnbanTicketModal;
 import dev.slne.discord.discord.interaction.modal.modals.WhitelistTicketModal;
+import dev.slne.discord.discord.interaction.modal.modals.report.ReportTicketChannelCreationModal;
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenu;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketType;
@@ -65,6 +66,11 @@ public class TicketsMenu extends DiscordSelectMenu {
 			return;
 		}
 
+		if (ticketType.equals(TicketType.REPORT)) { // TODO: 18.08.2024 10:32 - special treatment for ChannelCreationModals
+			handleReport(ticketType, interaction);
+			return;
+		}
+
 		interaction.deferReply(true).queue(hook -> {
 			User user = interaction.getUser();
 			Guild guild = interaction.getGuild();
@@ -114,7 +120,7 @@ public class TicketsMenu extends DiscordSelectMenu {
 						if (ticket.getChannel() != null) {
 							message.append(ticket.getChannel().getAsMention());
 						}
-						
+
 						hook.editOriginal(message.toString()).queue();
 					} else if (result.equals(TicketCreateResult.ALREADY_EXISTS)) {
 						hook.editOriginal(
@@ -196,6 +202,13 @@ public class TicketsMenu extends DiscordSelectMenu {
 		interaction.replyModal(modal).queue();
 		interaction.editSelectMenu(interaction.getSelectMenu()).queue();
 
+	}
+
+	private void handleReport(TicketType ticketType, StringSelectInteraction interaction) {
+		final ReportTicketChannelCreationModal reportTicketModal = new ReportTicketChannelCreationModal();
+
+    reportTicketModal.startChannelCreation(interaction)
+				.thenRunAsync(() -> interaction.editSelectMenu(interaction.getSelectMenu()).queue());
 	}
 
 	/**
