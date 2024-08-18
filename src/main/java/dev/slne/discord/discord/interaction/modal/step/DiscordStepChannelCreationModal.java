@@ -16,6 +16,8 @@ import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction;
 import net.dv8tion.jda.api.interactions.modals.Modal;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 
 @Getter
@@ -168,14 +170,25 @@ public abstract class DiscordStepChannelCreationModal {
     getOpenMessages(messages, channel, user);
     getSteps().forEach(step -> step.getOpenMessages(messages, channel));
 
-    final String message = messages.buildMessage();
+    final LinkedList<String> message = messages.buildMessages();
 
     if (!message.isEmpty()) {
-      channel.sendMessage(message).queue();
+      sendOpenMessage(message, channel);
     }
 
     runAfterChannelCreated(channel);
     getSteps().forEach(step -> step.runAfterChannelCreated(channel));
+  }
+
+  private void sendOpenMessage(LinkedList<String> messages, TextChannel channel) {
+    if (messages.isEmpty()) {
+      return;
+    }
+
+    channel.sendMessage(messages.getFirst()).queue(message -> { // ensure messages are sent in order
+      messages.removeFirst();
+      sendOpenMessage(messages, channel);
+    });
   }
 
   protected void getOpenMessages(MessageQueue messages, TextChannel channel, User user) {

@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.LinkedList;
 
 public final class MessageQueue {
+
+  public static final int MAX_MESSAGE_LENGTH = 2000;
   private final LinkedList<String> messageLines = new LinkedList<>();
 
   public synchronized void addMessage(String message) {
@@ -14,18 +16,27 @@ public final class MessageQueue {
     addMessage(String.format(message, args));
   }
 
-  public synchronized String buildMessage() {
-    final int size = messageLines.size();
-    final StringBuilder builder = new StringBuilder();
+  public synchronized LinkedList<String> buildMessages() {
+    final LinkedList<String> messages = new LinkedList<>();
+    StringBuilder builder = new StringBuilder();
 
-    for (int i = 0; i < size; i++) {
-      builder.append(messageLines.get(i));
+    for (final String line : messageLines) {
+      if (builder.length() + line.length() + 1 > MAX_MESSAGE_LENGTH) {
+        messages.add(builder.toString());
+        builder = new StringBuilder();
+      }
 
-      if (i < size - 1) {
+      if (!builder.isEmpty()) {
         builder.append("\n");
       }
+
+      builder.append(line);
     }
 
-    return builder.toString();
+    if (!builder.isEmpty()) {
+      messages.add(builder.toString());
+    }
+
+    return messages;
   }
 }
