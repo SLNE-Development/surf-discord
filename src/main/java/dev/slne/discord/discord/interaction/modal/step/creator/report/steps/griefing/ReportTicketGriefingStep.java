@@ -12,7 +12,7 @@ import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 public class ReportTicketGriefingStep extends ModalSelectionStep {
 
   private static final SelectOption SURVIVAL = SelectOption.of("Survival", "survival");
-  private static final SelectOption EVENT_1 = SelectOption.of("Event 1", "event_2");
+  private static final SelectOption EVENT_1 = SelectOption.of("Event 1", "event_1");
   private static final SelectOption EVENT_2 = SelectOption.of("Event 2", "event_2");
   private static final SelectOption EVENT_3 = SelectOption.of("Event 3", "event_3");
 

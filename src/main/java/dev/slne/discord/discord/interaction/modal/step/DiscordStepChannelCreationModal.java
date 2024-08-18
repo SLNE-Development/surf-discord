@@ -7,17 +7,17 @@ import dev.slne.discord.ticket.TicketType;
 import dev.slne.discord.ticket.result.TicketCreateResult;
 import java.util.LinkedList;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nonnull;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction;
 import net.dv8tion.jda.api.interactions.modals.Modal;
-import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
-import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 
 @Getter
@@ -53,11 +53,17 @@ public abstract class DiscordStepChannelCreationModal {
   public final CompletableFuture<Void> startChannelCreation(StringSelectInteraction interaction) {
     final CompletableFuture<Void> done = new CompletableFuture<>();
 
-    interaction.reply("").setEphemeral(true).queue(hook -> {
+
+    interaction.deferReply(true).queue(hook -> {
       doSelectionSteps(hook).thenRunAsync(() -> {
         Modal modal = buildModal();
+
+        // TODO: 18.08.2024 20:22 - fix
         interaction.replyModal(modal).queue(unused -> done.complete(null), done::completeExceptionally);
       });
+    }, throwable -> {
+      LOGGER.error("Failed to start channel creation", throwable);
+      done.completeExceptionally(throwable);
     });
 
     return done;
@@ -93,9 +99,14 @@ public abstract class DiscordStepChannelCreationModal {
   private void doSelectionSteps(InteractionHook hook, LinkedList<ModalStep> steps) {
     for (final ModalStep step : steps) {
       if (step instanceof ModalSelectionStep selectionStep) {
-        hook.editOriginal(selectionStep.getSelectTitle())
-            .setActionRow(selectionStep.createSelection());
+
+        AtomicReference<Message> message = new AtomicReference<>();
+        hook.sendMessage(selectionStep.getSelectTitle())
+            .setEphemeral(true)
+            .setActionRow(selectionStep.createSelection()).queue(message::set,
+                Throwable::printStackTrace);
         selectionStep.getSelectionFuture().join();
+        message.get().delete().queue();
       }
 
       final LinkedList<ModalStep> children = step.getChildren();

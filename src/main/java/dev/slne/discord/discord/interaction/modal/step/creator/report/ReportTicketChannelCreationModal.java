@@ -4,6 +4,7 @@ import dev.slne.discord.discord.interaction.modal.step.DiscordStepChannelCreatio
 import dev.slne.discord.discord.interaction.modal.step.MessageQueue;
 import dev.slne.discord.discord.interaction.modal.step.StepBuilder;
 import dev.slne.discord.discord.interaction.modal.step.creator.report.steps.ReportTicketSelectTypeStep;
+import dev.slne.discord.discord.interaction.modal.step.creator.report.steps.TestStep;
 import dev.slne.discord.ticket.TicketType;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -17,7 +18,8 @@ public class ReportTicketChannelCreationModal extends DiscordStepChannelCreation
 
   @Override
   protected StepBuilder buildSteps() {
-    return StepBuilder.startWith(new ReportTicketSelectTypeStep());
+//    return StepBuilder.startWith(new ReportTicketSelectTypeStep());
+    return StepBuilder.startWith(new TestStep());
   }
 
   @Override
