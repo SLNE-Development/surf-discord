@@ -1,10 +1,11 @@
-package dev.slne.discord.discord.interaction.modal.modals.report.steps;
+package dev.slne.discord.discord.interaction.modal.step.creator.report.steps;
 
-import dev.slne.discord.discord.interaction.modal.MessageQueue;
-import dev.slne.discord.discord.interaction.modal.ModalComponentBuilder;
-import dev.slne.discord.discord.interaction.modal.ModalSelectionStep;
-import dev.slne.discord.discord.interaction.modal.StepBuilder;
-import dev.slne.discord.discord.interaction.modal.modals.report.steps.griefing.ReportTicketGriefingStep;
+import dev.slne.discord.discord.interaction.modal.step.MessageQueue;
+import dev.slne.discord.discord.interaction.modal.step.ModalComponentBuilder;
+import dev.slne.discord.discord.interaction.modal.step.ModalSelectionStep;
+import dev.slne.discord.discord.interaction.modal.step.StepBuilder;
+import dev.slne.discord.discord.interaction.modal.step.creator.report.steps.griefing.ReportTicketGriefingStep;
+import dev.slne.discord.discord.interaction.modal.step.creator.report.steps.player.ReportTicketPlayerStep;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
@@ -32,8 +33,16 @@ public class ReportTicketSelectTypeStep extends ModalSelectionStep {
 
   @Override
   protected void buildModalComponents(ModalComponentBuilder builder) {
+    final String label;
+
+    if (GRIEFING.getValue().equals(getSelected())) {
+      label = "Dein Spielername";
+    } else {
+      label = "Zu meldender Spielername";
+    }
+
     builder.addComponent(
-        TextInput.create(REPORTING_PLAYER_NAME_INPUT, "Spielername", TextInputStyle.SHORT)
+        TextInput.create(REPORTING_PLAYER_NAME_INPUT, label, TextInputStyle.SHORT)
             .setRequired(true)
             .setRequiredRange(3, 16)
             .setPlaceholder("Notch")
@@ -58,8 +67,7 @@ public class ReportTicketSelectTypeStep extends ModalSelectionStep {
     if (GRIEFING.getValue().equals(getSelected())) {
       return StepBuilder.startWith(new ReportTicketGriefingStep());
     } else if (PLAYER.getValue().equals(getSelected())) {
-//      return StepBuilder.startWith(new ReportTicketPlayerStep()); // TODO: Implement ReportTicketPlayerStep
-      return StepBuilder.empty();
+      return StepBuilder.startWith(new ReportTicketPlayerStep());
     } else {
       return StepBuilder.empty();
     }

@@ -1,4 +1,4 @@
-package dev.slne.discord.discord.interaction.modal;
+package dev.slne.discord.discord.interaction.modal.step;
 
 import java.io.Serial;
 import java.util.LinkedList;

@@ -1,8 +1,8 @@
-package dev.slne.discord.discord.interaction.modal.modals.report.steps.griefing;
+package dev.slne.discord.discord.interaction.modal.step.creator.report.steps.griefing;
 
-import dev.slne.discord.discord.interaction.modal.MessageQueue;
-import dev.slne.discord.discord.interaction.modal.ModalComponentBuilder;
-import dev.slne.discord.discord.interaction.modal.ModalSelectionStep;
+import dev.slne.discord.discord.interaction.modal.step.MessageQueue;
+import dev.slne.discord.discord.interaction.modal.step.ModalComponentBuilder;
+import dev.slne.discord.discord.interaction.modal.step.ModalSelectionStep;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;

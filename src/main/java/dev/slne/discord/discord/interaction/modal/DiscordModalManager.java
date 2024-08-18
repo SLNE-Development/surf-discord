@@ -4,15 +4,14 @@ import dev.slne.data.api.DataApi;
 import dev.slne.discord.discord.interaction.modal.modals.UnbanTicketModal;
 import dev.slne.discord.discord.interaction.modal.modals.WhitelistTicketModal;
 
-import dev.slne.discord.discord.interaction.modal.modals.report.ReportTicketChannelCreationModal;
+import dev.slne.discord.discord.interaction.modal.step.creator.report.ReportTicketChannelCreationModal;
+import dev.slne.discord.discord.interaction.modal.step.DiscordStepChannelCreationModal;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
-import org.checkerframework.checker.units.qual.C;
 
 /**
  * The type Discord modal manager.

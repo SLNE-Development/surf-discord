@@ -1,5 +1,7 @@
-package dev.slne.discord.discord.interaction.modal;
+package dev.slne.discord.discord.interaction.modal.step;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -18,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
 public abstract class ModalSelectionStep extends ModalStep {
 
   private static final AtomicInteger counter = new AtomicInteger(0);
-  private static final Map<String, ModalSelectionStep> steps = new HashMap<>();
+  private static final Object2ObjectMap<String, ModalSelectionStep> steps = new Object2ObjectOpenHashMap<>();
 
   private final String id;
   private final String selectTitle;

@@ -3,7 +3,7 @@ package dev.slne.discord.listener.interaction.modal;
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.discord.interaction.modal.DiscordModal;
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager;
-import dev.slne.discord.discord.interaction.modal.DiscordStepChannelCreationModal;
+import dev.slne.discord.discord.interaction.modal.step.DiscordStepChannelCreationModal;
 import dev.slne.discord.message.MessageManager;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;

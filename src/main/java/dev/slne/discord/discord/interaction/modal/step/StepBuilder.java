@@ -1,11 +1,11 @@
-package dev.slne.discord.discord.interaction.modal;
+package dev.slne.discord.discord.interaction.modal.step;
 
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.LinkedList;
 import java.util.function.Function;
 
-public class StepBuilder {
+public final class StepBuilder {
 
   private final LinkedList<ModalStep> steps = new LinkedList<>();
   private ModalStep lastStep;
@@ -16,7 +16,6 @@ public class StepBuilder {
   }
 
   private StepBuilder() {
-
   }
 
   public static StepBuilder startWith(ModalStep firstStep) {
@@ -36,11 +35,11 @@ public class StepBuilder {
     return this;
   }
 
-  protected LinkedList<ModalStep> getSteps() {
+  LinkedList<ModalStep> getSteps() {
     return steps;
   }
 
-  protected ModalStep getFirstStep() {
+  ModalStep getFirstStep() {
     return steps.getFirst();
   }
 }

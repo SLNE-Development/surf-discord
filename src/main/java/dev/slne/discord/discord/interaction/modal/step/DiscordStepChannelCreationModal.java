@@ -1,7 +1,7 @@
-package dev.slne.discord.discord.interaction.modal;
+package dev.slne.discord.discord.interaction.modal.step;
 
-import dev.slne.discord.discord.interaction.modal.ModalStep.ModalStepInputVerificationException;
-import dev.slne.discord.discord.interaction.modal.ModalStep.ModuleStepChannelCreationException;
+import dev.slne.discord.discord.interaction.modal.step.ModalStep.ModalStepInputVerificationException;
+import dev.slne.discord.discord.interaction.modal.step.ModalStep.ModuleStepChannelCreationException;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketType;
 import dev.slne.discord.ticket.result.TicketCreateResult;
