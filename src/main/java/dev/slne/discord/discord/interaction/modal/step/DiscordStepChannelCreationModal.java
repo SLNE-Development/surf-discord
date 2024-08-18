@@ -15,10 +15,15 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
+import net.dv8tion.jda.api.interactions.callbacks.IModalCallback;
+import net.dv8tion.jda.api.interactions.components.ActionComponent;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction;
 import net.dv8tion.jda.api.interactions.modals.Modal;
+import net.dv8tion.jda.api.interactions.modals.Modal.Builder;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
+import org.jetbrains.annotations.Nullable;
 
 @Getter
 @Accessors(makeFinal = true)
@@ -35,7 +40,8 @@ public abstract class DiscordStepChannelCreationModal {
   @Getter(lazy = true)
   private final LinkedList<ModalStep> steps = buildSteps().getSteps();
 
-  protected DiscordStepChannelCreationModal(String id, @Nonnull String title, TicketType ticketType) {
+  protected DiscordStepChannelCreationModal(String id, @Nonnull String title,
+      TicketType ticketType) {
     this.id = id;
     this.title = title;
     this.ticketType = ticketType;
@@ -53,13 +59,16 @@ public abstract class DiscordStepChannelCreationModal {
   public final CompletableFuture<Void> startChannelCreation(StringSelectInteraction interaction) {
     final CompletableFuture<Void> done = new CompletableFuture<>();
 
-
     interaction.deferReply(true).queue(hook -> {
-      doSelectionSteps(hook).thenRunAsync(() -> {
-        Modal modal = buildModal();
+      doSelectionSteps(hook).thenAcceptAsync(lastSelectionEvent -> {
+        final IModalCallback callback =
+            lastSelectionEvent != null ? lastSelectionEvent : interaction;
+        final Modal modal = buildModal();
 
         // TODO: 18.08.2024 20:22 - fix
-        interaction.replyModal(modal).queue(unused -> done.complete(null), done::completeExceptionally);
+
+        callback.replyModal(modal)
+            .queue(unused -> done.complete(null), done::completeExceptionally);
       });
     }, throwable -> {
       LOGGER.error("Failed to start channel creation", throwable);
@@ -87,36 +96,56 @@ public abstract class DiscordStepChannelCreationModal {
   }
 
   private Modal buildModal() {
-    return Modal.create(title, title)
-        .addActionRow(buildModalComponents().getComponents())
-        .build();
+    final Builder builder = Modal.create(title, title);
+
+    for (final ActionComponent component : buildModalComponents().getComponents()) {
+      builder.addActionRow(component);
+    }
+
+    return builder.build();
   }
 
-  private CompletableFuture<Void> doSelectionSteps(InteractionHook hook) {
-    return CompletableFuture.runAsync(() -> doSelectionSteps(hook, getSteps()));
+  private CompletableFuture<@Nullable StringSelectInteractionEvent> doSelectionSteps(
+      InteractionHook hook) {
+    return CompletableFuture.supplyAsync(() -> doSelectionSteps(hook, getSteps(), null, null));
   }
 
-  private void doSelectionSteps(InteractionHook hook, LinkedList<ModalStep> steps) {
+//  private @Nullable StringSelectInteractionEvent doSelectionSteps(InteractionHook hook,
+//      LinkedList<ModalStep> steps) {
+//
+//
+//  }
+
+  private @Nullable StringSelectInteractionEvent doSelectionSteps(InteractionHook hook,
+      LinkedList<ModalStep> steps, StringSelectInteractionEvent lastEvent, Message lastMessage) {
+
     for (final ModalStep step : steps) {
       if (step instanceof ModalSelectionStep selectionStep) {
+        if (lastMessage != null) {
+          lastMessage.delete().queue();
+        }
 
         AtomicReference<Message> message = new AtomicReference<>();
         hook.sendMessage(selectionStep.getSelectTitle())
             .setEphemeral(true)
             .setActionRow(selectionStep.createSelection()).queue(message::set,
                 Throwable::printStackTrace);
-        selectionStep.getSelectionFuture().join();
-        message.get().delete().queue();
+        lastEvent = selectionStep.getSelectionFuture().join();
+
+        lastMessage = message.get();
       }
 
       final LinkedList<ModalStep> children = step.getChildren();
       if (!children.isEmpty()) {
-        doSelectionSteps(hook, children);
+        doSelectionSteps(hook, children, lastEvent, lastMessage);
       }
     }
+
+    return lastEvent;
   }
 
-  private void verifyModalInput(ModalInteractionEvent event, InteractionHook hook, LinkedList<ModalStep> steps) {
+  private void verifyModalInput(ModalInteractionEvent event, InteractionHook hook,
+      LinkedList<ModalStep> steps) {
     for (final ModalStep step : steps) {
       try {
         step.runVerifyModalInput(event);
@@ -138,7 +167,8 @@ public abstract class DiscordStepChannelCreationModal {
     }
   }
 
-  private void afterChannelCreated(Ticket ticket, TicketCreateResult result, InteractionHook hook, User user) {
+  private void afterChannelCreated(Ticket ticket, TicketCreateResult result, InteractionHook hook,
+      User user) {
     final TextChannel channel = ticket.getChannel();
 
     switch (result) {

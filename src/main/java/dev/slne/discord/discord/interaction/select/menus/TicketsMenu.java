@@ -206,8 +206,12 @@ public class TicketsMenu extends DiscordSelectMenu {
 	private void handleReport(TicketType ticketType, StringSelectInteraction interaction) {
 		final ReportTicketChannelCreationModal reportTicketModal = new ReportTicketChannelCreationModal();
 
-    reportTicketModal.startChannelCreation(interaction)
-				.thenRunAsync(() -> interaction.editSelectMenu(interaction.getSelectMenu()).queue());
+		reportTicketModal.startChannelCreation(interaction)
+				.thenRunAsync(() -> interaction.editSelectMenu(interaction.getSelectMenu()).queue())
+				.exceptionally(failure -> {
+					DataApi.getDataInstance().logError(getClass(), "Error while creating report ticket", failure);
+					return null;
+				});
 	}
 
 	/**

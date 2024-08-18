@@ -2,8 +2,6 @@ package dev.slne.discord.discord.interaction.modal.step;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.Getter;
@@ -26,7 +24,7 @@ public abstract class ModalSelectionStep extends ModalStep {
   private final String selectTitle;
   private final SelectOption[] options;
 
-  private final CompletableFuture<String> selectionFuture = new CompletableFuture<>();
+  private final CompletableFuture<StringSelectInteractionEvent> selectionFuture = new CompletableFuture<>();
   private String selected;
 
   public ModalSelectionStep(String selectTitle, SelectOption... options) {
@@ -44,9 +42,9 @@ public abstract class ModalSelectionStep extends ModalStep {
         .build();
   }
 
-  private void setSelected(String selected) {
+  private void setSelected(String selected, StringSelectInteractionEvent event) {
     this.selected = selected;
-    selectionFuture.complete(selected);
+    selectionFuture.complete(event);
   }
 
   private static String generateId() {
@@ -64,7 +62,7 @@ public abstract class ModalSelectionStep extends ModalStep {
       }
 
       final String selected = event.getValues().getFirst();
-      step.setSelected(selected);
+      step.setSelected(selected, event);
     }
   }
 }
