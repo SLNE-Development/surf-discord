@@ -20,7 +20,6 @@ import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.managers.channel.concrete.TextChannelManager;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.ChannelAction;
-import space.arim.dazzleconf.annote.SubSection;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -172,7 +171,7 @@ public class TicketChannel {
 			));
 		}
 
-		Map<String, @SubSection RoleConfig> roleConfigMap = GuildConfig.getByGuildId(guild.getId()).getRoleConfig();
+		Map<String, RoleConfig> roleConfigMap = GuildConfig.getByGuildId(guild.getId()).getRoleConfig();
 		for (Map.Entry<String, RoleConfig> entry : roleConfigMap.entrySet()) {
 			RoleConfig roleConfig = entry.getValue();
 

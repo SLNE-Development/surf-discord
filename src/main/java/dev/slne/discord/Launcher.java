@@ -2,8 +2,6 @@ package dev.slne.discord;
 
 import dev.slne.data.api.DataApi;
 import dev.slne.discord.datasource.DiscordDataInstance;
-import dev.slne.discord.instance.SurfDiscordApiAccess;
-import dev.slne.discord.instance.SurfDiscordApiImpl;
 import lombok.Getter;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -23,7 +21,6 @@ public class Launcher {
 	private final DiscordBot discordBot;
 
 	private DiscordDataInstance dataInstance;
-	private SurfDiscordApiImpl surfDiscordApi;
 
 	/**
 	 * Constructor for the launcher
@@ -50,11 +47,9 @@ public class Launcher {
 	 * Method called when the launcher is loaded
 	 */
 	public void onLoad() {
-		surfDiscordApi = new SurfDiscordApiImpl();
-		SurfDiscordApiAccess.setInstance(surfDiscordApi);
-		
 		dataInstance = new DiscordDataInstance();
 		new DataApi(dataInstance);
+		System.out.println(dataInstance.getDataPath().toAbsolutePath().toString());
 
 		context = DiscordSpringApplication.run();
 

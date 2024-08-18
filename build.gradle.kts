@@ -14,8 +14,11 @@ plugins {
 
 repositories {
     gradlePluginPortal()
+    mavenCentral()
 
     maven("https://repo.slne.dev/repository/maven-public/") { name = "maven-public" }
+    maven("https://repo.slne.dev/repository/maven-snapshots/") { name = "maven-snapshots" }
+    maven("https://repo.slne.dev/repository/maven-proxy/") { name = "maven-proxy" }
 }
 
 configurations.all {
@@ -28,7 +31,7 @@ dependencies {
     api(libs.fastutil)
     api(libs.configurate.yaml)
     api(libs.configurate.jackson)
-    api(libs.dev.slne.surf.surf.api.core.api)
+//    api(libs.dev.slne.surf.surf.api.core.api)
     api(libs.net.dv8tion.jda) {
         isChanging = true
         exclude(group = "org.slf4j", module = "slf4j-api")
@@ -40,6 +43,7 @@ dependencies {
         exclude(group = "ch.qos.logback", module = "logback-classic")
         exclude(group = "ch.qos.logback", module = "logback-core")
     }
+    implementation("space.arim.dazzleconf:dazzleconf-ext-snakeyaml:1.3.0-M2")
 }
 
 group = "dev.slne"
