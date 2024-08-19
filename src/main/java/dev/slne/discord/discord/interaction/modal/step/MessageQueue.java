@@ -21,16 +21,23 @@ public final class MessageQueue {
     StringBuilder builder = new StringBuilder();
 
     for (final String line : messageLines) {
-      if (builder.length() + line.length() + 1 > MAX_MESSAGE_LENGTH) {
-        messages.add(builder.toString());
-        builder = new StringBuilder();
-      }
+      int start = 0;
+      while (start < line.length()) {
+        int end = Math.min(start + MAX_MESSAGE_LENGTH, line.length());
+        String substring = line.substring(start, end);
 
-      if (!builder.isEmpty()) {
-        builder.append("\n");
-      }
+        if (builder.length() + substring.length() + 1 > MAX_MESSAGE_LENGTH) {
+          messages.add(builder.toString());
+          builder = new StringBuilder();
+        }
 
-      builder.append(line);
+        if (!builder.isEmpty()) {
+          builder.append("\n");
+        }
+
+        builder.append(substring);
+        start = end;
+      }
     }
 
     if (!builder.isEmpty()) {
