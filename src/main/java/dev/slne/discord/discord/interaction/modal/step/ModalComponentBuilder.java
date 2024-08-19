@@ -12,4 +12,19 @@ public final class ModalComponentBuilder {
     components.add(component);
     return this;
   }
+
+  public ModalComponentBuilder addFirstComponent(ActionComponent component) {
+    components.addFirst(component);
+    return this;
+  }
+
+  public ModalComponentBuilder addLastComponent(ActionComponent component) {
+    components.addLast(component);
+    return this;
+  }
+
+  public ModalComponentBuilder addComponent(int index, ActionComponent component) {
+    components.add(index, component);
+    return this;
+  }
 }
