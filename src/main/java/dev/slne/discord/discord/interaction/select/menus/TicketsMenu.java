@@ -1,6 +1,8 @@
 package dev.slne.discord.discord.interaction.select.menus;
 
 import dev.slne.data.api.DataApi;
+import dev.slne.discord.DiscordBot;
+import dev.slne.discord.discord.interaction.modal.DiscordModalManager;
 import dev.slne.discord.discord.interaction.modal.modals.UnbanTicketModal;
 import dev.slne.discord.discord.interaction.modal.modals.WhitelistTicketModal;
 import dev.slne.discord.discord.interaction.modal.step.creator.report.ReportTicketChannelCreationModal;
@@ -206,6 +208,8 @@ public class TicketsMenu extends DiscordSelectMenu {
 	private void handleReport(TicketType ticketType, StringSelectInteraction interaction) {
 		final ReportTicketChannelCreationModal reportTicketModal = new ReportTicketChannelCreationModal();
 
+
+		DiscordBot.getInstance().getModalManager().setCurrentUserModal(interaction.getUser().getId(), reportTicketModal);
 		reportTicketModal.startChannelCreation(interaction)
 				.thenRunAsync(() -> interaction.editSelectMenu(interaction.getSelectMenu()).queue())
 				.exceptionally(failure -> {

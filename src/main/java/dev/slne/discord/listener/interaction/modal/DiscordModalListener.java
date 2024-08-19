@@ -36,7 +36,7 @@ public class DiscordModalListener extends ListenerAdapter {
 			return;
 		}
 
-		final DiscordStepChannelCreationModal advancedModal = modalManager.getAdvancedModal(modalId);
+		final DiscordStepChannelCreationModal advancedModal = modalManager.getAdvancedModal(modalId, event.getUser().getId());
 
 		if (advancedModal != null) {
 			advancedModal.submitModal(event);
@@ -48,5 +48,7 @@ public class DiscordModalListener extends ListenerAdapter {
 				"Deine Aktion konnte nicht durchgeführt werden oder ist abgelaufen."
 		)).setEphemeral(true).queue();
 	}
+
+
 
 }

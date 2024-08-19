@@ -49,7 +49,6 @@ public class Launcher {
 	public void onLoad() {
 		dataInstance = new DiscordDataInstance();
 		new DataApi(dataInstance);
-		System.out.println(dataInstance.getDataPath().toAbsolutePath().toString());
 
 		context = DiscordSpringApplication.run();
 

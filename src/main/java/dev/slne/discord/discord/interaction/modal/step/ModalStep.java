@@ -20,18 +20,21 @@ public abstract class ModalStep {
     getChildren().forEach(child -> child.fillModalComponents(builder));
   }
 
-  protected void verifyModalInput(ModalInteractionEvent event) throws ModalStepInputVerificationException {
+  protected void verifyModalInput(ModalInteractionEvent event)
+      throws ModalStepInputVerificationException {
 
   }
 
-  public final void runVerifyModalInput(ModalInteractionEvent event) throws ModalStepInputVerificationException {
+  public final void runVerifyModalInput(ModalInteractionEvent event)
+      throws ModalStepInputVerificationException {
     verifyModalInput(event);
     for (final ModalStep child : getChildren()) {
       child.runVerifyModalInput(event);
     }
   }
 
-  protected String getRequiredInput(ModalInteractionEvent event, String key) throws ModalStepInputVerificationException {
+  protected String getRequiredInput(ModalInteractionEvent event, String key)
+      throws ModalStepInputVerificationException {
     final ModalMapping value = event.getValue(key);
 
     if (value == null) {
@@ -67,7 +70,9 @@ public abstract class ModalStep {
 
   public final void getOpenMessages(MessageQueue messages, TextChannel channel) {
     buildOpenMessages(messages, channel);
-    getChildren().forEach(child -> child.getOpenMessages(messages, channel));
+    for (ModalStep child : getChildren()) {
+      child.getOpenMessages(messages, channel);
+    }
   }
 
   protected void afterChannelCreated(TextChannel channel) {
@@ -75,7 +80,9 @@ public abstract class ModalStep {
 
   public final void runAfterChannelCreated(TextChannel channel) {
     afterChannelCreated(channel);
-    getChildren().forEach(child -> child.runAfterChannelCreated(channel));
+    for (ModalStep child : getChildren()) {
+      child.runAfterChannelCreated(channel);
+    }
   }
 
   public StepBuilder buildChildSteps() {

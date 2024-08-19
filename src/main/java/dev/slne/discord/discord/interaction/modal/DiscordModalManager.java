@@ -20,6 +20,7 @@ public class DiscordModalManager {
 
 	private final Map<String, Class<? extends DiscordModal>> modals;
 	private final Object2ObjectMap<String, Supplier<DiscordStepChannelCreationModal>> advancedModals;
+	private final Object2ObjectMap<String, DiscordStepChannelCreationModal> currentUserModals;
 
 	/**
 	 * Create a new modal manager
@@ -27,6 +28,7 @@ public class DiscordModalManager {
 	public DiscordModalManager() {
 		this.modals = new HashMap<>();
 		this.advancedModals = new Object2ObjectOpenHashMap<>();
+		this.currentUserModals = new Object2ObjectOpenHashMap<>();
 
 		registerModal(WhitelistTicketModal.class);
 		registerModal(UnbanTicketModal.class);
@@ -103,14 +105,23 @@ public class DiscordModalManager {
 		return getModalByClass(this.modals.get(customId));
 	}
 
-	public DiscordStepChannelCreationModal getAdvancedModal(String customId) {
+	public DiscordStepChannelCreationModal getAdvancedModal(String customId, String userId) {
 		final Supplier<DiscordStepChannelCreationModal> modalCreator = advancedModals.get(customId);
 
 		if (modalCreator == null) {
 			return null;
 		}
 
+		final DiscordStepChannelCreationModal currentModal = currentUserModals.get(userId);
+
+		if (currentModal != null) {
+			return currentModal;
+		}
+
 		return modalCreator.get();
 	}
 
+	public void setCurrentUserModal(String userId, DiscordStepChannelCreationModal modal) {
+		currentUserModals.put(userId, modal);
+	}
 }

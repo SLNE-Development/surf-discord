@@ -67,6 +67,10 @@ public abstract class DiscordStepChannelCreationModal {
 
         // TODO: 18.08.2024 20:22 - fix
 
+        if (lastSelectionEvent != null) {
+          lastSelectionEvent.getMessage().delete().queue();
+        }
+
         callback.replyModal(modal)
             .queue(unused -> done.complete(null), done::completeExceptionally);
       });
@@ -80,23 +84,25 @@ public abstract class DiscordStepChannelCreationModal {
 
   public void submitModal(ModalInteractionEvent event) {
     final LinkedList<ModalStep> modalSteps = getSteps();
-    final InteractionHook hook = event.getHook();
     final User user = event.getUser();
 
-    verifyModalInput(event, hook, modalSteps);
-    prepareChannelCreation(hook, modalSteps);
+    verifyModalInput(event, modalSteps);
+    prepareChannelCreation(event, modalSteps);
 
     final Ticket ticket = new Ticket(event.getGuild(), user, ticketType);
     ticket.openFromButton()
-        .thenAcceptAsync(result -> afterChannelCreated(ticket, result, hook, user))
+        .thenAcceptAsync(result -> afterChannelCreated(ticket, result, event, user))
         .exceptionally(e -> {
-          hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
+          event.deferReply(true).queue(
+              hook -> hook.sendMessage("Es ist ein Fehler aufgetreten! (ophdo9upou76967867)")
+                  .queue());
+          LOGGER.error("Error while creating ticket", e);
           return null;
         });
   }
 
   private Modal buildModal() {
-    final Builder builder = Modal.create(title, title);
+    final Builder builder = Modal.create(id, title);
 
     for (final ActionComponent component : buildModalComponents().getComponents()) {
       builder.addActionRow(component);
@@ -110,12 +116,6 @@ public abstract class DiscordStepChannelCreationModal {
     return CompletableFuture.supplyAsync(() -> doSelectionSteps(hook, getSteps(), null, null));
   }
 
-//  private @Nullable StringSelectInteractionEvent doSelectionSteps(InteractionHook hook,
-//      LinkedList<ModalStep> steps) {
-//
-//
-//  }
-
   private @Nullable StringSelectInteractionEvent doSelectionSteps(InteractionHook hook,
       LinkedList<ModalStep> steps, StringSelectInteractionEvent lastEvent, Message lastMessage) {
 
@@ -126,69 +126,70 @@ public abstract class DiscordStepChannelCreationModal {
         }
 
         AtomicReference<Message> message = new AtomicReference<>();
+
         hook.sendMessage(selectionStep.getSelectTitle())
             .setEphemeral(true)
             .setActionRow(selectionStep.createSelection()).queue(message::set,
                 Throwable::printStackTrace);
-        lastEvent = selectionStep.getSelectionFuture().join();
 
+        lastEvent = selectionStep.getSelectionFuture().join();
         lastMessage = message.get();
       }
 
       final LinkedList<ModalStep> children = step.getChildren();
       if (!children.isEmpty()) {
-        doSelectionSteps(hook, children, lastEvent, lastMessage);
+        lastEvent = doSelectionSteps(hook, children, lastEvent, lastMessage);
       }
     }
 
     return lastEvent;
   }
 
-  private void verifyModalInput(ModalInteractionEvent event, InteractionHook hook,
-      LinkedList<ModalStep> steps) {
+  private void verifyModalInput(ModalInteractionEvent event, LinkedList<ModalStep> steps) {
     for (final ModalStep step : steps) {
       try {
         step.runVerifyModalInput(event);
       } catch (ModalStepInputVerificationException e) {
-        hook.editOriginal(e.getMessage()).queue();
+        event.reply(e.getMessage()).setEphemeral(true).queue();
         return;
       }
     }
   }
 
-  private void prepareChannelCreation(InteractionHook hook, LinkedList<ModalStep> steps) {
+  private void prepareChannelCreation(ModalInteractionEvent event, LinkedList<ModalStep> steps) {
     for (final ModalStep step : steps) {
       try {
         step.runPrepareChannelCreationAsync();
       } catch (ModuleStepChannelCreationException e) {
-        hook.editOriginal(e.getMessage()).queue();
+        event.reply(e.getMessage()).setEphemeral(true).queue();
         return;
       }
     }
   }
 
-  private void afterChannelCreated(Ticket ticket, TicketCreateResult result, InteractionHook hook,
+  private void afterChannelCreated(Ticket ticket, TicketCreateResult result,
+      ModalInteractionEvent event,
       User user) {
     final TextChannel channel = ticket.getChannel();
 
     switch (result) {
-      case SUCCESS -> handleSuccess(channel, hook, user);
-      case ALREADY_EXISTS -> editHook(hook,
+      case SUCCESS -> handleSuccess(channel, event, user);
+      case ALREADY_EXISTS -> reply(event,
           "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo.");
-      case MISSING_PERMISSIONS -> editHook(hook,
+      case MISSING_PERMISSIONS -> reply(event,
           "Du hast nicht die benötigten Berechtigungen, um ein Ticket zu erstellen!");
       default -> {
-        editHook(hook, "Es ist ein Fehler aufgetreten (qopuewuopfbop8729)!");
+        reply(event, "Es ist ein Fehler aufgetreten (qopuewuopfbop8729)!");
         LOGGER.error("Ticket creation failed with result: {}", result);
       }
     }
   }
 
-  private void editHook(InteractionHook hook, String message) {
-    hook.editOriginal(message).queue();
+  private void reply(ModalInteractionEvent event, String message) {
+    event.deferReply(true).queue(hook -> hook.sendMessage(message).queue());
   }
 
-  private void handleSuccess(TextChannel channel, InteractionHook hook, User user) {
+  private void handleSuccess(TextChannel channel, ModalInteractionEvent event, User user) {
     final StringBuilder message = new StringBuilder();
     message.append("Dein \"");
     message.append(ticketType.getName());
@@ -198,7 +199,7 @@ public abstract class DiscordStepChannelCreationModal {
       message.append(channel.getAsMention());
     }
 
-    hook.editOriginal(message.toString()).queue();
+    reply(event, message.toString());
 
     if (channel != null) {
       doWithCreatedChannel(channel, user);
@@ -209,13 +210,13 @@ public abstract class DiscordStepChannelCreationModal {
     final MessageQueue messages = new MessageQueue();
 
     getOpenMessages(messages, channel, user);
-    getSteps().forEach(step -> step.getOpenMessages(messages, channel));
+    for (final ModalStep step : getSteps()) {
+      step.getOpenMessages(messages, channel);
+    }
 
     final LinkedList<String> message = messages.buildMessages();
 
-    if (!message.isEmpty()) {
-      sendOpenMessage(message, channel);
-    }
+    sendOpenMessage(message, channel);
 
     runAfterChannelCreated(channel);
     getSteps().forEach(step -> step.runAfterChannelCreated(channel));
