@@ -82,12 +82,12 @@ public class ReportTicketGriefingStep extends ModalSelectionStep {
   protected void buildOpenMessages(MessageQueue messages, TextChannel channel) {
     messages.addMessage("> Server: `%s`".formatted(getSelectedServer()));
     messages.addMessage("> Location: `%s` - `%s`".formatted(xYZ, world));
-    messages.addMessage("");
+    messages.addEmptyLine();
     messages.addMessage("# Was wurde gegrieft?");
     messages.addMessage("> " + whatGriefed);
 
     if (additionalInformation != null && !additionalInformation.isBlank()) {
-      messages.addMessage("");
+      messages.addEmptyLine();
       messages.addMessage("## Zusätzliche Informationen");
       messages.addMessage("> " + additionalInformation);
     }

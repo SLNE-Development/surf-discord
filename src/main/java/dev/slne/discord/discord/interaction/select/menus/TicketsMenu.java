@@ -6,6 +6,7 @@ import dev.slne.discord.discord.interaction.modal.DiscordModalManager;
 import dev.slne.discord.discord.interaction.modal.modals.UnbanTicketModal;
 import dev.slne.discord.discord.interaction.modal.modals.WhitelistTicketModal;
 import dev.slne.discord.discord.interaction.modal.step.creator.report.ReportTicketChannelCreationModal;
+import dev.slne.discord.discord.interaction.modal.step.creator.unban.UnbanTicketChannelCreationModal;
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenu;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketType;
@@ -194,14 +195,25 @@ public class TicketsMenu extends DiscordSelectMenu {
 	 * @param interaction the interaction
 	 */
 	private void handleUnban(TicketType ticketType, StringSelectInteraction interaction) {
-		if (!ticketType.equals(TicketType.UNBAN)) {
-			return;
-		}
+//		if (!ticketType.equals(TicketType.UNBAN)) {
+//			return;
+//		}
 
-		UnbanTicketModal unbanTicketModal = new UnbanTicketModal();
-		Modal modal = unbanTicketModal.buildModal();
-		interaction.replyModal(modal).queue();
-		interaction.editSelectMenu(interaction.getSelectMenu()).queue();
+//		UnbanTicketModal unbanTicketModal = new UnbanTicketModal();
+//		Modal modal = unbanTicketModal.buildModal();
+//		interaction.replyModal(modal).queue();
+//		interaction.editSelectMenu(interaction.getSelectMenu()).queue();
+
+		final UnbanTicketChannelCreationModal reportTicketModal = new UnbanTicketChannelCreationModal();
+
+
+		DiscordBot.getInstance().getModalManager().setCurrentUserModal(interaction.getUser().getId(), reportTicketModal);
+		reportTicketModal.startChannelCreation(interaction)
+				.thenRunAsync(() -> interaction.editSelectMenu(interaction.getSelectMenu()).queue())
+				.exceptionally(failure -> {
+					DataApi.getDataInstance().logError(getClass(), "Error while creating unban ticket", failure);
+					return null;
+				});
 
 	}
 

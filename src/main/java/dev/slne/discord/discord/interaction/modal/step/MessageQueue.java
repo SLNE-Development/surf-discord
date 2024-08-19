@@ -12,6 +12,10 @@ public final class MessageQueue {
     messageLines.addAll(Arrays.asList(message.split("\n")));
   }
 
+  public synchronized void addEmptyLine() {
+    addMessage(" ");
+  }
+
   public synchronized void addMessage(String message, Object... args) {
     addMessage(String.format(message, args));
   }

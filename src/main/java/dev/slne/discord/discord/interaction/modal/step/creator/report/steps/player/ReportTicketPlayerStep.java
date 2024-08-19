@@ -41,7 +41,7 @@ public class ReportTicketPlayerStep extends ModalStep {
   @Override
   protected void buildOpenMessages(MessageQueue messages, TextChannel channel) {
     messages.addMessage("> Meldender Spielende: `%s`", reportPlayerName);
-    messages.addMessage("");
+    messages.addEmptyLine();
     messages.addMessage("# Was hat der Spielende getan?");
     messages.addMessage("> %s", reportReason);
   }

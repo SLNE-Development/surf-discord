@@ -6,6 +6,7 @@ import dev.slne.discord.discord.interaction.modal.modals.WhitelistTicketModal;
 
 import dev.slne.discord.discord.interaction.modal.step.creator.report.ReportTicketChannelCreationModal;
 import dev.slne.discord.discord.interaction.modal.step.DiscordStepChannelCreationModal;
+import dev.slne.discord.discord.interaction.modal.step.creator.unban.UnbanTicketChannelCreationModal;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.lang.reflect.InvocationTargetException;
@@ -31,8 +32,9 @@ public class DiscordModalManager {
 		this.currentUserModals = new Object2ObjectOpenHashMap<>();
 
 		registerModal(WhitelistTicketModal.class);
-		registerModal(UnbanTicketModal.class);
+//		registerModal(UnbanTicketModal.class);
 		registerAdvancedModal(ReportTicketChannelCreationModal::new);
+		registerAdvancedModal(UnbanTicketChannelCreationModal::new);
 	}
 
 	/**

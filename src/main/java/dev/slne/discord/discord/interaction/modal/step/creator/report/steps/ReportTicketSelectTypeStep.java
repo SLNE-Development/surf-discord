@@ -58,7 +58,7 @@ public class ReportTicketSelectTypeStep extends ModalSelectionStep {
 
   @Override
   protected void buildOpenMessages(MessageQueue messages, TextChannel channel) {
-    messages.addMessage("");
+    messages.addEmptyLine();
     messages.addMessage("> Spielername: `%s`", playerName);
   }
 

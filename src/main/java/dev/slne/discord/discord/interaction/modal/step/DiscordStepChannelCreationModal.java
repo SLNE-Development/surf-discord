@@ -59,13 +59,18 @@ public abstract class DiscordStepChannelCreationModal {
   public final CompletableFuture<Void> startChannelCreation(StringSelectInteraction interaction) {
     final CompletableFuture<Void> done = new CompletableFuture<>();
 
+    if (getSteps().stream().noneMatch(ModalStep::hasSelectionStep)) {
+      final Modal modal = buildModal();
+      interaction.replyModal(modal)
+          .queue(unused -> done.complete(null), done::completeExceptionally);
+      return done;
+    }
+
     interaction.deferReply(true).queue(hook -> {
       doSelectionSteps(hook).thenAcceptAsync(lastSelectionEvent -> {
         final IModalCallback callback =
             lastSelectionEvent != null ? lastSelectionEvent : interaction;
         final Modal modal = buildModal();
-
-        // TODO: 18.08.2024 20:22 - fix
 
         if (lastSelectionEvent != null) {
           lastSelectionEvent.getMessage().delete().queue();
@@ -186,7 +191,11 @@ public abstract class DiscordStepChannelCreationModal {
   }
 
   private void reply(ModalInteractionEvent event, String message) {
-    event.deferReply(true).queue(hook -> hook.sendMessage(message).queue());
+    if (event.isAcknowledged()) {
+      event.getHook().sendMessage(message).setEphemeral(true).queue();
+    } else {
+      event.deferReply(true).queue(hook -> hook.sendMessage(message).queue());
+    }
   }
 
   private void handleSuccess(TextChannel channel, ModalInteractionEvent event, User user) {

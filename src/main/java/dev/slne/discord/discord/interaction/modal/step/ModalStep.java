@@ -20,6 +20,7 @@ public abstract class ModalStep {
     getChildren().forEach(child -> child.fillModalComponents(builder));
   }
 
+  @Blocking
   protected void verifyModalInput(ModalInteractionEvent event)
       throws ModalStepInputVerificationException {
 
@@ -33,7 +34,7 @@ public abstract class ModalStep {
     }
   }
 
-  protected String getRequiredInput(ModalInteractionEvent event, String key)
+  protected final String getRequiredInput(ModalInteractionEvent event, String key)
       throws ModalStepInputVerificationException {
     final ModalMapping value = event.getValue(key);
 
@@ -44,7 +45,7 @@ public abstract class ModalStep {
     return value.getAsString();
   }
 
-  protected @Nullable String getOptionalInput(ModalInteractionEvent event, String key) {
+  protected final @Nullable String getOptionalInput(ModalInteractionEvent event, String key) {
     final ModalMapping value = event.getValue(key);
 
     if (value == null) {
@@ -95,6 +96,20 @@ public abstract class ModalStep {
     }
 
     return children;
+  }
+
+  public final boolean hasSelectionStep() {
+    if (this instanceof ModalSelectionStep) {
+      return true;
+    }
+
+    for (ModalStep child : getChildren()) {
+      if (child.hasSelectionStep()) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   @StandardException
