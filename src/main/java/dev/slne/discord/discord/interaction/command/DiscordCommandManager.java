@@ -14,6 +14,7 @@ import dev.slne.discord.discord.interaction.command.commands.whitelist.Whitelist
 import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistRoleRemoveCommand;
 import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistedCommand;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;

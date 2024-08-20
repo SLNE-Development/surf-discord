@@ -4,9 +4,15 @@ import dev.slne.data.api.DataApi;
 import dev.slne.discord.discord.interaction.modal.modals.UnbanTicketModal;
 import dev.slne.discord.discord.interaction.modal.modals.WhitelistTicketModal;
 
+import dev.slne.discord.discord.interaction.modal.step.creator.report.ReportTicketChannelCreationModal;
+import dev.slne.discord.discord.interaction.modal.step.DiscordStepChannelCreationModal;
+import dev.slne.discord.discord.interaction.modal.step.creator.unban.UnbanTicketChannelCreationModal;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * The type Discord modal manager.
@@ -14,15 +20,21 @@ import java.util.Map;
 public class DiscordModalManager {
 
 	private final Map<String, Class<? extends DiscordModal>> modals;
+	private final Object2ObjectMap<String, Supplier<DiscordStepChannelCreationModal>> advancedModals;
+	private final Object2ObjectMap<String, DiscordStepChannelCreationModal> currentUserModals;
 
 	/**
 	 * Create a new modal manager
 	 */
 	public DiscordModalManager() {
 		this.modals = new HashMap<>();
+		this.advancedModals = new Object2ObjectOpenHashMap<>();
+		this.currentUserModals = new Object2ObjectOpenHashMap<>();
 
 		registerModal(WhitelistTicketModal.class);
-		registerModal(UnbanTicketModal.class);
+//		registerModal(UnbanTicketModal.class);
+		registerAdvancedModal(ReportTicketChannelCreationModal::new);
+		registerAdvancedModal(UnbanTicketChannelCreationModal::new);
 	}
 
 	/**
@@ -43,6 +55,13 @@ public class DiscordModalManager {
 
 		String customId = discordModal.getCustomId();
 		this.modals.put(customId, modalClass);
+	}
+
+	public void registerAdvancedModal(Supplier<DiscordStepChannelCreationModal> creator) {
+		final DiscordStepChannelCreationModal modal = creator.get();
+		final String modalId = modal.getId();
+
+		advancedModals.putIfAbsent(modalId, creator);
 	}
 
 	/**
@@ -88,4 +107,23 @@ public class DiscordModalManager {
 		return getModalByClass(this.modals.get(customId));
 	}
 
+	public DiscordStepChannelCreationModal getAdvancedModal(String customId, String userId) {
+		final Supplier<DiscordStepChannelCreationModal> modalCreator = advancedModals.get(customId);
+
+		if (modalCreator == null) {
+			return null;
+		}
+
+		final DiscordStepChannelCreationModal currentModal = currentUserModals.get(userId);
+
+		if (currentModal != null) {
+			return currentModal;
+		}
+
+		return modalCreator.get();
+	}
+
+	public void setCurrentUserModal(String userId, DiscordStepChannelCreationModal modal) {
+		currentUserModals.put(userId, modal);
+	}
 }

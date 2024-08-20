@@ -1,5 +1,6 @@
 package dev.slne.discord.listener;
 
+import dev.slne.discord.discord.interaction.modal.step.ModalSelectionStep.ModalSelectionStepListener;
 import dev.slne.discord.listener.interaction.button.DiscordButtonListener;
 import dev.slne.discord.listener.interaction.command.CommandReceivedListener;
 import dev.slne.discord.listener.interaction.menu.DiscordSelectMenuListener;
@@ -57,6 +58,8 @@ public class ListenerManager {
 		discordListeners.add(new MessageDeletedListener());
 
 		discordListeners.add(new ReactionRoleListener());
+
+		discordListeners.add(new ModalSelectionStepListener());
 	}
 
 	/**

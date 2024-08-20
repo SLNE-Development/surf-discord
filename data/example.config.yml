@@ -32,15 +32,17 @@ ticket-config:
     unban:
       enabled: false
       should-print-wl-query: false
-      opening-messages:
-        - '%author%'
-        - 'Du möchtest entbannt werden? Dann schreibe uns bitte eine **ausführliche** Entbannungsanfrage. Bitte beschreibe genau, **warum du ausgeschlossen wurdest** und **warum wir den Ausschluss aufheben sollten**. Du solltest dabei stets **ehrlich** sein und keine falschen Angaben machen. Solltest du versuchen uns zu täuschen, wird deine Anfrage abgelehnt!'
+      opening-messages: []
     discord-support:
       enabled: false
       should-print-wl-query: false
       opening-messages:
         - '%author%'
         - 'Willkommen beim Discord Support. Wie können wir dir helfen?'
+    report:
+      enabled: false
+      should-print-wl-query: false
+      opening-messages: [ ]
 
 guild-config:
   castcrafter:

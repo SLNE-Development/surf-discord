@@ -1,8 +1,10 @@
 package dev.slne.discord.discord.interaction.select.menus;
 
 import dev.slne.data.api.DataApi;
-import dev.slne.discord.discord.interaction.modal.modals.UnbanTicketModal;
+import dev.slne.discord.DiscordBot;
 import dev.slne.discord.discord.interaction.modal.modals.WhitelistTicketModal;
+import dev.slne.discord.discord.interaction.modal.step.creator.report.ReportTicketChannelCreationModal;
+import dev.slne.discord.discord.interaction.modal.step.creator.unban.UnbanTicketChannelCreationModal;
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenu;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketType;
@@ -11,7 +13,6 @@ import dev.slne.discord.ticket.tickets.BugreportTicket;
 import dev.slne.discord.ticket.tickets.DiscordSupportTicket;
 import dev.slne.discord.ticket.tickets.EventSupportTicket;
 import dev.slne.discord.ticket.tickets.ServerSupportTicket;
-import dev.slne.discord.ticket.tickets.UnbanTicket;
 import dev.slne.discord.whitelist.Whitelist;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
@@ -52,8 +53,10 @@ public class TicketsMenu extends DiscordSelectMenu {
 
 	@Override
 	public void onSelect(StringSelectInteraction interaction, List<DiscordSelectMenuOption> selectedOptions) {
-		DiscordSelectMenuOption option = selectedOptions.get(0);
+		DiscordSelectMenuOption option = selectedOptions.getFirst();
 		TicketType ticketType = TicketType.getByName(option.getLabel());
+
+		interaction.getMessage().delete().queue();
 
 		if (ticketType.equals(TicketType.WHITELIST)) {
 			handleWhitelist(ticketType, interaction);
@@ -61,7 +64,12 @@ public class TicketsMenu extends DiscordSelectMenu {
 		}
 
 		if (ticketType.equals(TicketType.UNBAN)) {
-			handleUnban(ticketType, interaction);
+			handleUnban(interaction);
+			return;
+		}
+
+		if (ticketType.equals(TicketType.REPORT)) { // TODO: 18.08.2024 10:32 - special treatment for ChannelCreationModals
+			handleReport(ticketType, interaction);
 			return;
 		}
 
@@ -114,7 +122,7 @@ public class TicketsMenu extends DiscordSelectMenu {
 						if (ticket.getChannel() != null) {
 							message.append(ticket.getChannel().getAsMention());
 						}
-						
+
 						hook.editOriginal(message.toString()).queue();
 					} else if (result.equals(TicketCreateResult.ALREADY_EXISTS)) {
 						hook.editOriginal(
@@ -183,19 +191,27 @@ public class TicketsMenu extends DiscordSelectMenu {
 	/**
 	 * Handles the unban button
 	 *
-	 * @param ticketType  the ticket type
 	 * @param interaction the interaction
 	 */
-	private void handleUnban(TicketType ticketType, StringSelectInteraction interaction) {
-		if (!ticketType.equals(TicketType.UNBAN)) {
-			return;
-		}
+	private void handleUnban(StringSelectInteraction interaction) {
+		final UnbanTicketChannelCreationModal reportTicketModal = new UnbanTicketChannelCreationModal();
 
-		UnbanTicketModal unbanTicketModal = new UnbanTicketModal();
-		Modal modal = unbanTicketModal.buildModal();
-		interaction.replyModal(modal).queue();
-		interaction.editSelectMenu(interaction.getSelectMenu()).queue();
+		reportTicketModal.startChannelCreation(interaction)
+				.exceptionally(failure -> {
+					DataApi.getDataInstance().logError(getClass(), "Error while creating unban ticket", failure);
+					return null;
+				});
 
+	}
+
+	private void handleReport(TicketType ticketType, StringSelectInteraction interaction) {
+		final ReportTicketChannelCreationModal reportTicketModal = new ReportTicketChannelCreationModal();
+
+		reportTicketModal.startChannelCreation(interaction)
+				.exceptionally(failure -> {
+					DataApi.getDataInstance().logError(getClass(), "Error while creating report ticket", failure);
+					return null;
+				});
 	}
 
 	/**

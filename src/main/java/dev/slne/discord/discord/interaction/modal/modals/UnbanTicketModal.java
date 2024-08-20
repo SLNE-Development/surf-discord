@@ -2,12 +2,14 @@ package dev.slne.discord.discord.interaction.modal.modals;
 
 import dev.slne.data.api.DataApi;
 import dev.slne.discord.discord.interaction.modal.DiscordModal;
+import dev.slne.discord.discord.interaction.modal.step.MessageQueue;
 import dev.slne.discord.punishment.PunishmentService;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketType;
 import dev.slne.discord.ticket.result.TicketCreateResult;
 import dev.slne.discord.ticket.tickets.UnbanTicket;
 import feign.FeignException;
+import java.util.concurrent.CompletionException;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
@@ -16,108 +18,142 @@ import net.dv8tion.jda.api.interactions.modals.ModalInteraction;
 import net.dv8tion.jda.api.interactions.modals.ModalMapping;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.CompletionException;
-
 public class UnbanTicketModal extends DiscordModal {
 
-	/**
-	 * Constructor for a unban ticket modal
-	 */
-	public UnbanTicketModal() { super( TicketType.UNBAN.getName() + "  erstellen"); }
+  /**
+   * Constructor for a unban ticket modal
+   */
+  public UnbanTicketModal() {
+    super(TicketType.UNBAN.getName() + "  erstellen");
+  }
 
-	@Override
-	public void fillComponents() {
-		TextInput punishmentIdInput =
-				TextInput.create("punishment-id", "Deine Punishment ID", TextInputStyle.SHORT).setRequired(true).setMinLength(6).setMaxLength(8).build();
-		components.add(punishmentIdInput);
-	}
+  @Override
+  public void fillComponents() {
+    TextInput punishmentIdInput = TextInput.create("punishment-id", "Deine Punishment ID",
+            TextInputStyle.SHORT)
+        .setRequired(true)
+        .setMinLength(6)
+        .setMaxLength(8)
+        .build();
+    TextInput unbanAppeal = TextInput.create("unban-appeal", "Dein Entbannungsantrag",
+            TextInputStyle.PARAGRAPH)
+        .setRequired(true)
+        .setMinLength(300)
+        .setPlaceholder("Erkläre, warum du entbannt werden möchtest und was du aus deinem Verhalten gelernt hast.")
+        .build();
 
-	@Override
-	public void execute(ModalInteractionEvent event) {
-		ModalInteraction modalInteraction = event.getInteraction();
+    components.add(punishmentIdInput);
+    components.add(unbanAppeal);
+  }
 
-		modalInteraction.deferReply(true).queue(hook -> {
+  @Override
+  public void execute(ModalInteractionEvent event) {
+    ModalInteraction modalInteraction = event.getInteraction();
 
-			ModalMapping punishmentIdValue = modalInteraction.getValue("punishment-id");
-			if (punishmentIdValue == null) {
-				hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
-				return;
-			}
+    modalInteraction.deferReply(true).queue(hook -> {
 
-			String punishmentId = punishmentIdValue.getAsString();
+      ModalMapping punishmentIdValue = modalInteraction.getValue("punishment-id");
+      ModalMapping unbanAppealValue = modalInteraction.getValue("unban-appeal");
+      if (punishmentIdValue == null || unbanAppealValue == null) {
+        hook.editOriginal("Es ist ein Fehler aufgetreten!").queue();
+        return;
+      }
 
-			if(punishmentId.isEmpty()) {
-				hook.editOriginal("Du hast keine gültige ID eingegeben!").queue();
-				return;
-			}
+      String punishmentId = punishmentIdValue.getAsString();
+      String unbanAppeal = unbanAppealValue.getAsString();
 
-			PunishmentService.INSTANCE.getBanByPunishmentId(punishmentId).thenAccept(ban -> {
-				if(ban == null) {
-					hook.editOriginal("Es konnte kein Ausschluss mit der eingegeben ID gefunden werden!").queue();
-					return;
-				}
+      if (punishmentId.isEmpty()) {
+        hook.editOriginal("Du hast keine gültige ID eingegeben!").queue();
+        return;
+      }
 
-				Ticket ticket = new UnbanTicket(
-						modalInteraction.getGuild(),
-						modalInteraction.getUser()
-				);
+      if (unbanAppeal.isEmpty()) {
+        hook.editOriginal("Du hast keinen Entbannungsantrag eingegeben!").queue();
+        return;
+      }
 
-				ticket.openFromButton().thenAcceptAsync(result -> {
-					if (result.equals(TicketCreateResult.SUCCESS)) {
+      PunishmentService.INSTANCE.getBanByPunishmentId(punishmentId).thenAccept(ban -> {
+        if (ban == null) {
+          hook.editOriginal("Es konnte kein Ausschluss mit der eingegeben ID gefunden werden!")
+              .queue();
+          return;
+        }
 
-						StringBuilder message = new StringBuilder();
-						message.append("Dein \"");
-						message.append(TicketType.UNBAN.getName());
-						message.append("\"-Ticket wurde erfolgreich erstellt! ");
+        Ticket ticket = new UnbanTicket(
+            modalInteraction.getGuild(),
+            modalInteraction.getUser()
+        );
 
-						TextChannel channel = ticket.getChannel();
+        ticket.openFromButton().thenAcceptAsync(result -> {
+          if (result.equals(TicketCreateResult.SUCCESS)) {
 
-						if (channel != null) {
-							message.append(channel.getAsMention());
-						}
+            StringBuilder message = new StringBuilder();
+            message.append("Dein \"");
+            message.append(TicketType.UNBAN.getName());
+            message.append("\"-Ticket wurde erfolgreich erstellt! ");
 
-						hook.editOriginal(message.toString()).queue();
+            TextChannel channel = ticket.getChannel();
 
-						if (channel != null) {
-							channel.sendMessage("PunishmentID: `" + punishmentId + "`").queue();
-						}
-					} else if (result.equals(TicketCreateResult.ALREADY_EXISTS)) {
-						hook.editOriginal("Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo.").queue();
+            if (channel != null) {
+              message.append(channel.getAsMention());
+            }
 
-					} else if (result.equals(TicketCreateResult.MISSING_PERMISSIONS)) {
-						hook.editOriginal("Du hast nicht die benötigten Berechtigungen, um ein Ticket zu erstellen!").queue();
+            hook.editOriginal(message.toString()).queue();
 
-					} else {
-						hook.editOriginal("Es ist ein Fehler aufgetreten (cwdskjfkd437489)!").queue();
-						DataApi.getDataInstance().logError(getClass(), String.format("Error while creating ticket: %s", result));
-					}
+            if (channel != null) {
+              final MessageQueue messageQueue = new MessageQueue();
+              messageQueue.addMessage("> PunishmentID: `" + punishmentId + "`");
+              messageQueue.addEmptyLine();
+              messageQueue.addMessage("# Entbannungsantrag");
+              messageQueue.addMessage(unbanAppeal);
 
-				}).exceptionally(failure -> {
-					hook.editOriginal("Es ist ein Fehler aufgetreten (ie823423894kjd)!").queue();
-					DataApi.getDataInstance().logError(getClass(), "Error while creating ticket", failure);
-					return null;
+              for (String buildMessage : messageQueue.buildMessages()) {
+                channel.sendMessage(buildMessage).queue();
+              }
+            }
+          } else if (result.equals(TicketCreateResult.ALREADY_EXISTS)) {
+            hook.editOriginal(
+                    "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo.")
+                .queue();
 
-				});
+          } else if (result.equals(TicketCreateResult.MISSING_PERMISSIONS)) {
+            hook.editOriginal(
+                "Du hast nicht die benötigten Berechtigungen, um ein Ticket zu erstellen!").queue();
 
-			}).exceptionally(failure -> {
-				if (failure instanceof CompletionException && failure.getCause() instanceof FeignException.NotFound) {
-					hook.editOriginal("Es konnte kein Ausschluss mit der eingegeben ID gefunden werden!").queue();
-					return null;
-				}
+          } else {
+            hook.editOriginal("Es ist ein Fehler aufgetreten (cwdskjfkd437489)!").queue();
+            DataApi.getDataInstance()
+                .logError(getClass(), String.format("Error while creating ticket: %s", result));
+          }
 
-				hook.editOriginal("Es ist ein Fehler aufgetreten (efjkhwefwiekefkp)!").queue();
-				DataApi.getDataInstance().logError(getClass(), "Error while creating ticket", failure);
+        }).exceptionally(failure -> {
+          hook.editOriginal("Es ist ein Fehler aufgetreten (ie823423894kjd)!").queue();
+          DataApi.getDataInstance().logError(getClass(), "Error while creating ticket", failure);
+          return null;
 
-				return null;
-			});
-		});
+        });
 
-	}
+      }).exceptionally(failure -> {
+        if (failure instanceof CompletionException
+            && failure.getCause() instanceof FeignException.NotFound) {
+          hook.editOriginal("Es konnte kein Ausschluss mit der eingegeben ID gefunden werden!")
+              .queue();
+          return null;
+        }
 
-	@NotNull
-	@Override
-	public String getCustomId() {
-		return TicketType.UNBAN.name();
-	}
+        hook.editOriginal("Es ist ein Fehler aufgetreten (efjkhwefwiekefkp)!").queue();
+        DataApi.getDataInstance().logError(getClass(), "Error while creating ticket", failure);
+
+        return null;
+      });
+    });
+
+  }
+
+  @NotNull
+  @Override
+  public String getCustomId() {
+    return TicketType.UNBAN.name();
+  }
 
 }

@@ -28,10 +28,11 @@ public class DiscordSelectMenuListener extends ListenerAdapter {
 
 		if (menu != null) {
 			menu.onSelect(event.getInteraction(), event.getValues().stream().map(menu::getOptionByValue).toList());
-		} else {
-			event.reply("Die Interaktion ist abgelaufen, oder konnte nicht gefunden werden!").setEphemeral(true)
-				 .queue();
 		}
+//		else {
+//			event.reply("Die Interaktion ist abgelaufen, oder konnte nicht gefunden werden!").setEphemeral(true)
+//				 .queue();
+//		}
 	}
 
 }

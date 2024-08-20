@@ -10,6 +10,7 @@ import lombok.Getter;
 @Getter
 public class TicketOpenPacket extends RedisEvent {
 
+	private static final String CHANNEL = "surf:ticket:open";
 	private Ticket ticket;
 
 	/**
@@ -25,7 +26,7 @@ public class TicketOpenPacket extends RedisEvent {
 	 * @param ticket The ticket that was opened.
 	 */
 	public TicketOpenPacket(Ticket ticket) {
-		super("ticket:open");
+		super(CHANNEL);
 
 		this.ticket = ticket;
 	}

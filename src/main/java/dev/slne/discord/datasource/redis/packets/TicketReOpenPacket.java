@@ -9,6 +9,7 @@ import lombok.Getter;
  */
 @Getter
 public class TicketReOpenPacket extends RedisEvent {
+	private static final String CHANNEL = "surf:ticket:reopen";
 
 	private Ticket originalTicket;
 	private Ticket newTicket;
@@ -27,7 +28,7 @@ public class TicketReOpenPacket extends RedisEvent {
 	 * @param newTicket      The new ticket.
 	 */
 	public TicketReOpenPacket(Ticket originalTicket, Ticket newTicket) {
-		super("ticket:reopen");
+		super(CHANNEL);
 
 		this.originalTicket = originalTicket;
 		this.newTicket = newTicket;
