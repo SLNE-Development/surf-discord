@@ -13,6 +13,9 @@ import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Represents a step in a modal process that involves a selection component.
+ */
 @Getter
 @Accessors(makeFinal = true)
 public abstract class ModalSelectionStep extends ModalStep {
@@ -35,24 +38,48 @@ public abstract class ModalSelectionStep extends ModalStep {
     steps.put(id, this);
   }
 
-  public final ItemComponent createSelection() {
+  /**
+   * Creates the selection component for this step.
+   *
+   * @return The created selection component.
+   */
+  public final @NotNull ItemComponent createSelection() {
     return StringSelectMenu.create(id)
         .addOptions(options)
         .setMaxValues(1)
         .build();
   }
 
+  /**
+   * Sets the selected option for this step and completes the selection future.
+   *
+   * @param selected The selected option.
+   * @param event    The selection event that triggered this action.
+   */
   private void setSelected(String selected, StringSelectInteractionEvent event) {
     this.selected = selected;
     selectionFuture.complete(event);
   }
 
-  private static String generateId() {
+  /**
+   * Generates a unique ID for this selection step.
+   *
+   * @return A unique ID string.
+   */
+  private static @NotNull String generateId() {
     return "surf-selection-step-" + counter.getAndIncrement();
   }
 
+  /**
+   * Listener class for handling selection interactions.
+   */
   public static class ModalSelectionStepListener extends ListenerAdapter {
 
+    /**
+     * Handles the selection interaction event and triggers the appropriate step.
+     *
+     * @param event The selection interaction event.
+     */
     @Override
     public void onStringSelectInteraction(@NotNull StringSelectInteractionEvent event) {
       final ModalSelectionStep step = steps.get(event.getComponentId());

@@ -39,7 +39,7 @@ public class DiscordModalListener extends ListenerAdapter {
 		final DiscordStepChannelCreationModal advancedModal = modalManager.getAdvancedModal(modalId, event.getUser().getId());
 
 		if (advancedModal != null) {
-			advancedModal.submitModal(event);
+			advancedModal.handleUserSubmitModal(event);
 			return;
 		}
 

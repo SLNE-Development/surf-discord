@@ -44,6 +44,12 @@ public class OpenTicketButton extends DiscordButton {
 		builder.setDescription("Bitte wähle das passende Ticket aus, welches du öffnen möchtest.\n\nInformationen zu den unterschiedlichen Tickettypen findest du auf https://server.castcrafter.de/support");
 		builder.setColor(Color.CYAN);
 
-		interaction.reply("").setActionRow(menu).setEmbeds(builder.build()).setEphemeral(true).queue();
+		interaction.deferReply(true)
+				.queue(hook -> {
+					hook.sendMessageEmbeds(builder.build())
+							.setActionRow(menu)
+							.setEphemeral(true)
+							.queue();
+				});
 	}
 }

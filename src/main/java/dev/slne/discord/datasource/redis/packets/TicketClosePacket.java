@@ -9,6 +9,7 @@ import lombok.Getter;
  */
 @Getter
 public class TicketClosePacket extends RedisEvent {
+	public static final String CHANNEL = "surf:ticket:close";
 
 	private Ticket ticket;
 
@@ -24,7 +25,7 @@ public class TicketClosePacket extends RedisEvent {
 	 * @param ticket the ticket
 	 */
 	public TicketClosePacket(Ticket ticket) {
-		super("ticket:close");
+		super(CHANNEL);
 
 		this.ticket = ticket;
 	}
