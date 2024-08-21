@@ -185,16 +185,19 @@ public abstract class DiscordStepChannelCreationModal {
     final LinkedList<ModalStep> modalSteps = getSteps();
     final User user = event.getUser();
 
-    verifyModalInput(event, modalSteps);
-    preChannelCreation(event, modalSteps);
+    if (!verifyModalInput(event, modalSteps)) {
+      return;
+    }
+
+    if (!preChannelCreation(event, modalSteps)) {
+      return;
+    }
 
     final Ticket ticket = new Ticket(event.getGuild(), user, getTicketType());
     ticket.openFromButton()
         .thenAcceptAsync(result -> postChannelCreated(ticket, result, event, user))
         .exceptionally(e -> {
-          event.deferReply(true).queue(
-              hook -> hook.sendMessage("Es ist ein Fehler aufgetreten! (ophdo9upou76967867)")
-                  .queue());
+          reply(event, "Es ist ein Fehler aufgetreten! (ophdo9upou76967867)");
           LOGGER.error("Error while creating ticket", e);
           return null;
         });
@@ -281,15 +284,17 @@ public abstract class DiscordStepChannelCreationModal {
    * @param event The modal interaction event.
    * @param steps The list of steps to verify.
    */
-  private void verifyModalInput(ModalInteractionEvent event, @NotNull LinkedList<ModalStep> steps) {
+  private boolean verifyModalInput(ModalInteractionEvent event, @NotNull LinkedList<ModalStep> steps) {
     for (final ModalStep step : steps) {
       try {
         step.runVerifyModalInput(event);
       } catch (ModalStepInputVerificationException e) {
-        event.deferReply(true).setContent(e.getMessage()).queue();
-        return;
+        reply(event, e.getMessage());
+        return false;
       }
     }
+
+    return true;
   }
 
   /**
@@ -298,7 +303,7 @@ public abstract class DiscordStepChannelCreationModal {
    * @param event The modal interaction event.
    * @param steps The list of steps to process.
    */
-  private void preChannelCreation(
+  private boolean preChannelCreation(
       ModalInteractionEvent event,
       @NotNull LinkedList<ModalStep> steps
   ) {
@@ -306,10 +311,12 @@ public abstract class DiscordStepChannelCreationModal {
       try {
         step.runPreChannelCreationAsync();
       } catch (ModuleStepChannelCreationException e) {
-        event.deferReply(true).setContent(e.getMessage()).queue();
-        return;
+        reply(event, e.getMessage());
+        return false;
       }
     }
+
+    return true;
   }
 
   /**

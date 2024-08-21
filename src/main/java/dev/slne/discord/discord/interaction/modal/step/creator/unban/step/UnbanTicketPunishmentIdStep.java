@@ -32,7 +32,8 @@ public class UnbanTicketPunishmentIdStep extends ModalStep {
   }
 
   @Override
-  protected void verifyModalInput(ModalInteractionEvent event) throws ModalStepInputVerificationException {
+  protected void verifyModalInput(ModalInteractionEvent event)
+      throws ModalStepInputVerificationException {
     punishmentId = getRequiredInput(event, PUNISHMENT_ID);
 
     try {
@@ -58,6 +59,7 @@ public class UnbanTicketPunishmentIdStep extends ModalStep {
   }
 
   private static void handlePunishmentNotFound() throws ModalStepInputVerificationException {
-    throw new ModalStepInputVerificationException("Es konnte kein Ausschluss mit der eingegeben ID gefunden werden!");
+    throw new ModalStepInputVerificationException(
+        "Es konnte kein Ausschluss mit der eingegeben ID gefunden werden!");
   }
 }
