@@ -5,14 +5,16 @@ import dev.slne.discord.discord.interaction.modal.step.MessageQueue;
 import dev.slne.discord.discord.interaction.modal.step.StepBuilder;
 import dev.slne.discord.discord.interaction.modal.step.creator.unban.step.UnbanTicketPunishmentIdStep;
 import dev.slne.discord.discord.interaction.modal.step.creator.unban.step.UnbanTicketUnbanAppealStep;
+import dev.slne.discord.spring.annotation.ChannelCreationModal;
 import dev.slne.discord.ticket.TicketType;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
+@ChannelCreationModal(ticketType = TicketType.UNBAN)
 public class UnbanTicketChannelCreationModal extends DiscordStepChannelCreationModal {
 
   public UnbanTicketChannelCreationModal() {
-    super(TicketType.UNBAN.name(), TicketType.UNBAN.getName() + "  erstellen", TicketType.UNBAN);
+    super(TicketType.UNBAN.getName() + "  erstellen", TicketType.UNBAN);
   }
 
   @Override

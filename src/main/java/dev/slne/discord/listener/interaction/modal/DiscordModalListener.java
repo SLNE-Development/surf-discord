@@ -1,52 +1,42 @@
 package dev.slne.discord.listener.interaction.modal;
 
-import dev.slne.discord.DiscordBot;
 import dev.slne.discord.discord.interaction.modal.DiscordModal;
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager;
 import dev.slne.discord.discord.interaction.modal.step.DiscordStepChannelCreationModal;
 import dev.slne.discord.message.MessageManager;
+import javax.annotation.Nonnull;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.modals.ModalInteraction;
-
-import javax.annotation.Nonnull;
 
 /**
  * The type Discord modal listener.
  */
 public class DiscordModalListener extends ListenerAdapter {
 
-	private final DiscordModalManager modalManager;
+  @Override
+  public void onModalInteraction(@Nonnull ModalInteractionEvent event) {
+    final ModalInteraction interaction = event.getInteraction();
+    final String modalId = interaction.getModalId();
+    final DiscordModal modal = DiscordModalManager.INSTANCE.getModal(modalId);
 
-	/**
-	 * Instantiates a new Discord modal listener.
-	 */
-	public DiscordModalListener() {
-		this.modalManager = DiscordBot.getInstance().getModalManager();
-	}
+    if (modal != null) {
+      modal.execute(event);
+      return;
+    }
 
-	@Override
-	public void onModalInteraction(@Nonnull ModalInteractionEvent event) {
-		final ModalInteraction interaction = event.getInteraction();
-		final String modalId = interaction.getModalId();
-		final DiscordModal modal = modalManager.getModal(modalId);
+    final DiscordStepChannelCreationModal advancedModal = DiscordModalManager.INSTANCE.getAdvancedModal(
+        modalId, event.getUser().getId());
 
-		if (modal != null) {
-			modal.execute(event);
-			return;
-		}
+    if (advancedModal != null) {
+      advancedModal.handleUserSubmitModal(event);
+      return;
+    }
 
-		final DiscordStepChannelCreationModal advancedModal = modalManager.getAdvancedModal(modalId, event.getUser().getId());
-
-		if (advancedModal != null) {
-			advancedModal.handleUserSubmitModal(event);
-			return;
-		}
-
-		event.replyEmbeds(MessageManager.getErrorEmbed(
-				"Fehler",
-				"Deine Aktion konnte nicht durchgeführt werden oder ist abgelaufen."
-		)).setEphemeral(true).queue();
-	}
+    event.replyEmbeds(MessageManager.getErrorEmbed(
+        "Fehler",
+        "Deine Aktion konnte nicht durchgeführt werden oder ist abgelaufen."
+    )).setEphemeral(true).queue();
+  }
 
 }

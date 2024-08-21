@@ -4,15 +4,16 @@ import dev.slne.discord.discord.interaction.modal.step.DiscordStepChannelCreatio
 import dev.slne.discord.discord.interaction.modal.step.MessageQueue;
 import dev.slne.discord.discord.interaction.modal.step.StepBuilder;
 import dev.slne.discord.discord.interaction.modal.step.creator.report.steps.ReportTicketSelectTypeStep;
+import dev.slne.discord.spring.annotation.ChannelCreationModal;
 import dev.slne.discord.ticket.TicketType;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
+@ChannelCreationModal(ticketType = TicketType.REPORT)
 public class ReportTicketChannelCreationModal extends DiscordStepChannelCreationModal {
 
   public ReportTicketChannelCreationModal() {
-    super("surf-report-ticket-modal", TicketType.REPORT.getName() + " erstellen",
-        TicketType.REPORT);
+    super(TicketType.REPORT.getName() + " erstellen", TicketType.REPORT);
   }
 
   @Override

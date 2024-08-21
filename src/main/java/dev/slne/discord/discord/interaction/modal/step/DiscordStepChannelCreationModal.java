@@ -1,13 +1,17 @@
 package dev.slne.discord.discord.interaction.modal.step;
 
 import dev.slne.discord.DiscordBot;
+import dev.slne.discord.discord.interaction.modal.DiscordModalManager;
 import dev.slne.discord.discord.interaction.modal.step.ModalStep.ModalStepInputVerificationException;
 import dev.slne.discord.discord.interaction.modal.step.ModalStep.ModuleStepChannelCreationException;
+import dev.slne.discord.spring.annotation.ChannelCreationModal;
+import dev.slne.discord.spring.annotation.processor.ChannelCreationModalProcessor;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketChannelUtil;
 import dev.slne.discord.ticket.TicketType;
 import dev.slne.discord.ticket.result.TicketCreateResult;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nonnull;
@@ -16,7 +20,6 @@ import lombok.experimental.Accessors;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
@@ -32,6 +35,7 @@ import org.jetbrains.annotations.ApiStatus.OverrideOnly;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.core.annotation.AnnotationUtils;
 
 /**
  * Represents a modal for creating a channel step by step in Discord.
@@ -47,7 +51,8 @@ public abstract class DiscordStepChannelCreationModal {
   private static final ComponentLogger LOGGER = ComponentLogger.logger(
       "DiscordStepChannelCreationModal");
 
-  private final String id;
+  @Getter(lazy = true)
+  private final String id = getId0();
   @Nonnull
   private final String title;
   private final TicketType ticketType;
@@ -58,13 +63,11 @@ public abstract class DiscordStepChannelCreationModal {
   /**
    * Constructs a new DiscordStepChannelCreationModal with the specified parameters.
    *
-   * @param id         The unique identifier for this modal.
    * @param title      The title of the modal.
    * @param ticketType The type of ticket associated with this modal.
    */
-  protected DiscordStepChannelCreationModal(String id, @Nonnull String title,
+  protected DiscordStepChannelCreationModal(@Nonnull String title,
       TicketType ticketType) {
-    this.id = id;
     this.title = title;
     this.ticketType = ticketType;
   }
@@ -111,8 +114,7 @@ public abstract class DiscordStepChannelCreationModal {
       return done;
     }
 
-    DiscordBot.getInstance().getModalManager()
-        .setCurrentUserModal(interaction.getUser().getId(), this);
+    DiscordModalManager.INSTANCE.setCurrentUserModal(interaction.getUser().getId(), this);
 
     if (!hasSelectionStep()) {
       replyModal(interaction, done);
@@ -210,7 +212,7 @@ public abstract class DiscordStepChannelCreationModal {
    * @return The built Modal object.
    */
   private @NotNull Modal buildModal() {
-    final Builder builder = Modal.create(id, title);
+    final Builder builder = Modal.create(getId(), title);
 
     for (final ActionComponent component : buildModalComponents().getComponents()) {
       builder.addActionRow(component);
@@ -448,5 +450,13 @@ public abstract class DiscordStepChannelCreationModal {
    */
   public final boolean hasSelectionStep() {
     return getSteps().stream().anyMatch(ModalStep::hasSelectionStep);
+  }
+
+  private String getId0() {
+    return ChannelCreationModalProcessor.getModalId(
+        Objects.requireNonNull(
+            AnnotationUtils.findAnnotation(getClass(), ChannelCreationModal.class)
+        )
+    );
   }
 }

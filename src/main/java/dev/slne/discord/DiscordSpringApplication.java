@@ -8,8 +8,9 @@ import org.springframework.context.ConfigurableApplicationContext;
 /**
  * The type Discord spring application.
  */
-@SurfSpringApplication(scanBasePackages = "dev.slne.discord", scanFeignBasePackages = "dev.slne.discord")
+@SurfSpringApplication(scanBasePackages = DiscordSpringApplication.BASE_PACKAGE, scanFeignBasePackages = DiscordSpringApplication.BASE_PACKAGE)
 public class DiscordSpringApplication {
+	public static final String BASE_PACKAGE = "dev.slne.discord";
 
 	/**
 	 * Run.

@@ -32,7 +32,6 @@ public class DiscordBot {
 	private ListenerManager listenerManager;
 	private TicketManager ticketManager;
 
-	private DiscordModalManager modalManager;
 	private DiscordCommandManager commandManager;
 	private DiscordButtonManager buttonManager;
 	private DiscordSelectMenuManager selectMenuManager;
@@ -71,7 +70,6 @@ public class DiscordBot {
 
 		commandManager = new DiscordCommandManager();
 		listenerManager = new ListenerManager();
-		modalManager = new DiscordModalManager();
 		ticketManager = new TicketManager();
 		selectMenuManager = new DiscordSelectMenuManager();
 		buttonManager = new DiscordButtonManager();

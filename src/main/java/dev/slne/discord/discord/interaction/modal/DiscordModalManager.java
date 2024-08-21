@@ -12,29 +12,28 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 /**
  * The type Discord modal manager.
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DiscordModalManager {
 
-	private final Map<String, Class<? extends DiscordModal>> modals;
-	private final Object2ObjectMap<String, Supplier<DiscordStepChannelCreationModal>> advancedModals;
-	private final Object2ObjectMap<String, DiscordStepChannelCreationModal> currentUserModals;
+	private final Map<String, Class<? extends DiscordModal>> modals = new ConcurrentHashMap<>();
+	private final Object2ObjectMap<String, Supplier<DiscordStepChannelCreationModal>> advancedModals = new Object2ObjectOpenHashMap<>();
+	private final Object2ObjectMap<String, DiscordStepChannelCreationModal> currentUserModals = new Object2ObjectOpenHashMap<>();
 
-	/**
-	 * Create a new modal manager
-	 */
-	public DiscordModalManager() {
-		this.modals = new HashMap<>();
-		this.advancedModals = new Object2ObjectOpenHashMap<>();
-		this.currentUserModals = new Object2ObjectOpenHashMap<>();
+	public static final DiscordModalManager INSTANCE = new DiscordModalManager();
 
+	{
 		registerModal(WhitelistTicketModal.class);
 //		registerModal(UnbanTicketModal.class);
-		registerAdvancedModal(ReportTicketChannelCreationModal::new);
-		registerAdvancedModal(UnbanTicketChannelCreationModal::new);
+//		registerAdvancedModal(ReportTicketChannelCreationModal::new);
+//		registerAdvancedModal(UnbanTicketChannelCreationModal::new);
 	}
 
 	/**
@@ -57,10 +56,7 @@ public class DiscordModalManager {
 		this.modals.put(customId, modalClass);
 	}
 
-	public void registerAdvancedModal(Supplier<DiscordStepChannelCreationModal> creator) {
-		final DiscordStepChannelCreationModal modal = creator.get();
-		final String modalId = modal.getId();
-
+	public void registerAdvancedModal(String modalId, Supplier<DiscordStepChannelCreationModal> creator) {
 		advancedModals.putIfAbsent(modalId, creator);
 	}
 
