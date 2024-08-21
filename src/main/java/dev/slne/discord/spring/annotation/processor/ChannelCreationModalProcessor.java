@@ -4,6 +4,7 @@ import dev.slne.discord.DiscordSpringApplication;
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager;
 import dev.slne.discord.discord.interaction.modal.step.DiscordStepChannelCreationModal;
 import dev.slne.discord.spring.annotation.ChannelCreationModal;
+import dev.slne.discord.ticket.TicketType;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
@@ -65,5 +66,9 @@ public class ChannelCreationModalProcessor {
   public static String getModalId(ChannelCreationModal annotation) {
     final String modalId = annotation.modalId();
     return modalId.isEmpty() ? annotation.ticketType().name() : modalId;
+  }
+
+  public static TicketType getTicketType(ChannelCreationModal annotation) {
+    return annotation.ticketType();
   }
 }

@@ -21,7 +21,7 @@ public class GatewayIntents {
 	 *
 	 * @return The gateway intents.
 	 */
-	public static Collection<GatewayIntent> getGatewayIntents() {
+	public static List<GatewayIntent> getGatewayIntents() {
 		return List.of(
 				// Emoji
 				GatewayIntent.GUILD_EMOJIS_AND_STICKERS,

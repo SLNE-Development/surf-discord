@@ -29,6 +29,7 @@ public class DiscordModalListener extends ListenerAdapter {
         modalId, event.getUser().getId());
 
     if (advancedModal != null) {
+      event.deferReply(true).queue();
       advancedModal.handleUserSubmitModal(event);
       return;
     }

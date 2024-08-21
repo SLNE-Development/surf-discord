@@ -14,7 +14,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 public class UnbanTicketChannelCreationModal extends DiscordStepChannelCreationModal {
 
   public UnbanTicketChannelCreationModal() {
-    super(TicketType.UNBAN.getName() + "  erstellen", TicketType.UNBAN);
+    super(TicketType.UNBAN.getName() + "  erstellen");
   }
 
   @Override

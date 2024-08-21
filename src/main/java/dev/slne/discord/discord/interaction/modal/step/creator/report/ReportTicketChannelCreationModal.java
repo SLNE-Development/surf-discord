@@ -13,7 +13,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 public class ReportTicketChannelCreationModal extends DiscordStepChannelCreationModal {
 
   public ReportTicketChannelCreationModal() {
-    super(TicketType.REPORT.getName() + " erstellen", TicketType.REPORT);
+    super(TicketType.REPORT.getName() + " erstellen");
   }
 
   @Override

@@ -1,6 +1,5 @@
 package dev.slne.discord.discord.interaction.modal.step;
 
-import dev.slne.discord.DiscordBot;
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager;
 import dev.slne.discord.discord.interaction.modal.step.ModalStep.ModalStepInputVerificationException;
 import dev.slne.discord.discord.interaction.modal.step.ModalStep.ModuleStepChannelCreationException;
@@ -55,7 +54,9 @@ public abstract class DiscordStepChannelCreationModal {
   private final String id = getId0();
   @Nonnull
   private final String title;
-  private final TicketType ticketType;
+
+  @Getter(lazy = true)
+  private final TicketType ticketType = getTicketType0();
 
   @Getter(lazy = true)
   private final LinkedList<ModalStep> steps = buildSteps().getSteps();
@@ -63,13 +64,10 @@ public abstract class DiscordStepChannelCreationModal {
   /**
    * Constructs a new DiscordStepChannelCreationModal with the specified parameters.
    *
-   * @param title      The title of the modal.
-   * @param ticketType The type of ticket associated with this modal.
+   * @param title The title of the modal.
    */
-  protected DiscordStepChannelCreationModal(@Nonnull String title,
-      TicketType ticketType) {
+  protected DiscordStepChannelCreationModal(@Nonnull String title) {
     this.title = title;
-    this.ticketType = ticketType;
   }
 
   /**
@@ -190,7 +188,7 @@ public abstract class DiscordStepChannelCreationModal {
     verifyModalInput(event, modalSteps);
     preChannelCreation(event, modalSteps);
 
-    final Ticket ticket = new Ticket(event.getGuild(), user, ticketType);
+    final Ticket ticket = new Ticket(event.getGuild(), user, getTicketType());
     ticket.openFromButton()
         .thenAcceptAsync(result -> postChannelCreated(ticket, result, event, user))
         .exceptionally(e -> {
@@ -203,7 +201,7 @@ public abstract class DiscordStepChannelCreationModal {
   }
 
   private boolean checkTicketExists(Guild guild, User user) {
-    return TicketChannelUtil.checkTicketExistsFast(guild, ticketType, user);
+    return TicketChannelUtil.checkTicketExistsFast(guild, getTicketType(), user);
   }
 
   /**
@@ -288,7 +286,7 @@ public abstract class DiscordStepChannelCreationModal {
       try {
         step.runVerifyModalInput(event);
       } catch (ModalStepInputVerificationException e) {
-        event.reply(e.getMessage()).setEphemeral(true).queue();
+        event.deferReply(true).setContent(e.getMessage()).queue();
         return;
       }
     }
@@ -308,7 +306,7 @@ public abstract class DiscordStepChannelCreationModal {
       try {
         step.runPreChannelCreationAsync();
       } catch (ModuleStepChannelCreationException e) {
-        event.reply(e.getMessage()).setEphemeral(true).queue();
+        event.deferReply(true).setContent(e.getMessage()).queue();
         return;
       }
     }
@@ -368,7 +366,7 @@ public abstract class DiscordStepChannelCreationModal {
   private void handleSuccess(TextChannel channel, ModalInteractionEvent event, User user) {
     final StringBuilder message = new StringBuilder();
     message.append("Dein \"");
-    message.append(ticketType.getName());
+    message.append(getTicketType().getName());
     message.append("\"-Ticket wurde erfolgreich erstellt! ");
 
     if (channel != null) {
@@ -454,6 +452,14 @@ public abstract class DiscordStepChannelCreationModal {
 
   private String getId0() {
     return ChannelCreationModalProcessor.getModalId(
+        Objects.requireNonNull(
+            AnnotationUtils.findAnnotation(getClass(), ChannelCreationModal.class)
+        )
+    );
+  }
+
+  private TicketType getTicketType0() {
+    return ChannelCreationModalProcessor.getTicketType(
         Objects.requireNonNull(
             AnnotationUtils.findAnnotation(getClass(), ChannelCreationModal.class)
         )
