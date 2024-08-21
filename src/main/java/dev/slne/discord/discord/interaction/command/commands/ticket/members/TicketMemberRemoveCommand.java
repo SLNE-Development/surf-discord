@@ -4,7 +4,7 @@ import dev.slne.data.api.DataApi;
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.discord.guild.permission.CommandPermission;
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand;
-import dev.slne.discord.ticket.TicketChannel;
+import dev.slne.discord.ticket.TicketChannelUtil;
 import dev.slne.discord.ticket.member.TicketMember;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -86,7 +86,7 @@ public class TicketMemberRemoveCommand extends TicketCommand {
 					return;
 				}
 
-				TicketChannel.removeTicketMember(getTicket(), ticketMember).thenAcceptAsync(v -> {
+				TicketChannelUtil.removeTicketMember(getTicket(), ticketMember).thenAcceptAsync(v -> {
 					hook.editOriginal("Der Nutzer wurde entfernt.").queue();
 					getChannel().sendMessage(
 										user.getAsMention() + " wurde von " + interaction.getUser().getAsMention() + " entfernt.")

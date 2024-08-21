@@ -4,6 +4,7 @@ import dev.slne.discord.DiscordBot;
 import dev.slne.discord.discord.interaction.modal.step.ModalStep.ModalStepInputVerificationException;
 import dev.slne.discord.discord.interaction.modal.step.ModalStep.ModuleStepChannelCreationException;
 import dev.slne.discord.ticket.Ticket;
+import dev.slne.discord.ticket.TicketChannelUtil;
 import dev.slne.discord.ticket.TicketType;
 import dev.slne.discord.ticket.result.TicketCreateResult;
 import java.util.LinkedList;
@@ -12,8 +13,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nonnull;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
@@ -100,6 +103,13 @@ public abstract class DiscordStepChannelCreationModal {
               });
           return null;
         });
+
+    if (checkTicketExists(interaction.getGuild(), interaction.getUser())) {
+      reply(interaction,
+          "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo.");
+      done.complete(null);
+      return done;
+    }
 
     DiscordBot.getInstance().getModalManager()
         .setCurrentUserModal(interaction.getUser().getId(), this);
@@ -188,6 +198,10 @@ public abstract class DiscordStepChannelCreationModal {
           LOGGER.error("Error while creating ticket", e);
           return null;
         });
+  }
+
+  private boolean checkTicketExists(Guild guild, User user) {
+    return TicketChannelUtil.checkTicketExistsFast(guild, ticketType, user);
   }
 
   /**

@@ -49,6 +49,4 @@ public class DiscordModalListener extends ListenerAdapter {
 		)).setEphemeral(true).queue();
 	}
 
-
-
 }

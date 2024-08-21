@@ -4,7 +4,7 @@ import dev.slne.data.api.DataApi;
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.discord.guild.permission.CommandPermission;
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand;
-import dev.slne.discord.ticket.TicketChannel;
+import dev.slne.discord.ticket.TicketChannelUtil;
 import dev.slne.discord.ticket.member.TicketMember;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -83,7 +83,7 @@ public class TicketMemberAddCommand extends TicketCommand {
 					return;
 				}
 
-				TicketChannel.addTicketMember(getTicket(), newTicketMember).thenAcceptAsync(v -> {
+				TicketChannelUtil.addTicketMember(getTicket(), newTicketMember).thenAcceptAsync(v -> {
 					hook.editOriginal("Der Nutzer wurde erfolgreich hinzugefügt.").queue();
 					getChannel().sendMessage(user.getAsMention()).setEmbeds(getAddedEmbed(interaction.getUser()))
 								.queue();

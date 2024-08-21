@@ -29,7 +29,6 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.PermissionOverrideAction;
-import org.gradle.internal.impldep.org.joda.time.DateTime;
 
 import java.awt.Color;
 import java.time.ZoneId;
@@ -255,7 +254,7 @@ public class Ticket {
 	public CompletableFuture<MessageEmbed> getTicketClosedEmbed() {
 		CompletableFuture<MessageEmbed> future = new CompletableFuture<>();
 
-		TicketChannel.getTicketName(this).thenAcceptAsync(ticketName -> {
+		TicketChannelUtil.getTicketName(this).thenAcceptAsync(ticketName -> {
 			if (ticketName == null) {
 				future.complete(null);
 				return;
@@ -557,7 +556,7 @@ public class Ticket {
 	private CompletableFuture<TicketCreateResult> open(Runnable runnable) {
 		CompletableFuture<TicketCreateResult> future = new CompletableFuture<>();
 
-		CompletableFuture.runAsync(() -> TicketChannel.getTicketName(this).thenAcceptAsync(ticketName -> {
+		CompletableFuture.runAsync(() -> TicketChannelUtil.getTicketName(this).thenAcceptAsync(ticketName -> {
 			if (ticketName == null) {
 				future.complete(TicketCreateResult.ERROR);
 				return;
@@ -585,7 +584,7 @@ public class Ticket {
 			}
 
 			getTicketAuthor().queue(
-					author -> TicketChannel.checkTicketExists(ticketName, channelCategory, getTicketType(), author)
+					author -> TicketChannelUtil.checkTicketExists(ticketName, channelCategory, getTicketType(), author)
 										   .thenAcceptAsync(ticketExistsBoolean -> {
 											   boolean ticketExists = ticketExistsBoolean;
 
@@ -651,7 +650,7 @@ public class Ticket {
 					return;
 				}
 
-				TicketChannel.deleteTicketChannel(this).thenAcceptAsync(v -> {
+				TicketChannelUtil.deleteTicketChannel(this).thenAcceptAsync(v -> {
 					future.complete(TicketCloseResult.SUCCESS);
 
 					sendTicketClosedMessages().thenAcceptAsync(v1 -> {

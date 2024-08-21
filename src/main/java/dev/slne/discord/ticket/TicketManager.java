@@ -6,6 +6,8 @@ import lombok.Getter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jetbrains.annotations.UnmodifiableView;
 
 /**
  * The type Ticket manager.
@@ -16,7 +18,6 @@ public class TicketManager {
 	private final List<Ticket> ticketQueue;
 	private boolean fetched;
 
-	@Getter
 	private List<Ticket> tickets;
 
 	/**
@@ -63,7 +64,7 @@ public class TicketManager {
 	 * @return the ticket
 	 */
 	public Ticket getTicket(String channelId) {
-		return tickets.stream()
+		return getTickets().stream()
 					  .filter(ticket -> ticket.getChannelId() != null && ticket.getChannelId().equals(channelId))
 					  .findFirst().orElse(null);
 	}
@@ -105,6 +106,14 @@ public class TicketManager {
 	 * @return The ticket
 	 */
 	public Ticket getTicketById(UUID ticketId) {
-		return tickets.stream().filter(ticket -> ticket.getTicketId().equals(ticketId)).findFirst().orElse(null);
+		return getTickets().stream()
+				.filter(ticket -> ticket.getTicketId().equals(ticketId))
+				.findFirst()
+				.orElse(null);
+	}
+
+	@Unmodifiable
+	public List<Ticket> getTickets() {
+		return List.copyOf(tickets);
 	}
 }

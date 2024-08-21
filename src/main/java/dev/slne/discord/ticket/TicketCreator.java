@@ -54,7 +54,7 @@ public class TicketCreator {
 			CompletableFuture<TicketCreateResult> future, Ticket ticket, String ticketName,
 			Category channelCategory, Runnable runnable
 	) {
-		TicketChannel.createTicketChannel(ticket, ticketName, channelCategory)
+		TicketChannelUtil.createTicketChannel(ticket, ticketName, channelCategory)
 					 .thenAcceptAsync(ticketChannelCreateResult -> {
 						 if (ticketChannelCreateResult == null) {
 							 future.complete(TicketCreateResult.ERROR);
