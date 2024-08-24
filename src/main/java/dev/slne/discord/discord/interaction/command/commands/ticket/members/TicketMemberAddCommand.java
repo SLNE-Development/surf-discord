@@ -1,123 +1,118 @@
 package dev.slne.discord.discord.interaction.command.commands.ticket.members;
 
-import dev.slne.data.api.DataApi;
-import dev.slne.discord.DiscordBot;
-import dev.slne.discord.discord.guild.permission.CommandPermission;
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand;
-import dev.slne.discord.ticket.TicketChannelUtil;
+import dev.slne.discord.exception.command.CommandException;
+import dev.slne.discord.exception.ticket.member.TicketAddMemberException;
+import dev.slne.discord.guild.permission.CommandPermission;
+import dev.slne.discord.spring.annotation.DiscordCommandMeta;
+import dev.slne.discord.spring.service.ticket.TicketService;
+import dev.slne.discord.ticket.TicketChannelHelper;
 import dev.slne.discord.ticket.member.TicketMember;
+import java.awt.Color;
+import java.time.Instant;
+import java.util.List;
+import javax.annotation.Nonnull;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-
-import javax.annotation.Nonnull;
-import java.awt.Color;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 
 /**
  * The type Ticket member add command.
  */
+@DiscordCommandMeta(name = "add", description = "Füge einen Nutzer zu einem Ticket hinzu.", permission = CommandPermission.TICKET_ADD_USER)
 public class TicketMemberAddCommand extends TicketCommand {
 
-	/**
-	 * Creates a new TicketMemberAddCommand.
-	 */
-	public TicketMemberAddCommand() {
-		super("add", "Füge einen Nutzer zu einem Ticket hinzu.");
-	}
+  private static final String USER_OPTION = "user";
+  private final JDA jda;
+  private final TicketChannelHelper ticketChannelHelper;
 
-	@Override
-	public @Nonnull List<SubcommandData> getSubCommands() {
-		return new ArrayList<>();
-	}
+  @Autowired
+  public TicketMemberAddCommand(JDA jda, TicketChannelHelper ticketChannelHelper,
+      TicketService ticketService) {
+    super(ticketService);
+    this.jda = jda;
+    this.ticketChannelHelper = ticketChannelHelper;
+  }
 
-	@Override
-	public @Nonnull List<OptionData> getOptions() {
-		List<OptionData> options = new ArrayList<>();
+  @Override
+  public @Nonnull List<OptionData> getOptions() {
+    return List.of(
+        new OptionData(OptionType.USER, USER_OPTION, "Der Nutzer, welcher hinzugefügt werden soll.",
+            true,
+            false)
+    );
+  }
 
-		options.add(new OptionData(OptionType.USER, "user", "Der Nutzer, der hinzugefügt werden soll.", true, false));
+  @Override
+  public void internalExecute(SlashCommandInteractionEvent interaction, InteractionHook hook)
+      throws CommandException {
+    final OptionMapping userOption = interaction.getOption(USER_OPTION);
 
-		return options;
-	}
+    if (userOption == null) {
+      throw new CommandException("Du musst einen Nutzer angeben.");
+    }
 
-	@Override
-	public @Nonnull CommandPermission getPermission() {
-		return CommandPermission.TICKET_ADD_USER;
-	}
+    final User user = userOption.getAsUser();
 
-	@Override
-	public void execute(SlashCommandInteractionEvent interaction) {
-		interaction.deferReply(true).queue(hook -> {
-			OptionMapping userOption = interaction.getOption("user");
+    if (user.equals(jda.getSelfUser())) {
+      throw new CommandException("Du kannst den Bot nicht hinzufügen.");
+    }
 
-			if (userOption == null) {
-				hook.editOriginal("Du musst einen Nutzer angeben.").queue();
-				return;
-			}
+    final TicketMember ticketMember = getTicket().getActiveTicketMember(user);
 
-			User user = userOption.getAsUser();
+    if (ticketMember != null) {
+      throw new CommandException("Dieser Nutzer ist bereits in diesem Ticket.");
+    }
 
-			if (user.equals(DiscordBot.getInstance().getJda().getSelfUser())) {
-				hook.editOriginal("Du kannst den Bot nicht hinzufügen.").queue();
-				return;
-			}
+    try {
+      addTicketMember(user, interaction.getUser(), hook);
+    } catch (TicketAddMemberException e) {
+      throw new CommandException("Der Nutzer konnte nicht hinzugefügt werden.", e);
+    }
+  }
 
-			TicketMember ticketMember = getTicket().getActiveTicketMember(user);
+  @Async
+  protected void addTicketMember(final User user, final User executor, InteractionHook hook)
+      throws CommandException, TicketAddMemberException {
+    final TicketMember newTicketMember = TicketMember.createFromTicket(getTicket(), user, executor);
 
-			if (ticketMember != null) {
-				hook.editOriginal("Dieser Nutzer ist bereits in diesem Ticket.").queue();
-				return;
-			}
+    final TicketMember addedMember = getTicket().addTicketMember(newTicketMember).join();
 
-			TicketMember newTicketMember = new TicketMember(getTicket(), user, interaction.getUser());
-			getTicket().addTicketMember(newTicketMember).thenAcceptAsync(createdTicketMember -> {
-				if (createdTicketMember == null) {
-					hook.editOriginal("Der Nutzer konnte nicht hinzugefügt werden.").queue();
-					return;
-				}
+    if (addedMember == null) {
+      throw new CommandException("Der Nutzer konnte nicht hinzugefügt werden.");
+    }
 
-				TicketChannelUtil.addTicketMember(getTicket(), newTicketMember).thenAcceptAsync(v -> {
-					hook.editOriginal("Der Nutzer wurde erfolgreich hinzugefügt.").queue();
-					getChannel().sendMessage(user.getAsMention()).setEmbeds(getAddedEmbed(interaction.getUser()))
-								.queue();
-				}).exceptionally(exception -> {
-					DataApi.getDataInstance().logError(getClass(), "Error while adding ticket member", exception);
-					hook.editOriginal("Der Nutzer konnte nicht hinzugefügt werden.").queue();
-					return null;
-				});
-			}).exceptionally(exception -> {
-				DataApi.getDataInstance().logError(getClass(), "Error while adding ticket member", exception);
-				hook.editOriginal("Der Nutzer konnte nicht hinzugefügt werden.").queue();
-				return null;
-			});
-		});
-	}
+    ticketChannelHelper.addTicketMember(getTicket(), addedMember).join();
+    hook.editOriginal("Der Nutzer wurde erfolgreich hinzugefügt.").queue();
+    getChannel().sendMessage(user.getAsMention())
+        .setEmbeds(getAddedEmbed(executor))
+        .queue();
+  }
 
-	/**
-	 * Returns the embed that is sent when a user is added to a ticket.
-	 *
-	 * @param adder the adder
-	 *
-	 * @return The embed that is sent when a user is added to a ticket.
-	 */
-	public MessageEmbed getAddedEmbed(User adder) {
-		EmbedBuilder builder = new EmbedBuilder();
-
-		builder.setTitle("Willkommen im Ticket!");
-		builder.setDescription(
-				"Du wurdest zu einem Ticket hinzugefügt. Bitte sieh dir den Verlauf des Tickets an und warte auf eine Nachricht eines Teammitglieds.");
-		builder.setTimestamp(Instant.now());
-		builder.setColor(Color.WHITE);
-		builder.setFooter("Hinzugefügt von " + adder.getName(), adder.getAvatarUrl());
-
-		return builder.build();
-	}
-
+  /**
+   * Returns the embed sent when a user is added to a ticket.
+   *
+   * @param adder the adder
+   * @return The embed that is sent when a user is added to a ticket.
+   */
+  public MessageEmbed getAddedEmbed(@NotNull User adder) {
+    return new EmbedBuilder()
+        .setTitle("Willkommen im Ticket!")
+        .setDescription(
+            "Du wurdest zu einem Ticket hinzugefügt. Bitte sieh dir den Verlauf des Tickets an und warte auf eine Nachricht eines Teammitglieds."
+        )
+        .setTimestamp(Instant.now())
+        .setColor(Color.WHITE)
+        .setFooter("Hinzugefügt von " + adder.getName(), adder.getAvatarUrl())
+        .build();
+  }
 }

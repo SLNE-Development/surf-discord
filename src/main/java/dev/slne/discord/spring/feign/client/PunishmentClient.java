@@ -1,6 +1,7 @@
-package dev.slne.discord.punishment;
+package dev.slne.discord.spring.feign.client;
 
 import dev.slne.discord.datasource.API;
+import dev.slne.discord.spring.feign.dto.PunishmentBanDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,6 @@ public interface PunishmentClient {
 	 * @return the ban by punishment id
 	 */
 	@GetMapping(value = API.PUNISHMENT_BY_PUNISHMENT_ID)
-	PunishmentBan getBanByPunishmentId(@PathVariable String punishment_id);
+	PunishmentBanDTO getBanByPunishmentId(@PathVariable("punishment_id") String punishmentId);
 
 }

@@ -7,18 +7,6 @@ import dev.slne.discord.DiscordBot;
 import dev.slne.discord.datasource.Times;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.message.attachment.TicketMessageAttachment;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.Message.Attachment;
-import net.dv8tion.jda.api.entities.MessageReference;
-import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.requests.RestAction;
-
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -26,6 +14,23 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Singular;
+import lombok.ToString;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.Message.Attachment;
+import net.dv8tion.jda.api.entities.MessageReference;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.requests.RestAction;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The type Ticket message.
@@ -33,327 +38,318 @@ import java.util.concurrent.CompletableFuture;
 @Getter
 @ToString
 @EqualsAndHashCode
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
+@Builder
 public class TicketMessage {
 
-	@JsonProperty("id")
-	private long id;
+  @JsonProperty("id")
+  private long id;
 
-	@JsonProperty("ticket_id")
-	private UUID ticketId;
+  @JsonProperty("ticket_id")
+  private UUID ticketId;
 
-	@JsonProperty("content")
-	private String jsonContent;
+  @JsonProperty("content")
+  private String jsonContent;
 
-	@JsonProperty("message_id")
-	private String messageId;
+  @JsonProperty("message_id")
+  private String messageId;
 
-	@JsonProperty("author_id")
-	private String authorId;
+  @JsonProperty("author_id")
+  private String authorId;
 
-	@JsonProperty("author_name")
-	private String authorName;
+  @JsonProperty("author_name")
+  private String authorName;
 
-	@JsonProperty("author_avatar_url")
-	private String authorAvatarUrl;
+  @JsonProperty("author_avatar_url")
+  private String authorAvatarUrl;
 
-	@JsonProperty("message_created_at")
-	private ZonedDateTime messageCreatedAt;
+  @JsonProperty("message_created_at")
+  private ZonedDateTime messageCreatedAt;
 
-	@JsonProperty("message_edited_at")
-	private ZonedDateTime messageEditedAt;
+  @JsonProperty("message_edited_at")
+  private ZonedDateTime messageEditedAt;
 
-	@JsonProperty("message_deleted_at")
-	private ZonedDateTime messageDeletedAt;
+  @JsonProperty("message_deleted_at")
+  private ZonedDateTime messageDeletedAt;
 
-	@JsonProperty("references_message_id")
-	private String referencesMessageId;
+  @JsonProperty("references_message_id")
+  private String referencesMessageId;
 
-	@JsonProperty("attachments")
-	private List<TicketMessageAttachment> attachments;
+  @Singular
+  @JsonProperty("attachments")
+  private List<TicketMessageAttachment> attachments = new ArrayList<>();
 
-	@JsonProperty("bot_message")
-	private boolean botMessage;
+  @JsonProperty("bot_message")
+  private boolean botMessage;
 
-	/**
-	 * Constructor for a ticket message
-	 *
-	 * @param ticket  the ticket
-	 * @param message The message to create the ticket message from
-	 */
-	public TicketMessage(Ticket ticket, Message message) {
-		this.ticketId = ticket.getTicketId();
+  /**
+   * Constructor for a ticket message
+   *
+   * @param ticket  the ticket
+   * @param message The message to create the ticket message from
+   */
+  public static TicketMessage fromTicketAndMessage(Ticket ticket, Message message) {
+    return TicketMessage.builder()
+        .ticketId(ticket.getTicketId())
+        .messageId(message.getId())
+        .jsonContent(message.getContentDisplay())
+        .authorId(message.getAuthor().getId())
+        .authorName(message.getAuthor().getName())
+        .authorAvatarUrl(message.getAuthor().getAvatarUrl())
+        .messageCreatedAt(getTimeAt(message.getTimeCreated()))
+        .messageEditedAt(getTimeAt(message.getTimeEdited()))
+        .referencesMessageId(mapNullable(message.getMessageReference(), MessageReference::getMessageId))
+        .attachments(
+            message.getAttachments().stream().map(attachment -> TicketMessageAttachment.builder()
+                    .name(attachment.getFileName())
+                    .url(attachment.getUrl())
+                    .extension(attachment.getFileExtension())
+                    .size(attachment.getSize())
+                    .description(attachment.getDescription())
+                    .build())
+                .toList())
+        .botMessage(message.getAuthor().isBot())
+        .build();
+  }
 
-		this.messageId = message.getId();
-		this.jsonContent = message.getContentDisplay();
+  @Contract("null -> null")
+  private static ZonedDateTime getTimeAt(@Nullable OffsetDateTime time) {
+    return mapNullable(time, time1 -> Times.convertFromLocalDateTime(time1.toLocalDateTime()) );
+  }
 
-		this.authorId = message.getAuthor().getId();
-		this.authorName = message.getAuthor().getName();
-		this.authorAvatarUrl = message.getAuthor().getAvatarUrl();
+  private static <T, R> R mapNullable(T value, Function<T, R> mapper) {
+    return value != null ? mapper.apply(value) : null;
+  }
 
-		LocalDateTime createdUTC = message.getTimeCreated().toLocalDateTime();
-		this.messageCreatedAt = Times.convertFromLocalDateTime(createdUTC);
+  /**
+   * Copy ticket message.
+   *
+   * @param clone the clone
+   * @return the ticket message
+   */
+  public static TicketMessage copy(TicketMessage clone) {
+    TicketMessage ticketMessage = new TicketMessage();
 
-		OffsetDateTime timeEdited = message.getTimeEdited();
-		LocalDateTime editedUTC = timeEdited != null ? timeEdited.toLocalDateTime() : null;
-		this.messageEditedAt = editedUTC != null ? Times.convertFromLocalDateTime(editedUTC) : null;
+    ticketMessage.ticketId = clone.ticketId;
+    ticketMessage.messageId = clone.messageId;
+    ticketMessage.jsonContent = clone.jsonContent;
+    ticketMessage.authorId = clone.authorId;
+    ticketMessage.authorName = clone.authorName;
+    ticketMessage.authorAvatarUrl = clone.authorAvatarUrl;
+    ticketMessage.messageCreatedAt = clone.messageCreatedAt;
+    ticketMessage.messageEditedAt = clone.messageEditedAt;
+    ticketMessage.messageDeletedAt = clone.messageDeletedAt;
+    ticketMessage.referencesMessageId = clone.referencesMessageId;
+    ticketMessage.attachments = new ArrayList<>(clone.attachments);
+    ticketMessage.botMessage = clone.botMessage;
 
-		TextChannel channel = ticket.getChannel();
-		MessageReference reference = message.getMessageReference();
-		if (reference != null && channel != null && reference.getChannel() != null) {
-			reference.resolve().queue(
-					referencedMessage -> this.referencesMessageId = referencedMessage.getId(),
-					failure -> {
-						DataApi.getDataInstance().logError(getClass(), "Failed to resolve message reference", failure);
-					}
-			);
-		}
+    return ticketMessage;
+  }
 
-		this.attachments = new ArrayList<>();
-		for (Attachment attachment : message.getAttachments()) {
-			String name = attachment.getFileName();
-			String url = attachment.getUrl();
-			String extension = attachment.getFileExtension();
-			int size = attachment.getSize();
+  /**
+   * Returns a ticket message from a message id
+   *
+   * @param id the id
+   * @return the ticket message
+   */
+  public static TicketMessage getByMessageId(long id) {
+    return DiscordBot.getInstance().getTicketManager().getTickets().stream()
+        .map(Ticket::getMessages)
+        .filter(Objects::nonNull).flatMap(List::stream).filter(message -> message.getId() == id)
+        .findFirst().orElse(null);
+  }
 
-			String description = attachment.getDescription();
+  /**
+   * Delete a ticket message the message id
+   *
+   * @return the {@link CompletableFuture}
+   */
+  public CompletableFuture<TicketMessage> delete() {
+    CompletableFuture<TicketMessage> future = new CompletableFuture<>();
 
-			TicketMessageAttachment attachement = new TicketMessageAttachment(this, name, url, extension, size,
-																			  description
-			);
-			this.attachments.add(attachement);
-		}
+    CompletableFuture.runAsync(() -> {
+      if (this.messageDeletedAt != null) {
+        future.complete(this);
+        return;
+      }
 
-		this.botMessage = message.getAuthor().isBot();
-	}
+      TicketMessage newMessage = TicketMessage.copy(this);
+      newMessage.messageDeletedAt = ZonedDateTime.now();
 
-	/**
-	 * Copy ticket message.
-	 *
-	 * @param clone the clone
-	 *
-	 * @return the ticket message
-	 */
-	public static TicketMessage copy(TicketMessage clone) {
-		TicketMessage ticketMessage = new TicketMessage();
+      newMessage.create().thenAcceptAsync(future::complete).exceptionally(throwable -> {
+        DataApi.getDataInstance()
+            .logError(getClass(), "Ticket message could not be deleted", throwable);
+        future.complete(null);
+        return null;
+      });
+    });
 
-		ticketMessage.ticketId = clone.ticketId;
-		ticketMessage.messageId = clone.messageId;
-		ticketMessage.jsonContent = clone.jsonContent;
-		ticketMessage.authorId = clone.authorId;
-		ticketMessage.authorName = clone.authorName;
-		ticketMessage.authorAvatarUrl = clone.authorAvatarUrl;
-		ticketMessage.messageCreatedAt = clone.messageCreatedAt;
-		ticketMessage.messageEditedAt = clone.messageEditedAt;
-		ticketMessage.messageDeletedAt = clone.messageDeletedAt;
-		ticketMessage.referencesMessageId = clone.referencesMessageId;
-		ticketMessage.attachments = new ArrayList<>(clone.attachments);
-		ticketMessage.botMessage = clone.botMessage;
+    return future;
+  }
 
-		return ticketMessage;
-	}
+  /**
+   * Saves the ticket message
+   *
+   * @return True if the ticket message has been saved successfully, false
+   */
+  public CompletableFuture<TicketMessage> create() {
+    CompletableFuture<TicketMessage> future = new CompletableFuture<>();
+    Ticket ticket = getTicket();
 
-	/**
-	 * Returns a ticket message from a message id
-	 *
-	 * @param id the id
-	 *
-	 * @return the ticket message
-	 */
-	public static TicketMessage getByMessageId(long id) {
-		return DiscordBot.getInstance().getTicketManager().getTickets().stream().map(Ticket::getMessages)
-						 .filter(Objects::nonNull).flatMap(List::stream).filter(message -> message.getId() == id)
-						 .findFirst().orElse(null);
-	}
+    if (ticket == null) {
+      future.completeExceptionally(new IllegalStateException("Ticket not found"));
+      return future;
+    }
 
-	/**
-	 * Delete a ticket message
-	 * the message id
-	 *
-	 * @return the {@link CompletableFuture}
-	 */
-	public CompletableFuture<TicketMessage> delete() {
-		CompletableFuture<TicketMessage> future = new CompletableFuture<>();
+    UUID ticketId = ticket.getTicketId();
 
-		CompletableFuture.runAsync(() -> {
-			if (this.messageDeletedAt != null) {
-				future.complete(this);
-				return;
-			}
+    if (ticketId == null) {
+      future.completeExceptionally(new IllegalStateException("Ticket Id not found"));
+      return future;
+    }
 
-			TicketMessage newMessage = TicketMessage.copy(this);
-			newMessage.messageDeletedAt = ZonedDateTime.now();
+    TicketMessageService.INSTANCE.createTicketMessage(ticket, this)
+        .thenAcceptAsync(future::complete)
+        .exceptionally(exception -> {
+          future.completeExceptionally(exception);
+          return null;
+        });
 
-			newMessage.create().thenAcceptAsync(future::complete).exceptionally(throwable -> {
-				DataApi.getDataInstance().logError(getClass(), "Ticket message could not be deleted", throwable);
-				future.complete(null);
-				return null;
-			});
-		});
+    return future;
+  }
 
-		return future;
-	}
+  /**
+   * Updates the ticket message
+   *
+   * @param updatedMessage The updated message
+   * @return The future result
+   */
+  public CompletableFuture<TicketMessage> update(Message updatedMessage) {
+    CompletableFuture<TicketMessage> future = new CompletableFuture<>();
+    TicketMessage newTicketMessage = TicketMessage.copy(this);
 
-	/**
-	 * Saves the ticket message
-	 *
-	 * @return True if the ticket message has been saved successfully, false
-	 */
-	public CompletableFuture<TicketMessage> create() {
-		CompletableFuture<TicketMessage> future = new CompletableFuture<>();
-		Ticket ticket = getTicket();
+    newTicketMessage.jsonContent = updatedMessage.getContentDisplay();
+    newTicketMessage.messageCreatedAt =
+        Times.convertFromLocalDateTime(updatedMessage.getTimeCreated().toLocalDateTime());
 
-		if (ticket == null) {
-			future.completeExceptionally(new IllegalStateException("Ticket not found"));
-			return future;
-		}
+    OffsetDateTime timeEdited = updatedMessage.getTimeEdited();
+    newTicketMessage.messageEditedAt = updatedMessage.isEdited() && timeEdited != null
+        ? Times.convertFromLocalDateTime(timeEdited.toLocalDateTime())
+        : null;
 
-		UUID ticketId = ticket.getTicketId();
+    newTicketMessage.attachments = new ArrayList<>();
 
-		if (ticketId == null) {
-			future.completeExceptionally(new IllegalStateException("Ticket Id not found"));
-			return future;
-		}
+    for (Attachment attachment : updatedMessage.getAttachments()) {
+      String name = attachment.getFileName();
+      String url = attachment.getUrl();
+      String extension = attachment.getFileExtension();
+      int size = attachment.getSize();
 
-		TicketMessageService.INSTANCE.createTicketMessage(ticket, this).thenAcceptAsync(future::complete)
-									 .exceptionally(exception -> {
-										 future.completeExceptionally(exception);
-										 return null;
-									 });
+      String description = attachment.getDescription();
 
-		return future;
-	}
+      TicketMessageAttachment attachement = new TicketMessageAttachment(newTicketMessage, name, url,
+          extension,
+          size, description
+      );
+      newTicketMessage.attachments.add(attachement);
+    }
 
-	/**
-	 * Updates the ticket message
-	 *
-	 * @param updatedMessage The updated message
-	 *
-	 * @return The future result
-	 */
-	public CompletableFuture<TicketMessage> update(Message updatedMessage) {
-		CompletableFuture<TicketMessage> future = new CompletableFuture<>();
-		TicketMessage newTicketMessage = TicketMessage.copy(this);
+    newTicketMessage.create().thenAcceptAsync(future::complete).exceptionally(throwable -> {
+      DataApi.getDataInstance()
+          .logError(getClass(), "Ticket message could not be updated", throwable);
+      future.completeExceptionally(throwable);
+      return null;
+    });
 
-		newTicketMessage.jsonContent = updatedMessage.getContentDisplay();
-		newTicketMessage.messageCreatedAt =
-				Times.convertFromLocalDateTime(updatedMessage.getTimeCreated().toLocalDateTime());
+    return future;
+  }
 
-		OffsetDateTime timeEdited = updatedMessage.getTimeEdited();
-		newTicketMessage.messageEditedAt = updatedMessage.isEdited() && timeEdited != null
-				? Times.convertFromLocalDateTime(timeEdited.toLocalDateTime())
-				: null;
+  /**
+   * Gets message.
+   *
+   * @return the message
+   */
+  @JsonIgnore
+  public RestAction<Message> getMessage() {
+    TextChannel channel = getTicket().getChannel();
 
-		newTicketMessage.attachments = new ArrayList<>();
+    if (channel == null) {
+      return null;
+    }
 
-		for (Attachment attachment : updatedMessage.getAttachments()) {
-			String name = attachment.getFileName();
-			String url = attachment.getUrl();
-			String extension = attachment.getFileExtension();
-			int size = attachment.getSize();
+    return channel.retrieveMessageById(messageId);
+  }
 
-			String description = attachment.getDescription();
+  /**
+   * Gets author.
+   *
+   * @return the author
+   */
+  @JsonIgnore
+  public RestAction<User> getAuthor() {
+    if (authorId == null) {
+      return null;
+    }
 
-			TicketMessageAttachment attachement = new TicketMessageAttachment(newTicketMessage, name, url, extension,
-																			  size, description
-			);
-			newTicketMessage.attachments.add(attachement);
-		}
+    return DiscordBot.getInstance().getJda().retrieveUserById(authorId);
+  }
 
-		newTicketMessage.create().thenAcceptAsync(future::complete).exceptionally(throwable -> {
-			DataApi.getDataInstance().logError(getClass(), "Ticket message could not be updated", throwable);
-			future.completeExceptionally(throwable);
-			return null;
-		});
+  /**
+   * Gets references message.
+   *
+   * @return the referencesMessage
+   */
+  @JsonIgnore
+  public RestAction<Message> getReferencesMessage() {
+    if (referencesMessageId == null) {
+      return null;
+    }
 
-		return future;
-	}
+    TextChannel channel = getTicket().getChannel();
+    if (channel == null) {
+      return null;
+    }
 
-	/**
-	 * Gets message.
-	 *
-	 * @return the message
-	 */
-	@JsonIgnore
-	public RestAction<Message> getMessage() {
-		TextChannel channel = getTicket().getChannel();
+    return channel.retrieveMessageById(referencesMessageId);
+  }
 
-		if (channel == null) {
-			return null;
-		}
+  /**
+   * Gets ticket.
+   *
+   * @return the ticket
+   */
+  @JsonIgnore
+  public Ticket getTicket() {
+    return DiscordBot.getInstance().getTicketManager().getTicketById(ticketId);
+  }
 
-		return channel.retrieveMessageById(messageId);
-	}
+  /**
+   * Gets content.
+   *
+   * @return the content
+   */
+  @JsonIgnore
+  public CompletableFuture<String> getContent() {
+    CompletableFuture<String> future = new CompletableFuture<>();
 
-	/**
-	 * Gets author.
-	 *
-	 * @return the author
-	 */
-	@JsonIgnore
-	public RestAction<User> getAuthor() {
-		if (authorId == null) {
-			return null;
-		}
+    if (jsonContent != null) {
+      future.complete(jsonContent);
+      return future;
+    }
 
-		return DiscordBot.getInstance().getJda().retrieveUserById(authorId);
-	}
+    RestAction<Message> message = getMessage();
 
-	/**
-	 * Gets references message.
-	 *
-	 * @return the referencesMessage
-	 */
-	@JsonIgnore
-	public RestAction<Message> getReferencesMessage() {
-		if (referencesMessageId == null) {
-			return null;
-		}
+    if (message == null) {
+      future.complete(null);
+      return future;
+    }
 
-		TextChannel channel = getTicket().getChannel();
-		if (channel == null) {
-			return null;
-		}
+    message.queue(msg -> {
+      String content = msg.getContentDisplay();
+      future.complete(content);
+    });
 
-		return channel.retrieveMessageById(referencesMessageId);
-	}
-
-	/**
-	 * Gets ticket.
-	 *
-	 * @return the ticket
-	 */
-	@JsonIgnore
-	public Ticket getTicket() {
-		return DiscordBot.getInstance().getTicketManager().getTicketById(ticketId);
-	}
-
-	/**
-	 * Gets content.
-	 *
-	 * @return the content
-	 */
-	@JsonIgnore
-	public CompletableFuture<String> getContent() {
-		CompletableFuture<String> future = new CompletableFuture<>();
-
-		if (jsonContent != null) {
-			future.complete(jsonContent);
-			return future;
-		}
-
-		RestAction<Message> message = getMessage();
-
-		if (message == null) {
-			future.complete(null);
-			return future;
-		}
-
-		message.queue(msg -> {
-			String content = msg.getContentDisplay();
-			future.complete(content);
-		});
-
-		return future;
-	}
+    return future;
+  }
 }

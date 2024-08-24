@@ -1,56 +1,47 @@
 package dev.slne.discord.listener.message;
 
-import dev.slne.data.api.DataApi;
-import dev.slne.discord.DiscordBot;
+import dev.slne.discord.spring.annotation.DiscordListener;
+import dev.slne.discord.spring.service.ticket.TicketService;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.message.TicketMessage;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.channel.ChannelType;
-import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
-import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
-
 import javax.annotation.Nonnull;
+import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 
 /**
  * The type Message updated listener.
  */
-public class MessageUpdatedListener extends ListenerAdapter {
+@DiscordListener
+public class MessageUpdatedListener extends AbstractMessageListener<MessageUpdateEvent> {
 
-	@Override
-	public void onMessageUpdate(@Nonnull MessageUpdateEvent event) {
-		MessageChannelUnion channel = event.getChannel();
-		Message message = event.getMessage();
+  @Autowired
+  public MessageUpdatedListener(TicketService ticketService) {
+    super(ticketService);
+  }
 
-		if (!channel.getType().equals(ChannelType.TEXT)) {
-			return;
-		}
+  @Override
+  @Async
+  protected void handleEvent(MessageUpdateEvent event, Ticket ticket) {
+    if (event.getMessage().isWebhookMessage()) {
+      return;
+    }
 
-		if (event.getMessage().isWebhookMessage()) {
-			return;
-		}
+    final TicketMessage ticketMessage = ticket.getTicketMessage(event.getMessageId());
 
-		Ticket ticket = DiscordBot.getInstance().getTicketManager().getTicket(channel.getId());
+    if (ticketMessage == null) {
+      return;
+    }
 
-		if (ticket == null) {
-			return;
-		}
+    final TicketMessage updatedTicketMessage = ticketMessage.update(event.getMessage()).join();
 
-		TicketMessage ticketMessage = ticket.getTicketMessage(message.getId());
+    if (updatedTicketMessage != null) {
+      ticket.addRawTicketMessage(updatedTicketMessage);
+    }
+  }
 
-		if (ticketMessage == null) {
-			return;
-		}
-
-		ticketMessage.update(message).thenAcceptAsync(updatedTicketMessage -> {
-			if (updatedTicketMessage == null) {
-				return;
-			}
-
-			ticket.addRawTicketMessage(updatedTicketMessage);
-		}).exceptionally(throwable -> {
-			DataApi.getDataInstance().logError(getClass(), "Failed to update ticket message.", throwable);
-			return null;
-		});
-	}
+  @Override
+  public void onMessageUpdate(@Nonnull MessageUpdateEvent event) {
+    processEvent(event);
+  }
 }

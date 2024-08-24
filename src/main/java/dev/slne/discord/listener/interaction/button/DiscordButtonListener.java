@@ -1,34 +1,31 @@
 package dev.slne.discord.listener.interaction.button;
 
-import dev.slne.discord.DiscordBot;
-import dev.slne.discord.discord.interaction.button.DiscordButton;
-import dev.slne.discord.discord.interaction.button.DiscordButtonManager;
+import dev.slne.discord.spring.annotation.DiscordListener;
+import dev.slne.discord.spring.annotation.processor.DiscordButtonProcessor;
+import dev.slne.discord.spring.annotation.processor.DiscordButtonProcessor.DiscordButtonHandlerHolder;
+import javax.annotation.Nonnull;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-
-import javax.annotation.Nonnull;
 
 /**
  * The type Discord button listener.
  */
+@DiscordListener
 public class DiscordButtonListener extends ListenerAdapter {
 
-	private final DiscordButtonManager buttonManager;
+  private final DiscordButtonProcessor discordButtonProcessor;
 
-	/**
-	 * Instantiates a new Discord button listener.
-	 */
-	public DiscordButtonListener() {
-		this.buttonManager = DiscordBot.getInstance().getButtonManager();
-	}
+  public DiscordButtonListener(DiscordButtonProcessor discordButtonProcessor) {
+    this.discordButtonProcessor = discordButtonProcessor;
+  }
 
-	@Override
-	public void onButtonInteraction(@Nonnull ButtonInteractionEvent event) {
-		DiscordButton button = buttonManager.getButton(event.getButton().getId());
+  @Override
+  public void onButtonInteraction(@Nonnull ButtonInteractionEvent event) {
+    final DiscordButtonHandlerHolder holder = discordButtonProcessor.getHandler(
+        event.getButton().getId());
 
-		if (button != null) {
-			button.onClick(event);
-		}
-	}
-
+    if (holder != null) {
+      holder.getHandler().onClick(event);
+    }
+  }
 }

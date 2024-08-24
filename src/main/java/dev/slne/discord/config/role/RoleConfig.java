@@ -1,8 +1,8 @@
 package dev.slne.discord.config.role;
 
 import dev.slne.discord.config.discord.GuildConfig;
-import dev.slne.discord.discord.guild.permission.CommandPermission;
-import dev.slne.discord.discord.guild.permission.DiscordPermission;
+import dev.slne.discord.guild.permission.CommandPermission;
+import dev.slne.discord.guild.permission.DiscordPermission;
 import dev.slne.discord.ticket.TicketType;
 import lombok.Getter;
 import lombok.ToString;

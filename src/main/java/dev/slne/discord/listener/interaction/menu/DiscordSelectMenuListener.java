@@ -3,6 +3,7 @@ package dev.slne.discord.listener.interaction.menu;
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenu;
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenuManager;
+import dev.slne.discord.spring.annotation.DiscordListener;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
@@ -11,6 +12,7 @@ import javax.annotation.Nonnull;
 /**
  * The type Discord select menu listener.
  */
+@DiscordListener
 public class DiscordSelectMenuListener extends ListenerAdapter {
 
 	private final DiscordSelectMenuManager discordSelectMenuManager;

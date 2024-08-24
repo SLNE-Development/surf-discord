@@ -1,88 +1,84 @@
 package dev.slne.discord.discord.interaction.command.commands.whitelist;
 
 import dev.slne.discord.config.discord.GuildConfig;
-import dev.slne.discord.discord.guild.permission.CommandPermission;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-
-import javax.annotation.Nonnull;
+import dev.slne.discord.exception.command.CommandException;
+import dev.slne.discord.guild.permission.CommandPermission;
+import dev.slne.discord.spring.annotation.DiscordCommandMeta;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.scheduling.annotation.Async;
 
 /**
- * The type Whitelist role remove command.
+ * The type WhitelistDTO role remove command.
  */
+@DiscordCommandMeta(
+    name = "wlrole",
+    description = "Entfernt alle Benutzer aus der Whitelist Rolle.",
+    permission = CommandPermission.WHITELIST_ROLE
+)
 public class WhitelistRoleRemoveCommand extends DiscordCommand {
 
-	/**
-	 * Creates a new WhitelistRoleRemoveCommand.
-	 */
-	public WhitelistRoleRemoveCommand() {
-		super("wlrole", "Entfernt alle Benutzer aus der Whitelist Rolle.");
-	}
+  private static final ComponentLogger LOGGER = ComponentLogger.logger(
+      "WhitelistRoleRemoveCommand");
 
-	@Override
-	public @Nonnull List<SubcommandData> getSubCommands() {
-		return new ArrayList<>();
-	}
+  @Override
+  public void internalExecute(SlashCommandInteractionEvent interaction, InteractionHook hook)
+      throws CommandException {
+    final Guild guild = interaction.getGuild();
 
-	@Override
-	public @Nonnull List<OptionData> getOptions() {
-		return new ArrayList<>();
-	}
+    if (guild == null) {
+      throw new CommandException("Du musst auf einem Server sein, um diesen Command auszuführen.");
+    }
 
-	@Override
-	public @Nonnull CommandPermission getPermission() {
-		return CommandPermission.WHITELIST_ROLE;
-	}
+    final GuildConfig guildConfig = GuildConfig.getConfig(guild.getId());
 
-	@Override
-	public void execute(SlashCommandInteractionEvent interaction) {
-		interaction.deferReply(true).queue(hook -> {
-			Guild guild = interaction.getGuild();
+    if (guildConfig == null) {
+      throw new CommandException("Dieser Server ist nicht registriert.");
+    }
 
-			if (guild == null) {
-				hook.editOriginal("Du musst auf einem Server sein, um diesen Command auszuführen.").queue();
-				return;
-			}
+    final Role whitelistedRole = guild.getRoleById(guildConfig.getWhitelistRoleId());
 
-			GuildConfig guildConfig = GuildConfig.getConfig(guild.getId());
+    if (whitelistedRole == null) {
+      throw new CommandException("Die Whitelist Rolle ist nicht registriert.");
+    }
 
-			if (guildConfig == null) {
-				hook.editOriginal("Dieser Server ist nicht registriert.").queue();
-				return;
-			}
+    removeRoleFromMembers(guild, whitelistedRole, hook);
+  }
 
-			Role whitelistedRole = guild.getRoleById(guildConfig.getWhitelistRoleId());
+  @Async
+  protected void removeRoleFromMembers(
+      @NotNull Guild guild,
+      @NotNull Role whitelistedRole,
+      @NotNull InteractionHook hook
+  ) {
+    final List<CompletableFuture<?>> futures = new ArrayList<>();
 
-			if (whitelistedRole == null) {
-				hook.editOriginal("Die Whitelist Rolle ist nicht registriert.").queue();
-				return;
-			}
+    guild.findMembersWithRoles(whitelistedRole).onSuccess(members -> {
+      for (final Member member : members) {
+        if (member == null) {
+          continue;
+        }
 
-			List<CompletableFuture<?>> futures = new ArrayList<>();
+        futures.add(guild.removeRoleFromMember(member, whitelistedRole).submit());
+      }
 
-			guild.findMembersWithRoles(whitelistedRole).onSuccess(members -> {
-				members.forEach(member -> {
-					if (member == null) {
-						return;
-					}
-
-					futures.add(guild.removeRoleFromMember(member, whitelistedRole).submit());
-				});
-
-				CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))
-								 .thenRun(() -> hook
-										 .editOriginal(
-												 futures.size() + " Benutzer wurden aus der Whitelist Rolle entfernt.")
-										 .queue());
-			}).onError(Throwable::printStackTrace);
-		});
-	}
-
+      CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))
+          .thenRun(() -> hook.editOriginal("%s Benutzer wurden aus der WhitelistDTO Rolle entfernt."
+                  .formatted(members.size()))
+              .queue());
+    }).onError(error -> {
+      LOGGER.error("Error while removing role from members", error);
+      hook.editOriginal("Es ist ein Fehler aufgetreten.")
+          .queue();
+    });
+  }
 }

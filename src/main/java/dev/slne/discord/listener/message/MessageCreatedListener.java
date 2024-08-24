@@ -1,6 +1,8 @@
 package dev.slne.discord.listener.message;
 
 import dev.slne.discord.DiscordBot;
+import dev.slne.discord.spring.annotation.DiscordListener;
+import dev.slne.discord.spring.service.ticket.TicketService;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.message.TicketMessage;
 import net.dv8tion.jda.api.entities.Message;
@@ -10,34 +12,30 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 import javax.annotation.Nonnull;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * The type Message created listener.
  */
-public class MessageCreatedListener extends ListenerAdapter {
+@DiscordListener
+public class MessageCreatedListener extends AbstractMessageListener<MessageReceivedEvent> {
+
+	@Autowired
+	public MessageCreatedListener(TicketService ticketService) {
+		super(ticketService);
+	}
 
 	@Override
 	public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
-		MessageChannelUnion channel = event.getChannel();
-		Message message = event.getMessage();
+		processEvent(event);
+	}
 
-		if (!channel.getType().equals(ChannelType.TEXT)) {
-			return;
-		}
-
-		Ticket ticket = DiscordBot.getInstance().getTicketManager().getTicket(channel.getId());
-
-		if (ticket == null) {
-			return;
-		}
-
+	@Override
+	protected void handleEvent(MessageReceivedEvent event, Ticket ticket) {
 		if (event.getMessage().isWebhookMessage()) {
 			return;
 		}
 
-		TicketMessage ticketMessage = new TicketMessage(ticket, message);
-
-		ticket.addTicketMessage(ticketMessage);
+		ticket.addTicketMessage(TicketMessage.fromTicketAndMessage(ticket, event.getMessage()));
 	}
-
 }

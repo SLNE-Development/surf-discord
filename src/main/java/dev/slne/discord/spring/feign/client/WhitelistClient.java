@@ -1,6 +1,7 @@
-package dev.slne.discord.whitelist;
+package dev.slne.discord.spring.feign.client;
 
 import dev.slne.discord.datasource.API;
+import dev.slne.discord.spring.feign.dto.WhitelistDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * The interface Whitelist client.
+ * The interface WhitelistDTO client.
  */
 @FeignClient(name = "whitelist-client", url = API.API_PREFIX)
 public interface WhitelistClient {
@@ -26,7 +27,7 @@ public interface WhitelistClient {
 	 * @return the whitelist by uuid
 	 */
 	@GetMapping(value = API.WHITELIST)
-	Whitelist getWhitelistByUuid(@PathVariable UUID uuid);
+	WhitelistDTO getWhitelistByUuid(@PathVariable UUID uuid);
 
 	/**
 	 * Check whitelists list.
@@ -36,7 +37,7 @@ public interface WhitelistClient {
 	 * @return the list
 	 */
 	@PostMapping(value = API.WHITELIST_CHECK)
-	List<Whitelist> checkWhitelists(WhitelistCheckPostRequest request);
+	List<WhitelistDTO> checkWhitelists(WhitelistCheckPostRequest request);
 
 	/**
 	 * Gets whitelist by discord id.
@@ -46,7 +47,7 @@ public interface WhitelistClient {
 	 * @return the whitelist by discord id
 	 */
 	@GetMapping(value = API.WHITELIST_BY_DISCORD_ID)
-	Whitelist getWhitelistByDiscordId(@PathVariable String discordId);
+	WhitelistDTO getWhitelistByDiscordId(@PathVariable String discordId);
 
 	/**
 	 * Sync add whitelist whitelist.
@@ -56,7 +57,7 @@ public interface WhitelistClient {
 	 * @return the whitelist
 	 */
 	@PostMapping(value = API.WHITELISTS)
-	Whitelist addWhitelist(Whitelist whitelist);
+	WhitelistDTO addWhitelist(WhitelistDTO whitelist);
 
 	/**
 	 * Sync update whitelist whitelist.
@@ -67,7 +68,7 @@ public interface WhitelistClient {
 	 * @return the whitelist
 	 */
 	@PutMapping(value = API.WHITELIST)
-	Whitelist updateWhitelist(@PathVariable UUID uuid, Whitelist whitelist);
+	WhitelistDTO updateWhitelist(@PathVariable UUID uuid, WhitelistDTO whitelist);
 
 	/**
 	 * Gets uuid by minecraft name.
@@ -80,7 +81,7 @@ public interface WhitelistClient {
 	ProxyUuidByMinecraftName getUuidByMinecraftName(@PathVariable String minecraftName);
 
 	/**
-	 * Instantiates a new Whitelist check post request.
+	 * Instantiates a new WhitelistDTO check post request.
 	 *
 	 * @param uuid       the uuid
 	 * @param discordId  the discord id

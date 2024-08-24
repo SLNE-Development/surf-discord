@@ -1,22 +1,33 @@
 package dev.slne.discord.discord.interaction.command;
 
 import dev.slne.discord.config.role.RoleConfig;
-import dev.slne.discord.discord.guild.permission.CommandPermission;
+import dev.slne.discord.exception.command.CommandException;
+import dev.slne.discord.exception.command.PreCommandCheckException;
+import dev.slne.discord.guild.permission.CommandPermission;
+import dev.slne.discord.spring.annotation.DiscordCommandMeta;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+import javax.annotation.Nonnull;
 import lombok.Getter;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
+import net.dv8tion.jda.api.interactions.commands.CommandInteractionPayload;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
-import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-
-import javax.annotation.Nonnull;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
+import org.intellij.lang.annotations.Language;
+import org.jetbrains.annotations.ApiStatus.NonExtendable;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.scheduling.annotation.Async;
 
 /**
  * The type Discord command.
@@ -24,149 +35,193 @@ import java.util.concurrent.CompletableFuture;
 @Getter
 public abstract class DiscordCommand {
 
-	@Nonnull
-	private final String name;
-	@Nonnull
-	private final DefaultMemberPermissions defaultMemberPermissions;
-	@Nonnull
-	private final String description;
-	private final boolean guildOnly;
-	private final boolean nsfw;
+  private static final ComponentLogger LOGGER = ComponentLogger.logger("DiscordCommand");
 
-	private final SlashCommandData commandData;
+  @Nonnull
+  private final DefaultMemberPermissions defaultMemberPermissions;
 
-	/**
-	 * Creates a new DiscordCommand.
-	 *
-	 * @param name        The name of the command.
-	 * @param description The description of the command.
-	 */
-	protected DiscordCommand(@Nonnull String name, @Nonnull String description) {
-		this.name = name;
-		this.description = description;
+  /**
+   * Creates a new DiscordCommand.
+   *
+   * @param name        The name of the command.
+   * @param description The description of the command.
+   */
+  protected DiscordCommand() {
+    this.defaultMemberPermissions = DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR);
+  }
 
-		this.guildOnly = true;
-		this.nsfw = false;
+  /**
+   * Returns the subcommands of the command.
+   *
+   * @return The subcommands of the command.
+   */
+  public @Nonnull List<SubcommandData> getSubCommands() {
+    return List.of();
+  }
 
-		this.defaultMemberPermissions = DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR);
-		this.commandData = Commands.slash(name, description);
-	}
+  /**
+   * Returns the options of the command.
+   *
+   * @return The options of the command.
+   */
+  public @Nonnull List<OptionData> getOptions() {
+    return List.of();
+  }
 
-	/**
-	 * Returns the subcommands of the command.
-	 *
-	 * @return The subcommands of the command.
-	 */
-	public abstract @Nonnull List<SubcommandData> getSubCommands();
+  /**
+   * Executes the command internally
+   *
+   * @param interaction the interaction event
+   */
+  public final void execute(SlashCommandInteractionEvent interaction) {
+    executeAsync(interaction);
+  }
 
-	/**
-	 * Returns the options of the command.
-	 *
-	 * @return The options of the command.
-	 */
-	public abstract @Nonnull List<OptionData> getOptions();
+  @Async
+  protected void executeAsync(SlashCommandInteractionEvent interaction) {
+    final User user = interaction.getUser();
+    final Guild guild = interaction.getGuild();
 
-	/**
-	 * Returns the permission needed to run this command
-	 *
-	 * @return the permission
-	 */
-	public abstract @Nonnull CommandPermission getPermission();
+    try {
+      if (performDiscordCommandChecks(user, guild, interaction).join()
+          && performAdditionalChecks(user, guild, interaction).join()) {
+        interaction.deferReply(true).queue(hook -> {
+          try {
+            internalExecute(interaction, hook);
+          } catch (CommandException e) {
+            hook.editOriginal(e.getMessage()).queue();
+            LOGGER.error("Error while executing command", e);
+          }
+        });
+      }
+    } catch (PreCommandCheckException e) {
+      interaction.reply(e.getMessage())
+          .setEphemeral(true)
+          .queue();
+      LOGGER.error("Error while executing command", e);
+    }
+  }
 
-	/**
-	 * Executes the command internally
-	 *
-	 * @param interaction the interaction event
-	 */
-	public void internalExecute(SlashCommandInteractionEvent interaction) {
-		User user = interaction.getUser();
-		Guild guild = interaction.getGuild();
+  protected CompletableFuture<Boolean> performAdditionalChecks(
+      User user,
+      Guild guild,
+      SlashCommandInteractionEvent interaction
+  ) throws PreCommandCheckException {
+    return CompletableFuture.completedFuture(true);
+  }
 
-		performDiscordCommandChecks(user, guild, interaction).thenAcceptAsync(success -> {
-			if (!success) {
-				return;
-			}
+  /**
+   * Performs the checks for the command.
+   *
+   * @param user        The user.
+   * @param guild       The guild.
+   * @param interaction The interaction.
+   * @return Whether the checks were successful.
+   */
+  @Async
+  @NonExtendable
+  protected CompletableFuture<Boolean> performDiscordCommandChecks(
+      User user,
+      Guild guild,
+      SlashCommandInteractionEvent interaction
+  ) throws PreCommandCheckException {
+    if (guild == null) {
+      throw new PreCommandCheckException("Es ist ein Fehler aufgetreten (zsdiuziaz)");
+    }
 
-			execute(interaction);
-		}).exceptionally(throwable -> {
-			throwable.printStackTrace();
-			return null;
-		});
-	}
+    if (user == null) {
+      throw new PreCommandCheckException("Es ist ein Fehler aufgetreten (dhwfm4nD)");
+    }
 
-	/**
-	 * Performs the checks for the command.
-	 *
-	 * @param user        The user.
-	 * @param guild       The guild.
-	 * @param interaction The interaction.
-	 *
-	 * @return Whether the checks were successful.
-	 */
-	protected CompletableFuture<Boolean> performDiscordCommandChecks(
-			User user, Guild guild, SlashCommandInteractionEvent interaction
-	) {
-		CompletableFuture<Boolean> future = new CompletableFuture<>();
+    final Member member = guild.retrieveMember(user).complete();
+    if (member == null) {
+      throw new PreCommandCheckException("Es ist ein Fehler aufgetreten (9348934dwjkdjw)");
+    }
 
-		if (guild == null) {
-			interaction.reply("Es ist ein Fehler aufgetreten (dhwfm4nD)").setEphemeral(true).queue();
+    final List<Role> memberDiscordRoles = member.getRoles();
+    final List<RoleConfig> memberRoles = memberDiscordRoles.stream()
+        .map(role -> RoleConfig.getDiscordRoleRoles(guild.getId(), role.getId()))
+        .flatMap(List::stream)
+        .toList();
 
-			future.completeExceptionally(new IllegalStateException("Guild is null"));
-			return future;
-		}
+    boolean hasPermission = memberRoles.stream()
+        .anyMatch(role -> role.hasCommandPermission(getPermission()));
 
-		if (user == null) {
-			interaction.reply("Es ist ein Fehler aufgetreten (dhwfm4nD)").setEphemeral(true).queue();
+    if (!hasPermission) {
+      interaction.reply("Du besitzt keine Berechtigung diesen Befehl zu verwenden.")
+          .setEphemeral(true)
+          .queue();
 
-			future.completeExceptionally(new IllegalStateException("User is null"));
-			return future;
-		}
+      return CompletableFuture.completedFuture(false);
+    } else {
+      return CompletableFuture.completedFuture(true);
+    }
+  }
 
-		guild.retrieveMember(user).submit().thenAcceptAsync(member -> {
-			if (member == null) {
-				interaction.reply("Es ist ein Fehler aufgetreten (9348934dwjkdjw)").setEphemeral(true).queue();
+  protected final CommandPermission getPermission() {
+    return this.getClass().getAnnotation(DiscordCommandMeta.class).permission();
+  }
 
-				future.completeExceptionally(new IllegalStateException("Member is null"));
-				return;
-			}
+  /**
+   * Executes the command.
+   *
+   * @param interaction The interaction.
+   */
+  public abstract void internalExecute(SlashCommandInteractionEvent interaction,
+      InteractionHook hook) throws CommandException;
 
-			List<Role> userDiscordRoles = member.getRoles();
-			List<RoleConfig> userRoles = userDiscordRoles.stream()
-														 .map(role -> RoleConfig.getDiscordRoleRoles(
-																 guild.getId(),
-																 role.getId()
-														 ))
-														 .flatMap(List::stream)
-														 .toList();
+  protected final <R> Optional<R> getOption(
+      @NotNull CommandInteractionPayload interaction,
+      String name,
+      Function<OptionMapping, R> mapper
+  ) {
+    final OptionMapping option = interaction.getOption(name);
 
-			boolean hasPermission = false;
+    if (option == null) {
+      return Optional.empty();
+    }
 
-			for (RoleConfig userRole : userRoles) {
-				if (userRole.hasCommandPermission(getPermission())) {
-					hasPermission = true;
-					break;
-				}
-			}
+    return Optional.ofNullable(mapper.apply(option));
+  }
 
-			if (!hasPermission) {
-				interaction.reply("Du besitzt keine Berechtigung diesen Befehl zu verwenden.")
-						   .setEphemeral(true).queue();
+  protected final <R> R getOptionOrThrow(
+      @NotNull CommandInteractionPayload interaction,
+      String name,
+      Function<OptionMapping, R> mapper,
+      @Language("markdown") String errorMessage
+  ) throws CommandException {
+    return getOption(interaction, name, mapper)
+        .orElseThrow(() -> new CommandException(errorMessage));
+  }
 
-				future.complete(false);
-				return;
-			}
+  protected final Optional<User> getUser(
+      @NotNull CommandInteractionPayload interaction,
+      String name
+  ) {
+    return getOption(interaction, name, OptionMapping::getAsUser);
+  }
 
-			future.complete(true);
-		});
+  protected final User getUserOrThrow(
+      @NotNull CommandInteractionPayload interaction,
+      String name
+  ) throws CommandException {
+    return getUser(interaction, name)
+        .orElseThrow(() -> new CommandException("Du musst einen Nutzer angeben."));
+  }
 
-		return future;
-	}
+  protected final Optional<String> getString(
+      @NotNull CommandInteractionPayload interaction,
+      String name
+  ) {
+    return getOption(interaction, name, OptionMapping::getAsString);
+  }
 
-	/**
-	 * Executes the command.
-	 *
-	 * @param interaction The interaction.
-	 */
-	public abstract void execute(SlashCommandInteractionEvent interaction);
-
+  protected final String getStringOrThrow(
+      @NotNull CommandInteractionPayload interaction,
+      String name,
+      @Language("markdown") String errorMessage
+  ) throws CommandException {
+    return getString(interaction, name)
+        .orElseThrow(() -> new CommandException(errorMessage));
+  }
 }

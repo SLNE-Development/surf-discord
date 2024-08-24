@@ -1,181 +1,148 @@
 package dev.slne.discord.discord.interaction.command.commands.whitelist;
 
 import dev.slne.data.api.DataApi;
-import dev.slne.discord.discord.guild.permission.CommandPermission;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
-import dev.slne.discord.whitelist.Whitelist;
-import dev.slne.discord.whitelist.WhitelistService;
+import dev.slne.discord.exception.command.CommandException;
+import dev.slne.discord.guild.permission.CommandPermission;
+import dev.slne.discord.spring.annotation.DiscordCommandMeta;
+import dev.slne.discord.spring.feign.dto.WhitelistDTO;
+import dev.slne.discord.spring.service.whitelist.WhitelistService;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import javax.annotation.Nonnull;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
+import org.jetbrains.annotations.Nullable;
+import org.springframework.scheduling.annotation.Async;
 
 /**
- * The type Whitelist query command.
+ * The type WhitelistDTO query command.
  */
+@DiscordCommandMeta(
+    name = "wlquery",
+    description = "Zeigt Whitelist Informationen über einen Benutzer an.",
+    permission = CommandPermission.WHITELIST_QUERY
+)
 public class WhitelistQueryCommand extends DiscordCommand {
 
-	/**
-	 * Creates a new {@link WhitelistQueryCommand}.
-	 */
-	public WhitelistQueryCommand() {
-		super("wlquery", "Zeigt Whitelist Informationen über einen Benutzer an.");
-	}
+  private static final String USER_OPTION = "user";
+  private static final String MINECRAFT_OPTION = "minecraft";
+  private static final String TWITCH_OPTION = "twitch";
+  private final WhitelistService whitelistService;
 
-	@Override
-	public @Nonnull List<SubcommandData> getSubCommands() {
-		return new ArrayList<>();
-	}
+  public WhitelistQueryCommand(WhitelistService whitelistService) {
+    this.whitelistService = whitelistService;
+  }
 
-	@Override
-	public @Nonnull List<OptionData> getOptions() {
-		List<OptionData> options = new ArrayList<>();
+  @Override
+  public @Nonnull List<OptionData> getOptions() {
+    return List.of(
+        new OptionData(
+            OptionType.USER,
+            USER_OPTION,
+            "Der Benutzer über den Informationen angezeigt werden sollen.",
+            false
+        ),
+        new OptionData(
+            OptionType.STRING,
+            MINECRAFT_OPTION,
+            "Der Minecraft Name des Benutzers.",
+            false
+        ).setRequiredLength(3, 16),
+        new OptionData(
+            OptionType.STRING,
+            TWITCH_OPTION,
+            "Der Twitch Name des Benutzers.",
+            false
+        )
+    );
+  }
 
-		options.add(new OptionData(OptionType.USER, "user",
-								   "Der Benutzer über den Informationen angezeigt werden sollen.", false, false
-		));
+  @Override
+  public void internalExecute(SlashCommandInteractionEvent interaction, InteractionHook hook)
+      throws CommandException {
+    if (!(interaction.getChannel() instanceof TextChannel channel)) {
+      throw new CommandException("Dieser Befehl kann nur in Textkanälen verwendet werden.");
+    }
 
-		options.add(new OptionData(OptionType.STRING, "minecraft",
-								   "Der Minecraft Name des Benutzers.", false, false
-		));
+    final Optional<User> optionalUser = getUser(interaction, USER_OPTION);
+    final Optional<String> optionalMinecraft = getString(interaction, MINECRAFT_OPTION);
+    final Optional<String> optionalTwitch = getString(interaction, TWITCH_OPTION);
 
-		options.add(new OptionData(OptionType.STRING, "twitch",
-								   "Der Twitch Name des Benutzers.", false, false
-		));
+    if (optionalUser.isEmpty() && optionalMinecraft.isEmpty() && optionalTwitch.isEmpty()) {
+      throw new CommandException("Es wurde kein Benutzer angegeben.");
+    }
 
-		return options;
-	}
+    final List<WhitelistDTO> whitelists = getWhitelists(
+        optionalUser.orElse(null),
+        optionalMinecraft.orElse(null),
+        optionalTwitch.orElse(null)
+    ).join();
 
-	@Override
-	public @Nonnull CommandPermission getPermission() {
-		return CommandPermission.WHITELIST_QUERY;
-	}
+    if (optionalUser.isPresent()) {
+      printUserWlQuery(whitelists, optionalUser.get().getName(), channel, hook);
+    } else if (optionalMinecraft.isPresent()) {
+      printUserWlQuery(whitelists, optionalMinecraft.get(), channel, hook);
+    } else {
+      printUserWlQuery(whitelists, optionalTwitch.get(), channel, hook);
+    }
+  }
 
-	@Override
-	public void execute(SlashCommandInteractionEvent interaction) {
-		if (!( interaction.getChannel() instanceof TextChannel channel )) {
-			interaction.reply("Dieser Befehl kann nur in Textkanälen verwendet werden.").setEphemeral(true).queue();
-			return;
-		}
+  @Async
+  protected CompletableFuture<List<WhitelistDTO>> getWhitelists(
+      @Nullable User user,
+      @Nullable String minecraft,
+      @Nullable String twitch
+  ) {
+    final List<WhitelistDTO> whitelists;
 
-		OptionMapping userOption = interaction.getOption("user");
-		OptionMapping minecraftOption = interaction.getOption("minecraft");
-		OptionMapping twitchOption = interaction.getOption("twitch");
+    if (user != null) {
+      whitelists = whitelistService.checkWhitelists(null, user.getId(), null).join();
+    } else if (twitch != null) {
+      whitelists = whitelistService.checkWhitelists(null, null, twitch).join();
+    } else if (minecraft != null) {
+      whitelists = DataApi.getUuidByPlayerName(minecraft)
+          .thenCompose(uuid -> whitelistService.checkWhitelists(uuid, null, null)).join();
+    } else {
+      whitelists = null;
+    }
 
-		interaction.deferReply().queue(hook -> {
-			if (userOption != null) {
-				User user = userOption.getAsUser();
+    return CompletableFuture.completedFuture(whitelists);
+  }
 
-				WhitelistService.INSTANCE.checkWhitelists(null, user.getId(), null).thenAcceptAsync(whitelists -> {
-					if (whitelists != null) {
-						printWlQuery(channel, "\"" + user.getName() + "\"", whitelists);
-						hook.deleteOriginal().queue();
-					} else {
-						hook.editOriginal("Es wurden keine Whitelist Einträge für \"" + user.getName() + "\" gefunden.")
-							.queue();
-					}
-				}).exceptionally(throwable -> {
-					errorHandler(hook, throwable);
-					return null;
-				});
+  protected void printUserWlQuery(List<WhitelistDTO> whitelists, String name, TextChannel channel,
+      InteractionHook hook)
+      throws CommandException {
+    if (whitelists.isEmpty()) {
+      throw new CommandException(
+          "Es wurden keine Whitelist Einträge für \"" + name + "\" gefunden.");
+    }
 
-				return;
-			}
+    printWlQuery(channel, "\"" + name + "\"", whitelists);
+    hook.deleteOriginal().queue();
+  }
 
-			if (twitchOption != null) {
-				String twitch = twitchOption.getAsString();
+  /**
+   * Prints a wlquery request.
+   *
+   * @param channel    The channel.
+   * @param title      The title.
+   * @param whitelists The whitelists.
+   */
+  @Async
+  public void printWlQuery(TextChannel channel, String title, List<WhitelistDTO> whitelists) {
+    title = title.replace("\"", "");
+    channel.sendMessage("WlQuery für: `" + title + "`").queue();
 
-				WhitelistService.INSTANCE.checkWhitelists(null, null, twitch).thenAcceptAsync(whitelists -> {
-					if (whitelists != null) {
-						printWlQuery(channel, "\"" + twitch + "\"", whitelists);
-						hook.deleteOriginal().queue();
-					} else {
-						hook.editOriginal("Es wurden keine Whitelist Einträge für \"" + twitch + "\" gefunden.")
-							.queue();
-					}
-				}).exceptionally(throwable -> {
-					errorHandler(hook, throwable);
-					return null;
-				});
-
-				return;
-			}
-
-			if (minecraftOption != null) {
-				String minecraft = minecraftOption.getAsString();
-
-				DataApi.getUuidByPlayerName(minecraft).thenAcceptAsync(uuid -> {
-					WhitelistService.INSTANCE.checkWhitelists(uuid, null, null).thenAcceptAsync(whitelists -> {
-						if (whitelists != null) {
-							printWlQuery(channel, "\"" + uuid + "\"", whitelists);
-							hook.deleteOriginal().queue();
-						} else {
-							hook.editOriginal("Es wurden keine Whitelist Einträge für \"" + uuid + "\" gefunden.")
-								.queue();
-						}
-					}).exceptionally(throwable -> {
-						errorHandler(hook, throwable);
-						return null;
-					});
-				});
-
-				return;
-			}
-
-			hook.editOriginal("Es wurde kein Benutzer angegeben.").queue();
-		});
-	}
-
-	/**
-	 * Handles an error.
-	 *
-	 * @param hook      The hook.
-	 * @param throwable The throwable.
-	 */
-	public void errorHandler(InteractionHook hook, Throwable throwable) {
-		hook.editOriginal("Es ist ein Fehler aufgetreten.").queue();
-
-		DataApi.getDataInstance().logError(getClass(), "Error while executing wlquery command", throwable);
-	}
-
-	/**
-	 * Prints a wlquery request.
-	 *
-	 * @param channel    The channel.
-	 * @param title      The title.
-	 * @param whitelists The whitelists.
-	 */
-	public void printWlQuery(TextChannel channel, String title, List<Whitelist> whitelists) {
-		title = title.replace("\"", "");
-
-		//noinspection ResultOfMethodCallIgnored
-		channel.sendMessage("WlQuery für: `" + title + "`").queue();
-
-		if (whitelists != null) {
-			for (Whitelist whitelist : whitelists) {
-				Whitelist.getWhitelistQueryEmbed(whitelist).thenAcceptAsync(embed -> {
-					if (embed != null) {
-						channel.sendMessageEmbeds(embed).queue();
-					}
-				}).exceptionally(throwable -> {
-					DataApi.getDataInstance().logError(getClass(), "Error while executing wlquery command", throwable);
-					return null;
-				});
-			}
-
-			if (whitelists.isEmpty()) {
-				channel.sendMessage("Es wurden keine Whitelist Einträge für " + title + " gefunden.").queue();
-			}
-		} else {
-			channel.sendMessage("Es wurden keine Whitelist Einträge für " + title + " gefunden.").queue();
-		}
-	}
+    for (final WhitelistDTO whitelist : whitelists) {
+      final MessageEmbed embed = whitelistService.getWhitelistQueryEmbed(whitelist).join();
+      channel.sendMessageEmbeds(embed).queue();
+    }
+  }
 }

@@ -1,84 +1,54 @@
 package dev.slne.discord.listener.message;
 
-import dev.slne.data.api.DataApi;
-import dev.slne.discord.DiscordBot;
-import dev.slne.discord.ticket.Ticket;
+import dev.slne.discord.spring.annotation.DiscordListener;
+import dev.slne.discord.spring.service.ticket.TicketService;
 import dev.slne.discord.ticket.message.TicketMessage;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.channel.ChannelType;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import javax.annotation.Nonnull;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
-import net.dv8tion.jda.api.entities.channel.unions.GuildMessageChannelUnion;
-import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
+import net.dv8tion.jda.api.events.message.GenericMessageEvent;
 import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent;
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.requests.RestAction;
-
-import javax.annotation.Nonnull;
-import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 
 /**
  * The type Message deleted listener.
  */
-public class MessageDeletedListener extends ListenerAdapter {
+@DiscordListener
+public class MessageDeletedListener extends AbstractMessageListener<GenericMessageEvent> {
 
-	@Override
-	public void onMessageDelete(@Nonnull MessageDeleteEvent event) {
-		MessageChannelUnion channel = event.getChannel();
-		String messageId = event.getMessageId();
+  @Autowired
+  public MessageDeletedListener(TicketService ticketService) {
+    super(ticketService);
+  }
 
-		deleteMessage(channel, List.of(messageId));
-	}
+  @Override
+  public void onMessageDelete(@Nonnull MessageDeleteEvent event) {
+    deleteMessage(event.getChannel(), List.of(event.getMessageId()));
+  }
 
-	@Override
-	public void onMessageBulkDelete(@Nonnull MessageBulkDeleteEvent event) {
-		GuildMessageChannelUnion channel = event.getChannel();
-		List<String> messageIds = event.getMessageIds();
+  @Override
+  public void onMessageBulkDelete(@Nonnull MessageBulkDeleteEvent event) {
+    deleteMessage(event.getChannel(), event.getMessageIds());
+  }
 
-		deleteMessage(channel, messageIds);
-	}
-
-	/**
-	 * Deletes the message from the ticket.
-	 *
-	 * @param channel    The channel the message was deleted from.
-	 * @param messageIds The message ids of the deleted messages.
-	 */
-	private void deleteMessage(MessageChannel channel, List<String> messageIds) {
-		if (!channel.getType().equals(ChannelType.TEXT)) {
-			return;
-		}
-
-		for (String messageId : messageIds) {
-			Ticket ticket = DiscordBot.getInstance().getTicketManager().getTicket(channel.getId());
-
-			if (ticket == null) {
-				continue;
-			}
-
-			TicketMessage ticketMessage = ticket.getTicketMessage(messageId);
-
-			if (ticketMessage == null) {
-				continue;
-			}
-
-			RestAction<Message> message = ticketMessage.getMessage();
-
-			if (message == null) {
-				continue;
-			}
-
-			ticketMessage.delete().thenAcceptAsync(deletedTicketMessage -> {
-				if (deletedTicketMessage == null) {
-					return;
-				}
-
-				ticket.addRawTicketMessage(deletedTicketMessage);
-			}).exceptionally(throwable -> {
-				DataApi.getDataInstance().logError(getClass(), "Failed to delete ticket message", throwable);
-				return null;
-			});
-		}
-	}
-
+  /**
+   * Deletes the message from the ticket.
+   *
+   * @param channel    The channel the message was deleted from.
+   * @param messageIds The message ids of the deleted messages.
+   */
+  @Async
+  protected void deleteMessage(MessageChannel channel, List<String> messageIds) {
+    getTicketByChannel(channel).ifPresent(ticket -> messageIds.stream()
+        .map(ticket::getTicketMessage) // Get the ticket message by id
+        .filter(Objects::nonNull)
+        .map(TicketMessage::delete) // Delete the message
+        .map(CompletableFuture::join)
+        .filter(Objects::nonNull)
+        .forEach(ticket::addRawTicketMessage)); // Add the raw message to the ticket
+  }
 }

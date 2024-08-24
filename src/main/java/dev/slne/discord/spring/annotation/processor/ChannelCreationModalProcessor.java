@@ -9,6 +9,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import lombok.experimental.ExtensionMethod;
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
 @ExtensionMethod({Class.class, AnnotationUtils.class})
 public class ChannelCreationModalProcessor {
 
+  private static final ComponentLogger LOGGER = ComponentLogger.logger("ChannelCreationModalProcessor");
   private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
 
   @Autowired
@@ -43,9 +45,13 @@ public class ChannelCreationModalProcessor {
 
             final Constructor<?> constructor = modalClass.getDeclaredConstructor();
             constructor.setAccessible(true);
-            final MethodHandle constructorHandle = lookup.unreflectConstructor(constructor);
 
-            DiscordModalManager.INSTANCE.registerAdvancedModal(getModalId(modalAnnotation), () -> {
+            final MethodHandle constructorHandle = lookup.unreflectConstructor(constructor);
+            final String modalId = getModalId(modalAnnotation);
+
+            LOGGER.info("Registering modal {} with id {}", modalClass.getSimpleName(), modalId);
+
+            DiscordModalManager.INSTANCE.registerAdvancedModal(modalId, () -> {
               try {
                 return (DiscordStepChannelCreationModal) constructorHandle.invoke();
               } catch (Throwable e) {

@@ -2,10 +2,15 @@ package dev.slne.discord.discord.interaction.command.commands.whitelist;
 
 import dev.slne.data.api.DataApi;
 import dev.slne.discord.config.discord.GuildConfig;
-import dev.slne.discord.discord.guild.permission.CommandPermission;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
-import dev.slne.discord.whitelist.Whitelist;
-import dev.slne.discord.whitelist.WhitelistService;
+import dev.slne.discord.exception.command.CommandException;
+import dev.slne.discord.guild.permission.CommandPermission;
+import dev.slne.discord.spring.annotation.DiscordCommandMeta;
+import dev.slne.discord.spring.feign.dto.WhitelistDTO;
+import dev.slne.discord.spring.service.whitelist.WhitelistService;
+import java.util.List;
+import java.util.UUID;
+import javax.annotation.Nonnull;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
@@ -13,174 +18,122 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
+import org.jetbrains.annotations.Blocking;
+import org.springframework.scheduling.annotation.Async;
 
 /**
- * The type Whitelist command.
+ * The type WhitelistDTO command.
  */
+@DiscordCommandMeta(name = "whitelist", description = "Füge einen Spieler zur Whitelist hinzu.", permission = CommandPermission.WHITELIST)
 public class WhitelistCommand extends DiscordCommand {
 
-	/**
-	 * Creates a new WhitelistCommand.
-	 */
-	public WhitelistCommand() {
-		super("whitelist", "Füge einen Spieler zur Whitelist hinzu.");
-	}
+  private static final String USER_OPTION = "user";
+  private static final String MINECRAFT_OPTION = "minecraft";
+  private static final String TWITCH_OPTION = "twitch";
+  private final WhitelistService whitelistService;
 
-	@Override
-	public @Nonnull List<SubcommandData> getSubCommands() {
-		return new ArrayList<>();
-	}
+  public WhitelistCommand(WhitelistService whitelistService) {
+    this.whitelistService = whitelistService;
+  }
 
-	@Override
-	public @Nonnull List<OptionData> getOptions() {
-		List<OptionData> options = new ArrayList<>();
+  @Override
+  public @Nonnull List<OptionData> getOptions() {
+    return List.of(
+        new OptionData(OptionType.USER, USER_OPTION,
+            "Der Spieler, der zur Whitelist hinzugefügt werden soll.", true),
+        new OptionData(OptionType.STRING, MINECRAFT_OPTION, "Der Minecraft Name des Spielers.",
+            true)
+            .setRequiredRange(3, 16),
+        new OptionData(OptionType.STRING, TWITCH_OPTION, "Der Twitch Name des Spielers.", true)
+    );
+  }
 
-		options.add(new OptionData(OptionType.USER, "user", "Der Spieler, der zur Whitelist hinzugefügt werden soll.")
-							.setRequired(true));
+  @Override
+  public void internalExecute(SlashCommandInteractionEvent interaction, InteractionHook hook)
+      throws CommandException {
+    if (!(interaction.getChannel() instanceof TextChannel channel)) {
+      throw new CommandException("Dieser Befehl kann nur in Textkanälen verwendet werden.");
+    }
 
-		options.add(new OptionData(OptionType.STRING, "minecraft", "Der Minecraft Name des Spielers.")
-							.setRequired(true));
+    final User user = getUserOrThrow(interaction, USER_OPTION);
+    final String minecraft = getStringOrThrow(interaction, MINECRAFT_OPTION,
+        "Du musst einen Minecraft Namen angeben.");
+    final String twitch = getStringOrThrow(interaction, TWITCH_OPTION,
+        "Du musst einen Twitch Namen angeben.");
+    final String discordId = user.getId();
+    final User executor = interaction.getUser();
 
-		options.add(new OptionData(OptionType.STRING, "twitch", "Der Twitch Name des Spielers.")
-							.setRequired(true));
+    whitelistUser(interaction, hook, user, executor, minecraft, twitch, discordId, channel);
+  }
 
-		return options;
-	}
+  @Async
+  protected void whitelistUser(
+      SlashCommandInteractionEvent interaction,
+      InteractionHook hook,
+      User user,
+      User executor,
+      String minecraft,
+      String twitch,
+      String discordId,
+      TextChannel channel
+  ) throws CommandException {
+    final UUID minecraftUuid = DataApi.getUuidByPlayerName(minecraft).join();
 
-	@Override
-	public @Nonnull CommandPermission getPermission() {
-		return CommandPermission.WHITELIST;
-	}
+    if (minecraftUuid == null) {
+      throw new CommandException("Der Spieler konnte nicht gefunden werden.");
+    }
 
-	@Override
-	public void execute(SlashCommandInteractionEvent interaction) {
-		if (!( interaction.getChannel() instanceof TextChannel channel )) {
-			interaction.reply("Dieser Befehl kann nur in Textkanälen verwendet werden.").setEphemeral(true).queue();
-			return;
-		}
+    final List<WhitelistDTO> whitelists = whitelistService.checkWhitelists(minecraftUuid, discordId,
+            twitch)
+        .join();
 
-		InteractionHook hook = interaction.deferReply(true).complete();
+    if (!whitelists.isEmpty()) {
+      hook.editOriginal("Der Spieler befindet sich bereits auf der Whitelist.").queue();
+      for (final WhitelistDTO whitelist : whitelists) {
+        final MessageEmbed embed = whitelistService.getWhitelistQueryEmbed(whitelist).join();
+        channel.sendMessageEmbeds(embed).queue();
+      }
+    } else {
 
-		OptionMapping userOption = interaction.getOption("user");
-		OptionMapping minecraftOption = interaction.getOption("minecraft");
-		OptionMapping twitchOption = interaction.getOption("twitch");
+      final WhitelistDTO newWhitelist = WhitelistDTO.createFrom(
+          minecraftUuid,
+          minecraft,
+          twitch,
+          user,
+          executor
+      );
 
-		if (userOption == null) {
-			hook.editOriginal("Du musst einen Nutzer angeben.").queue();
-			return;
-		}
+      final WhitelistDTO createdWhitelist = whitelistService.addWhitelist(newWhitelist).join();
 
-		if (minecraftOption == null) {
-			hook.editOriginal("Du musst einen Minecraft Namen angeben.").queue();
-			return;
-		}
+      if (createdWhitelist == null) {
+        throw new CommandException(
+            "Es ist ein Fehler aufgetreten. Die Whitelist konnte nicht erstellt werden.");
+      }
 
-		if (twitchOption == null) {
-			hook.editOriginal("Du musst einen Twitch Namen angeben.").queue();
-			return;
-		}
+      addWhitelistedRole(interaction.getGuild(), user);
 
-		User user = userOption.getAsUser();
-		String minecraft = minecraftOption.getAsString();
-		String twitch = twitchOption.getAsString();
-		String discordId = user.getId();
+      final MessageEmbed embed = whitelistService.getWhitelistQueryEmbed(createdWhitelist).join();
+      hook.deleteOriginal().queue();
+      channel.sendMessage(user.getAsMention() + " befindet sich nun auf der Whitelist.")
+          .setEmbeds(embed)
+          .queue();
+    }
+  }
 
-		if (minecraft.length() > 16) {
-			hook.editOriginal("Der Minecraft Name darf nicht länger als 16 Zeichen sein.").queue();
-			return;
-		}
+  @Blocking
+  private void addWhitelistedRole(Guild guild, User user) {
+    if (guild != null) {
+      final GuildConfig guildConfig = GuildConfig.getConfig(guild.getId());
 
-		DataApi.getUuidByPlayerName(minecraft).thenAcceptAsync(uuid -> {
-			if (uuid == null) {
-				hook.deleteOriginal().queue();
-				channel.sendMessage("Der Spieler konnte nicht gefunden werden.").queue();
-				return;
-			}
+      if (guildConfig != null) {
+        final Role whitelistedRole = guildConfig.getWhitelistedRole();
 
-			WhitelistService.INSTANCE.checkWhitelists(uuid, discordId, twitch).thenAcceptAsync(whitelists -> {
-				if (whitelists != null && !whitelists.isEmpty()) {
-					hook.deleteOriginal().queue();
-					channel.sendMessage("Der Spieler befindet sich bereits auf der Whitelist.").queue();
-
-					for (Whitelist whitelist : whitelists) {
-						Whitelist.getWhitelistQueryEmbed(whitelist).thenAcceptAsync(embed -> {
-							if (embed != null) {
-								channel.sendMessageEmbeds(embed).queue();
-							}
-						}).exceptionally(throwable -> {
-							DataApi.getDataInstance()
-								   .logError(getClass(), "Failed to send whitelist query embed.", throwable);
-							return null;
-						});
-					}
-
-					return;
-				}
-
-				WhitelistService.INSTANCE.addWhitelist(new Whitelist(uuid, minecraft, twitch, user,
-																	 interaction.getUser()
-				)).thenAcceptAsync(whitelist -> {
-					if (whitelist == null) {
-						hook.deleteOriginal().queue();
-						channel.sendMessage("Es ist ein Fehler aufgetreten. Die Whitelist konnte nicht erstellt " +
-											"werden.").queue();
-						return;
-					}
-
-					Guild guild = interaction.getGuild();
-					if (guild != null) {
-						GuildConfig guildConfig = GuildConfig.getConfig(guild.getId());
-
-						if (guildConfig != null) {
-							Role whitelistedRole = guildConfig.getWhitelistedRole();
-
-							if (whitelistedRole != null) {
-								guild.addRoleToMember(user, whitelistedRole).queue();
-							}
-						}
-					}
-
-					MessageEmbed embed = Whitelist.getWhitelistQueryEmbed(whitelist).join();
-
-					if (embed != null) {
-						hook.deleteOriginal().queue();
-						channel.sendMessage(user.getAsMention() + " befindet sich nun auf der Whitelist.")
-							   .setEmbeds(embed).queue();
-					}
-				}).exceptionally(throwable -> {
-					hook.deleteOriginal().queue();
-					channel.sendMessage("Es ist ein Fehler aufgetreten. Die Whitelist konnte nicht erstellt werden.")
-						   .queue();
-
-					DataApi.getDataInstance().logError(getClass(), "Failed to create whitelist entry.", throwable);
-
-					return null;
-				});
-			}).exceptionally(throwable -> {
-				hook.deleteOriginal().queue();
-				channel.sendMessage("Es ist ein Fehler aufgetreten. Die Whitelist konnte nicht abgerufen werden.")
-					   .queue();
-
-				DataApi.getDataInstance().logError(getClass(), "Failed to get whitelist entries.", throwable);
-
-				return null;
-			});
-		}).exceptionally(throwable -> {
-			hook.deleteOriginal().queue();
-			channel.sendMessage("Der Spieler konnte nicht gefunden werden.").queue();
-
-			DataApi.getDataInstance().logError(getClass(), "Failed to get uuid by player name.", throwable);
-
-			return null;
-		});
-	}
-
+        if (whitelistedRole != null) {
+          guild.addRoleToMember(user, whitelistedRole).complete();
+        }
+      }
+    }
+  }
 }

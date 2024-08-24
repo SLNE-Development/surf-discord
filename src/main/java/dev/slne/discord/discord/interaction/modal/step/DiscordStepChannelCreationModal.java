@@ -6,7 +6,7 @@ import dev.slne.discord.discord.interaction.modal.step.ModalStep.ModuleStepChann
 import dev.slne.discord.spring.annotation.ChannelCreationModal;
 import dev.slne.discord.spring.annotation.processor.ChannelCreationModalProcessor;
 import dev.slne.discord.ticket.Ticket;
-import dev.slne.discord.ticket.TicketChannelUtil;
+import dev.slne.discord.ticket.TicketChannelHelper;
 import dev.slne.discord.ticket.TicketType;
 import dev.slne.discord.ticket.result.TicketCreateResult;
 import java.util.LinkedList;
@@ -204,7 +204,7 @@ public abstract class DiscordStepChannelCreationModal {
   }
 
   private boolean checkTicketExists(Guild guild, User user) {
-    return TicketChannelUtil.checkTicketExistsFast(guild, getTicketType(), user);
+    return TicketChannelHelper.checkTicketExistsFast(guild, getTicketType(), user);
   }
 
   /**

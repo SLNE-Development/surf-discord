@@ -1,64 +1,50 @@
 package dev.slne.discord.discord.interaction.command.commands.ticket;
 
-import dev.slne.data.api.DataApi;
-import dev.slne.discord.discord.guild.permission.CommandPermission;
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand;
+import dev.slne.discord.exception.command.CommandException;
+import dev.slne.discord.guild.permission.CommandPermission;
+import dev.slne.discord.spring.annotation.DiscordCommandMeta;
+import dev.slne.discord.spring.service.ticket.TicketService;
 import dev.slne.discord.ticket.result.TicketCloseResult;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
+import net.dv8tion.jda.api.interactions.InteractionHook;
+import org.intellij.lang.annotations.Language;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 
 /**
  * The type Ticket dependencies not met command.
  */
+@DiscordCommandMeta(
+    name = "no-dependencies",
+    description = "Closes a ticket whilst telling the user that they do not have met the dependencies.",
+    permission = CommandPermission.TICKET_CLOSE
+)
 public class TicketDependenciesNotMetCommand extends TicketCommand {
 
-	/**
-	 * Creates a new {@link TicketCloseCommand}.
-	 */
-	public TicketDependenciesNotMetCommand() {
-		super("no-dependencies", "Closes a ticket whilst telling the user that they do not have met the dependencies.");
-	}
+  @Language("markdown")
+  private static final String CLOSE_REASON = "Du erfüllst nicht die Voraussetzungen. Bitte lies dir diese genauer durch, bevor du ein neues Ticket eröffnest.";
 
-	@Override
-	public @Nonnull List<SubcommandData> getSubCommands() {
-		return new ArrayList<>();
-	}
+  @Autowired
+  public TicketDependenciesNotMetCommand(TicketService ticketService) {
+    super(ticketService);
+  }
 
-	@Override
-	public @Nonnull List<OptionData> getOptions() {
-		return new ArrayList<>();
-	}
+  @Override
+  public void internalExecute(SlashCommandInteractionEvent interaction, InteractionHook hook)
+      throws CommandException {
+    User closer = interaction.getUser();
+    closeTicket(closer);
+  }
 
-	@Override
-	public @Nonnull CommandPermission getPermission() {
-		return CommandPermission.TICKET_CLOSE;
-	}
+  @Async
+  protected void closeTicket(User closer) throws CommandException {
+    final TicketCloseResult closeResult = getTicket().close(closer, CLOSE_REASON).join();
 
-	@Override
-	public void execute(SlashCommandInteractionEvent interaction) {
-		User closer = interaction.getUser();
-		String reason =
-				"Du erfüllst nicht die Voraussetzungen. Bitte lies dir diese genauer durch, bevor du ein neues Ticket eröffnest.";
-
-		interaction.reply("Schließe Ticket...").setEphemeral(true)
-				   .queue(deferredReply -> getTicket().close(closer, reason).thenAcceptAsync(result -> {
-					   if (result != TicketCloseResult.SUCCESS) {
-						   deferredReply.editOriginal("Fehler beim Schließen des Tickets.").queue();
-						   DataApi.getDataInstance()
-								  .logError(getClass(), "Error while closing ticket: " + result.name());
-					   }
-				   }).exceptionally(exception -> {
-					   deferredReply.editOriginal("Fehler beim Schließen des Tickets.").queue();
-					   DataApi.getDataInstance().logError(getClass(), "Error while closing ticket", exception);
-
-					   return null;
-				   }));
-	}
-
+    if (closeResult != TicketCloseResult.SUCCESS) {
+      throw new CommandException("Fehler beim Schließen des Tickets.",
+          new IllegalStateException("TicketCloseResult: " + closeResult));
+    }
+  }
 }

@@ -3,6 +3,7 @@ package dev.slne.discord.listener.interaction.command;
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.discord.interaction.command.DiscordCommandManager;
+import dev.slne.discord.spring.annotation.DiscordListener;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
@@ -12,6 +13,7 @@ import javax.annotation.Nonnull;
 /**
  * The type Command received listener.
  */
+@DiscordListener
 public class CommandReceivedListener extends ListenerAdapter {
 
 	private final DiscordCommandManager commandManager;

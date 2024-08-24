@@ -1,7 +1,9 @@
 package dev.slne.discord.listener.whitelist;
 
 import dev.slne.data.api.DataApi;
-import dev.slne.discord.whitelist.WhitelistService;
+import dev.slne.discord.spring.annotation.DiscordListener;
+import dev.slne.discord.spring.feign.dto.WhitelistDTO;
+import dev.slne.discord.spring.service.whitelist.WhitelistService;
 import feign.FeignException;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
@@ -9,54 +11,37 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.CompletionException;
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 
 /**
- * The type Whitelist quit listener.
+ * The type WhitelistDTO quit listener.
  */
+@DiscordListener
 public class WhitelistQuitListener extends ListenerAdapter {
+
+	private static final ComponentLogger LOGGER = ComponentLogger.logger("WhitelistQuitListener");
+	private final WhitelistService whitelistService;
+
+	public WhitelistQuitListener(WhitelistService whitelistService) {
+		this.whitelistService = whitelistService;
+	}
 
 	@Override
 	public void onGuildMemberRemove(@Nonnull GuildMemberRemoveEvent event) {
-		User user = event.getUser();
+		final User user = event.getUser();
+		final WhitelistDTO whitelist = whitelistService.getWhitelistByDiscordId(user.getId()).join();
 
-		WhitelistService.INSTANCE.getWhitelistByDiscordId(user.getId()).thenAcceptAsync(whitelist -> {
-			if (whitelist == null) {
-				return;
-			}
+		if (whitelist == null) {
+			return;
+		}
 
-			whitelist.setBlocked(true);
+		whitelist.setBlocked(true);
+		final WhitelistDTO updatedWhitelist = whitelistService.updateWhitelist(whitelist).join();
 
-			whitelist.update().thenAcceptAsync(whitelistUpdate -> {
-				if (whitelistUpdate == null) {
-					DataApi.getDataInstance().logError(
-							getClass(),
-							"Failed to update whitelist for user " + user.getName() + "."
-					);
-					return;
-				}
-
-				DataApi.getDataInstance().logInfo(
-						getClass(),
-						"User " + user.getName() + " left the server and was blocked."
-				);
-			}).exceptionally(throwable -> {
-				DataApi.getDataInstance().logError(
-						getClass(),
-						"Failed to update whitelist for user " + user.getName() + ".",
-						throwable
-				);
-				return null;
-			});
-		}).exceptionally(throwable -> {
-			if (throwable instanceof CompletionException && throwable.getCause() instanceof FeignException.NotFound) {
-				return null; // User is not whitelisted - ignore
-			}
-
-			DataApi.getDataInstance().logError(getClass(),
-											   "Failed to get whitelist for user " + user.getName() + ".", throwable
-			);
-			return null;
-		});
+		if (updatedWhitelist == null) {
+      LOGGER.error("Failed to update whitelist for user {}.", user.getName());
+		} else {
+			LOGGER.info("User {} left the server and was blocked.", user.getName());
+		}
 	}
-
 }

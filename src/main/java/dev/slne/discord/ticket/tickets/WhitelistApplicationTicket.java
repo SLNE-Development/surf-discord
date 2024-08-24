@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
 
 /**
- * The type Whitelist application ticket.
+ * The type WhitelistDTO application ticket.
  */
 public class WhitelistApplicationTicket extends Ticket {
 

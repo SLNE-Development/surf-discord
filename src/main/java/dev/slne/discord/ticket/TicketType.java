@@ -1,6 +1,6 @@
 package dev.slne.discord.ticket;
 
-import dev.slne.discord.discord.guild.permission.DiscordPermission;
+import dev.slne.discord.guild.permission.DiscordPermission;
 import lombok.Getter;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 
@@ -14,9 +14,9 @@ import java.util.Arrays;
 public enum TicketType {
 
 	WHITELIST(
-			"Whitelist",
+			"WhitelistDTO",
 			"whitelist",
-			"Whitelist Anfragen für den Survival Server",
+			"WhitelistDTO Anfragen für den Survival Server",
 			Emoji.fromUnicode("\uD83D\uDCDC"),
 			DiscordPermission.VIEW_WHITELIST_TICKETS
 	),

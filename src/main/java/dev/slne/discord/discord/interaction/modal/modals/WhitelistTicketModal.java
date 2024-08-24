@@ -6,7 +6,7 @@ import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketType;
 import dev.slne.discord.ticket.result.TicketCreateResult;
 import dev.slne.discord.ticket.tickets.WhitelistApplicationTicket;
-import dev.slne.discord.whitelist.WhitelistService;
+import dev.slne.discord.spring.service.whitelist.WhitelistService;
 import feign.FeignException;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
@@ -22,7 +22,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletionException;
 
 /**
- * The type Whitelist ticket modal.
+ * The type WhitelistDTO ticket modal.
  */
 public class WhitelistTicketModal extends DiscordModal {
 
@@ -108,7 +108,7 @@ public class WhitelistTicketModal extends DiscordModal {
 																  .thenAcceptAsync(whitelists -> {
 																	  if (!whitelists.isEmpty()) {
 																		  hook.editOriginal(
-																					  "Du bist bereits auf der Whitelist!")
+																					  "Du bist bereits auf der WhitelistDTO!")
 																			  .queue();
 																		  return;
 																	  }

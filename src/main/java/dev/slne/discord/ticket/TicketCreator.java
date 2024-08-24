@@ -1,106 +1,115 @@
 package dev.slne.discord.ticket;
 
-import dev.slne.discord.DiscordBot;
 import dev.slne.discord.config.ticket.TicketTypeConfig;
+import dev.slne.discord.spring.service.ticket.TicketService;
 import dev.slne.discord.ticket.result.TicketCreateResult;
-import net.dv8tion.jda.api.entities.channel.concrete.Category;
-
 import java.util.concurrent.CompletableFuture;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
 
 /**
  * The type Ticket creator.
  */
+@Component
 public class TicketCreator {
 
-	/**
-	 * Create ticket.
-	 *
-	 * @param future          the future
-	 * @param ticket          the ticket
-	 * @param ticketName      the ticket name
-	 * @param channelCategory the channel category
-	 * @param runnable        the runnable
-	 */
-	public static void createTicket(
-			CompletableFuture<TicketCreateResult> future, Ticket ticket, String ticketName,
-			Category channelCategory, Runnable runnable
-	) {
-		TicketService.INSTANCE.createTicket(ticket).thenAcceptAsync(ticketCreateResult -> {
-			if (ticketCreateResult == null) {
-				future.complete(TicketCreateResult.ERROR);
-				return;
-			}
+  private final TicketService ticketService;
+  private final TicketChannelHelper ticketChannelHelper;
 
-			DiscordBot.getInstance().getTicketManager()
-					  .addTicket(ticket);
+  @Autowired
+  public TicketCreator(TicketService ticketService, TicketChannelHelper ticketChannelHelper) {
+    this.ticketService = ticketService;
+    this.ticketChannelHelper = ticketChannelHelper;
+  }
 
-			createTicketChannel(future, ticket, ticketName, channelCategory, runnable);
-		}).exceptionally(exception -> {
-			future.completeExceptionally(exception);
-			return null;
-		});
-	}
+  /**
+   * Create ticket.
+   *
+   * @param future          the future
+   * @param ticket          the ticket
+   * @param ticketName      the ticket name
+   * @param channelCategory the channel category
+   * @param runnable        the runnable
+   */
+  @Async
+  public void createTicket(
+      CompletableFuture<TicketCreateResult> future,
+      Ticket ticket,
+      String ticketName,
+      Category channelCategory,
+      Runnable runnable
+  ) {
 
-	/**
-	 * Create ticket channel.
-	 *
-	 * @param future          the future
-	 * @param ticket          the ticket
-	 * @param ticketName      the ticket name
-	 * @param channelCategory the channel category
-	 * @param runnable        the runnable
-	 */
-	private static void createTicketChannel(
-			CompletableFuture<TicketCreateResult> future, Ticket ticket, String ticketName,
-			Category channelCategory, Runnable runnable
-	) {
-		TicketChannelUtil.createTicketChannel(ticket, ticketName, channelCategory)
-					 .thenAcceptAsync(ticketChannelCreateResult -> {
-						 if (ticketChannelCreateResult == null) {
-							 future.complete(TicketCreateResult.ERROR);
-							 return;
-						 }
+    final Ticket createdTicket = ticketService.createTicket(ticket).join();
 
-						 if (ticketChannelCreateResult != TicketCreateResult.SUCCESS) {
-							 future.complete(ticketChannelCreateResult);
-							 return;
-						 }
+    if (createdTicket == null) {
+      future.complete(TicketCreateResult.ERROR);
+      return;
+    }
 
-						 runAfterOpen(future, ticket, runnable);
-					 })
-					 .exceptionally(exception -> {
-						 exception.printStackTrace();
-						 future.completeExceptionally(
-								 exception);
-						 return null;
-					 });
-	}
+    ticketService.queueOrAddTicket(createdTicket);
+    createTicketChannel(future, ticket, ticketName, channelCategory, runnable);
+  }
 
-	/**
-	 * Run after open.
-	 *
-	 * @param future   the future
-	 * @param ticket   the ticket
-	 * @param runnable the runnable
-	 */
-	private static void runAfterOpen(CompletableFuture<TicketCreateResult> future, Ticket ticket, Runnable runnable) {
-		TicketTypeConfig ticketTypeConfig = TicketTypeConfig.getConfig(ticket.getTicketType());
+  /**
+   * Create ticket channel.
+   *
+   * @param future          the future
+   * @param ticket          the ticket
+   * @param ticketName      the ticket name
+   * @param channelCategory the channel category
+   * @param runnable        the runnable
+   */
+  @Async
+  protected void createTicketChannel(
+      CompletableFuture<TicketCreateResult> future,
+      Ticket ticket,
+      String ticketName,
+      Category channelCategory,
+      Runnable runnable
+  ) {
+    final TicketCreateResult result = ticketChannelHelper.createTicketChannel(ticket, ticketName,
+        channelCategory).join();
 
-		ticket.printOpeningMessages(ticketTypeConfig).thenAcceptAsync(v -> {
-			if (ticketTypeConfig.isShouldPrintWlQuery()) {
-				ticket.printWlQueryEmbeds();
-			}
+    if (result == null) {
+      future.complete(TicketCreateResult.ERROR);
+      return;
+    }
 
-			ticket.afterOpen().thenAcceptAsync(v1 -> {
-				runnable.run();
-				future.complete(TicketCreateResult.SUCCESS);
-			}).exceptionally(exception -> {
-				future.completeExceptionally(exception);
-				return null;
-			});
-		}).exceptionally(exception -> {
-			future.completeExceptionally(exception);
-			return null;
-		});
-	}
+    if (result != TicketCreateResult.SUCCESS) {
+      future.complete(result);
+      return;
+    }
+
+    runAfterOpen(future, ticket, runnable);
+  }
+
+  /**
+   * Run after open.
+   *
+   * @param future   the future
+   * @param ticket   the ticket
+   * @param runnable the runnable
+   */
+  @Async
+  protected void runAfterOpen(
+      CompletableFuture<TicketCreateResult> future,
+      @NotNull Ticket ticket,
+      Runnable runnable
+  ) {
+    final TicketTypeConfig ticketTypeConfig = TicketTypeConfig.getConfig(ticket.getTicketType());
+
+    ticket.printOpeningMessages(ticketTypeConfig).join();
+
+    if (ticketTypeConfig.isShouldPrintWlQuery()) {
+      ticket.printWlQueryEmbeds();
+    }
+
+    ticket.afterOpen().join();
+    runnable.run();
+    future.complete(TicketCreateResult.SUCCESS);
+  }
 }

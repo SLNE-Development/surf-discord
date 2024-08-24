@@ -1,6 +1,7 @@
-package dev.slne.discord.ticket;
+package dev.slne.discord.spring.feign.client;
 
 import dev.slne.discord.datasource.API;
+import dev.slne.discord.ticket.Ticket;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;

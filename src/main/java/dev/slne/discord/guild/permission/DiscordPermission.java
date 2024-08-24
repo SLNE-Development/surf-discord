@@ -1,4 +1,4 @@
-package dev.slne.discord.discord.guild.permission;
+package dev.slne.discord.guild.permission;
 
 import lombok.Getter;
 import net.dv8tion.jda.api.Permission;

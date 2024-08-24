@@ -43,7 +43,9 @@ dependencies {
         exclude(group = "ch.qos.logback", module = "logback-classic")
         exclude(group = "ch.qos.logback", module = "logback-core")
     }
-    implementation("space.arim.dazzleconf:dazzleconf-ext-snakeyaml:1.3.0-M2")
+//    implementation("space.arim.dazzleconf:dazzleconf-ext-snakeyaml:1.3.0-M2")
+    implementation("org.springframework.shell:spring-shell-starter:3.3.1")
+
 }
 
 group = "dev.slne"

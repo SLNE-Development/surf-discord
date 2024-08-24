@@ -3,8 +3,8 @@ package dev.slne.discord.discord.interaction.modal.step.creator.unban.step;
 import dev.slne.discord.discord.interaction.modal.step.MessageQueue;
 import dev.slne.discord.discord.interaction.modal.step.ModalComponentBuilder;
 import dev.slne.discord.discord.interaction.modal.step.ModalStep;
-import dev.slne.discord.punishment.PunishmentBan;
-import dev.slne.discord.punishment.PunishmentService;
+import dev.slne.discord.spring.feign.dto.PunishmentBanDTO;
+import dev.slne.discord.spring.service.punishment.PunishmentService;
 import feign.FeignException;
 import java.util.concurrent.CompletionException;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -37,7 +37,7 @@ public class UnbanTicketPunishmentIdStep extends ModalStep {
     punishmentId = getRequiredInput(event, PUNISHMENT_ID);
 
     try {
-      final PunishmentBan ban = PunishmentService.INSTANCE.getBanByPunishmentId(punishmentId)
+      final PunishmentBanDTO ban = PunishmentService.INSTANCE.getBanByPunishmentId(punishmentId)
           .join();
 
       if (ban == null) {

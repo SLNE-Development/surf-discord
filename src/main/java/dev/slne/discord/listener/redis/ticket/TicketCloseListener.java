@@ -6,7 +6,7 @@ import dev.slne.data.api.spring.redis.event.annotation.DataListeners;
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.datasource.redis.packets.TicketClosePacket;
 import dev.slne.discord.ticket.Ticket;
-import dev.slne.discord.ticket.TicketChannelUtil;
+import dev.slne.discord.ticket.TicketChannelHelper;
 
 /**
  * The type Ticket close listener.
@@ -27,7 +27,7 @@ public class TicketCloseListener {
 		}
 
 		ticket.sendTicketClosedMessages().thenAcceptAsync(v -> {
-			TicketChannelUtil.deleteTicketChannel(ticket);
+			TicketChannelHelper.deleteTicketChannel(ticket);
 			DiscordBot.getInstance().getTicketManager().removeTicket(ticket);
 		}).exceptionally(exception -> {
 			DataApi.getDataInstance()
@@ -35,7 +35,7 @@ public class TicketCloseListener {
 							 exception
 				   );
 
-			TicketChannelUtil.deleteTicketChannel(ticket);
+			TicketChannelHelper.deleteTicketChannel(ticket);
 			DiscordBot.getInstance().getTicketManager().removeTicket(ticket);
 
 			return null;

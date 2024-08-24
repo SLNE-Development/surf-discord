@@ -1,9 +1,14 @@
 package dev.slne.discord.ticket;
 
+import java.util.Objects;
+import lombok.Builder;
 import lombok.ToString;
 import net.dv8tion.jda.api.Permission;
 
 import java.util.Collection;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.requests.restaction.ChannelAction;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Create a new permission override for a ticket.
@@ -13,31 +18,41 @@ import java.util.Collection;
  * @param allow The permissions to allow
  * @param deny  The permissions to deny
  */
+@Builder
 public record TicketPermissionOverride(
-		Type type, long id,
-		Collection<Permission> allow, Collection<Permission> deny
+		Type type,
+		long id,
+		@Nullable Collection<Permission> allow,
+		@Nullable Collection<Permission> deny
 ) {
 
+  public ChannelAction<TextChannel> addOverride(ChannelAction<TextChannel> action) {
+    return switch (type) {
+      case ROLE -> action.addRolePermissionOverride(id, allow, deny);
+			case USER -> action.addMemberPermissionOverride(id, allow, deny);
+    };
+	}
+
 	@Override
-	public boolean equals(Object other) {
-		if (other == this) {
+	public boolean equals(Object o) {
+		if (this == o) {
 			return true;
 		}
-
-		if (other == null) {
+		if (!(o instanceof TicketPermissionOverride that)) {
 			return false;
 		}
 
-		if (other instanceof TicketPermissionOverride otherOverride) {
-			boolean allowMatches = allow().equals(otherOverride.allow());
-			boolean denyMatches = deny().equals(otherOverride.deny());
-			boolean idMatches = id() == otherOverride.id();
-			boolean typeMatches = type().equals(otherOverride.type());
+    return id == that.id && type == that.type && Objects.equals(deny, that.deny)
+				&& Objects.equals(allow, that.allow);
+	}
 
-			return allowMatches && denyMatches && idMatches && typeMatches;
-		}
-
-		return false;
+	@Override
+	public int hashCode() {
+		int result = Objects.hashCode(type);
+		result = 31 * result + Long.hashCode(id);
+		result = 31 * result + Objects.hashCode(allow);
+		result = 31 * result + Objects.hashCode(deny);
+		return result;
 	}
 
 	/**

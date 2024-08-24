@@ -3,7 +3,7 @@ package dev.slne.discord.discord.interaction.modal.modals;
 import dev.slne.data.api.DataApi;
 import dev.slne.discord.discord.interaction.modal.DiscordModal;
 import dev.slne.discord.discord.interaction.modal.step.MessageQueue;
-import dev.slne.discord.punishment.PunishmentService;
+import dev.slne.discord.spring.service.punishment.PunishmentService;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketType;
 import dev.slne.discord.ticket.result.TicketCreateResult;

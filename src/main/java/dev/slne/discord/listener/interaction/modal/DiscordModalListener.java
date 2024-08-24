@@ -4,6 +4,7 @@ import dev.slne.discord.discord.interaction.modal.DiscordModal;
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager;
 import dev.slne.discord.discord.interaction.modal.step.DiscordStepChannelCreationModal;
 import dev.slne.discord.message.MessageManager;
+import dev.slne.discord.spring.annotation.DiscordListener;
 import javax.annotation.Nonnull;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -12,6 +13,7 @@ import net.dv8tion.jda.api.interactions.modals.ModalInteraction;
 /**
  * The type Discord modal listener.
  */
+@DiscordListener
 public class DiscordModalListener extends ListenerAdapter {
 
   @Override

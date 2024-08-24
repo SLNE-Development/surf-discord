@@ -1,12 +1,17 @@
-package dev.slne.discord.whitelist;
+package dev.slne.discord.spring.feign.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import dev.slne.data.api.DataApi;
 import dev.slne.discord.DiscordBot;
+import dev.slne.discord.spring.service.whitelist.WhitelistService;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -20,21 +25,24 @@ import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import org.jetbrains.annotations.NotNull;
 
 /**
- * The type Whitelist.
+ * The type WhitelistDTO.
  */
 @Getter
 @ToString
 @EqualsAndHashCode
-@NoArgsConstructor
-public class Whitelist {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
+public class WhitelistDTO {
 
 	@JsonProperty("id")
 	private long id;
 
 	@JsonProperty("uuid")
-	private UUID uuid;
+	private @NonNull UUID uuid;
 
 	@JsonProperty("minecraft_name")
 	private String minecraftName;
@@ -61,50 +69,29 @@ public class Whitelist {
 	@JsonProperty("created_at")
 	private ZonedDateTime createdAt;
 
-	/**
-	 * Creates a new {@link Whitelist}.
-	 *
-	 * @param uuid          The uuid.
-	 * @param minecraftName The minecraft name.
-	 * @param twitchLink    The twitch link.
-	 * @param discordUser   The discord user.
-	 * @param addedBy       The user who added the whitelist.
-	 */
-	public Whitelist(UUID uuid, String minecraftName, String twitchLink, User discordUser, User addedBy) {
-		if (uuid == null) {
-			throw new IllegalArgumentException("uuid cannot be null");
+	public static WhitelistDTO createFrom(
+			@NotNull UUID uuid,
+			String minecraftName,
+			String twitchLink,
+			User user,
+			User executor
+	) {
+		final WhitelistDTOBuilder builder = WhitelistDTO.builder()
+				.uuid(uuid)
+				.minecraftName(minecraftName)
+				.twitchLink(twitchLink);
+
+		if (user != null) {
+			builder.discordId(user.getId());
 		}
 
-		this.uuid = uuid;
-		this.twitchLink = twitchLink;
-		this.minecraftName = minecraftName;
-
-		if (discordUser != null) {
-			this.discordId = discordUser.getId();
+		if (executor != null) {
+			builder.addedById(executor.getId())
+					.addedByName(executor.getName())
+					.addedByAvatarUrl(executor.getAvatarUrl());
 		}
 
-		if (addedBy != null) {
-			this.addedById = addedBy.getId();
-			this.addedByName = addedBy.getName();
-			this.addedByAvatarUrl = addedBy.getAvatarUrl();
-		}
-
-		this.blocked = false;
-	}
-
-	/**
-	 * Instantiates a new Whitelist.
-	 *
-	 * @param uuid       the uuid
-	 * @param twitchLink the twitch link
-	 * @param discordId  the discord id
-	 * @param addedById  the added by id
-	 */
-	public Whitelist(UUID uuid, String twitchLink, String discordId, String addedById) {
-		this.uuid = uuid;
-		this.twitchLink = twitchLink;
-		this.discordId = discordId;
-		this.addedById = addedById;
+		return builder.build();
 	}
 
 	/**
@@ -120,20 +107,21 @@ public class Whitelist {
 	}
 
 	/**
-	 * Returns a {@link MessageEmbed} for a {@link Whitelist}.
+	 * Returns a {@link MessageEmbed} for a {@link WhitelistDTO}.
 	 *
-	 * @param whitelist The {@link Whitelist}.
+	 * @param whitelist The {@link WhitelistDTO}.
 	 *
 	 * @return The {@link MessageEmbed}.
 	 */
-	public static @Nonnull CompletableFuture<MessageEmbed> getWhitelistQueryEmbed(Whitelist whitelist) {
+	public static @Nonnull CompletableFuture<MessageEmbed> getWhitelistQueryEmbed(
+			WhitelistDTO whitelist) {
 		CompletableFuture<MessageEmbed> future = new CompletableFuture<>();
 
 		EmbedBuilder builder = new EmbedBuilder();
 
-		builder.setTitle("Whitelist Query");
-		builder.setFooter("Whitelist Query", DiscordBot.getInstance().getJda().getSelfUser().getAvatarUrl());
-		builder.setDescription("Whitelist Informationen");
+		builder.setTitle("WhitelistDTO Query");
+		builder.setFooter("WhitelistDTO Query", DiscordBot.getInstance().getJda().getSelfUser().getAvatarUrl());
+		builder.setDescription("WhitelistDTO Informationen");
 		builder.setColor(0x000000);
 		builder.setTimestamp(Instant.now());
 
@@ -193,24 +181,6 @@ public class Whitelist {
 		});
 
 		return future;
-	}
-
-	/**
-	 * Creates a new {@link Whitelist}.
-	 *
-	 * @return The {@link CompletableFuture}.
-	 */
-	public CompletableFuture<Whitelist> create() {
-		return WhitelistService.INSTANCE.addWhitelist(this);
-	}
-
-	/**
-	 * Updates the {@link Whitelist}.
-	 *
-	 * @return The {@link CompletableFuture}.
-	 */
-	public CompletableFuture<Whitelist> update() {
-		return WhitelistService.INSTANCE.updateWhitelist(this);
 	}
 
 	/**

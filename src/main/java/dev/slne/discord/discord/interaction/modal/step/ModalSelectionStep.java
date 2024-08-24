@@ -1,5 +1,6 @@
 package dev.slne.discord.discord.interaction.modal.step;
 
+import dev.slne.discord.spring.annotation.DiscordListener;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.concurrent.CompletableFuture;
@@ -73,6 +74,7 @@ public abstract class ModalSelectionStep extends ModalStep {
   /**
    * Listener class for handling selection interactions.
    */
+  @DiscordListener
   public static class ModalSelectionStepListener extends ListenerAdapter {
 
     /**

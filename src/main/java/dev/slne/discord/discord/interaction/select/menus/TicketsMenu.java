@@ -1,7 +1,6 @@
 package dev.slne.discord.discord.interaction.select.menus;
 
 import dev.slne.data.api.DataApi;
-import dev.slne.discord.DiscordBot;
 import dev.slne.discord.discord.interaction.modal.modals.WhitelistTicketModal;
 import dev.slne.discord.discord.interaction.modal.step.creator.report.ReportTicketChannelCreationModal;
 import dev.slne.discord.discord.interaction.modal.step.creator.unban.UnbanTicketChannelCreationModal;
@@ -13,7 +12,7 @@ import dev.slne.discord.ticket.tickets.BugreportTicket;
 import dev.slne.discord.ticket.tickets.DiscordSupportTicket;
 import dev.slne.discord.ticket.tickets.EventSupportTicket;
 import dev.slne.discord.ticket.tickets.ServerSupportTicket;
-import dev.slne.discord.whitelist.Whitelist;
+import dev.slne.discord.spring.feign.dto.WhitelistDTO;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.InteractionHook;
@@ -82,7 +81,7 @@ public class TicketsMenu extends DiscordSelectMenu {
 			if (ticketType.equals(TicketType.DISCORD_SUPPORT)) {
 				ticketFuture.complete(new DiscordSupportTicket(guild, user));
 			} else {
-				Whitelist.isWhitelisted(user).thenAcceptAsync(whitelisted -> {
+				WhitelistDTO.isWhitelisted(user).thenAcceptAsync(whitelisted -> {
 					List<TicketType> whitelistedTypes = List.of(
 							TicketType.SURVIVAL_SUPPORT
 					);
@@ -167,7 +166,7 @@ public class TicketsMenu extends DiscordSelectMenu {
 
 		User user = interaction.getUser();
 
-		Whitelist.isWhitelisted(user).thenAcceptAsync(whitelistedBoolean -> {
+		WhitelistDTO.isWhitelisted(user).thenAcceptAsync(whitelistedBoolean -> {
 			boolean whitelisted = whitelistedBoolean;
 
 			if (whitelisted) {
@@ -220,7 +219,7 @@ public class TicketsMenu extends DiscordSelectMenu {
 	 * @param hook the hook
 	 */
 	private void sendNotWhitelistedMessage(InteractionHook hook) {
-		hook.editOriginal("Du befindest dich nicht auf der Whitelist und kannst dieses Ticket nicht öffnen.").queue();
+		hook.editOriginal("Du befindest dich nicht auf der WhitelistDTO und kannst dieses Ticket nicht öffnen.").queue();
 	}
 
 	/**
@@ -229,7 +228,7 @@ public class TicketsMenu extends DiscordSelectMenu {
 	 * @param interaction the interaction
 	 */
 	private void sendAlreadyWhitelistedMessage(StringSelectInteraction interaction) {
-		interaction.reply("Du befindest dich bereits auf der Whitelist und kannst dieses Ticket nicht öffnen.")
+		interaction.reply("Du befindest dich bereits auf der WhitelistDTO und kannst dieses Ticket nicht öffnen.")
 				   .setEphemeral(true).queue();
 	}
 }
