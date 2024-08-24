@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import java.util.List;
+import java.util.Optional;
 import lombok.experimental.Delegate;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.commands.Command;
@@ -14,7 +15,6 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -49,8 +49,8 @@ public class DiscordCommandProcessor implements BeanPostProcessor {
     return bean;
   }
 
-  public @Nullable DiscordCommandHolder getCommand(@NotNull String name) {
-    return commands.get(name);
+  public Optional<DiscordCommandHolder> getCommand(@NotNull String name) {
+    return Optional.ofNullable(commands.get(name));
   }
 
   @Async

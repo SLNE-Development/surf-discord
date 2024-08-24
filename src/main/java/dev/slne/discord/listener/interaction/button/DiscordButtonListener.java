@@ -25,7 +25,7 @@ public class DiscordButtonListener extends ListenerAdapter {
         event.getButton().getId());
 
     if (holder != null) {
-      holder.getHandler().onClick(event);
+      holder.handler().onClick(event);
     }
   }
 }
