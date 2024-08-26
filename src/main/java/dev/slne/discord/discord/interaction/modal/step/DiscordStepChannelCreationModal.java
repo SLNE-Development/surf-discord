@@ -1,10 +1,10 @@
 package dev.slne.discord.discord.interaction.modal.step;
 
+import dev.slne.discord.annotation.ChannelCreationModal;
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager;
 import dev.slne.discord.discord.interaction.modal.step.ModalStep.ModalStepInputVerificationException;
 import dev.slne.discord.discord.interaction.modal.step.ModalStep.ModuleStepChannelCreationException;
-import dev.slne.discord.spring.annotation.ChannelCreationModal;
-import dev.slne.discord.spring.annotation.processor.ChannelCreationModalProcessor;
+import dev.slne.discord.spring.processor.ChannelCreationModalProcessor;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketChannelHelper;
 import dev.slne.discord.ticket.TicketType;
@@ -284,7 +284,8 @@ public abstract class DiscordStepChannelCreationModal {
    * @param event The modal interaction event.
    * @param steps The list of steps to verify.
    */
-  private boolean verifyModalInput(ModalInteractionEvent event, @NotNull LinkedList<ModalStep> steps) {
+  private boolean verifyModalInput(ModalInteractionEvent event,
+      @NotNull LinkedList<ModalStep> steps) {
     for (final ModalStep step : steps) {
       try {
         step.runVerifyModalInput(event);

@@ -1,17 +1,17 @@
 package dev.slne.discord.discord.interaction.command.commands.whitelist;
 
 import dev.slne.data.api.DataApi;
+import dev.slne.discord.annotation.DiscordCommandMeta;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.exception.command.CommandException;
 import dev.slne.discord.guild.permission.CommandPermission;
-import dev.slne.discord.spring.annotation.DiscordCommandMeta;
+import dev.slne.discord.message.MessageManager;
 import dev.slne.discord.spring.feign.dto.WhitelistDTO;
 import dev.slne.discord.spring.service.whitelist.WhitelistService;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -35,9 +35,11 @@ public class WhitelistQueryCommand extends DiscordCommand {
   private static final String MINECRAFT_OPTION = "minecraft";
   private static final String TWITCH_OPTION = "twitch";
   private final WhitelistService whitelistService;
+  private final MessageManager messageManager;
 
-  public WhitelistQueryCommand(WhitelistService whitelistService) {
+  public WhitelistQueryCommand(WhitelistService whitelistService, MessageManager messageManager) {
     this.whitelistService = whitelistService;
+    this.messageManager = messageManager;
   }
 
   @Override
@@ -86,11 +88,11 @@ public class WhitelistQueryCommand extends DiscordCommand {
     ).join();
 
     if (optionalUser.isPresent()) {
-      printUserWlQuery(whitelists, optionalUser.get().getName(), channel, hook);
+      messageManager.printUserWlQuery(whitelists, optionalUser.get().getName(), channel, hook);
     } else if (optionalMinecraft.isPresent()) {
-      printUserWlQuery(whitelists, optionalMinecraft.get(), channel, hook);
+      messageManager.printUserWlQuery(whitelists, optionalMinecraft.get(), channel, hook);
     } else {
-      printUserWlQuery(whitelists, optionalTwitch.get(), channel, hook);
+      messageManager.printUserWlQuery(whitelists, optionalTwitch.get(), channel, hook);
     }
   }
 
@@ -114,35 +116,5 @@ public class WhitelistQueryCommand extends DiscordCommand {
     }
 
     return CompletableFuture.completedFuture(whitelists);
-  }
-
-  protected void printUserWlQuery(List<WhitelistDTO> whitelists, String name, TextChannel channel,
-      InteractionHook hook)
-      throws CommandException {
-    if (whitelists.isEmpty()) {
-      throw new CommandException(
-          "Es wurden keine Whitelist Einträge für \"" + name + "\" gefunden.");
-    }
-
-    printWlQuery(channel, "\"" + name + "\"", whitelists);
-    hook.deleteOriginal().queue();
-  }
-
-  /**
-   * Prints a wlquery request.
-   *
-   * @param channel    The channel.
-   * @param title      The title.
-   * @param whitelists The whitelists.
-   */
-  @Async
-  public void printWlQuery(TextChannel channel, String title, List<WhitelistDTO> whitelists) {
-    title = title.replace("\"", "");
-    channel.sendMessage("WlQuery für: `" + title + "`").queue();
-
-    for (final WhitelistDTO whitelist : whitelists) {
-      final MessageEmbed embed = whitelistService.getWhitelistQueryEmbed(whitelist).join();
-      channel.sendMessageEmbeds(embed).queue();
-    }
   }
 }

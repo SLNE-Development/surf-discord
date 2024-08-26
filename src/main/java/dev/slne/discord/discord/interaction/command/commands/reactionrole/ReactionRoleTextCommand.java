@@ -1,12 +1,13 @@
 package dev.slne.discord.discord.interaction.command.commands.reactionrole;
 
+import dev.slne.discord.annotation.DiscordCommandMeta;
 import dev.slne.discord.config.discord.GuildConfig;
 import dev.slne.discord.config.discord.ReactionRoleConfig;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.exception.command.CommandException;
 import dev.slne.discord.guild.permission.CommandPermission;
-import dev.slne.discord.spring.annotation.DiscordCommandMeta;
-import java.awt.Color;
+import dev.slne.discord.message.EmbedColors;
+import dev.slne.discord.message.RawMessages;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -34,19 +35,19 @@ public class ReactionRoleTextCommand extends DiscordCommand {
     final Guild guild = interaction.getGuild();
 
     if (guild == null) {
-      throw new CommandException("Du musst auf einem Server sein, um diesen Command auszuführen!");
+      throw CommandException.noGuild();
     }
 
     final GuildConfig guildConfig = GuildConfig.getByGuildId(guild.getId());
 
     if (guildConfig == null) {
-      throw new CommandException("Dieser Server ist nicht registriert!");
+      throw CommandException.serverNotRegistered();
     }
 
     final Channel channel = interaction.getChannel();
 
     if (!(channel instanceof TextChannel textChannel)) {
-      throw new CommandException("Dieser Command kann nur in Textkanälen ausgeführt werden!");
+      throw CommandException.noTextChannel();
     }
 
     textChannel.sendMessageEmbeds(getEmbed()).queue(message -> {
@@ -73,10 +74,9 @@ public class ReactionRoleTextCommand extends DiscordCommand {
    */
   private @NotNull MessageEmbed getEmbed() {
     return new EmbedBuilder()
-        .setTitle("Server Benachrichtigungs-Rolle")
-        .setDescription(
-            "Du möchtest benachrichtigt werden, wenn es neue Updates gibt? Dann reagiere mit :bell: unter dieser Nachricht!")
-        .setColor(Color.decode("#ffaa39"))
+        .setTitle(RawMessages.get("interaction.command.reaction-role.title"))
+        .setDescription(RawMessages.get("interaction.command.reaction-role.description"))
+        .setColor(EmbedColors.REACTION_ROLE)
         .build();
   }
 }

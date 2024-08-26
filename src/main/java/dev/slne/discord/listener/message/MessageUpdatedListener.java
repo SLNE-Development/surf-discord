@@ -1,6 +1,6 @@
 package dev.slne.discord.listener.message;
 
-import dev.slne.discord.spring.annotation.DiscordListener;
+import dev.slne.discord.annotation.DiscordListener;
 import dev.slne.discord.spring.service.ticket.TicketService;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.message.TicketMessage;

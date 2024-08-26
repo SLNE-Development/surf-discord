@@ -1,4 +1,4 @@
-package dev.slne.discord.spring.annotation;
+package dev.slne.discord.annotation;
 
 import dev.slne.discord.ticket.TicketType;
 import java.lang.annotation.ElementType;

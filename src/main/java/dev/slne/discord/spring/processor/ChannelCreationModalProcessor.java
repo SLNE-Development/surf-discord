@@ -1,9 +1,9 @@
-package dev.slne.discord.spring.annotation.processor;
+package dev.slne.discord.spring.processor;
 
 import dev.slne.discord.DiscordSpringApplication;
+import dev.slne.discord.annotation.ChannelCreationModal;
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager;
 import dev.slne.discord.discord.interaction.modal.step.DiscordStepChannelCreationModal;
-import dev.slne.discord.spring.annotation.ChannelCreationModal;
 import dev.slne.discord.ticket.TicketType;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -21,7 +21,8 @@ import org.springframework.stereotype.Component;
 @ExtensionMethod({Class.class, AnnotationUtils.class})
 public class ChannelCreationModalProcessor {
 
-  private static final ComponentLogger LOGGER = ComponentLogger.logger("ChannelCreationModalProcessor");
+  private static final ComponentLogger LOGGER = ComponentLogger.logger(
+      "ChannelCreationModalProcessor");
   private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
 
   @Autowired

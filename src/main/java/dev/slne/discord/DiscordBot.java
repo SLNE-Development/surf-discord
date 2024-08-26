@@ -5,13 +5,12 @@ import dev.slne.discord.config.BotConfig;
 import dev.slne.discord.discord.interaction.command.DiscordCommandManager;
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenuManager;
 import dev.slne.discord.discord.settings.GatewayIntents;
-import dev.slne.discord.listener.ListenerManager;
 import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import org.gradle.internal.event.ListenerManager;
 
 /**
  * The type Discord bot.
@@ -27,7 +26,6 @@ public class DiscordBot {
   private JDA jda;
 
   private ListenerManager listenerManager;
-  private TicketManager ticketManager;
 
   private DiscordCommandManager commandManager;
   private DiscordSelectMenuManager selectMenuManager;
@@ -67,17 +65,8 @@ public class DiscordBot {
 
     commandManager = new DiscordCommandManager();
     listenerManager = new ListenerManager();
-    ticketManager = new TicketManager();
     selectMenuManager = new DiscordSelectMenuManager();
 
-    listenerManager.registerDiscordListeners();
-    listenerManager.registerListeners();
-
-    for (Guild guild : jda.getGuilds()) {
-      DiscordBot.getInstance().getCommandManager().registerToGuild(guild);
-    }
-
-    DiscordBot.getInstance().getTicketManager().fetchActiveTickets();
     DataApi.getDataInstance().logInfo(getClass(), "Discord Bot is ready");
   }
 

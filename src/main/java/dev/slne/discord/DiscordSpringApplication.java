@@ -34,10 +34,10 @@ public class DiscordSpringApplication implements AsyncConfigurer {
   public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
     return (throwable, method, params) -> {
       LOGGER.error("""
-               Exception message - {}
-               Method name - {}
-               ParameterValues - {}
-          """,
+                   Exception message - {}
+                   Method name - {}
+                   ParameterValues - {}
+              """,
           throwable.getMessage(),
           method.getName(),
           ArrayUtils.toString(params)

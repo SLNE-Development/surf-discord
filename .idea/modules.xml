@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/IdeaProjects.surf-discord.main.iml" filepath="$PROJECT_DIR$/.idea/modules/IdeaProjects.surf-discord.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/IdeaProjects.surf-discord.test.iml" filepath="$PROJECT_DIR$/.idea/modules/IdeaProjects.surf-discord.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/dev.slne.surf-discord.main.iml" filepath="$PROJECT_DIR$/.idea/modules/dev.slne.surf-discord.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/dev.slne.surf-discord.test.iml" filepath="$PROJECT_DIR$/.idea/modules/dev.slne.surf-discord.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/surf-discord.main.iml" filepath="$PROJECT_DIR$/.idea/modules/surf-discord.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/surf-discord.test.iml" filepath="$PROJECT_DIR$/.idea/modules/surf-discord.test.iml" />
+    </modules>
+  </component>
+</project>

@@ -1,6 +1,6 @@
-package dev.slne.discord.spring.annotation.processor;
+package dev.slne.discord.spring.processor;
 
-import dev.slne.discord.spring.annotation.DiscordListener;
+import dev.slne.discord.annotation.DiscordListener;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
@@ -26,13 +26,15 @@ public class DiscordListenerProcessor implements BeanPostProcessor {
   }
 
   @Override
-  public Object postProcessAfterInitialization(@NotNull Object bean, @NotNull String beanName) throws BeansException {
+  public Object postProcessAfterInitialization(@NotNull Object bean, @NotNull String beanName)
+      throws BeansException {
     final DiscordListener annotation = AnnotationUtils.findAnnotation(bean.getClass(),
         DiscordListener.class);
 
     if (annotation != null) {
       if (!(bean instanceof ListenerAdapter listener)) {
-        throw new BeanCreationException("Bean " + beanName + " is annotated with @DiscordListener but does not extend ListenerAdapter.");
+        throw new BeanCreationException("Bean " + beanName
+                                        + " is annotated with @DiscordListener but does not extend ListenerAdapter.");
       }
 
       LOGGER.info("Registering listener {}", beanName);

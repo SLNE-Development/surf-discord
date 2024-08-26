@@ -1,10 +1,10 @@
 package dev.slne.discord.discord.interaction.command.commands.whitelist;
 
+import dev.slne.discord.annotation.DiscordCommandMeta;
 import dev.slne.discord.config.discord.GuildConfig;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.exception.command.CommandException;
 import dev.slne.discord.guild.permission.CommandPermission;
-import dev.slne.discord.spring.annotation.DiscordCommandMeta;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;

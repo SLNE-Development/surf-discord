@@ -3,6 +3,7 @@ package dev.slne.discord.ticket.member;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import dev.slne.discord.DiscordBot;
+import dev.slne.discord.spring.service.ticket.TicketMemberService;
 import dev.slne.discord.ticket.Ticket;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -16,6 +17,8 @@ import lombok.Setter;
 import lombok.ToString;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.requests.RestAction;
+import org.jetbrains.annotations.Blocking;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The type Ticket member.
@@ -98,44 +101,24 @@ public class TicketMember {
   }
 
   /**
-   * Creates the ticket member
-   *
-   * @return The result of the creation
-   */
-  public CompletableFuture<TicketMember> create() {
-    CompletableFuture<TicketMember> future = new CompletableFuture<>();
-
-    Ticket ticket = getTicket();
-
-    if (ticket == null) {
-      future.completeExceptionally(new IllegalStateException("Ticket is null"));
-      return future;
-    }
-
-    UUID ticketId = ticket.getTicketId();
-
-    if (ticketId == null) {
-      future.completeExceptionally(new IllegalStateException("Ticket id is null"));
-      return future;
-    }
-
-    TicketMemberService.INSTANCE.createTicketMember(ticket, this).thenAccept(future::complete)
-        .exceptionally(exception -> {
-          future.completeExceptionally(exception);
-          return null;
-        });
-
-    return future;
-  }
-
-  /**
    * Returns if the ticket member is removed
    *
    * @return If the ticket member is removed
    */
+  @JsonIgnore
   public boolean isRemoved() {
     return getRemovedBy() != null || removedById != null || removedByName != null
            || removedByAvatarUrl != null;
+  }
+
+  /**
+   * Returns if the ticket member is activated
+   *
+   * @return If the ticket member is activated
+   */
+  @JsonIgnore
+  public boolean isActivated() {
+    return !isRemoved();
   }
 
   /**
@@ -154,12 +137,22 @@ public class TicketMember {
    * @return the member
    */
   @JsonIgnore
+  @Nullable
   public RestAction<User> getMember() {
     if (memberId == null) {
       return null;
     }
 
     return DiscordBot.getInstance().getJda().retrieveUserById(memberId);
+  }
+
+  @JsonIgnore
+  @Blocking
+  @Nullable
+  public User getMemberNow() {
+    final RestAction<User> memberRest = getMember();
+
+    return memberRest == null ? null : memberRest.complete();
   }
 
   /**

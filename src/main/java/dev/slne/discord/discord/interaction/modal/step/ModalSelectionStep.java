@@ -1,6 +1,6 @@
 package dev.slne.discord.discord.interaction.modal.step;
 
-import dev.slne.discord.spring.annotation.DiscordListener;
+import dev.slne.discord.annotation.DiscordListener;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.concurrent.CompletableFuture;

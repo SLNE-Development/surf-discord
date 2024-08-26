@@ -1,7 +1,7 @@
 package dev.slne.discord.listener.whitelist;
 
+import dev.slne.discord.annotation.DiscordListener;
 import dev.slne.discord.config.discord.GuildConfig;
-import dev.slne.discord.spring.annotation.DiscordListener;
 import dev.slne.discord.spring.feign.dto.WhitelistDTO;
 import dev.slne.discord.spring.service.whitelist.WhitelistService;
 import javax.annotation.Nonnull;

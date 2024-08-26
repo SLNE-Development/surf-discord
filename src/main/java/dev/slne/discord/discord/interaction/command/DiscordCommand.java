@@ -1,10 +1,10 @@
 package dev.slne.discord.discord.interaction.command;
 
+import dev.slne.discord.annotation.DiscordCommandMeta;
 import dev.slne.discord.config.role.RoleConfig;
 import dev.slne.discord.exception.command.CommandException;
 import dev.slne.discord.exception.command.PreCommandCheckException;
 import dev.slne.discord.guild.permission.CommandPermission;
-import dev.slne.discord.spring.annotation.DiscordCommandMeta;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;

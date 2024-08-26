@@ -4,12 +4,14 @@ import dev.slne.discord.DiscordBot;
 import dev.slne.discord.config.BotConfig;
 import dev.slne.discord.config.role.RoleConfig;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Getter;
 import lombok.ToString;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 
 import java.util.Map;
@@ -74,7 +76,8 @@ public class GuildConfig {
 		return DiscordBot.getInstance().getJda().getRoleById(whitelistRoleId);
 	}
 
+	@Unmodifiable
 	public Object2ObjectMap<String, RoleConfig> getRoleConfig() {
-		return new Object2ObjectOpenHashMap<>(roleConfig);
+		return Object2ObjectMaps.unmodifiable(new Object2ObjectOpenHashMap<>(roleConfig));
 	}
 }

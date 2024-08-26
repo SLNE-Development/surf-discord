@@ -1,11 +1,11 @@
 package dev.slne.discord.discord.interaction.command.commands.whitelist;
 
 import dev.slne.data.api.DataApi;
+import dev.slne.discord.annotation.DiscordCommandMeta;
 import dev.slne.discord.config.discord.GuildConfig;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.exception.command.CommandException;
 import dev.slne.discord.guild.permission.CommandPermission;
-import dev.slne.discord.spring.annotation.DiscordCommandMeta;
 import dev.slne.discord.spring.feign.dto.WhitelistDTO;
 import dev.slne.discord.spring.service.whitelist.WhitelistService;
 import java.util.List;

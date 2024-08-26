@@ -1,8 +1,8 @@
 package dev.slne.discord.listener.interaction.button;
 
-import dev.slne.discord.spring.annotation.DiscordListener;
-import dev.slne.discord.spring.annotation.processor.DiscordButtonProcessor;
-import dev.slne.discord.spring.annotation.processor.DiscordButtonProcessor.DiscordButtonHandlerHolder;
+import dev.slne.discord.annotation.DiscordListener;
+import dev.slne.discord.spring.processor.DiscordButtonProcessor;
+import dev.slne.discord.spring.processor.DiscordButtonProcessor.DiscordButtonHandlerHolder;
 import javax.annotation.Nonnull;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;

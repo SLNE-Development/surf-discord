@@ -1,6 +1,7 @@
-package dev.slne.discord.ticket.member;
+package dev.slne.discord.spring.feign.client;
 
 import dev.slne.discord.datasource.API;
+import dev.slne.discord.ticket.member.TicketMember;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,7 +13,7 @@ import java.util.UUID;
 /**
  * The interface Ticket member client.
  */
-@FeignClient(name = "ticket-member-service", url = API.API_PREFIX)
+@FeignClient(name = "ticket-member-client", url = API.API_PREFIX)
 public interface TicketMemberClient {
 
 	/**

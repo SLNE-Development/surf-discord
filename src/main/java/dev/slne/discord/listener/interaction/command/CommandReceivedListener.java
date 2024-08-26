@@ -1,7 +1,7 @@
 package dev.slne.discord.listener.interaction.command;
 
-import dev.slne.discord.spring.annotation.DiscordListener;
-import dev.slne.discord.spring.annotation.processor.DiscordCommandProcessor;
+import dev.slne.discord.annotation.DiscordListener;
+import dev.slne.discord.spring.processor.DiscordCommandProcessor;
 import javax.annotation.Nonnull;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;

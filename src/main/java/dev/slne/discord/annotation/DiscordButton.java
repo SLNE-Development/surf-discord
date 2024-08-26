@@ -1,6 +1,5 @@
-package dev.slne.discord.spring.annotation;
+package dev.slne.discord.annotation;
 
-import dev.slne.discord.annotation.DiscordEmoji;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

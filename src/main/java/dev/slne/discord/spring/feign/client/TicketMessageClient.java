@@ -1,6 +1,7 @@
-package dev.slne.discord.ticket.message;
+package dev.slne.discord.spring.feign.client;
 
 import dev.slne.discord.datasource.API;
+import dev.slne.discord.ticket.message.TicketMessage;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,5 +23,5 @@ public interface TicketMessageClient {
 	 * @return the ticket message
 	 */
 	@PostMapping(API.TICKET_MESSAGES)
-	TicketMessage createTicketMessage(@PathVariable UUID ticketId, TicketMessage ticketMessage);
+  TicketMessage createTicketMessage(@PathVariable UUID ticketId, TicketMessage ticketMessage);
 }

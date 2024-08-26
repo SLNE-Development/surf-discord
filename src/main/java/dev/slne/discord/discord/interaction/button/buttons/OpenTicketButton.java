@@ -1,14 +1,14 @@
 package dev.slne.discord.discord.interaction.button.buttons;
 
 import dev.slne.discord.DiscordBot;
+import dev.slne.discord.annotation.DiscordButton;
 import dev.slne.discord.annotation.DiscordEmoji;
 import dev.slne.discord.discord.interaction.button.DiscordButtonHandler;
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenu;
 import dev.slne.discord.discord.interaction.select.menus.TicketsMenu;
-import dev.slne.discord.spring.annotation.DiscordButton;
-import java.awt.Color;
+import dev.slne.discord.message.EmbedColors;
+import dev.slne.discord.message.RawMessages;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.selections.SelectMenu;
@@ -42,10 +42,9 @@ public class OpenTicketButton implements DiscordButtonHandler {
    */
   private void sendEmbed(SelectMenu menu, ButtonInteraction interaction) {
     EmbedBuilder builder = new EmbedBuilder();
-    builder.setTitle("Ticket Typ auswählen");
-    builder.setDescription(
-        "Bitte wähle das passende Ticket aus, welches du öffnen möchtest.\n\nInformationen zu den unterschiedlichen Tickettypen findest du auf https://server.castcrafter.de/support");
-    builder.setColor(Color.CYAN);
+    builder.setTitle(RawMessages.get("interaction.button.open-ticket.title"));
+    builder.setDescription(RawMessages.get("interaction.button.open-ticket.description"));
+    builder.setColor(EmbedColors.SELECT_TICKET_TYPE);
 
     interaction.deferReply(true)
         .queue(hook -> {

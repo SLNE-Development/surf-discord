@@ -1,8 +1,8 @@
 package dev.slne.discord.listener.reactionrole;
 
+import dev.slne.discord.annotation.DiscordListener;
 import dev.slne.discord.config.discord.GuildConfig;
 import dev.slne.discord.config.discord.ReactionRoleConfig;
-import dev.slne.discord.spring.annotation.DiscordListener;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import net.dv8tion.jda.api.entities.Guild;
@@ -10,7 +10,6 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.react.GenericMessageReactionEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
@@ -91,7 +90,9 @@ public class ReactionRoleListener extends ListenerAdapter {
   @Async
   protected void removeAllReactionRoles(Guild guild) {
     final ReactionRoleConfig config = getReactionRoleConfig(guild);
-    if (config == null || config.getRole() == null) return;
+    if (config == null || config.getRole() == null) {
+      return;
+    }
 
     guild.findMembersWithRoles(config.getRole()).onSuccess(members ->
         members.stream()
@@ -111,12 +112,13 @@ public class ReactionRoleListener extends ListenerAdapter {
     }
 
     final Message reactionMessage = messageRest.complete();
-    final Message eventMessage = event.getChannel().retrieveMessageById(event.getMessageId()).complete();
+    final Message eventMessage = event.getChannel().retrieveMessageById(event.getMessageId())
+        .complete();
 
     return eventMessage != null &&
-        reactionMessage != null &&
-        reactionMessage.getId().equals(eventMessage.getId()) &&
-        Objects.equals(config.getReaction(), event.getEmoji().getName());
+           reactionMessage != null &&
+           reactionMessage.getId().equals(eventMessage.getId()) &&
+           Objects.equals(config.getReaction(), event.getEmoji().getName());
   }
 
   private boolean isRelevantReaction(Guild guild, Emoji emoji) {

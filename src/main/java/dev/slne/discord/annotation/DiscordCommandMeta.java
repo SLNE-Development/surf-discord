@@ -1,5 +1,6 @@
-package dev.slne.discord.spring.annotation;
+package dev.slne.discord.annotation;
 
+import dev.slne.discord.guild.permission.CommandPermission;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -9,6 +10,15 @@ import org.springframework.stereotype.Component;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Component
-public @interface DiscordListener {
+public @interface DiscordCommandMeta {
 
+  String name();
+
+  String description();
+
+  CommandPermission permission();
+
+  boolean guildOnly() default true;
+
+  boolean nsfw() default false;
 }

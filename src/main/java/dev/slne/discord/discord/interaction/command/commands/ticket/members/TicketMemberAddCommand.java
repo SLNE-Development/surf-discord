@@ -1,16 +1,18 @@
 package dev.slne.discord.discord.interaction.command.commands.ticket.members;
 
+import dev.slne.discord.annotation.DiscordCommandMeta;
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand;
 import dev.slne.discord.exception.command.CommandException;
 import dev.slne.discord.exception.ticket.member.TicketAddMemberException;
 import dev.slne.discord.guild.permission.CommandPermission;
-import dev.slne.discord.spring.annotation.DiscordCommandMeta;
+import dev.slne.discord.message.EmbedColors;
+import dev.slne.discord.message.RawMessages;
 import dev.slne.discord.spring.service.ticket.TicketService;
 import dev.slne.discord.ticket.TicketChannelHelper;
 import dev.slne.discord.ticket.member.TicketMember;
-import java.awt.Color;
-import java.time.Instant;
+import dev.slne.discord.util.TimeUtils;
 import java.util.List;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
@@ -18,7 +20,6 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import org.jetbrains.annotations.NotNull;
@@ -46,37 +47,37 @@ public class TicketMemberAddCommand extends TicketCommand {
   @Override
   public @Nonnull List<OptionData> getOptions() {
     return List.of(
-        new OptionData(OptionType.USER, USER_OPTION, "Der Nutzer, welcher hinzugefügt werden soll.",
+        new OptionData(
+            OptionType.USER,
+            USER_OPTION,
+            RawMessages.get("interaction.command.ticket.member.add.arg.member"),
             true,
-            false)
+            false
+        )
     );
   }
 
   @Override
   public void internalExecute(SlashCommandInteractionEvent interaction, InteractionHook hook)
       throws CommandException {
-    final OptionMapping userOption = interaction.getOption(USER_OPTION);
+    final User user = getUserOrThrow(interaction, USER_OPTION);
 
-    if (userOption == null) {
-      throw new CommandException("Du musst einen Nutzer angeben.");
-    }
-
-    final User user = userOption.getAsUser();
+    hook.editOriginal(RawMessages.get("interaction.command.ticket.member.add.adding")).queue();
 
     if (user.equals(jda.getSelfUser())) {
-      throw new CommandException("Du kannst den Bot nicht hinzufügen.");
+      throw CommandException.ticketAddBot();
     }
 
-    final TicketMember ticketMember = getTicket().getActiveTicketMember(user);
+    final Optional<TicketMember> ticketMember = getTicket().getActiveTicketMember(user);
 
-    if (ticketMember != null) {
-      throw new CommandException("Dieser Nutzer ist bereits in diesem Ticket.");
+    if (ticketMember.isPresent()) {
+      throw CommandException.ticketAddMemberAlreadyInTicket();
     }
 
     try {
       addTicketMember(user, interaction.getUser(), hook);
     } catch (TicketAddMemberException e) {
-      throw new CommandException("Der Nutzer konnte nicht hinzugefügt werden.", e);
+      throw CommandException.ticketAddMember(e);
     }
   }
 
@@ -88,11 +89,11 @@ public class TicketMemberAddCommand extends TicketCommand {
     final TicketMember addedMember = getTicket().addTicketMember(newTicketMember).join();
 
     if (addedMember == null) {
-      throw new CommandException("Der Nutzer konnte nicht hinzugefügt werden.");
+      throw CommandException.ticketAddMember(new Throwable());
     }
 
     ticketChannelHelper.addTicketMember(getTicket(), addedMember).join();
-    hook.editOriginal("Der Nutzer wurde erfolgreich hinzugefügt.").queue();
+    hook.editOriginal(RawMessages.get("interaction.command.ticket.member.add.added")).queue();
     getChannel().sendMessage(user.getAsMention())
         .setEmbeds(getAddedEmbed(executor))
         .queue();
@@ -106,13 +107,14 @@ public class TicketMemberAddCommand extends TicketCommand {
    */
   public MessageEmbed getAddedEmbed(@NotNull User adder) {
     return new EmbedBuilder()
-        .setTitle("Willkommen im Ticket!")
-        .setDescription(
-            "Du wurdest zu einem Ticket hinzugefügt. Bitte sieh dir den Verlauf des Tickets an und warte auf eine Nachricht eines Teammitglieds."
+        .setTitle(RawMessages.get("interaction.command.ticket.member.embed.title"))
+        .setDescription(RawMessages.get("interaction.command.ticket.member.embed.description"))
+        .setTimestamp(TimeUtils.berlinTimeProvider().getCurrentTime())
+        .setColor(EmbedColors.ADD_TICKET_MEMBER)
+        .setFooter(
+            RawMessages.get("interaction.command.ticket.member.embed.footer", adder.getName()),
+            adder.getAvatarUrl()
         )
-        .setTimestamp(Instant.now())
-        .setColor(Color.WHITE)
-        .setFooter("Hinzugefügt von " + adder.getName(), adder.getAvatarUrl())
         .build();
   }
 }

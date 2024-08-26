@@ -1,7 +1,7 @@
-package dev.slne.discord.spring.annotation.processor;
+package dev.slne.discord.spring.processor;
 
+import dev.slne.discord.annotation.DiscordCommandMeta;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
-import dev.slne.discord.spring.annotation.DiscordCommandMeta;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -37,7 +37,7 @@ public class DiscordCommandProcessor implements BeanPostProcessor {
     if (annotation != null) {
       if (!(bean instanceof DiscordCommand command)) {
         throw new BeanCreationException("Bean " + beanName
-            + " is annotated with @DiscordCommandMeta but does not extend DiscordCommand.");
+                                        + " is annotated with @DiscordCommandMeta but does not extend DiscordCommand.");
       }
 
       final DiscordCommandHolder holder = new DiscordCommandHolder(annotation, command);

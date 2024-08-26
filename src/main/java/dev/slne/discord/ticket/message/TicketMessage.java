@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import dev.slne.data.api.DataApi;
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.datasource.Times;
+import dev.slne.discord.spring.service.ticket.TicketMessageService;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.message.attachment.TicketMessageAttachment;
 import java.time.OffsetDateTime;
@@ -184,37 +185,6 @@ public class TicketMessage {
         return null;
       });
     });
-
-    return future;
-  }
-
-  /**
-   * Saves the ticket message
-   *
-   * @return True if the ticket message has been saved successfully, false
-   */
-  public CompletableFuture<TicketMessage> create() {
-    CompletableFuture<TicketMessage> future = new CompletableFuture<>();
-    Ticket ticket = getTicket();
-
-    if (ticket == null) {
-      future.completeExceptionally(new IllegalStateException("Ticket not found"));
-      return future;
-    }
-
-    UUID ticketId = ticket.getTicketId();
-
-    if (ticketId == null) {
-      future.completeExceptionally(new IllegalStateException("Ticket Id not found"));
-      return future;
-    }
-
-    TicketMessageService.INSTANCE.createTicketMessage(ticket, this)
-        .thenAcceptAsync(future::complete)
-        .exceptionally(exception -> {
-          future.completeExceptionally(exception);
-          return null;
-        });
 
     return future;
   }

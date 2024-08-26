@@ -1,6 +1,6 @@
 package dev.slne.discord.spring.command;
 
-import dev.slne.discord.spring.annotation.processor.DiscordCommandProcessor;
+import dev.slne.discord.spring.processor.DiscordCommandProcessor;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import org.springframework.beans.factory.annotation.Autowired;

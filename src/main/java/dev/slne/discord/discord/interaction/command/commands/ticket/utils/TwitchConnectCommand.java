@@ -1,12 +1,12 @@
 package dev.slne.discord.discord.interaction.command.commands.ticket.utils;
 
+import dev.slne.discord.annotation.DiscordCommandMeta;
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand;
 import dev.slne.discord.exception.command.CommandException;
 import dev.slne.discord.guild.permission.CommandPermission;
-import dev.slne.discord.spring.annotation.DiscordCommandMeta;
+import dev.slne.discord.message.EmbedColors;
 import dev.slne.discord.spring.service.ticket.TicketService;
-import java.awt.Color;
-import java.time.Instant;
+import dev.slne.discord.util.TimeUtils;
 import java.util.List;
 import javax.annotation.Nonnull;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -31,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TwitchConnectCommand extends TicketCommand {
 
   private static final String OPTION_USER = "user";
-  public static final int TWITCH_EMBED_COLOR = 0x6441A5;
   @Language("Markdown")
   private static final String TWITCH_CONNECT_TUTORIAL = "[Zum Tutorial](https://server.castcrafter.de/support.html#link-twitch)";
 
@@ -81,8 +80,8 @@ public class TwitchConnectCommand extends TicketCommand {
         .setDescription(
             "Bitte verbinde deinen Twitch-Account mit Discord, um auf dem Server zu spielen. Wie du dies tun kannst, findest du hier: "
             + TWITCH_CONNECT_TUTORIAL)
-        .setColor(TWITCH_EMBED_COLOR)
-        .setTimestamp(Instant.now())
+        .setColor(EmbedColors.TWITCH_EMBED_COLOR)
+        .setTimestamp(TimeUtils.berlinTimeProvider().getCurrentTime())
         .build();
   }
 }

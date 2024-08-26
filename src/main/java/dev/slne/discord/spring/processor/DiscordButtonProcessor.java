@@ -1,15 +1,13 @@
-package dev.slne.discord.spring.annotation.processor;
+package dev.slne.discord.spring.processor;
 
+import dev.slne.discord.annotation.DiscordButton;
 import dev.slne.discord.annotation.DiscordEmoji;
 import dev.slne.discord.discord.interaction.button.DiscordButtonHandler;
-import dev.slne.discord.spring.annotation.DiscordButton;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Getter;
 import lombok.experimental.Delegate;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,14 +24,15 @@ public class DiscordButtonProcessor implements BeanPostProcessor {
   private final Object2ObjectMap<String, DiscordButtonHandlerHolder> handlers = new Object2ObjectOpenHashMap<>();
 
   @Override
-  public Object postProcessAfterInitialization(@NotNull Object bean, @NotNull String beanName) throws BeansException {
+  public Object postProcessAfterInitialization(@NotNull Object bean, @NotNull String beanName)
+      throws BeansException {
     final DiscordButton annotation = AnnotationUtils.findAnnotation(bean.getClass(),
         DiscordButton.class);
 
     if (annotation != null) {
       if (!(bean instanceof DiscordButtonHandler button)) {
         throw new BeanCreationException("Bean " + beanName
-            + " is annotated with @DiscordButton but does not implement DiscordButtonHandler.");
+                                        + " is annotated with @DiscordButton but does not implement DiscordButtonHandler.");
       }
 
       final DiscordButtonHandlerHolder holder = new DiscordButtonHandlerHolder(annotation, button);
@@ -50,7 +49,9 @@ public class DiscordButtonProcessor implements BeanPostProcessor {
   }
 
   @Getter
-  public record DiscordButtonHandlerHolder(@Delegate DiscordButton annotation, DiscordButtonHandler handler) {
+  public record DiscordButtonHandlerHolder(@Delegate DiscordButton annotation,
+                                           DiscordButtonHandler handler) {
+
     public @NotNull Button toJdaButton() {
       return Button.of(
           style(),

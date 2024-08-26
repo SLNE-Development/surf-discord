@@ -1,8 +1,5 @@
 package dev.slne.discord.ticket;
 
-import static io.lettuce.core.dynamic.batch.CommandBatching.queue;
-
-import dev.slne.discord.DiscordBot;
 import dev.slne.discord.config.discord.GuildConfig;
 import dev.slne.discord.config.role.RoleConfig;
 import dev.slne.discord.exception.ticket.DeleteTicketChannelException;
@@ -19,7 +16,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -346,10 +342,10 @@ public class TicketChannelHelper {
       throw new UnableToGetTicketNameException("Ticket type or author not found");
     }
 
-    return CompletableFuture.completedFuture(generateTicketNameFast(ticketType, author));
+    return CompletableFuture.completedFuture(generateTicketName(ticketType, author));
   }
 
-  public @NotNull String generateTicketNameFast(
+  public @NotNull String generateTicketName(
       @NotNull TicketType expectedType,
       @NotNull User expectedAuthor
   ) {
@@ -376,6 +372,7 @@ public class TicketChannelHelper {
 
     try {
       channel.delete().complete();
+      ticketService.removeTicket(ticket);
     } catch (Exception exception) {
       throw new DeleteTicketChannelException("Failed to delete ticket channel", exception);
     }
@@ -413,9 +410,21 @@ public class TicketChannelHelper {
       TicketType expectedType,
       User expectedAuthor
   ) {
-    final String expectedTicketName = generateTicketNameFast(expectedType, expectedAuthor);
+    return checkTicketExists(
+        generateTicketName(expectedType, expectedAuthor),
+        category,
+        expectedType,
+        expectedAuthor
+    );
+  }
 
-    if (containsChannelName(category, expectedTicketName)) {
+  public boolean checkTicketExists(
+      String ticketChannelName,
+      Category category,
+      TicketType expectedType,
+      User expectedAuthor
+  ) {
+    if (containsChannelName(category, ticketChannelName)) {
       return true;
     }
 

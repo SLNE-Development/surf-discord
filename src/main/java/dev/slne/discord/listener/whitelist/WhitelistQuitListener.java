@@ -1,16 +1,12 @@
 package dev.slne.discord.listener.whitelist;
 
-import dev.slne.data.api.DataApi;
-import dev.slne.discord.spring.annotation.DiscordListener;
+import dev.slne.discord.annotation.DiscordListener;
 import dev.slne.discord.spring.feign.dto.WhitelistDTO;
 import dev.slne.discord.spring.service.whitelist.WhitelistService;
-import feign.FeignException;
+import javax.annotation.Nonnull;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-
-import javax.annotation.Nonnull;
-import java.util.concurrent.CompletionException;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 
 /**
@@ -19,29 +15,29 @@ import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 @DiscordListener
 public class WhitelistQuitListener extends ListenerAdapter {
 
-	private static final ComponentLogger LOGGER = ComponentLogger.logger("WhitelistQuitListener");
-	private final WhitelistService whitelistService;
+  private static final ComponentLogger LOGGER = ComponentLogger.logger("WhitelistQuitListener");
+  private final WhitelistService whitelistService;
 
-	public WhitelistQuitListener(WhitelistService whitelistService) {
-		this.whitelistService = whitelistService;
-	}
+  public WhitelistQuitListener(WhitelistService whitelistService) {
+    this.whitelistService = whitelistService;
+  }
 
-	@Override
-	public void onGuildMemberRemove(@Nonnull GuildMemberRemoveEvent event) {
-		final User user = event.getUser();
-		final WhitelistDTO whitelist = whitelistService.getWhitelistByDiscordId(user.getId()).join();
+  @Override
+  public void onGuildMemberRemove(@Nonnull GuildMemberRemoveEvent event) {
+    final User user = event.getUser();
+    final WhitelistDTO whitelist = whitelistService.getWhitelistByDiscordId(user.getId()).join();
 
-		if (whitelist == null) {
-			return;
-		}
+    if (whitelist == null) {
+      return;
+    }
 
-		whitelist.setBlocked(true);
-		final WhitelistDTO updatedWhitelist = whitelistService.updateWhitelist(whitelist).join();
+    whitelist.setBlocked(true);
+    final WhitelistDTO updatedWhitelist = whitelistService.updateWhitelist(whitelist).join();
 
-		if (updatedWhitelist == null) {
+    if (updatedWhitelist == null) {
       LOGGER.error("Failed to update whitelist for user {}.", user.getName());
-		} else {
-			LOGGER.info("User {} left the server and was blocked.", user.getName());
-		}
-	}
+    } else {
+      LOGGER.info("User {} left the server and was blocked.", user.getName());
+    }
+  }
 }

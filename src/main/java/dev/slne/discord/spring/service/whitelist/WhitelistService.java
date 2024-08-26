@@ -116,42 +116,4 @@ public class WhitelistService {
       return CompletableFuture.completedFuture(false);
     }
   }
-
-  @Async
-  public CompletableFuture<MessageEmbed> getWhitelistQueryEmbed(@NotNull WhitelistDTO whitelist) {
-    final EmbedBuilder builder = new EmbedBuilder()
-        .setTitle("Whitelist Query")
-        .setFooter("Whitelist Query", jda.getSelfUser().getAvatarUrl())
-        .setDescription("Whitelist Informationen")
-        .setColor(0x000000)
-        .setTimestamp(Instant.now());
-
-    final String minecraftName = whitelist.getMinecraftName();
-    final String twitchLink = whitelist.getTwitchLink();
-    final UUID uuid = whitelist.getUuid();
-    final RestAction<User> discordUserRest = whitelist.getDiscordUser();
-    final User user = discordUserRest != null ? discordUserRest.complete() : null;
-    final RestAction<User> addedByRest = whitelist.getAddedBy();
-    final User addedBy = addedByRest != null ? addedByRest.complete() : null;
-
-    if (minecraftName != null) {
-      builder.addField("Minecraft Name", minecraftName, true);
-    }
-
-    if (twitchLink != null) {
-      builder.addField("Twitch Link", twitchLink, true);
-    }
-
-    if (user != null) {
-      builder.addField("Discord User", user.getAsMention(), true);
-    }
-
-    if (addedBy != null) {
-      builder.addField("Added By", addedBy.getAsMention(), true);
-    }
-
-    builder.addField("UUID", uuid.toString(), false);
-
-    return CompletableFuture.completedFuture(builder.build());
-  }
 }
