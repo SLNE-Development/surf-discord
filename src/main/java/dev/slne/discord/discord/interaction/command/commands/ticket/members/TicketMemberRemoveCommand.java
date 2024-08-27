@@ -3,8 +3,10 @@ package dev.slne.discord.discord.interaction.command.commands.ticket.members;
 import dev.slne.discord.annotation.DiscordCommandMeta;
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand;
 import dev.slne.discord.exception.command.CommandException;
+import dev.slne.discord.exception.command.CommandExceptions;
 import dev.slne.discord.exception.ticket.member.TicketRemoveMemberException;
 import dev.slne.discord.guild.permission.CommandPermission;
+import dev.slne.discord.message.RawMessages;
 import dev.slne.discord.spring.service.ticket.TicketService;
 import dev.slne.discord.ticket.TicketChannelHelper;
 import dev.slne.discord.ticket.member.TicketMember;
@@ -14,7 +16,6 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import org.jetbrains.annotations.NotNull;
@@ -42,35 +43,27 @@ public class TicketMemberRemoveCommand extends TicketCommand {
   @Override
   public @Nonnull List<OptionData> getOptions() {
     return List.of(
-        new OptionData(OptionType.USER, USER_OPTION, "Der Nutzer, der hinzugefügt werden soll.",
+        new OptionData(
+            OptionType.USER,
+            USER_OPTION,
+            RawMessages.get("interaction.command.ticket.member.remove.arg.member"),
             true,
-            false)
+            false
+        )
     );
   }
 
   @Override
   public void internalExecute(SlashCommandInteractionEvent interaction, InteractionHook hook)
       throws CommandException {
-    final OptionMapping userOption = interaction.getOption(USER_OPTION);
+    final User user = getUserOrThrow(interaction, USER_OPTION);
+    checkUserNotBot(user, jda, CommandExceptions.TICKET_BOT_REMOVE);
 
-    if (userOption == null) {
-      throw new CommandException("Du musst einen Nutzer angeben.");
-    }
-
-    final User user = userOption.getAsUser();
-
-    if (user.equals(jda.getSelfUser())) {
-      throw new CommandException("Du kannst den Bot nicht entfernen.");
-    }
-
-    final TicketMember ticketMember = getTicket().getActiveTicketMember(user);
-
-    if (ticketMember == null) {
-      throw new CommandException("Dieser Nutzer ist nicht in diesem Ticket.");
-    }
+    final TicketMember ticketMember = getTicket().getActiveTicketMember(user)
+        .orElseThrow(CommandExceptions.TICKET_MEMBER_NOT_IN_TICKET::create);
 
     if (ticketMember.isRemoved()) {
-      throw new CommandException("Dieser Nutzer wurde bereits entfernt.");
+      throw CommandExceptions.TICKET_MEMBER_ALREADY_REMOVED.create();
     }
 
     final User executor = interaction.getUser();
@@ -78,32 +71,24 @@ public class TicketMemberRemoveCommand extends TicketCommand {
     try {
       removeTicketMember(user, executor, hook, ticketMember);
     } catch (TicketRemoveMemberException e) {
-      throw new CommandException("Der Nutzer konnte nicht entfernt werden.", e);
+      throw CommandExceptions.TICKET_REMOVE_MEMBER.create(e);
     }
   }
 
   @Async
   protected void removeTicketMember(
-      User user,
+      @NotNull User user,
       @NotNull User executor,
-      InteractionHook hook,
+      @NotNull InteractionHook hook,
       @NotNull TicketMember ticketMember
-  ) throws CommandException, TicketRemoveMemberException {
-    ticketMember.setRemovedByAvatarUrl(executor.getAvatarUrl());
-    ticketMember.setRemovedById(executor.getId());
-    ticketMember.setRemovedByName(executor.getName());
+  ) throws TicketRemoveMemberException {
+    hook.editOriginal(RawMessages.get("interaction.command.ticket.member.remove.removing")).queue();
+    ticketChannelHelper.removeTicketMember(getTicket(), ticketMember, executor).join();
+    hook.editOriginal(RawMessages.get("interaction.command.ticket.member.remove.removed")).queue();
 
-    final TicketMember removedMember = getTicket().removeTicketMember(ticketMember).join();
-
-    if (removedMember == null) {
-      throw new CommandException("Der Nutzer konnte nicht entfernt werden.");
-    }
-
-    ticketChannelHelper.removeTicketMember(getTicket(), ticketMember).join();
-    hook.editOriginal("Der Nutzer wurde entfernt.").queue();
     getChannel()
-        .sendMessage("%s wurde von %s entfernt."
-            .formatted(user.getAsMention(), executor.getAsMention()))
+        .sendMessage(RawMessages.get("interaction.command.ticket.member.remove.announcement",
+            user.getAsMention(), executor.getAsMention()))
         .queue();
   }
 }

@@ -1,4 +1,4 @@
-package dev.slne.discord.exception.command;
+package dev.slne.discord.exception.command.pre;
 
 import dev.slne.discord.exception.DiscordException;
 import java.io.Serial;
@@ -14,5 +14,9 @@ public class PreCommandCheckException extends DiscordException {
 
   public PreCommandCheckException(String message, Throwable cause) {
     super(message, cause);
+  }
+
+  public PreCommandCheckException(DiscordException exception) {
+    super(exception);
   }
 }

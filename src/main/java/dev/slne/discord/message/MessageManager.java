@@ -2,13 +2,13 @@ package dev.slne.discord.message;
 
 import dev.slne.discord.config.discord.GuildConfig;
 import dev.slne.discord.exception.command.CommandException;
+import dev.slne.discord.exception.command.CommandExceptions;
 import dev.slne.discord.extensions.MemberExtensions;
 import dev.slne.discord.spring.feign.dto.WhitelistDTO;
 import dev.slne.discord.spring.service.whitelist.WhitelistService;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.member.TicketMember;
 import dev.slne.discord.util.TimeUtils;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -151,8 +151,7 @@ public class MessageManager {
       @Nullable InteractionHook hook)
       throws CommandException {
     if (whitelists.isEmpty()) {
-      throw new CommandException(
-          "Es wurden keine Whitelist Einträge für \"" + name + "\" gefunden.");
+      throw CommandExceptions.WHITELIST_QUERY_NO_ENTRIES.create(name);
     }
 
     printWlQuery(channel, "\"" + name + "\"", whitelists);
@@ -165,7 +164,7 @@ public class MessageManager {
   @Async
   public void printWlQuery(TextChannel channel, String title, List<WhitelistDTO> whitelists) {
     title = title.replace("\"", "");
-    channel.sendMessage("WlQuery für: `" + title + "`").queue();
+    channel.sendMessage(RawMessages.get("whitelist.query.start", title)).queue();
 
     for (final WhitelistDTO whitelist : whitelists) {
       final MessageEmbed embed = getWhitelistQueryEmbed(whitelist).join();
@@ -176,11 +175,12 @@ public class MessageManager {
   @Async
   public CompletableFuture<MessageEmbed> getWhitelistQueryEmbed(@NotNull WhitelistDTO whitelist) {
     final EmbedBuilder builder = new EmbedBuilder()
-        .setTitle("Whitelist Query")
-        .setFooter("Whitelist Query", jda.getSelfUser().getAvatarUrl())
-        .setDescription("Whitelist Informationen")
+        .setTitle(RawMessages.get("whitelist.query.embed.title"))
+        .setFooter(RawMessages.get("whitelist.query.embed.footer"),
+            jda.getSelfUser().getAvatarUrl())
+        .setDescription(RawMessages.get("whitelist.query.embed.description"))
         .setColor(EmbedColors.WL_QUERY)
-        .setTimestamp(ZonedDateTime.now(TimeFormatter.EUROPE_BERLIN));
+        .setTimestamp(TimeUtils.berlinTimeProvider().getCurrentTime());
 
     final String minecraftName = whitelist.getMinecraftName();
     final String twitchLink = whitelist.getTwitchLink();
@@ -189,22 +189,26 @@ public class MessageManager {
     final User addedBy = whitelist.getAddedByNow();
 
     if (minecraftName != null) {
-      builder.addField("Minecraft Name", minecraftName, true);
+      builder.addField(RawMessages.get("whitelist.query.embed.field.minecraft-name"), minecraftName,
+          true);
     }
 
     if (twitchLink != null) {
-      builder.addField("Twitch Link", twitchLink, true);
+      builder.addField(RawMessages.get("whitelist.query.embed.field.twitch-name"), twitchLink,
+          true);
     }
 
     if (discordUser != null) {
-      builder.addField("Discord User", discordUser.getAsMention(), true);
+      builder.addField(RawMessages.get("whitelist.query.embed.field.discord-user"),
+          discordUser.getAsMention(), true);
     }
 
     if (addedBy != null) {
-      builder.addField("Added By", addedBy.getAsMention(), true);
+      builder.addField(RawMessages.get("whitelist.query.embed.field.added-by"),
+          addedBy.getAsMention(), true);
     }
 
-    builder.addField("UUID", uuid.toString(), false);
+    builder.addField(RawMessages.get("whitelist.query.embed.field.uuid"), uuid.toString(), false);
 
     return CompletableFuture.completedFuture(builder.build());
   }

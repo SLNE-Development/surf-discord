@@ -3,6 +3,7 @@ package dev.slne.discord.discord.interaction.command.commands.ticket;
 import dev.slne.discord.annotation.DiscordCommandMeta;
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand;
 import dev.slne.discord.exception.command.CommandException;
+import dev.slne.discord.exception.command.CommandExceptions;
 import dev.slne.discord.guild.permission.CommandPermission;
 import dev.slne.discord.message.RawMessages;
 import dev.slne.discord.spring.service.ticket.TicketService;
@@ -67,7 +68,7 @@ public class TicketCloseCommand extends TicketCommand {
         closeReason).join();
 
     if (closeResult != TicketCloseResult.SUCCESS) {
-      throw CommandException.ticketClose(closeResult);
+      throw CommandExceptions.TICKET_CLOSE.create(closeResult);
     }
   }
 }

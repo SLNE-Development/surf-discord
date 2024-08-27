@@ -9,9 +9,7 @@ import dev.slne.discord.guild.permission.CommandPermission;
 import dev.slne.discord.message.EmbedColors;
 import dev.slne.discord.message.RawMessages;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -32,23 +30,8 @@ public class ReactionRoleTextCommand extends DiscordCommand {
   @Override
   public void internalExecute(SlashCommandInteractionEvent interaction, InteractionHook hook)
       throws CommandException {
-    final Guild guild = interaction.getGuild();
-
-    if (guild == null) {
-      throw CommandException.noGuild();
-    }
-
-    final GuildConfig guildConfig = GuildConfig.getByGuildId(guild.getId());
-
-    if (guildConfig == null) {
-      throw CommandException.serverNotRegistered();
-    }
-
-    final Channel channel = interaction.getChannel();
-
-    if (!(channel instanceof TextChannel textChannel)) {
-      throw CommandException.noTextChannel();
-    }
+    final GuildConfig guildConfig = getGuildConfigOrThrow(interaction);
+    final TextChannel textChannel = getTextChannelOrThrow(interaction);
 
     textChannel.sendMessageEmbeds(getEmbed()).queue(message -> {
       final ReactionRoleConfig reactionRoleConfig = guildConfig.getReactionRole();
@@ -57,7 +40,7 @@ public class ReactionRoleTextCommand extends DiscordCommand {
       if (reactionRoleConfig != null) {
         reaction = reactionRoleConfig.getReaction();
       } else {
-        reaction = "\uD83D\uDD14";
+        reaction = "🔔";
       }
 
       final Emoji emoji = Emoji.fromFormatted(reaction);

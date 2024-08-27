@@ -5,6 +5,7 @@ import dev.slne.discord.discord.interaction.command.commands.TicketCommand;
 import dev.slne.discord.exception.command.CommandException;
 import dev.slne.discord.guild.permission.CommandPermission;
 import dev.slne.discord.message.EmbedColors;
+import dev.slne.discord.message.RawMessages;
 import dev.slne.discord.spring.service.ticket.TicketService;
 import dev.slne.discord.util.TimeUtils;
 import java.util.List;
@@ -13,7 +14,6 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import org.jetbrains.annotations.NotNull;
@@ -49,7 +49,7 @@ public class TwitchFollowCommand extends TicketCommand {
         new OptionData(
             OptionType.USER,
             OPTION_USER,
-            "Der Benutzer, der aufgefordert wird, CastCrafter auf Twitch zu folgen.",
+            RawMessages.get("interaction.command.ticket.twitch.follow.arg.user"),
             true,
             false
         )
@@ -60,13 +60,7 @@ public class TwitchFollowCommand extends TicketCommand {
   public void internalExecute(@NotNull SlashCommandInteractionEvent interaction,
       InteractionHook hook)
       throws CommandException {
-    final OptionMapping userMapping = interaction.getOption("user");
-
-    if (userMapping == null) {
-      throw new CommandException("Du musst einen Nutzer angeben.");
-    }
-
-    final User user = userMapping.getAsUser();
+    final User user = getUserOrThrow(interaction, OPTION_USER);
     getChannel().sendMessage(user.getAsMention())
         .setEmbeds(getEmbed())
         .queue();
@@ -81,10 +75,10 @@ public class TwitchFollowCommand extends TicketCommand {
    */
   private @NotNull MessageEmbed getEmbed() {
     return new EmbedBuilder()
-        .setTitle("CastCrafter auf Twitch folgen")
-        .setDescription("Du folgst CastCrafter nicht auf Twitch." +
-                        " Bitte folge [CastCrafter auf Twitch](%s), um auf dem Server zu spielen."
-                            .formatted(CASTCRAFTER_TWITCH_URL))
+        .setTitle(RawMessages.get("interaction.command.ticket.twitch.follow.embed.title"))
+        .setDescription(
+            RawMessages.get("interaction.command.ticket.twitch.follow.embed.description",
+                CASTCRAFTER_TWITCH_URL))
         .setColor(EmbedColors.TWITCH_EMBED_COLOR)
         .setTimestamp(TimeUtils.berlinTimeProvider().getCurrentTime())
         .build();

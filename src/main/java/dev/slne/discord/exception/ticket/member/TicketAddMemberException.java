@@ -1,5 +1,6 @@
 package dev.slne.discord.exception.ticket.member;
 
+import dev.slne.discord.exception.DiscordException;
 import java.io.Serial;
 
 public class TicketAddMemberException extends TicketMemberException {
@@ -13,5 +14,9 @@ public class TicketAddMemberException extends TicketMemberException {
 
   public TicketAddMemberException(String message, Throwable cause) {
     super(message, cause);
+  }
+
+  public TicketAddMemberException(DiscordException exception) {
+    super(exception);
   }
 }

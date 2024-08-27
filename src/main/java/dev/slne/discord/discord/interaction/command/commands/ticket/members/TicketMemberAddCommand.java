@@ -3,6 +3,7 @@ package dev.slne.discord.discord.interaction.command.commands.ticket.members;
 import dev.slne.discord.annotation.DiscordCommandMeta;
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand;
 import dev.slne.discord.exception.command.CommandException;
+import dev.slne.discord.exception.command.CommandExceptions;
 import dev.slne.discord.exception.ticket.member.TicketAddMemberException;
 import dev.slne.discord.guild.permission.CommandPermission;
 import dev.slne.discord.message.EmbedColors;
@@ -61,23 +62,20 @@ public class TicketMemberAddCommand extends TicketCommand {
   public void internalExecute(SlashCommandInteractionEvent interaction, InteractionHook hook)
       throws CommandException {
     final User user = getUserOrThrow(interaction, USER_OPTION);
+    checkUserNotBot(user, jda, CommandExceptions.TICKET_BOT_ADD);
 
     hook.editOriginal(RawMessages.get("interaction.command.ticket.member.add.adding")).queue();
-
-    if (user.equals(jda.getSelfUser())) {
-      throw CommandException.ticketAddBot();
-    }
 
     final Optional<TicketMember> ticketMember = getTicket().getActiveTicketMember(user);
 
     if (ticketMember.isPresent()) {
-      throw CommandException.ticketAddMemberAlreadyInTicket();
+      throw CommandExceptions.TICKET_MEMBER_ALREADY_IN_TICKET.create();
     }
 
     try {
       addTicketMember(user, interaction.getUser(), hook);
     } catch (TicketAddMemberException e) {
-      throw CommandException.ticketAddMember(e);
+      throw CommandExceptions.TICKET_ADD_MEMBER.create(e);
     }
   }
 
@@ -85,14 +83,8 @@ public class TicketMemberAddCommand extends TicketCommand {
   protected void addTicketMember(final User user, final User executor, InteractionHook hook)
       throws CommandException, TicketAddMemberException {
     final TicketMember newTicketMember = TicketMember.createFromTicket(getTicket(), user, executor);
+    ticketChannelHelper.addTicketMember(getTicket(), newTicketMember).join();
 
-    final TicketMember addedMember = getTicket().addTicketMember(newTicketMember).join();
-
-    if (addedMember == null) {
-      throw CommandException.ticketAddMember(new Throwable());
-    }
-
-    ticketChannelHelper.addTicketMember(getTicket(), addedMember).join();
     hook.editOriginal(RawMessages.get("interaction.command.ticket.member.add.added")).queue();
     getChannel().sendMessage(user.getAsMention())
         .setEmbeds(getAddedEmbed(executor))

@@ -2,7 +2,6 @@ package dev.slne.discord;
 
 import dev.slne.data.api.DataApi;
 import dev.slne.discord.config.BotConfig;
-import dev.slne.discord.discord.interaction.command.DiscordCommandManager;
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenuManager;
 import dev.slne.discord.discord.settings.GatewayIntents;
 import lombok.Getter;

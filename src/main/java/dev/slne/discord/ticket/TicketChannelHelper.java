@@ -69,9 +69,11 @@ public class TicketChannelHelper {
   @Async
   public CompletableFuture<Void> addTicketMember(Ticket ticket, TicketMember ticketMember)
       throws TicketAddMemberException {
+    final TicketMember addedMember = ticketService.addTicketMember(ticket, ticketMember).join();
     final Guild guild = ticket.getGuild();
     final TextChannel channel = ticket.getChannel();
-    final RestAction<User> userRest = ticketMember.getMember();
+    final RestAction<User> userRest = addedMember.getMember();
+
 
     if (guild == null || channel == null || userRest == null) {
       throw new TicketAddMemberException("Guild, channel or user not found");
@@ -116,24 +118,22 @@ public class TicketChannelHelper {
    * @return when completed
    */
   @Async
-  public CompletableFuture<Void> removeTicketMember(Ticket ticket, TicketMember ticketMember) throws TicketRemoveMemberException {
-    final TextChannel channel = ticket.getChannel();
-    final RestAction<User> userRest = ticketMember.getMember();
+  public CompletableFuture<Void> removeTicketMember(
+      Ticket ticket,
+      TicketMember member,
+      @NotNull User remover
+  ) throws TicketRemoveMemberException {
+    final TextChannel channel = ticket.getChannel()
+        .orElseThrow(() -> );
+    final User user = member.getMemberNow()
+        .orElseThrow(() -> );
 
-    if (channel == null || userRest == null) {
-      throw new TicketRemoveMemberException("Channel or user not found");
-    }
+    ticketService.removeTicketMember(ticket, member, remover).join();
 
     final TextChannelManager manager = channel.getManager();
-    final User user = userRest.complete();
-
-    if (user == null) {
-      throw new TicketRemoveMemberException("User not found");
-    }
 
     return CompletableFuture.completedFuture(
-        manager.removePermissionOverride(user.getIdLong())
-            .submit().join()
+        manager.removePermissionOverride(user.getIdLong()).complete()
     );
   }
 
@@ -363,7 +363,8 @@ public class TicketChannelHelper {
    * @return The future result
    */
   @Async
-  public CompletableFuture<Void> deleteTicketChannel(Ticket ticket) throws DeleteTicketChannelException {
+  public CompletableFuture<Void> deleteTicketChannel(Ticket ticket)
+      throws DeleteTicketChannelException {
     final TextChannel channel = ticket.getChannel();
 
     if (channel == null) {

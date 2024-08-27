@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import dev.slne.discord.DiscordBot;
 import dev.slne.discord.spring.service.ticket.TicketMemberService;
 import dev.slne.discord.ticket.Ticket;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import lombok.AccessLevel;
@@ -18,7 +19,6 @@ import lombok.ToString;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.requests.RestAction;
 import org.jetbrains.annotations.Blocking;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * The type Ticket member.
@@ -137,22 +137,18 @@ public class TicketMember {
    * @return the member
    */
   @JsonIgnore
-  @Nullable
-  public RestAction<User> getMember() {
+  public Optional<RestAction<User>> getMember() {
     if (memberId == null) {
-      return null;
+      return Optional.empty();
     }
 
-    return DiscordBot.getInstance().getJda().retrieveUserById(memberId);
+    return Optional.of(DiscordBot.getInstance().getJda().retrieveUserById(memberId));
   }
 
   @JsonIgnore
   @Blocking
-  @Nullable
-  public User getMemberNow() {
-    final RestAction<User> memberRest = getMember();
-
-    return memberRest == null ? null : memberRest.complete();
+  public Optional<User> getMemberNow() {
+    return getMember().map(RestAction::complete);
   }
 
   /**

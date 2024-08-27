@@ -4,8 +4,10 @@ import dev.slne.data.api.DataApi;
 import dev.slne.discord.annotation.DiscordCommandMeta;
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
 import dev.slne.discord.exception.command.CommandException;
+import dev.slne.discord.exception.command.CommandExceptions;
 import dev.slne.discord.guild.permission.CommandPermission;
 import dev.slne.discord.message.MessageManager;
+import dev.slne.discord.message.RawMessages;
 import dev.slne.discord.spring.feign.dto.WhitelistDTO;
 import dev.slne.discord.spring.service.whitelist.WhitelistService;
 import java.util.List;
@@ -48,19 +50,19 @@ public class WhitelistQueryCommand extends DiscordCommand {
         new OptionData(
             OptionType.USER,
             USER_OPTION,
-            "Der Benutzer über den Informationen angezeigt werden sollen.",
+            RawMessages.get("interaction.command.ticket.wlquery.arg.user"),
             false
         ),
         new OptionData(
             OptionType.STRING,
             MINECRAFT_OPTION,
-            "Der Minecraft Name des Benutzers.",
+            RawMessages.get("interaction.command.ticket.wlquery.arg.minecraft-name"),
             false
         ).setRequiredLength(3, 16),
         new OptionData(
             OptionType.STRING,
             TWITCH_OPTION,
-            "Der Twitch Name des Benutzers.",
+            RawMessages.get("interaction.command.ticket.wlquery.arg.twitch-name"),
             false
         )
     );
@@ -69,16 +71,14 @@ public class WhitelistQueryCommand extends DiscordCommand {
   @Override
   public void internalExecute(SlashCommandInteractionEvent interaction, InteractionHook hook)
       throws CommandException {
-    if (!(interaction.getChannel() instanceof TextChannel channel)) {
-      throw new CommandException("Dieser Befehl kann nur in Textkanälen verwendet werden.");
-    }
+    final TextChannel channel = getTextChannelOrThrow(interaction);
 
     final Optional<User> optionalUser = getUser(interaction, USER_OPTION);
     final Optional<String> optionalMinecraft = getString(interaction, MINECRAFT_OPTION);
     final Optional<String> optionalTwitch = getString(interaction, TWITCH_OPTION);
 
     if (optionalUser.isEmpty() && optionalMinecraft.isEmpty() && optionalTwitch.isEmpty()) {
-      throw new CommandException("Es wurde kein Benutzer angegeben.");
+      throw CommandExceptions.TICKET_WLQUERY_NO_USER.create();
     }
 
     final List<WhitelistDTO> whitelists = getWhitelists(

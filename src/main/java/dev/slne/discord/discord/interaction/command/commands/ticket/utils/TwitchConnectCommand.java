@@ -5,6 +5,7 @@ import dev.slne.discord.discord.interaction.command.commands.TicketCommand;
 import dev.slne.discord.exception.command.CommandException;
 import dev.slne.discord.guild.permission.CommandPermission;
 import dev.slne.discord.message.EmbedColors;
+import dev.slne.discord.message.RawMessages;
 import dev.slne.discord.spring.service.ticket.TicketService;
 import dev.slne.discord.util.TimeUtils;
 import java.util.List;
@@ -14,10 +15,8 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import org.intellij.lang.annotations.Language;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -31,8 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TwitchConnectCommand extends TicketCommand {
 
   private static final String OPTION_USER = "user";
-  @Language("Markdown")
-  private static final String TWITCH_CONNECT_TUTORIAL = "[Zum Tutorial](https://server.castcrafter.de/support.html#link-twitch)";
+  private static final String TWITCH_CONNECT_TUTORIAL_URL = "https://server.castcrafter.de/support.html#link-twitch";
 
   @Autowired
   public TwitchConnectCommand(TicketService ticketService) {
@@ -45,7 +43,7 @@ public class TwitchConnectCommand extends TicketCommand {
         new OptionData(
             OptionType.USER,
             OPTION_USER,
-            "Der Nutzer, der seinen Twitch-Account verbinden soll.",
+            RawMessages.get("interaction.command.ticket.twitch.connect.arg.user"),
             true,
             false
         )
@@ -55,13 +53,8 @@ public class TwitchConnectCommand extends TicketCommand {
   @Override
   public void internalExecute(SlashCommandInteractionEvent interaction, InteractionHook hook)
       throws CommandException {
-    final OptionMapping userOption = interaction.getOption(OPTION_USER);
+    final User user = getUserOrThrow(interaction, OPTION_USER);
 
-    if (userOption == null) {
-      throw new CommandException("Du musst einen Nutzer angeben.");
-    }
-
-    final User user = userOption.getAsUser();
     getChannel().sendMessage(user.getAsMention())
         .setEmbeds(getEmbed())
         .queue();
@@ -76,10 +69,10 @@ public class TwitchConnectCommand extends TicketCommand {
    */
   public MessageEmbed getEmbed() {
     return new EmbedBuilder()
-        .setTitle("Twitch-Account verbinden")
+        .setTitle(RawMessages.get("interaction.command.ticket.twitch.connect.embed.title"))
         .setDescription(
-            "Bitte verbinde deinen Twitch-Account mit Discord, um auf dem Server zu spielen. Wie du dies tun kannst, findest du hier: "
-            + TWITCH_CONNECT_TUTORIAL)
+            RawMessages.get("interaction.command.ticket.twitch.connect.embed.description",
+                TWITCH_CONNECT_TUTORIAL_URL))
         .setColor(EmbedColors.TWITCH_EMBED_COLOR)
         .setTimestamp(TimeUtils.berlinTimeProvider().getCurrentTime())
         .build();

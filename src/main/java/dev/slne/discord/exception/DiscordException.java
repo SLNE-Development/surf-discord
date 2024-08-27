@@ -14,4 +14,8 @@ public abstract class DiscordException extends Exception {
   public DiscordException(String message, Throwable cause) {
     super(message, cause);
   }
+
+  public DiscordException(DiscordException exception) {
+    super(exception.getMessage(), exception);
+  }
 }

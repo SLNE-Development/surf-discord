@@ -2,9 +2,12 @@ package dev.slne.discord.discord.interaction.command;
 
 import dev.slne.discord.annotation.DiscordCommandMeta;
 import dev.slne.discord.config.role.RoleConfig;
+import dev.slne.discord.exception.DiscordException;
 import dev.slne.discord.exception.command.CommandException;
-import dev.slne.discord.exception.command.PreCommandCheckException;
+import dev.slne.discord.exception.command.CommandExceptions;
+import dev.slne.discord.exception.command.pre.PreCommandCheckException;
 import dev.slne.discord.guild.permission.CommandPermission;
+import dev.slne.discord.message.RawMessages;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -33,7 +36,7 @@ import org.springframework.scheduling.annotation.Async;
  * The type Discord command.
  */
 @Getter
-public abstract class DiscordCommand {
+public abstract class DiscordCommand implements CommandUtil {
 
   private static final ComponentLogger LOGGER = ComponentLogger.logger("DiscordCommand");
 
@@ -42,9 +45,6 @@ public abstract class DiscordCommand {
 
   /**
    * Creates a new DiscordCommand.
-   *
-   * @param name        The name of the command.
-   * @param description The description of the command.
    */
   protected DiscordCommand() {
     this.defaultMemberPermissions = DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR);
@@ -82,30 +82,24 @@ public abstract class DiscordCommand {
     final User user = interaction.getUser();
     final Guild guild = interaction.getGuild();
 
-    try {
-      if (performDiscordCommandChecks(user, guild, interaction).join()
-          && performAdditionalChecks(user, guild, interaction).join()) {
-        interaction.deferReply(true).queue(hook -> {
-          try {
-            internalExecute(interaction, hook);
-          } catch (CommandException e) {
-            hook.editOriginal(e.getMessage()).queue();
-            LOGGER.error("Error while executing command", e);
-          }
-        });
+    interaction.deferReply(true).queue(hook -> {
+      try {
+        if (performDiscordCommandChecks(user, guild, interaction, hook).join()
+            && performAdditionalChecks(user, guild, interaction, hook).join()) {
+          internalExecute(interaction, hook);
+        }
+      } catch (DiscordException e) {
+        hook.editOriginal(e.getMessage()).queue();
+        LOGGER.error("Error while executing command", e);
       }
-    } catch (PreCommandCheckException e) {
-      interaction.reply(e.getMessage())
-          .setEphemeral(true)
-          .queue();
-      LOGGER.error("Error while executing command", e);
-    }
+    });
   }
 
   protected CompletableFuture<Boolean> performAdditionalChecks(
       User user,
       Guild guild,
-      SlashCommandInteractionEvent interaction
+      SlashCommandInteractionEvent interaction,
+      InteractionHook hook
   ) throws PreCommandCheckException {
     return CompletableFuture.completedFuture(true);
   }
@@ -123,19 +117,18 @@ public abstract class DiscordCommand {
   protected CompletableFuture<Boolean> performDiscordCommandChecks(
       User user,
       Guild guild,
-      SlashCommandInteractionEvent interaction
+      SlashCommandInteractionEvent interaction,
+      InteractionHook hook
   ) throws PreCommandCheckException {
-    if (guild == null) {
-      throw new PreCommandCheckException("Es ist ein Fehler aufgetreten (zsdiuziaz)");
-    }
-
-    if (user == null) {
-      throw new PreCommandCheckException("Es ist ein Fehler aufgetreten (dhwfm4nD)");
+    try {
+      getGuildOrThrow(interaction);
+    } catch (CommandException e) {
+      throw new PreCommandCheckException(e);
     }
 
     final Member member = guild.retrieveMember(user).complete();
     if (member == null) {
-      throw new PreCommandCheckException("Es ist ein Fehler aufgetreten (9348934dwjkdjw)");
+      throw new PreCommandCheckException(CommandExceptions.GENERIC.create());
     }
 
     final List<Role> memberDiscordRoles = member.getRoles();
@@ -148,10 +141,7 @@ public abstract class DiscordCommand {
         .anyMatch(role -> role.hasCommandPermission(getPermission()));
 
     if (!hasPermission) {
-      interaction.reply("Du besitzt keine Berechtigung diesen Befehl zu verwenden.")
-          .setEphemeral(true)
-          .queue();
-
+      hook.editOriginal(RawMessages.get("error.command.no-permission")).queue();
       return CompletableFuture.completedFuture(false);
     } else {
       return CompletableFuture.completedFuture(true);
@@ -206,7 +196,7 @@ public abstract class DiscordCommand {
       String name
   ) throws CommandException {
     return getUser(interaction, name)
-        .orElseThrow(() -> new CommandException("Du musst einen Nutzer angeben."));
+        .orElseThrow(CommandExceptions.ARG_MISSING_USER::create);
   }
 
   protected final Optional<String> getString(

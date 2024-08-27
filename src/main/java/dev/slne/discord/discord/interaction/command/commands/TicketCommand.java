@@ -1,8 +1,9 @@
 package dev.slne.discord.discord.interaction.command.commands;
 
 import dev.slne.discord.discord.interaction.command.DiscordCommand;
-import dev.slne.discord.exception.command.PreCommandCheckException;
-import dev.slne.discord.exception.command.PreTicketCommandException;
+import dev.slne.discord.exception.command.CommandException;
+import dev.slne.discord.exception.command.pre.PreTicketCommandException;
+import dev.slne.discord.message.RawMessages;
 import dev.slne.discord.spring.service.ticket.TicketService;
 import dev.slne.discord.ticket.Ticket;
 import java.util.concurrent.CompletableFuture;
@@ -12,7 +13,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.annotation.Async;
 
@@ -36,17 +37,18 @@ public abstract class TicketCommand extends DiscordCommand {
   protected CompletableFuture<Boolean> performAdditionalChecks(
       User user,
       Guild guild,
-      @NotNull SlashCommandInteractionEvent interaction
+      @NotNull SlashCommandInteractionEvent interaction,
+      InteractionHook hook
   ) throws PreTicketCommandException {
-    if (!(interaction.getChannel() instanceof TextChannel textChannel)) {
-      throw new PreTicketCommandException(
-          "Dieser Befehl kann nur in einem Ticketkanal verwendet werden.");
+    final TextChannel textChannel;
+    try {
+      textChannel = getTextChannelOrThrow(interaction);
+    } catch (CommandException e) {
+      throw new PreTicketCommandException(e);
     }
 
-    this.ticket = ticketService.getTicketByChannelId(textChannel.getId())
-        .orElseThrow(() ->
-            new PreTicketCommandException(
-                "Dieser Befehl kann nur in einem Ticket verwendet werden."));
+    this.ticket = ticketService.getTicketByChannelId(textChannel.getId()).orElseThrow(
+        () -> new PreTicketCommandException(RawMessages.get("error.ticket.no-ticket-channel")));
     this.channel = textChannel;
 
     return CompletableFuture.completedFuture(true);
