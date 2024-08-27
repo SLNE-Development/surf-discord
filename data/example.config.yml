@@ -32,7 +32,7 @@ ticket-config:
     unban:
       enabled: false
       should-print-wl-query: false
-      opening-messages: []
+      opening-messages: [ ]
     discord-support:
       enabled: false
       should-print-wl-query: false
@@ -49,11 +49,6 @@ guild-config:
     guild-id: '449314616628084758'
     category-id: '983429475649876029'
     whitelist-role-id: '1052580474712756244'
-    reaction-role:
-      message-id: '1124375143645454477'
-      channel-id: '983450492862595122'
-      role-id: '449980058120093706'
-      reaction: '\u1F514'
     role-config:
       discord-admin:
         default-role: false
@@ -256,11 +251,6 @@ guild-config:
     guild-id: '133198459531558912'
     category-id: '1124438557830955018'
     whitelist-role-id: '1052361599484170300'
-    reaction-role:
-      message-id: '1052600279968784466'
-      channel-id: '1005106900179894333'
-      role-id: '1052595432913637469'
-      reaction: '\u1F514'
     role-config:
       discord-admin:
         default-role: false
