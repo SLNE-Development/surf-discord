@@ -3,6 +3,7 @@ package dev.slne.discord.discord.interaction.modal.step.creator.report.steps.pla
 import dev.slne.discord.discord.interaction.modal.step.MessageQueue;
 import dev.slne.discord.discord.interaction.modal.step.ModalComponentBuilder;
 import dev.slne.discord.discord.interaction.modal.step.ModalStep;
+import dev.slne.discord.message.RawMessages;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
@@ -18,14 +19,22 @@ public class ReportTicketPlayerStep extends ModalStep {
   @Override
   protected void buildModalComponents(ModalComponentBuilder builder) {
     builder.addFirstComponent(
-      TextInput.create(REPORT_PLAYER_NAME, "Dein Spielname", TextInputStyle.SHORT)
-          .setRequired(true)
-          .build()
+        TextInput.create(
+                REPORT_PLAYER_NAME,
+                RawMessages.get("modal.report.step.player.input.reporting-player.label"),
+                TextInputStyle.SHORT
+            )
+            .setRequired(true)
+            .build()
     );
     builder.addComponent(
-        TextInput.create(REPORT_PLAYER_REASON_INPUT, "Grund", TextInputStyle.PARAGRAPH)
+        TextInput.create(
+                REPORT_PLAYER_REASON_INPUT,
+                RawMessages.get("modal.report.step.player.input.reason.label"),
+                TextInputStyle.PARAGRAPH
+            )
             .setRequired(true)
-            .setPlaceholder("Was hat der Spielende getan?")
+            .setPlaceholder(RawMessages.get("modal.report.step.player.input.reason.placeholder"))
             .setMinLength(20)
             .build()
     );
@@ -40,9 +49,11 @@ public class ReportTicketPlayerStep extends ModalStep {
 
   @Override
   protected void buildOpenMessages(MessageQueue messages, TextChannel channel) {
-    messages.addMessage("> Meldender Spielende: `%s`", reportPlayerName);
+    messages.addMessage(
+        RawMessages.get("modal.report.step.player.messages.reporting-player", reportPlayerName));
     messages.addEmptyLine();
-    messages.addMessage("# Was hat der Spielende getan?");
+    messages.addMessage(
+        "# " + RawMessages.get("modal.report.step.player.input.reason.placeholder"));
     messages.addMessage("> %s", reportReason);
   }
 }

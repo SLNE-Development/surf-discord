@@ -31,6 +31,7 @@ import net.dv8tion.jda.api.interactions.modals.Modal;
 import net.dv8tion.jda.api.interactions.modals.Modal.Builder;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import org.jetbrains.annotations.ApiStatus.OverrideOnly;
+import org.jetbrains.annotations.Blocking;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -98,28 +99,31 @@ public abstract class DiscordStepChannelCreationModal {
         .exceptionally(throwable -> {
           LOGGER.error("Error while creating ticket", throwable);
 
-          interaction.deferReply(true)
-              .queue(hook -> {
-                hook.sendMessage("Es ist ein Fehler aufgetreten! (gadgdgh68797997)").queue();
-              });
+//          interaction.deferReply(true)
+//              .queue(hook -> {
+//                hook.sendMessage(RawMessages.get("error.generic")).queue();
+//              });
           return null;
         });
 
-    if (checkTicketExists(interaction.getGuild(), interaction.getUser())) {
-      reply(interaction,
-          "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo.");
-      done.complete(null);
-      return done;
-    }
+    interaction.deferReply(true).queue(hook -> {
+      if (checkTicketExists(interaction.getGuild(), interaction.getUser())) {
+        hook.editOriginal(
+                "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo.")
+            .queue();
+        done.complete(null);
+        return;
+      }
 
-    DiscordModalManager.INSTANCE.setCurrentUserModal(interaction.getUser().getId(), this);
+      DiscordModalManager.INSTANCE.setCurrentUserModal(interaction.getUser().getId(), this);
 
-    if (!hasSelectionStep()) {
-      replyModal(interaction, done);
-      return done;
-    }
+      if (!hasSelectionStep()) {
+        replyModal(interaction, done);
+        return;
+      }
 
-    startChannelCreationWithSelectionSteps(interaction, done);
+      startChannelCreationWithSelectionSteps(interaction, done, hook);
+    });
 
     return done;
   }
@@ -130,16 +134,16 @@ public abstract class DiscordStepChannelCreationModal {
    * @param interaction The interaction triggering the channel creation.
    * @param done        A CompletableFuture to signal the completion of the process.
    */
-  private void startChannelCreationWithSelectionSteps(@NotNull StringSelectInteraction interaction,
-      CompletableFuture<Void> done) {
-    interaction.deferReply(true)
-        .queue(hook -> executeSelectionSteps(hook)
-            .thenAcceptAsync(
-                lastSelectionEvent -> replyModalAfterSelectionSteps(lastSelectionEvent, interaction,
-                    done)), throwable -> {
-          LOGGER.error("Failed to start channel creation", throwable);
-          done.completeExceptionally(throwable);
-        });
+  private void startChannelCreationWithSelectionSteps(
+      @NotNull StringSelectInteraction interaction,
+      CompletableFuture<Void> done,
+      InteractionHook hook
+  ) {
+
+    executeSelectionSteps(hook)
+        .thenAcceptAsync(
+            lastSelectionEvent -> replyModalAfterSelectionSteps(lastSelectionEvent, interaction,
+                done));
   }
 
   /**
@@ -181,6 +185,7 @@ public abstract class DiscordStepChannelCreationModal {
    *
    * @param event The modal interaction event.
    */
+  @Blocking
   public final void handleUserSubmitModal(@NotNull ModalInteractionEvent event) {
     final LinkedList<ModalStep> modalSteps = getSteps();
     final User user = event.getUser();

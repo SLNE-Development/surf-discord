@@ -6,6 +6,7 @@ import dev.slne.discord.config.role.RoleConfig;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import java.util.Map;
 import lombok.Getter;
 import lombok.ToString;
 import net.dv8tion.jda.api.entities.Guild;
@@ -13,8 +14,6 @@ import net.dv8tion.jda.api.entities.Role;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
-
-import java.util.Map;
 
 /**
  * The interface Guild config.
@@ -24,60 +23,48 @@ import java.util.Map;
 @ToString
 public class GuildConfig {
 
-	private String guildId;
-	private String categoryId;
-	private String whitelistRoleId;
-	private ReactionRoleConfig reactionRole;
+  private String guildId;
+  private String categoryId;
+  private String whitelistRoleId;
+  private ReactionRoleConfig reactionRole;
 
-	private Map<String, RoleConfig> roleConfig;
+  private Map<String, RoleConfig> roleConfig;
 
-	/**
-	 * Instantiates a new Guild config.
-	 */
-	private GuildConfig() {
+  /**
+   * Instantiates a new Guild config.
+   */
+  private GuildConfig() {
 
-	}
+  }
 
-	/**
-	 * Gets config.
-	 *
-	 * @param guildName the guild id
-	 *
-	 * @return the config
-	 */
-	public static GuildConfig getConfig(String guildName) {
-		return BotConfig.getConfig().getGuildConfig().get(guildName);
-	}
+  /**
+   * Gets by guild id.
+   *
+   * @param guildId the guild id
+   * @return the by guild id
+   */
+  public static GuildConfig getByGuildId(String guildId) {
+    return BotConfig.getConfig().getGuildConfig().values().stream()
+        .filter(guildConfig -> guildConfig.getGuildId().equals(guildId))
+        .findFirst()
+        .orElse(null);
+  }
 
-	/**
-	 * Gets by guild id.
-	 *
-	 * @param guildId the guild id
-	 *
-	 * @return the by guild id
-	 */
-	public static GuildConfig getByGuildId(String guildId) {
-		return BotConfig.getConfig().getGuildConfig().values().stream()
-						.filter(guildConfig -> guildConfig.getGuildId().equals(guildId))
-						.findFirst()
-						.orElse(null);
-	}
+  public static GuildConfig getByGuild(@NotNull Guild guild) {
+    return getByGuildId(guild.getId());
+  }
 
-	public static GuildConfig getByGuild(@NotNull Guild guild) {
-		return getByGuildId(guild.getId());
-	}
+  /**
+   * Instantiates a new Get whitelisted role.
+   *
+   * @return the whitelisted role
+   */
+  public Role getWhitelistedRole() {
+    return DiscordBot.getInstance().getJda().getRoleById(whitelistRoleId);
+  }
 
-	/**
-	 * Instantiates a new Get whitelisted role.
-	 *
-	 * @return the whitelisted role
-	 */
-	public Role getWhitelistedRole() {
-		return DiscordBot.getInstance().getJda().getRoleById(whitelistRoleId);
-	}
-
-	@Unmodifiable
-	public Object2ObjectMap<String, RoleConfig> getRoleConfig() {
-		return Object2ObjectMaps.unmodifiable(new Object2ObjectOpenHashMap<>(roleConfig));
-	}
+  @Unmodifiable
+  public Object2ObjectMap<String, RoleConfig> getRoleConfig() {
+    return Object2ObjectMaps.unmodifiable(new Object2ObjectOpenHashMap<>(roleConfig));
+  }
 }

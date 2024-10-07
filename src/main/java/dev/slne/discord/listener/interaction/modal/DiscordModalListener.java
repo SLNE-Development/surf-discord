@@ -5,6 +5,7 @@ import dev.slne.discord.discord.interaction.modal.DiscordModal;
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager;
 import dev.slne.discord.discord.interaction.modal.step.DiscordStepChannelCreationModal;
 import dev.slne.discord.message.MessageManager;
+import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -32,7 +33,7 @@ public class DiscordModalListener extends ListenerAdapter {
 
     if (advancedModal != null) {
       event.deferReply(true).queue();
-      advancedModal.handleUserSubmitModal(event);
+      CompletableFuture.runAsync(() -> advancedModal.handleUserSubmitModal(event));
       return;
     }
 

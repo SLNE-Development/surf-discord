@@ -298,15 +298,27 @@ public class TicketChannelHelper {
 
     try {
       final ChannelAction<TextChannel> channelAction = category.createTextChannel(ticketName);
-      final User author = ticket.getTicketAuthor().complete();
+      final User author = ticket.getTicketAuthorNow();
       createAuthorTicketMember(ticket, author, channelAction).join();
 
       getChannelPermissions(ticket, author)
           .forEach(override -> override.addOverride(channelAction));
 
-      final TextChannel ticketChannel = channelAction.submit().join();
+      final TextChannel ticketChannel = channelAction.complete();
       ticket.setChannelId(ticketChannel.getId());
       ticketService.updateTicket(ticket).join();
+
+      // Ablauf:
+      //1. Channel erstellen
+      // 2. Member adden
+      // 3. Nachrichten senden (openening)
+//      ticketChannel.createThreadChannel("Test", true)
+//          .flatMap(threadChannel -> {
+//            List<RestAction<Void>> actions = new ObjectArrayList<>();
+//            actions.add(threadChannel.addThreadMember(author));
+//
+//            return RestAction.allOf(actions);
+//          });
 
       return CompletableFuture.completedFuture(TicketCreateResult.SUCCESS);
     } catch (Exception exception) {

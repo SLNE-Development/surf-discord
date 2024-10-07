@@ -61,6 +61,7 @@ public abstract class ModalStep {
    * @param event The modal interaction event containing user input.
    * @throws ModalStepInputVerificationException if any input is invalid.
    */
+  @Blocking
   public final void runVerifyModalInput(ModalInteractionEvent event)
       throws ModalStepInputVerificationException {
     verifyModalInput(event);
@@ -151,7 +152,7 @@ public abstract class ModalStep {
    * Retrieves the open messages for this step and all of its children.
    *
    * @param messages The message queue to which messages are added.
-   * @param channel The channel where the messages will be sent.
+   * @param channel  The channel where the messages will be sent.
    */
   public final void getOpenMessages(MessageQueue messages, TextChannel channel) {
     buildOpenMessages(messages, channel);

@@ -3,6 +3,7 @@ package dev.slne.discord.discord.interaction.modal.step.creator.unban.step;
 import dev.slne.discord.discord.interaction.modal.step.MessageQueue;
 import dev.slne.discord.discord.interaction.modal.step.ModalComponentBuilder;
 import dev.slne.discord.discord.interaction.modal.step.ModalStep;
+import dev.slne.discord.message.RawMessages;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
@@ -20,12 +21,16 @@ public class UnbanTicketUnbanAppealStep extends ModalStep {
   @Override
   protected void buildModalComponents(ModalComponentBuilder builder) {
     builder.addComponent(
-        TextInput.create(COMPONENT_ID, "Dein Entbannungsantrag",
-                TextInputStyle.PARAGRAPH)
+        TextInput.create(
+                COMPONENT_ID,
+                RawMessages.get("modal.unban.step.appeal.input.appeal.label"),
+                TextInputStyle.PARAGRAPH
+            )
             .setRequired(true)
             .setMinLength(300)
             .setPlaceholder(
-                "Erkläre, warum du entbannt werden möchtest und was du aus deinem Verhalten gelernt hast.")
+                RawMessages.get("modal.unban.step.appeal.input.appeal.placeholder")
+            )
             .build()
     );
   }
@@ -38,7 +43,7 @@ public class UnbanTicketUnbanAppealStep extends ModalStep {
 
   @Override
   protected void buildOpenMessages(MessageQueue messages, TextChannel channel) {
-    messages.addMessage("# Entbannungsantrag");
-    messages.addMessage("> %s", unbanAppeal);
+    messages.addMessage(RawMessages.get("modal.unban.step.appeal.messages.appeal.title"));
+    messages.addMessage(RawMessages.get("modal.unban.step.appeal.messages.appeal", unbanAppeal));
   }
 }
