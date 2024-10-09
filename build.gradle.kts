@@ -5,11 +5,11 @@
 plugins {
     `java-library`
     `maven-publish`
-    `kotlin-dsl`
 
     id("org.hibernate.build.maven-repo-auth") version "3.0.4"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("io.freefair.lombok") version "8.7.1"
+    id("com.gradleup.shadow") version "8.3.3"
+    kotlin("jvm") version "2.0.20"
+    kotlin("plugin.spring") version "1.9.25"
 }
 
 repositories {
@@ -31,7 +31,6 @@ dependencies {
     api(libs.fastutil)
     api(libs.configurate.yaml)
     api(libs.configurate.jackson)
-//    api(libs.dev.slne.surf.surf.api.core.api)
     api(libs.net.dv8tion.jda) {
         isChanging = true
         exclude(group = "org.slf4j", module = "slf4j-api")
@@ -39,17 +38,15 @@ dependencies {
         exclude(group = "ch.qos.logback", module = "logback-core")
     }
     api(libs.dev.slne.surf.data.core) {
-        exclude(group = "org.slf4j", module = "slf4j-api")
-        exclude(group = "ch.qos.logback", module = "logback-classic")
-        exclude(group = "ch.qos.logback", module = "logback-core")
+//        exclude(group = "org.slf4j", module = "slf4j-api")
+//        exclude(group = "ch.qos.logback", module = "logback-classic")
+//        exclude(group = "ch.qos.logback", module = "logback-core")
     }
-//    implementation("space.arim.dazzleconf:dazzleconf-ext-snakeyaml:1.3.0-M2")
-    implementation("org.springframework.shell:spring-shell-starter:3.3.1")
-
+    api(libs.kotlin.coroutines)
 }
 
 group = "dev.slne"
-version = "3.0.0-SNAPSHOT"
+version = "5.0.0-SNAPSHOT"
 description = "surf-discord"
 
 java {
@@ -76,6 +73,7 @@ tasks {
         options.encoding = Charsets.UTF_8.name()
         options.compilerArgs.add("-parameters")
     }
+
     javadoc {
         options.encoding = Charsets.UTF_8.name()
     }

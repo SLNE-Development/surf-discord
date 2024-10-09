@@ -4,7 +4,6 @@ import dev.slne.discord.spring.feign.client.TicketMemberClient;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.member.TicketMember;
 import feign.FeignException;
-import feign.Logger;
 import java.util.concurrent.CompletableFuture;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
 import org.springframework.beans.factory.annotation.Autowired;

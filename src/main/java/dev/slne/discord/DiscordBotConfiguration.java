@@ -2,7 +2,6 @@ package dev.slne.discord;
 
 import dev.slne.discord.config.BotConfig;
 import dev.slne.discord.discord.settings.GatewayIntents;
-import javax.inject.Singleton;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -25,7 +24,7 @@ public class DiscordBotConfiguration {
 
     if (botToken == null) {
       LOGGER.error("Bot token is null. Exiting...");
-      System.exit(ExitCodes.BOT_TOKEN_NOT_SET);
+      ExitCodes.BOT_TOKEN_NOT_SET.exit();
     }
 
     final JDA jda = JDABuilder.createDefault(botToken)
@@ -49,7 +48,7 @@ public class DiscordBotConfiguration {
       jda.awaitReady();
     } catch (InterruptedException e) {
       LOGGER.error("Failed to start JDA. Existing...", e);
-      System.exit(ExitCodes.FAILED_AWAIT_READY_JDA);
+      ExitCodes.FAILED_AWAIT_READY_JDA.exit();
     }
 
     return jda;

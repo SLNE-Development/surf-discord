@@ -9,7 +9,6 @@ import dev.slne.discord.message.MessageManager;
 import dev.slne.discord.ticket.Ticket;
 import dev.slne.discord.ticket.TicketChannelHelper;
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
-import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.data.util.Lazy;
 
 /**

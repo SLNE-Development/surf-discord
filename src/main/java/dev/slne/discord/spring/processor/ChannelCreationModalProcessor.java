@@ -1,6 +1,5 @@
 package dev.slne.discord.spring.processor;
 
-import dev.slne.discord.DiscordSpringApplication;
 import dev.slne.discord.annotation.ChannelCreationModal;
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager;
 import dev.slne.discord.discord.interaction.modal.step.DiscordStepChannelCreationModal;

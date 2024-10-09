@@ -7,6 +7,7 @@ net-dv8tion-jda = "5.0.0-beta.20"
 dev-slne-surf-surf-api-core-api = "1.21+"
 fastutil-version = "8.5.13"
 configurate-version = "4.1.2"
+kotlin-coroutines = "1.9.0"
 
 [libraries]
 dev-slne-surf-data-core = { module = "dev.slne:surf-data-core", version.ref = "dev-slne-surf-data-core" }
@@ -15,3 +16,4 @@ dev-slne-surf-surf-api-core-api = { module = "dev.slne.surf:surf-api-core-server
 fastutil = { module = "it.unimi.dsi:fastutil", version.ref = "fastutil-version" }
 configurate-yaml = { module = "org.spongepowered:configurate-yaml", version.ref = "configurate-version" }
 configurate-jackson = { module = "org.spongepowered:configurate-jackson", version.ref = "configurate-version" }
+kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
