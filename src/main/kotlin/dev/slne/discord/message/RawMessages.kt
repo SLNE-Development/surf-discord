@@ -102,7 +102,7 @@ class RawMessages private constructor() {
         fun get(
             key: @NonNls @PropertyKey(resourceBundle = BUNDLE_NAME) String?,
             vararg params: Any?
-        ): @Nls String? {
+        ): @Nls String {
             return INSTANCE.getMessage(key, *params)
         }
     }

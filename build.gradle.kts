@@ -3,11 +3,12 @@
  */
 
 plugins {
-    `java-library`
+    java
     `maven-publish`
 
     id("org.hibernate.build.maven-repo-auth") version "3.0.4"
     id("com.gradleup.shadow") version "8.3.3"
+
     kotlin("jvm") version "2.0.20"
     kotlin("plugin.spring") version "1.9.25"
 }
@@ -27,22 +28,33 @@ configurations.all {
     }
 }
 
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
+    }
+}
+
 dependencies {
-    api(libs.fastutil)
-    api(libs.configurate.yaml)
-    api(libs.configurate.jackson)
-    api(libs.net.dv8tion.jda) {
+    implementation("com.github.ajalt.clikt:clikt:5.0.1")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.apache.commons:commons-lang3:3.17.0")
+    implementation("net.kyori:adventure-api:4.17.0")
+    implementation("net.kyori:adventure-text-logger-slf4j:4.17.0")
+    implementation("jakarta.annotation:jakarta.annotation-api:3.0.0")
+    implementation("javax.annotation:jsr305:1.0")
+    implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
+
+    implementation(libs.fastutil)
+    implementation(libs.configurate.yaml)
+    implementation(libs.configurate.jackson)
+    implementation(libs.net.dv8tion.jda) {
         isChanging = true
         exclude(group = "org.slf4j", module = "slf4j-api")
         exclude(group = "ch.qos.logback", module = "logback-classic")
         exclude(group = "ch.qos.logback", module = "logback-core")
     }
-    api(libs.dev.slne.surf.data.core) {
-//        exclude(group = "org.slf4j", module = "slf4j-api")
-//        exclude(group = "ch.qos.logback", module = "logback-classic")
-//        exclude(group = "ch.qos.logback", module = "logback-core")
-    }
-    api(libs.kotlin.coroutines)
+    implementation(libs.kotlin.coroutines)
+    implementation(libs.jda.ktx)
 }
 
 group = "dev.slne"

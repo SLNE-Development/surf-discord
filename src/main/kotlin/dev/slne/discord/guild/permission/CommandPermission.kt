@@ -1,12 +1,7 @@
 package dev.slne.discord.guild.permission
 
-/**
- * The enum Command permission.
- */
 enum class CommandPermission(val permission: String) {
     NO_INTEREST("NO_INTEREST"),
-    TWITCH_CONNECT("TWITCH_CONNECT"),
-    TWITCH_FOLLOW("TWITCH_FOLLOW"),
     WHITELIST("WHITELIST"),
     WHITELISTED("WHITELISTED"),
     WHITELIST_QUERY("WHITELIST_QUERY"),
@@ -15,11 +10,4 @@ enum class CommandPermission(val permission: String) {
     TICKET_REMOVE_USER("TICKET_REMOVE_USER"),
     TICKET_CLOSE("TICKET_CLOSE"),
     TICKET_BUTTONS("TICKET_BUTTONS"),
-    TICKET_INFO("TICKET_INFO"),
-    TICKET_BAN("TICKET_BAN"),
-    TICKET_UNBAN("TICKET_UNBAN"),
-    TICKET_BANLIST("TICKET_BANLIST"),
-    TICKET_BANINFO("TICKET_BANINFO"),
-    TICKET_STATISTIC("TICKET_STATISTIC"),
-    REACTION_ROLE_TEXT("REACTION_ROLE_TEXT")
 }

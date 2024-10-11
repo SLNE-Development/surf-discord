@@ -60,10 +60,7 @@ fun formatEuropeBerlinDuration(
 ) = formatDuration(toEuropeBerlin(start), toEuropeBerlin(end))
 
 
-fun toEuropeBerlin(zonedDateTime: ZonedDateTime): ZonedDateTime =
-    zonedDateTime.withZoneSameInstant(berlinZoneId)
+fun ZonedDateTime.toEuropeBerlin(): ZonedDateTime = withZoneSameInstant(berlinZoneId)
 
-
-fun formatEuropeBerlin(zonedDateTime: ZonedDateTime): String =
-    DATE_FORMATTER.format(toEuropeBerlin(zonedDateTime))
+fun ZonedDateTime.formatEuropeBerlin(): String = DATE_FORMATTER.format(toEuropeBerlin())
 

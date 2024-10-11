@@ -1,14 +1,10 @@
 package dev.slne.discord
 
 import dev.slne.data.api.DataApi
-import dev.slne.discord.datasource.DiscordDataInstance
 import dev.slne.discord.message.RawMessages
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.springframework.context.ConfigurableApplicationContext
 
-/**
- * The type Bootstrap.
- */
 class Bootstrap {
 
     private val discordBot = DiscordBot()

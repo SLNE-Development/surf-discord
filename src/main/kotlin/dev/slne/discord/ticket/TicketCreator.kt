@@ -1,6 +1,7 @@
 package dev.slne.discord.ticket
 
-import dev.slne.discord.config.discord.GuildConfig
+import dev.minn.jda.ktx.coroutines.await
+import dev.slne.discord.config.discord.getGuildConfig
 import dev.slne.discord.config.ticket.TicketTypeConfig
 import dev.slne.discord.config.ticket.getConfig
 import dev.slne.discord.exception.ticket.DeleteTicketChannelException
@@ -8,6 +9,7 @@ import dev.slne.discord.message.MessageManager
 import dev.slne.discord.message.Messages
 import dev.slne.discord.message.TimeFormatter
 import dev.slne.discord.spring.service.ticket.TicketService
+import dev.slne.discord.ticket.TicketCreator.Companion.LOGGER
 import dev.slne.discord.ticket.result.TicketCloseResult
 import dev.slne.discord.ticket.result.TicketCreateResult
 import kotlinx.coroutines.Dispatchers
@@ -16,14 +18,12 @@ import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.Category
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.scheduling.annotation.Async
-import org.springframework.stereotype.Component
 import java.time.ZonedDateTime
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
-@Component
-class TicketCreator @Autowired constructor(
+
+object TicketCreator @Autowired constructor(
     private val ticketService: TicketService,
     private val ticketChannelHelper: TicketChannelHelper,
     private val messageManager: MessageManager
@@ -80,25 +80,15 @@ class TicketCreator @Autowired constructor(
         }
     }
 
-    suspend fun openTicket(ticket: Ticket, afterOpen: Runnable):TicketCreateResult {
-        val author: User = ticket.
+    suspend fun openTicket(ticket: Ticket, afterOpen: Runnable): TicketCreateResult {
+        val author = ticket.ticketAuthor?.await() ?: return TicketCreateResult.AUTHOR_NOT_FOUND
         val ticketType = ticket.ticketType
         val ticketChannelName = ticketChannelHelper.generateTicketName(ticketType, author)
-        val guild = ticket.guild
-            ?: return CompletableFuture.completedFuture<TicketCreateResult>(
-                TicketCreateResult.GUILD_NOT_FOUND
-            )
+        val guild = ticket.guild ?: return TicketCreateResult.GUILD_NOT_FOUND
 
-        val guildConfig: GuildConfig = GuildConfig.getByGuild(guild)
-            ?: return CompletableFuture.completedFuture<TicketCreateResult>(
-                TicketCreateResult.GUILD_CONFIG_NOT_FOUND
-            )
+        val guildConfig = guild.getGuildConfig() ?: return TicketCreateResult.GUILD_CONFIG_NOT_FOUND
 
         val categoryId: String = guildConfig.categoryId
-        val channelCategory = guild.getCategoryById(categoryId)
-            ?: return CompletableFuture.completedFuture<TicketCreateResult>(
-                TicketCreateResult.CATEGORY_NOT_FOUND
-            )
 
         val ticketExists = ticketChannelHelper.checkTicketExists(
             ticketChannelName,
@@ -121,11 +111,10 @@ class TicketCreator @Autowired constructor(
 
     // endregion
     // region Close Ticket
-    @Async
-    fun closeTicket(
+    suspend fun closeTicket(
         ticket: Ticket, closer: User,
         reason: String?
-    ): CompletableFuture<TicketCloseResult> {
+    ): TicketCloseResult {
         val channel = ticket.channel
             ?: return CompletableFuture.completedFuture<TicketCloseResult>(
                 TicketCloseResult.TICKET_NOT_FOUND

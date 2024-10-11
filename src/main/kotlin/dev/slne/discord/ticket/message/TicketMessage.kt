@@ -3,7 +3,6 @@ package dev.slne.discord.ticket.message
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import dev.slne.discord.DiscordBot
-import dev.slne.discord.datasource.Times
 import dev.slne.discord.ticket.Ticket
 import dev.slne.discord.ticket.message.attachment.TicketMessageAttachment
 import kotlinx.coroutines.Dispatchers

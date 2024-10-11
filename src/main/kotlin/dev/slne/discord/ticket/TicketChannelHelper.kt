@@ -1,316 +1,299 @@
-package dev.slne.discord.ticket;
+package dev.slne.discord.ticket
 
-import dev.slne.discord.config.discord.GuildConfig;
-import dev.slne.discord.config.role.RoleConfig;
-import dev.slne.discord.exception.ticket.DeleteTicketChannelException;
-import dev.slne.discord.exception.ticket.UnableToGetTicketNameException;
-import dev.slne.discord.exception.ticket.member.TicketAddMemberException;
-import dev.slne.discord.exception.ticket.member.TicketRemoveMemberException;
-import dev.slne.discord.guild.permission.DiscordPermission;
-import dev.slne.discord.spring.service.ticket.TicketService;
-import dev.slne.discord.ticket.member.TicketMember;
-import dev.slne.discord.ticket.result.TicketCreateResult;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-import javax.annotation.ParametersAreNonnullByDefault;
-import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.channel.Channel;
-import net.dv8tion.jda.api.entities.channel.concrete.Category;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.exceptions.ErrorResponseException;
-import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
-import net.dv8tion.jda.api.managers.channel.concrete.TextChannelManager;
-import net.dv8tion.jda.api.requests.RestAction;
-import net.dv8tion.jda.api.requests.restaction.ChannelAction;
-import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
+import dev.slne.discord.config.discord.GuildConfig
+import dev.slne.discord.exception.ticket.DeleteTicketChannelException
+import dev.slne.discord.exception.ticket.UnableToGetTicketNameException
+import dev.slne.discord.exception.ticket.member.TicketAddMemberException
+import dev.slne.discord.exception.ticket.member.TicketRemoveMemberException
+import dev.slne.discord.guild.permission.TicketViewPermission
+import dev.slne.discord.guild.role.DiscordRolePermissions
+import dev.slne.discord.spring.service.ticket.TicketService
+import dev.slne.discord.ticket.TicketChannelHelper.Companion.LOGGER
+import dev.slne.discord.ticket.TicketChannelHelper.Companion.allPermissions
+import dev.slne.discord.ticket.TicketChannelHelper.Companion.handleCreationException
+import dev.slne.discord.ticket.member.TicketMember
+import dev.slne.discord.ticket.result.TicketCreateResult
+import it.unimi.dsi.fastutil.objects.*
+import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.Role
+import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.entities.channel.Channel
+import net.dv8tion.jda.api.entities.channel.concrete.Category
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel
+import net.dv8tion.jda.api.exceptions.ErrorResponseException
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
+import net.dv8tion.jda.api.requests.RestAction
+import net.dv8tion.jda.api.requests.restaction.ChannelAction
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger
+import java.util.*
+import java.util.concurrent.CompletableFuture
+import java.util.function.Consumer
+import java.util.stream.Collectors
+import kotlin.math.min
 
 /**
  * The type Ticket channel.
  */
 @Component
 @ParametersAreNonnullByDefault
-public class TicketChannelHelper {
+object TicketChannelHelper @Autowired constructor(
+    private val jda: JDA,
+    ticketService: TicketService
+) {
+    private val ticketService: TicketService = ticketService
 
-  private static final ComponentLogger LOGGER = ComponentLogger.logger("TicketChannelHelper");
-  private final JDA jda;
-  private final TicketService ticketService;
-
-  @Autowired
-  public TicketChannelHelper(JDA jda, TicketService ticketService) {
-    this.jda = jda;
-    this.ticketService = ticketService;
-  }
-
-  /**
-   * Adds a ticket member to the channel
-   *
-   * @param ticket       the ticket
-   * @param ticketMember the ticket member
-   * @return when completed
-   */
-  @Async
-  public CompletableFuture<Void> addTicketMember(Ticket ticket, TicketMember ticketMember)
-      throws TicketAddMemberException {
-    final TicketMember addedMember = ticketService.addTicketMember(ticket, ticketMember).join();
-    final Guild guild = ticket.getGuild();
-    final TextChannel channel = ticket.getChannel();
-    final RestAction<User> userRest = addedMember.getMember();
+    /**
+     * Adds a ticket member to the channel
+     *
+     * @param ticket       the ticket
+     * @param ticketMember the ticket member
+     * @return when completed
+     */
+    @Async
+    @Throws(TicketAddMemberException::class)
+    fun addTicketMember(ticket: Ticket, ticketMember: TicketMember?): CompletableFuture<Void> {
+        val addedMember: TicketMember = ticketService.addTicketMember(ticket, ticketMember).join()
+        val guild = ticket.guild
+        val channel: TextChannel? = ticket.channel
+        val userRest: RestAction<User> = addedMember.member
 
 
-    if (guild == null || channel == null || userRest == null) {
-      throw new TicketAddMemberException("Guild, channel or user not found");
-    }
-
-    final TextChannelManager manager = channel.getManager();
-    final User user = userRest.complete();
-
-    if (user == null) {
-      throw new TicketAddMemberException("User not found");
-    }
-
-    final Member member = guild.retrieveMember(user).submit().join();
-
-    if (member == null) {
-      throw new TicketAddMemberException("Member not found");
-    }
-
-    final List<Role> memberDiscordRoles = member.getRoles();
-    final List<RoleConfig> memberRoles = memberDiscordRoles.stream()
-        .map(role -> RoleConfig.getDiscordRoleRoles(guild.getId(), role.getId()))
-        .flatMap(List::stream)
-        .toList();
-
-    final Set<Permission> permissions = memberRoles.stream()
-        .map(RoleConfig::getDiscordAllowedPermissions)
-        .flatMap(List::stream)
-        .map(DiscordPermission::getPermission)
-        .collect(Collectors.toSet());
-
-    return CompletableFuture.completedFuture(
-        manager.putMemberPermissionOverride(user.getIdLong(), permissions, null)
-            .complete()
-    );
-  }
-
-  /**
-   * Removes a ticket member from the channel
-   *
-   * @param ticket       the ticket
-   * @param ticketMember the ticket member
-   * @return when completed
-   */
-  @Async
-  public CompletableFuture<Void> removeTicketMember(
-      Ticket ticket,
-      TicketMember member,
-      @NotNull User remover
-  ) throws TicketRemoveMemberException {
-    final TextChannel channel = ticket.getChannel()
-        .orElseThrow(() -> );
-    final User user = member.getMemberNow()
-        .orElseThrow(() -> );
-
-    ticketService.removeTicketMember(ticket, member, remover).join();
-
-    final TextChannelManager manager = channel.getManager();
-
-    return CompletableFuture.completedFuture(
-        manager.removePermissionOverride(user.getIdLong()).complete()
-    );
-  }
-
-  /**
-   * Returns the default permission overrides for the ticket channel
-   *
-   * @param ticket The ticket
-   * @param author The author of the ticket
-   * @return The default permission overrides for the ticket channel
-   */
-  public ObjectList<TicketPermissionOverride> getChannelPermissions(Ticket ticket, User author) {
-    final Guild guild = ticket.getGuild();
-    final TicketType ticketType = ticket.getTicketType();
-
-    final ObjectSet<Permission> allPermissions = getAllPermissions();
-    final ObjectList<TicketPermissionOverride> overrides = new ObjectArrayList<>();
-
-    // Deny public role
-    overrides.add(TicketPermissionOverride.builder()
-        .type(Type.ROLE)
-        .id(guild.getPublicRole().getIdLong())
-        .allow(null)
-        .deny(allPermissions)
-        .build());
-
-    // Allow bot user
-    overrides.add(TicketPermissionOverride.builder()
-        .type(Type.USER)
-        .id(jda.getSelfUser().getIdLong())
-        .allow(allPermissions)
-        .deny(null)
-        .build());
-
-    // Allow bot role
-    final Role botRole = guild.getBotRole();
-    if (botRole != null) {
-      overrides.add(TicketPermissionOverride.builder()
-          .type(Type.ROLE)
-          .id(botRole.getIdLong())
-          .allow(allPermissions)
-          .deny(null)
-          .build());
-    }
-
-    final Object2ObjectMap<String, RoleConfig> roleConfigMap = GuildConfig.getByGuild(guild)
-        .getRoleConfig();
-
-    for (final RoleConfig roleConfig : roleConfigMap.values()) {
-      if (roleConfig == null) {
-        continue;
-      }
-
-      final @Nullable ObjectSet<Permission> allowedPermissions;
-      final @Nullable ObjectSet<Permission> deniedPermissions;
-
-      if (roleConfig.canViewTicketType(ticketType)) {
-        allowedPermissions = allPermissions;
-        deniedPermissions = null;
-      } else {
-        allowedPermissions = null;
-        deniedPermissions = allPermissions;
-      }
-
-      for (final String roleId : roleConfig.getDiscordRoleIds()) {
-        final Role role = guild.getRoleById(roleId);
-
-        if (role != null) {
-          overrides.add(TicketPermissionOverride.builder()
-              .type(Type.ROLE)
-              .id(role.getIdLong())
-              .allow(allowedPermissions)
-              .deny(deniedPermissions)
-              .build());
+        if (guild == null || channel == null || userRest == null) {
+            throw TicketAddMemberException("Guild, channel or user not found")
         }
-      }
+
+        val manager = channel.manager
+        val user = userRest.complete() ?: throw TicketAddMemberException("User not found")
+
+        val member = guild.retrieveMember(user).submit().join()
+            ?: throw TicketAddMemberException("Member not found")
+
+        val memberDiscordRoles = member.roles
+        val memberRoles: List<DiscordRolePermissions> = memberDiscordRoles.stream()
+            .map<Any> { role: Role ->
+                DiscordRolePermissions.getDiscordRoleRoles(
+                    guild.id,
+                    role.id
+                )
+            }
+            .flatMap<Any> { obj: Any -> obj.stream() }
+            .toList()
+
+        val permissions: Set<Permission> = memberRoles.stream()
+            .map<List<TicketViewPermission?>>(DiscordRolePermissions::ticketViewPermissions)
+            .flatMap<TicketViewPermission?> { obj: List<TicketViewPermission?> -> obj.stream() }
+            .map<String>(TicketViewPermission::permission)
+            .collect<Set<Permission>, Any>(Collectors.toSet<Any>())
+
+        return CompletableFuture.completedFuture(
+            manager.putMemberPermissionOverride(user.idLong, permissions, null)
+                .complete()
+        )
     }
 
-    final RoleConfig defaultRole = RoleConfig.getDefaultRole(guild.getId());
+    /**
+     * Removes a ticket member from the channel
+     *
+     * @param ticket       the ticket
+     * @param ticketMember the ticket member
+     * @return when completed
+     */
+    @Async
+    @Throws(TicketRemoveMemberException::class)
+    fun removeTicketMember(
+        ticket: Ticket,
+        member: TicketMember,
+        remover: User
+    ): CompletableFuture<Void> {
+        val channel: TextChannel = ticket.channel
+            .orElseThrow {}
+        val user: User = member.getMemberNow()
+            .orElseThrow {}
 
-    // Apply author
-    overrides.add(TicketPermissionOverride.builder()
-        .type(Type.USER)
-        .id(author.getIdLong())
-        .deny(null)
-        .allow(defaultRole.getDiscordAllowedPermissions().stream()
-            .map(DiscordPermission::getPermission)
-            .toList())
-        .build());
+        ticketService.removeTicketMember(ticket, member, remover).join()
 
-    return overrides;
-  }
+        val manager = channel.manager
 
-  /**
-   * Creates the author ticket member
-   *
-   * @param ticket        The ticket
-   * @param author        The author of the ticket
-   * @param channelAction the channel action
-   * @return The result of the ticket member creation
-   */
-  @Async
-  protected CompletableFuture<TicketMember> createAuthorTicketMember(
-      Ticket ticket,
-      User author,
-      ChannelAction<TextChannel> channelAction
-  ) {
-    final TicketMember member = new TicketMember(ticket, author, jda.getSelfUser());
-    final RoleConfig defaultRole = RoleConfig.getDefaultRole(ticket.getGuildId());
-    final List<Permission> allowedPermissions = defaultRole.getDiscordAllowedPermissions()
-        .stream()
-        .map(DiscordPermission::getPermission)
-        .toList();
-
-    //noinspection ResultOfMethodCallIgnored
-    channelAction.addMemberPermissionOverride(
-        author.getIdLong(),
-        allowedPermissions,
-        null
-    );
-
-    return ticket.addTicketMember(member);
-  }
-
-  /**
-   * Returns all permissions
-   *
-   * @return all permissions
-   */
-  private static @NotNull ObjectSet<Permission> getAllPermissions() {
-    final ObjectSet<Permission> allPermissions = new ObjectArraySet<>();
-
-    for (final Permission perm : Permission.values()) {
-      if (perm.isText()) {
-        allPermissions.add(perm);
-      }
+        return CompletableFuture.completedFuture(
+            manager.removePermissionOverride(user.idLong).complete()
+        )
     }
 
-    allPermissions.add(Permission.VIEW_CHANNEL);
-    allPermissions.add(Permission.MANAGE_WEBHOOKS);
-    allPermissions.add(Permission.MANAGE_CHANNEL);
+    /**
+     * Returns the default permission overrides for the ticket channel
+     *
+     * @param ticket The ticket
+     * @param author The author of the ticket
+     * @return The default permission overrides for the ticket channel
+     */
+    fun getChannelPermissions(ticket: Ticket, author: User): ObjectList<TicketPermissionOverride> {
+        val guild = ticket.guild
+        val ticketType = ticket.ticketType
 
-    return allPermissions;
-  }
+        val allPermissions =
+            allPermissions
+        val overrides: ObjectList<TicketPermissionOverride> =
+            ObjectArrayList<TicketPermissionOverride>()
 
-  /**
-   * Create the ticket channel
-   *
-   * @param ticket     The ticket to create the channel for
-   * @param ticketName The name of the ticket
-   * @param category   The category to create the ticket in
-   * @return The result of the ticket creation
-   */
-  @Async
-  public CompletableFuture<TicketCreateResult> createTicketChannel(
-      Ticket ticket,
-      String ticketName,
-      Category category
-  ) {
-    if (!ticket.hasGuild()) {
-      return CompletableFuture.completedFuture(TicketCreateResult.GUILD_NOT_FOUND);
+        // Deny public role
+        overrides.add(
+            TicketPermissionOverride.builder()
+                .type(Type.ROLE)
+                .id(guild!!.publicRole.idLong)
+                .allow(null)
+                .deny(allPermissions)
+                .build()
+        )
+
+        // Allow bot user
+        overrides.add(
+            TicketPermissionOverride.builder()
+                .type(Type.USER)
+                .id(jda.selfUser.idLong)
+                .allow(allPermissions)
+                .deny(null)
+                .build()
+        )
+
+        // Allow bot role
+        val botRole = guild.botRole
+        if (botRole != null) {
+            overrides.add(
+                TicketPermissionOverride.builder()
+                    .type(Type.ROLE)
+                    .id(botRole.idLong)
+                    .allow(allPermissions)
+                    .deny(null)
+                    .build()
+            )
+        }
+
+        val roleConfigMap: Object2ObjectMap<String, DiscordRolePermissions> =
+            GuildConfig.getByGuild(guild)
+                .getRoleConfig()
+
+        for (roleConfig in roleConfigMap.values) {
+            if (roleConfig == null) {
+                continue
+            }
+
+            val allowedPermissions: ObjectSet<Permission>?
+            val deniedPermissions: ObjectSet<Permission>?
+
+            if (roleConfig.canViewTicketType(ticketType)) {
+                allowedPermissions = allPermissions
+                deniedPermissions = null
+            } else {
+                allowedPermissions = null
+                deniedPermissions = allPermissions
+            }
+
+            for (roleId in roleConfig.discordRoleIds) {
+                val role = guild.getRoleById(roleId)
+
+                if (role != null) {
+                    overrides.add(
+                        TicketPermissionOverride.builder()
+                            .type(Type.ROLE)
+                            .id(role.idLong)
+                            .allow(allowedPermissions)
+                            .deny(deniedPermissions)
+                            .build()
+                    )
+                }
+            }
+        }
+
+        val defaultRole: DiscordRolePermissions = DiscordRolePermissions.defaultRole
+
+        // Apply author
+        overrides.add(
+            TicketPermissionOverride.builder()
+                .type(Type.USER)
+                .id(author.idLong)
+                .deny(null)
+                .allow(
+                    defaultRole.ticketViewPermissions.stream()
+                        .map<String>(TicketViewPermission::permission)
+                        .toList()
+                )
+                .build()
+        )
+
+        return overrides
     }
 
-    try {
-      final ChannelAction<TextChannel> channelAction = category.createTextChannel(ticketName);
-      final User author = ticket.getTicketAuthorNow();
-      createAuthorTicketMember(ticket, author, channelAction).join();
+    /**
+     * Creates the author ticket member
+     *
+     * @param ticket        The ticket
+     * @param author        The author of the ticket
+     * @param channelAction the channel action
+     * @return The result of the ticket member creation
+     */
+    @Async
+    protected fun createAuthorTicketMember(
+        ticket: Ticket,
+        author: User,
+        channelAction: ChannelAction<TextChannel>
+    ): CompletableFuture<TicketMember> {
+        val member: TicketMember = TicketMember(ticket, author, jda.selfUser)
+        val defaultRole: DiscordRolePermissions = DiscordRolePermissions.defaultRole
+        val allowedPermissions: List<Permission> = defaultRole.ticketViewPermissions
+            .stream()
+            .map<String>(TicketViewPermission::permission)
+            .toList()
 
-      getChannelPermissions(ticket, author)
-          .forEach(override -> override.addOverride(channelAction));
+        channelAction.addMemberPermissionOverride(
+            author.idLong,
+            allowedPermissions,
+            null
+        )
 
-      final TextChannel ticketChannel = channelAction.complete();
-      ticket.setChannelId(ticketChannel.getId());
-      ticketService.updateTicket(ticket).join();
+        return ticket.addTicketMember(member)
+    }
 
-      // Ablauf:
-      //1. Channel erstellen
-      // 2. Member adden
-      // 3. Nachrichten senden (openening)
+    /**
+     * Create the ticket channel
+     *
+     * @param ticket     The ticket to create the channel for
+     * @param ticketName The name of the ticket
+     * @param category   The category to create the ticket in
+     * @return The result of the ticket creation
+     */
+    @Async
+    fun createTicketChannel(
+        ticket: Ticket,
+        ticketName: String,
+        category: Category
+    ): CompletableFuture<TicketCreateResult> {
+        if (!ticket.hasGuild()) {
+            return CompletableFuture.completedFuture<TicketCreateResult>(TicketCreateResult.GUILD_NOT_FOUND)
+        }
+
+        try {
+            val channelAction = category.createTextChannel(ticketName)
+            val author: User = ticket.getTicketAuthorNow()
+            createAuthorTicketMember(ticket, author, channelAction).join()
+
+            getChannelPermissions(ticket, author)
+                .forEach(Consumer<TicketPermissionOverride> { override: TicketPermissionOverride ->
+                    override.addOverride(
+                        channelAction
+                    )
+                })
+
+            val ticketChannel = channelAction.complete()
+            ticket.threadId = ticketChannel.id
+            ticketService.updateTicket(ticket).join()
+
+            // Ablauf:
+            //1. Channel erstellen
+            // 2. Member adden
+            // 3. Nachrichten senden (openening)
 //      ticketChannel.createThreadChannel("Test", true)
 //          .flatMap(threadChannel -> {
 //            List<RestAction<Void>> actions = new ObjectArrayList<>();
@@ -318,139 +301,174 @@ public class TicketChannelHelper {
 //
 //            return RestAction.allOf(actions);
 //          });
-
-      return CompletableFuture.completedFuture(TicketCreateResult.SUCCESS);
-    } catch (Exception exception) {
-      return CompletableFuture.completedFuture(handleCreationException(exception));
-    }
-  }
-
-  private static TicketCreateResult handleCreationException(Throwable throwable) {
-    if (throwable instanceof ErrorResponseException errorResponseException
-        && errorResponseException.getErrorCode() == 50013) {
-      return TicketCreateResult.MISSING_PERMISSIONS;
-    } else if (throwable instanceof InsufficientPermissionException) {
-      return TicketCreateResult.MISSING_PERMISSIONS;
-    } else {
-      LOGGER.error("Failed to create ticket channel.", throwable);
-      return TicketCreateResult.ERROR;
-    }
-  }
-
-  /**
-   * Get the name for the ticket channel
-   *
-   * @param ticket The ticket to get the name for
-   * @return The name for the ticket channel
-   */
-  @Async
-  public CompletableFuture<String> getTicketName(Ticket ticket)
-      throws UnableToGetTicketNameException {
-    final TicketType ticketType = ticket.getTicketType();
-    final User author = ticket.getTicketAuthorNow();
-
-    if (ticketType == null || author == null) {
-      throw new UnableToGetTicketNameException("Ticket type or author not found");
+            return CompletableFuture.completedFuture<TicketCreateResult>(TicketCreateResult.SUCCESS)
+        } catch (exception: Exception) {
+            return CompletableFuture.completedFuture<TicketCreateResult>(
+                handleCreationException(exception)
+            )
+        }
     }
 
-    return CompletableFuture.completedFuture(generateTicketName(ticketType, author));
-  }
+    /**
+     * Get the name for the ticket channel
+     *
+     * @param ticket The ticket to get the name for
+     * @return The name for the ticket channel
+     */
+    @Async
+    @Throws(UnableToGetTicketNameException::class)
+    fun getTicketName(ticket: Ticket): CompletableFuture<String> {
+        val ticketType = ticket.ticketType
+        val author: User = ticket.getTicketAuthorNow()
 
-  public @NotNull String generateTicketName(
-      @NotNull TicketType expectedType,
-      @NotNull User expectedAuthor
-  ) {
-    final String ticketTypeName = expectedType.name().toLowerCase();
-    final String authorName = expectedAuthor.getName().toLowerCase().trim().replace(" ", "-");
-    final String ticketName = ticketTypeName + "-" + authorName;
+        if (ticketType == null || author == null) {
+            throw UnableToGetTicketNameException("Ticket type or author not found")
+        }
 
-    return ticketName.substring(0, Math.min(ticketName.length(), Channel.MAX_NAME_LENGTH));
-  }
-
-  /**
-   * Deletes the ticket channel
-   *
-   * @param ticket The ticket to delete the channel for
-   * @return The future result
-   */
-  @Async
-  public CompletableFuture<Void> deleteTicketChannel(Ticket ticket)
-      throws DeleteTicketChannelException {
-    final TextChannel channel = ticket.getChannel();
-
-    if (channel == null) {
-      throw new DeleteTicketChannelException("Channel not found");
+        return CompletableFuture.completedFuture(generateTicketName(ticketType, author))
     }
 
-    try {
-      channel.delete().complete();
-      ticketService.removeTicket(ticket);
-    } catch (Exception exception) {
-      throw new DeleteTicketChannelException("Failed to delete ticket channel", exception);
+    fun generateTicketName(
+        expectedType: TicketType,
+        expectedAuthor: User
+    ): String {
+        val ticketTypeName = expectedType.name.lowercase(Locale.getDefault())
+        val authorName =
+            expectedAuthor.name.lowercase(Locale.getDefault()).trim { it <= ' ' }.replace(" ", "-")
+        val ticketName = "$ticketTypeName-$authorName"
+
+        return ticketName.substring(
+            0, min(
+                ticketName.length.toDouble(),
+                Channel.MAX_NAME_LENGTH.toDouble()
+            ).toInt()
+        )
     }
 
-    return CompletableFuture.completedFuture(null);
-  }
+    /**
+     * Deletes the ticket channel
+     *
+     * @param ticket The ticket to delete the channel for
+     * @return The future result
+     */
+    @Async
+    @Throws(DeleteTicketChannelException::class)
+    fun deleteTicketChannel(ticket: Ticket): CompletableFuture<Void?> {
+        val channel = ticket.channel
+            ?: throw DeleteTicketChannelException("Channel not found")
 
-  public boolean checkTicketExists(
-      Guild guild,
-      TicketType expectedType,
-      User expectedAuthor
-  ) {
-    final GuildConfig guildConfig = GuildConfig.getByGuildId(guild.getId());
+        try {
+            channel.delete().complete()
+            ticketService.removeTicket(ticket)
+        } catch (exception: Exception) {
+            throw DeleteTicketChannelException("Failed to delete ticket channel", exception)
+        }
 
-    if (guildConfig == null) {
-      LOGGER.error("GuildConfig not found for guild {}. Preventing ticket creation.",
-          guild.getId());
-      return true;
+        return CompletableFuture.completedFuture(null)
     }
 
-    final String categoryId = guildConfig.getCategoryId();
-    final Category channelCategory = guild.getCategoryById(categoryId);
+    fun checkTicketExists(
+        guild: Guild,
+        expectedType: TicketType,
+        expectedAuthor: User
+    ): Boolean {
+        val guildConfig: GuildConfig = GuildConfig.getByGuildId(guild.id)
 
-    if (channelCategory == null) {
-      LOGGER.error("Category not found for guild {}. Preventing ticket creation.",
-          guild.getId());
-      return true;
+        if (guildConfig == null) {
+            LOGGER.error(
+                "GuildConfig not found for guild {}. Preventing ticket creation.",
+                guild.id
+            )
+            return true
+        }
+
+        val categoryId: String = guildConfig.getCategoryId()
+        val channelCategory = guild.getCategoryById(categoryId)
+
+        if (channelCategory == null) {
+            LOGGER.error(
+                "Category not found for guild {}. Preventing ticket creation.",
+                guild.id
+            )
+            return true
+        }
+
+        return checkTicketExists(channelCategory, expectedType, expectedAuthor)
     }
 
-    return checkTicketExists(channelCategory, expectedType, expectedAuthor);
-  }
-
-  public boolean checkTicketExists(
-      Category category,
-      TicketType expectedType,
-      User expectedAuthor
-  ) {
-    return checkTicketExists(
-        generateTicketName(expectedType, expectedAuthor),
-        category,
-        expectedType,
-        expectedAuthor
-    );
-  }
-
-  public boolean checkTicketExists(
-      String ticketChannelName,
-      Category category,
-      TicketType expectedType,
-      User expectedAuthor
-  ) {
-    if (containsChannelName(category, ticketChannelName)) {
-      return true;
+    fun checkTicketExists(
+        category: Category,
+        expectedType: TicketType,
+        expectedAuthor: User
+    ): Boolean {
+        return checkTicketExists(
+            generateTicketName(expectedType, expectedAuthor),
+            category,
+            expectedType,
+            expectedAuthor
+        )
     }
 
-    return hasAuthorTicketOfType(expectedType, expectedAuthor);
-  }
+    fun checkTicketExists(
+        ticketChannelName: String?,
+        category: Category,
+        expectedType: TicketType,
+        expectedAuthor: User
+    ): Boolean {
+        if (containsChannelName(category, ticketChannelName)) {
+            return true
+        }
 
-  public boolean containsChannelName(Category category, String name) {
-    return category.getChannels().stream()
-        .anyMatch(channel -> channel.getName().equalsIgnoreCase(name));
-  }
+        return hasAuthorTicketOfType(expectedType, expectedAuthor)
+    }
 
-  public boolean hasAuthorTicketOfType(TicketType type, User user) {
-    return ticketService.getTickets().stream()
-        .filter(ticket -> ticket.getTicketAuthorId().equals(user.getId()))
-        .anyMatch(ticket -> ticket.getTicketType().equals(type));
-  }
+    fun containsChannelName(category: Category, name: String?): Boolean {
+        return category.channels.stream()
+            .anyMatch { channel: GuildChannel -> channel.name.equals(name, ignoreCase = true) }
+    }
+
+    fun hasAuthorTicketOfType(type: TicketType, user: User): Boolean {
+        return ticketService.getTickets().stream()
+            .filter { ticket: Ticket -> ticket.ticketAuthorId == user.id }
+            .anyMatch { ticket: Ticket -> ticket.ticketType == type }
+    }
+
+    companion object {
+        private val LOGGER: ComponentLogger = ComponentLogger.logger("TicketChannelHelper")
+        private val allPermissions: ObjectSet<Permission>
+            /**
+             * Returns all permissions
+             *
+             * @return all permissions
+             */
+            get() {
+                val allPermissions: ObjectSet<Permission> =
+                    ObjectArraySet()
+
+                for (perm in Permission.entries) {
+                    if (perm.isText) {
+                        allPermissions.add(perm)
+                    }
+                }
+
+                allPermissions.add(Permission.VIEW_CHANNEL)
+                allPermissions.add(Permission.MANAGE_WEBHOOKS)
+                allPermissions.add(Permission.MANAGE_CHANNEL)
+
+                return allPermissions
+            }
+
+        private fun handleCreationException(throwable: Throwable): TicketCreateResult {
+            if (throwable is ErrorResponseException
+                && throwable.errorCode == 50013
+            ) {
+                return TicketCreateResult.MISSING_PERMISSIONS
+            } else if (throwable is InsufficientPermissionException) {
+                return TicketCreateResult.MISSING_PERMISSIONS
+            } else {
+                LOGGER.error("Failed to create ticket channel.", throwable)
+                return TicketCreateResult.ERROR
+            }
+        }
+    }
 }

@@ -1,6 +1,6 @@
 package dev.slne.discord.ticket
 
-import dev.slne.discord.guild.permission.DiscordPermission
+import dev.slne.discord.guild.permission.TicketViewPermission
 import net.dv8tion.jda.api.entities.emoji.Emoji
 
 enum class TicketType(
@@ -8,14 +8,17 @@ enum class TicketType(
     val configName: String,
     val description: String,
     val emoji: Emoji,
-    val viewPermission: DiscordPermission
+    val viewPermission: TicketViewPermission,
+    val shouldPrintWlQuery: Boolean = true,
+    val enabled: Boolean = true,
 ) {
     WHITELIST(
         "WhitelistDTO",
         "whitelist",
         "WhitelistDTO Anfragen für den Survival Server",
         Emoji.fromUnicode("\uD83D\uDCDC"),
-        DiscordPermission.VIEW_WHITELIST_TICKETS
+        TicketViewPermission.VIEW_WHITELIST_TICKETS,
+        shouldPrintWlQuery = false
     ),
 
     SURVIVAL_SUPPORT(
@@ -23,7 +26,7 @@ enum class TicketType(
         "survival-support",
         "Anliegen bezüglich des Survival Servers",
         Emoji.fromUnicode("\uD83D\uDEE0\uFE0F"),
-        DiscordPermission.VIEW_SURVIVAL_SUPPORT_TICKETS
+        TicketViewPermission.VIEW_SURVIVAL_SUPPORT_TICKETS,
     ),
 
     EVENT_SUPPORT(
@@ -31,7 +34,7 @@ enum class TicketType(
         "event-support",
         "Anliegen bezüglich des Event Servers",
         Emoji.fromUnicode("\uD83C\uDF89"),
-        DiscordPermission.VIEW_EVENT_SUPPORT_TICKETS
+        TicketViewPermission.VIEW_EVENT_SUPPORT_TICKETS
     ),
 
     BUGREPORT(
@@ -39,7 +42,7 @@ enum class TicketType(
         "bugreport",
         "Fehler gefunden? Melde ihn hier.",
         Emoji.fromUnicode("\uD83D\uDC1E"),
-        DiscordPermission.VIEW_BUGREPORT_TICKETS
+        TicketViewPermission.VIEW_BUGREPORT_TICKETS
     ),
 
     REPORT(
@@ -47,7 +50,7 @@ enum class TicketType(
         "report",
         "Melde Griefing, Cheating oder andere Regelverstöße.",
         Emoji.fromUnicode("📢"),
-        DiscordPermission.VIEW_REPORT_TICKETS
+        TicketViewPermission.VIEW_REPORT_TICKETS
     ),
 
     UNBAN(
@@ -55,7 +58,7 @@ enum class TicketType(
         "unban",
         "Entbannungsanträge für den Community Server",
         Emoji.fromUnicode("\uD83D\uDEAB"),
-        DiscordPermission.VIEW_UNBAN_TICKETS
+        TicketViewPermission.VIEW_UNBAN_TICKETS
     ),
 
     DISCORD_SUPPORT(
@@ -63,7 +66,17 @@ enum class TicketType(
         "discord-support",
         "Anliegen bezüglich des Discord Servers",
         Emoji.fromUnicode("\uD83D\uDCAC"),
-        DiscordPermission.VIEW_DISCORD_SUPPORT_TICKETS
+        TicketViewPermission.VIEW_DISCORD_SUPPORT_TICKETS,
+        shouldPrintWlQuery = false
+    ),
+
+    APPLICATION(
+        "Bewerbung",
+        "application",
+        "Bewirb dich hier für ein Rang",
+        Emoji.fromUnicode("\uD83D\uDC68\u200D\uD83D\uDCBB"),
+        TicketViewPermission.VIEW_APPLICATION_TICKETS,
+        shouldPrintWlQuery = false
     );
 }
 
