@@ -1,35 +1,24 @@
 package dev.slne.discord.listener.message
 
-import dev.slne.discord.ticket.Ticket
+import dev.minn.jda.ktx.events.listener
+import dev.slne.discord.DiscordBot
 import net.dv8tion.jda.api.events.message.MessageUpdateEvent
-import org.springframework.beans.factory.annotation.Autowired
 
-/**
- * The type Message updated listener.
- */
-@DiscordListener
-class MessageUpdatedListener @Autowired constructor(ticketService: TicketService?) :
-    AbstractMessageListener<MessageUpdateEvent>(ticketService) {
-    @Async
-    override fun handleEvent(event: MessageUpdateEvent, ticket: Ticket) {
-        if (event.getMessage().isWebhookMessage()) {
-            return
+object MessageUpdatedListener : AbstractMessageListener() {
+
+    init {
+        DiscordBot.jda.listener<MessageUpdateEvent> { event ->
+            val ticket = getTicketByChannel(event.channel) ?: return@listener
+
+            if (event.message.isWebhookMessage) {
+                return@listener
+            }
+
+            val ticketMessage = ticket.getTicketMessage(event.messageId) ?: return@listener
+
+            ticketMessage.update(event.message).let {
+                ticket.addRawTicketMessage(it)
+            }
         }
-
-        val ticketMessage: TicketMessage = ticket.getTicketMessage(event.getMessageId())
-
-        if (ticketMessage == null) {
-            return
-        }
-
-        val updatedTicketMessage: TicketMessage? = ticketMessage.update(event.getMessage()).join()
-
-        if (updatedTicketMessage != null) {
-            ticket.addRawTicketMessage(updatedTicketMessage)
-        }
-    }
-
-    override fun onMessageUpdate(@Nonnull event: MessageUpdateEvent) {
-        processEvent(event)
     }
 }

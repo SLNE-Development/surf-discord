@@ -22,7 +22,7 @@ class WhitelistDTO(
     val addedById: String? = null,
     val addedByName: String? = null,
     val addedByAvatarUrl: String? = null,
-    val blocked: Boolean = false,
+    var blocked: Boolean = false,
     val createdAt: ZonedDateTime? = null,
 ) {
     val addedBy: RestAction<User>?

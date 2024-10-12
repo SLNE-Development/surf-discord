@@ -1,24 +1,26 @@
 package dev.slne.discord.listener.message
 
-import dev.slne.discord.ticket.Ticket
+import dev.minn.jda.ktx.events.listener
+import dev.slne.discord.DiscordBot
+import dev.slne.discord.ticket.message.TicketMessage
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
-import org.springframework.beans.factory.annotation.Autowired
 
-/**
- * The type Message created listener.
- */
-@DiscordListener
-class MessageCreatedListener @Autowired constructor(ticketService: TicketService?) :
-    AbstractMessageListener<MessageReceivedEvent>(ticketService) {
-    override fun onMessageReceived(@Nonnull event: MessageReceivedEvent) {
-        processEvent(event)
-    }
+object MessageCreatedListener : AbstractMessageListener() {
 
-    override fun handleEvent(event: MessageReceivedEvent, ticket: Ticket) {
-        if (event.getMessage().isWebhookMessage()) {
-            return
+    init {
+        DiscordBot.jda.listener<MessageReceivedEvent> { event ->
+            if (event.message.isWebhookMessage) {
+                return@listener
+            }
+
+            val ticket = getTicketByChannel(event.channel)
+
+            ticket?.addTicketMessage(
+                TicketMessage.fromTicketAndMessage(
+                    ticket,
+                    event.message
+                )
+            )
         }
-
-        ticket.addTicketMessage(TicketMessage.fromTicketAndMessage(ticket, event.getMessage()))
     }
 }

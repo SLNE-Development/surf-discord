@@ -1,24 +1,16 @@
 package dev.slne.discord.listener.interaction.button
 
+import dev.minn.jda.ktx.events.listener
+import dev.slne.discord.DiscordBot
 import dev.slne.discord.spring.processor.DiscordButtonManager
-import dev.slne.discord.spring.processor.DiscordButtonManager.DiscordButtonHandlerHolder
-import jakarta.annotation.Nonnull
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
-import net.dv8tion.jda.api.hooks.ListenerAdapter
 
-/**
- * The type Discord button listener.
- */
-@DiscordListener
-class DiscordButtonListener(private val discordButtonProcessor: DiscordButtonManager) :
-    ListenerAdapter() {
-    override fun onButtonInteraction(@Nonnull event: ButtonInteractionEvent) {
-        val holder: DiscordButtonHandlerHolder? = discordButtonProcessor.getHandler(
-            event.getButton().getId()!!
-        )
+object DiscordButtonListener {
+    init {
+        DiscordBot.jda.listener<ButtonInteractionEvent> { event ->
+            val id = event.button.id ?: return@listener
 
-        if (holder != null) {
-            holder.handler().onClick(event)
+            DiscordButtonManager.getHandler(id)?.handler?.onClick(event)
         }
     }
 }

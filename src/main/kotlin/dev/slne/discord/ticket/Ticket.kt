@@ -78,14 +78,15 @@ class Ticket(
 
     fun getTicketMessage(message: Message) = _messages.find { it.messageId.equals(message.id) }
 
-    fun getTicketMessage(messageId: String?) = _messages.first { it.messageId.equals(messageId) }
+    fun getTicketMessage(messageId: String?) =
+        _messages.firstOrNull { it.messageId.equals(messageId) }
 
-    fun getTicketMember(user: User) = _members.first { it.memberId.equals(user.id) }
+    fun getTicketMember(user: User) = _members.firstOrNull { it.memberId.equals(user.id) }
 
     fun getActiveTicketMember(user: User) =
         _members.firstOrNull { it.memberId.equals(user.id) && !it.isRemoved }
 
-    fun getTicketMember(userId: String?) = _members.first { it.memberId.equals(userId) }
+    fun getTicketMember(userId: String?) = _members.firstOrNull { it.memberId.equals(userId) }
 
     val ticketAuthor
         get() = ticketAuthorId?.let { DiscordBot.jda.retrieveUserById(it) }
@@ -118,4 +119,6 @@ class Ticket(
         get() = closedReason ?: Messages.DEFAULT_TICKET_CLOSED_REASON
 
     suspend fun openFromButton(): TicketCreateResult = TODO("Implement")
+    suspend fun addTicketMessage(fromTicketAndMessage: TicketMessage): TicketMessage =
+        TODO("Implement")
 }

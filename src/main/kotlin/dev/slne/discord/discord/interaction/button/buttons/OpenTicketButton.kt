@@ -9,6 +9,7 @@ import dev.slne.discord.discord.interaction.button.DiscordButtonHandler
 import dev.slne.discord.discord.interaction.select.menus.TicketsMenu
 import dev.slne.discord.message.EmbedColors
 import dev.slne.discord.message.RawMessages.Companion.get
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.interactions.components.selections.SelectMenu
@@ -20,11 +21,11 @@ import net.dv8tion.jda.api.interactions.components.selections.SelectMenu
     emoji = DiscordEmoji(unicode = "🎫")
 )
 class OpenTicketButton : DiscordButtonHandler {
-    override suspend fun ButtonInteraction.onClick() {
-        TicketsMenu(id).apply {
+    override suspend fun onClick(event: ButtonInteractionEvent) {
+        TicketsMenu(event.id).apply {
             DiscordBot.selectMenuManager.addMenu(this)
 
-            sendEmbed(build(), this@onClick)
+            sendEmbed(build(), event.interaction)
         }
     }
 

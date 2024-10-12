@@ -1,29 +1,17 @@
 package dev.slne.discord.listener.interaction.command
 
+import dev.minn.jda.ktx.events.listener
+import dev.slne.discord.DiscordBot
+import dev.slne.discord.spring.processor.DiscordCommandManager
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import net.dv8tion.jda.api.hooks.ListenerAdapter
-import org.springframework.beans.factory.annotation.Autowired
-import java.util.function.Consumer
 
-/**
- * The type Command received listener.
- */
-@DiscordListener
-class CommandReceivedListener @Autowired constructor(discordCommandProcessor: DiscordCommandProcessor) :
-    ListenerAdapter() {
-    private val discordCommandProcessor: DiscordCommandProcessor
+object CommandReceivedListener {
 
-    /**
-     * Instantiates a new Command received listener.
-     */
     init {
-        this.discordCommandProcessor = discordCommandProcessor
-    }
+        DiscordBot.jda.listener<SlashCommandInteractionEvent> { event ->
+            DiscordCommandManager.getCommand(event.name)?.command?.execute(event)
+                ?: error("Command ${event.name} not found")
+        }
 
-    override fun onSlashCommandInteraction(@Nonnull event: SlashCommandInteractionEvent) {
-        discordCommandProcessor.getCommand(event.getName())
-            .ifPresent(Consumer<DiscordCommandHolder> { holder: DiscordCommandHolder ->
-                holder.command().execute(event)
-            })
     }
 }

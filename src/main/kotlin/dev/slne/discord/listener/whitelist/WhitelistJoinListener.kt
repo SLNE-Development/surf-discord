@@ -1,54 +1,25 @@
 package dev.slne.discord.listener.whitelist
 
-import dev.slne.discord.config.discord.GuildConfig
-import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.entities.Member
-import net.dv8tion.jda.api.entities.Role
-import net.dv8tion.jda.api.entities.User
+import dev.minn.jda.ktx.coroutines.await
+import dev.minn.jda.ktx.events.listener
+import dev.slne.discord.DiscordBot
+import dev.slne.discord.guild.getDiscordGuildByGuildId
+import dev.slne.discord.spring.service.whitelist.WhitelistService
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
-import net.dv8tion.jda.api.hooks.ListenerAdapter
 
-/**
- * The type WhitelistDTO join listener.
- */
-@DiscordListener
-class WhitelistJoinListener @Autowired constructor(whitelistService: WhitelistService) :
-    ListenerAdapter() {
-    private val whitelistService: WhitelistService
+object WhitelistJoinListener {
 
     init {
-        this.whitelistService = whitelistService
-    }
+        DiscordBot.jda.listener<GuildMemberJoinEvent> { event ->
+            val user = event.user
+            val guild = event.guild
+            val whitelist = WhitelistService.getWhitelistByDiscordId(user.id) ?: return@listener
 
-    override fun onGuildMemberJoin(@Nonnull event: GuildMemberJoinEvent) {
-        handleEvent(event)
-    }
+            val guildConfig = getDiscordGuildByGuildId(guild.id)?.discordGuild ?: return@listener
+            val whitelistedRole = guildConfig.whitelistRole ?: return@listener
+            val member = guild.retrieveMember(user).await() ?: return@listener
 
-    @Async
-    protected fun handleEvent(event: GuildMemberJoinEvent) {
-        val user: User = event.getUser()
-        val guild: Guild = event.getGuild()
-        val whitelist: WhitelistDTO? = whitelistService.getWhitelistByDiscordId(user.getId()).join()
-
-        if (whitelist == null) {
-            return
+            guild.addRoleToMember(member, whitelistedRole).await()
         }
-
-        val guildConfig: GuildConfig? = GuildConfig.getConfig(guild.getId())
-        if (guildConfig == null) {
-            return
-        }
-
-        val whitelistedRole: Role? = guildConfig.getWhitelistedRole()
-        if (whitelistedRole == null) {
-            return
-        }
-
-        val member: Member? = guild.retrieveMember(user).complete()
-        if (member == null) {
-            return
-        }
-
-        guild.addRoleToMember(member, whitelistedRole).queue()
     }
 }

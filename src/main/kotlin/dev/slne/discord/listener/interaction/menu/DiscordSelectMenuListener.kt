@@ -20,7 +20,8 @@ object DiscordSelectMenuListener {
                 return@listener
             }
 
-            menu.onSelect(event.interaction, event.values.map { menu.getOptionByValue(it) })
+            event.values.mapNotNull { menu.getOptionByValue(it) }
+                .let { menu.onSelect(event.interaction, it) }
         }
     }
 }

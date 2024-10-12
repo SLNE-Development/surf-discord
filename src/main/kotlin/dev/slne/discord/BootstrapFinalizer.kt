@@ -1,6 +1,6 @@
 package dev.slne.discord
 
-import dev.slne.discord.spring.processor.DiscordCommandProcessor
+import dev.slne.discord.spring.processor.DiscordCommandManager
 import dev.slne.discord.spring.service.ticket.TicketService
 import net.dv8tion.jda.api.JDA
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 @Component
 class BootstrapFinalizer(
     private val ticketService: TicketService,
-    private val discordCommandProcessor: DiscordCommandProcessor,
+    private val discordCommandProcessor: DiscordCommandManager,
     private val jda: JDA
 ) : CommandLineRunner {
 

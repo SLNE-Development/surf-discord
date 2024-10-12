@@ -1,46 +1,41 @@
 package dev.slne.discord.listener.interaction.modal
 
-import dev.slne.discord.discord.interaction.modal.DiscordModal
+import dev.minn.jda.ktx.coroutines.await
+import dev.minn.jda.ktx.events.listener
+import dev.slne.discord.DiscordBot
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager
-import dev.slne.discord.discord.interaction.modal.step.DiscordStepChannelCreationModal
-import dev.slne.discord.message.MessageManager.Companion.getErrorEmbed
-import jakarta.annotation.Nonnull
+import dev.slne.discord.message.MessageManager
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
-import net.dv8tion.jda.api.hooks.ListenerAdapter
-import net.dv8tion.jda.api.interactions.modals.ModalInteraction
-import java.util.concurrent.CompletableFuture
 
-/**
- * The type Discord modal listener.
- */
-@DiscordListener
-class DiscordModalListener : ListenerAdapter() {
-    override fun onModalInteraction(@Nonnull event: ModalInteractionEvent) {
-        val interaction: ModalInteraction = event.getInteraction()
-        val modalId: String = interaction.getModalId()
-        val modal: DiscordModal? = DiscordModalManager.Companion.INSTANCE.getModal(modalId)
+object DiscordModalListener {
 
-        if (modal != null) {
-            modal.execute(event)
-            return
+    init {
+        DiscordBot.jda.listener<ModalInteractionEvent> { event ->
+            val interaction = event.interaction
+            val modalId = interaction.modalId
+            val modal = DiscordModalManager.getModal(modalId)
+
+            if (modal != null) {
+                modal.execute(event)
+
+                return@listener
+            }
+
+            val advancedModal = DiscordModalManager.getAdvancedModal(modalId, event.user.id)
+
+            if (advancedModal != null) {
+                event.deferReply(true).await()
+                advancedModal.handleUserSubmitModal(event)
+
+                return@listener
+            }
+
+            event.replyEmbeds(
+                MessageManager.getErrorEmbed(
+                    "Fehler",
+                    "Deine Aktion konnte nicht durchgeführt werden oder ist abgelaufen."
+                )
+            ).setEphemeral(true).await()
         }
-
-        val advancedModal: DiscordStepChannelCreationModal? =
-            DiscordModalManager.Companion.INSTANCE.getAdvancedModal(
-                modalId, event.getUser().getId()
-            )
-
-        if (advancedModal != null) {
-            event.deferReply(true).queue()
-            CompletableFuture.runAsync(Runnable { advancedModal.handleUserSubmitModal(event) })
-            return
-        }
-
-        event.replyEmbeds(
-            getErrorEmbed(
-                "Fehler",
-                "Deine Aktion konnte nicht durchgeführt werden oder ist abgelaufen."
-            )
-        ).setEphemeral(true).queue()
     }
 }
