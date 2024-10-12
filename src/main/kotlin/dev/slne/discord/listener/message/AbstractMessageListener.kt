@@ -12,6 +12,6 @@ abstract class AbstractMessageListener {
             return null
         }
 
-        return TicketService.getTicketByChannelId(channel.id)
+        return TicketService.getTicketByThreadId(channel.id)
     }
 }
