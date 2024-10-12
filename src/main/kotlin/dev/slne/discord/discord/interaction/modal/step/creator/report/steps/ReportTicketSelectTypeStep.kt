@@ -1,14 +1,22 @@
 package dev.slne.discord.discord.interaction.modal.step.creator.report.steps
 
-import dev.slne.discord.discord.interaction.modal.step.*
+import dev.slne.discord.discord.interaction.modal.step.MessageQueue
+import dev.slne.discord.discord.interaction.modal.step.ModalComponentBuilder
+import dev.slne.discord.discord.interaction.modal.step.ModalSelectionStep
+import dev.slne.discord.discord.interaction.modal.step.StepBuilder
 import dev.slne.discord.discord.interaction.modal.step.creator.report.steps.griefing.ReportTicketGriefingStep
 import dev.slne.discord.discord.interaction.modal.step.creator.report.steps.player.ReportTicketPlayerStep
 import dev.slne.discord.message.RawMessages.Companion.get
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption
 import net.dv8tion.jda.api.interactions.components.text.TextInput
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
+
+private const val OPTION_GRIEFING = "griefing"
+private const val OPTION_PLAYER = "player"
+
+private const val REPORTING_PLAYER_NAME_INPUT = "player-name"
 
 class ReportTicketSelectTypeStep : ModalSelectionStep(
     get("modal.report.step.type.selection.title"),
@@ -39,7 +47,7 @@ class ReportTicketSelectTypeStep : ModalSelectionStep(
         builder.addComponent(
             TextInput.create(
                 REPORTING_PLAYER_NAME_INPUT,
-                label!!, TextInputStyle.SHORT
+                label, TextInputStyle.SHORT
             )
                 .setRequired(true)
                 .setRequiredRange(3, 16)
@@ -48,36 +56,28 @@ class ReportTicketSelectTypeStep : ModalSelectionStep(
         )
     }
 
-    @Throws(ModalStepInputVerificationException::class)
-    override fun verifyModalInput(event: ModalInteractionEvent) {
+    override suspend fun verifyModalInput(event: ModalInteractionEvent) {
         playerName = getRequiredInput(event, REPORTING_PLAYER_NAME_INPUT)
     }
 
-    override fun buildOpenMessages(messages: MessageQueue, channel: TextChannel?) {
+    override fun buildOpenMessages(messages: MessageQueue, thread: ThreadChannel) {
         messages.addEmptyLine()
-        messages.addMessage(get("modal.report.step.type.messages.player-name", playerName)!!)
+        messages.addMessage(get("modal.report.step.type.messages.player-name", playerName))
     }
 
     override fun buildChildSteps(): StepBuilder {
         return if (isGriefing) {
-            StepBuilder.Companion.startWith(ReportTicketGriefingStep())
+            StepBuilder.startWith(ReportTicketGriefingStep())
         } else if (isPlayer) {
-            StepBuilder.Companion.startWith(ReportTicketPlayerStep())
+            StepBuilder.startWith(ReportTicketPlayerStep())
         } else {
-            StepBuilder.Companion.empty()
+            StepBuilder.empty()
         }
     }
 
     private val isGriefing: Boolean
-        get() = OPTION_GRIEFING == getSelected()
+        get() = OPTION_GRIEFING == selected
 
     private val isPlayer: Boolean
-        get() = OPTION_PLAYER == getSelected()
-
-    companion object {
-        private const val OPTION_GRIEFING = "griefing"
-        private const val OPTION_PLAYER = "player"
-
-        private const val REPORTING_PLAYER_NAME_INPUT = "player-name"
-    }
+        get() = OPTION_PLAYER == selected
 }

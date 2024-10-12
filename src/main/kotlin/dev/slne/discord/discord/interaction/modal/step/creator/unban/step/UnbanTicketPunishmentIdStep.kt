@@ -1,15 +1,19 @@
 package dev.slne.discord.discord.interaction.modal.step.creator.unban.step
 
-import dev.slne.discord.Bootstrap
 import dev.slne.discord.discord.interaction.modal.step.MessageQueue
-import feign.FeignException
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import dev.slne.discord.discord.interaction.modal.step.ModalComponentBuilder
+import dev.slne.discord.discord.interaction.modal.step.ModalStep
+import dev.slne.discord.message.RawMessages
+import dev.slne.discord.spring.service.punishment.PunishmentService
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.components.text.TextInput
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
-import java.util.concurrent.CompletionException
+
+private const val PUNISHMENT_ID = "punishment-id"
 
 class UnbanTicketPunishmentIdStep : ModalStep() {
+
     private var punishmentId: String? = null
 
     override fun buildModalComponents(builder: ModalComponentBuilder) {
@@ -27,44 +31,19 @@ class UnbanTicketPunishmentIdStep : ModalStep() {
         )
     }
 
-    @Throws(ModalStepInputVerificationException::class)
-    override fun verifyModalInput(event: ModalInteractionEvent) {
+    override suspend fun verifyModalInput(event: ModalInteractionEvent) {
         punishmentId = getRequiredInput(event, PUNISHMENT_ID)
 
-        try {
-            if (!PUNISHMENT_SERVICE.get().isValidPunishmentId(punishmentId).join()) {
-                handlePunishmentNotFound()
-            }
-        } catch (e: CompletionException) {
-            if (e.cause is FeignException.NotFound) {
-                handlePunishmentNotFound()
-            } else {
-                LOGGER.error("Error while fetching ban by punishment ID", e)
-                throw ModalStepInputVerificationException(RawMessages.get("error.generic"))
-            }
-        }
-    }
-
-    override fun buildOpenMessages(messages: MessageQueue, channel: TextChannel?) {
-        messages.addMessage(
-            RawMessages.get("modal.unban.step.punishment-id.messages.punishment-id", punishmentId)
-        )
-    }
-
-    companion object {
-        private val LOGGER: ComponentLogger = ComponentLogger.logger()
-        private const val PUNISHMENT_ID = "punishment-id"
-        private val PUNISHMENT_SERVICE: Lazy<PunishmentService> = Lazy.of {
-            Bootstrap.getContext().getBean(
-                PunishmentService::class.java
-            )
-        }
-
-        @Throws(ModalStepInputVerificationException::class)
-        private fun handlePunishmentNotFound() {
+        if (!PunishmentService.isValidPunishmentId(punishmentId!!)) {
             throw ModalStepInputVerificationException(
                 RawMessages.get("modal.unban.step.punishment-id.error.invalid")
             )
         }
+    }
+
+    override fun buildOpenMessages(messages: MessageQueue, thread: ThreadChannel) {
+        messages.addMessage(
+            RawMessages.get("modal.unban.step.punishment-id.messages.punishment-id", punishmentId)
+        )
     }
 }

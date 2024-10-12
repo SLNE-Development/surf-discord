@@ -57,7 +57,7 @@ object TicketChannelHelper @Autowired constructor(
     fun addTicketMember(ticket: Ticket, ticketMember: TicketMember?): CompletableFuture<Void> {
         val addedMember: TicketMember = ticketService.addTicketMember(ticket, ticketMember).join()
         val guild = ticket.guild
-        val channel: TextChannel? = ticket.channel
+        val channel: TextChannel? = ticket.thread
         val userRest: RestAction<User> = addedMember.member
 
 
@@ -108,7 +108,7 @@ object TicketChannelHelper @Autowired constructor(
         member: TicketMember,
         remover: User
     ): CompletableFuture<Void> {
-        val channel: TextChannel = ticket.channel
+        val channel: TextChannel = ticket.thread
             .orElseThrow {}
         val user: User = member.getMemberNow()
             .orElseThrow {}
@@ -354,7 +354,7 @@ object TicketChannelHelper @Autowired constructor(
     @Async
     @Throws(DeleteTicketChannelException::class)
     fun deleteTicketChannel(ticket: Ticket): CompletableFuture<Void?> {
-        val channel = ticket.channel
+        val channel = ticket.thread
             ?: throw DeleteTicketChannelException("Channel not found")
 
         try {

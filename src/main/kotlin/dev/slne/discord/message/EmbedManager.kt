@@ -8,7 +8,7 @@ import dev.slne.discord.ticket.Ticket
 object EmbedManager {
 
     suspend fun buildTicketClosedEmbed(ticket: Ticket) = Embed {
-        title = "Ticket \"${ticket.channel?.name ?: "Unbekannt"}\" geschlossen"
+        title = "Ticket \"${ticket.thread?.name ?: "Unbekannt"}\" geschlossen"
 
         description = buildString {
             append("Ein Ticket wurde von ")

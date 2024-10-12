@@ -71,7 +71,7 @@ object TicketCreator @Autowired constructor(
         runnable: Runnable
     ) {
         val ticketTypeConfig: TicketTypeConfig = ticket.ticketType.getConfig() ?: return
-        val channel = ticket.channel ?: return
+        val channel = ticket.thread ?: return
 
         runnable.run()
 
@@ -115,7 +115,7 @@ object TicketCreator @Autowired constructor(
         ticket: Ticket, closer: User,
         reason: String?
     ): TicketCloseResult {
-        val channel = ticket.channel
+        val channel = ticket.thread
             ?: return CompletableFuture.completedFuture<TicketCloseResult>(
                 TicketCloseResult.TICKET_NOT_FOUND
             )

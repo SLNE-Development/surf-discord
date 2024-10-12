@@ -93,7 +93,7 @@ class TicketMessage {
 
     @get:JsonIgnore
     val message: RestAction<Message>?
-        get() = messageId?.let { ticket.channel?.retrieveMessageById(it) }
+        get() = messageId?.let { ticket.thread?.retrieveMessageById(it) }
 
     @get:JsonIgnore
     val author: RestAction<User>?
@@ -101,7 +101,7 @@ class TicketMessage {
 
     @get:JsonIgnore
     val referencesMessage: RestAction<Message>?
-        get() = referencesMessageId?.let { ticket.channel?.retrieveMessageById(it) }
+        get() = referencesMessageId?.let { ticket.thread?.retrieveMessageById(it) }
 
     @get:JsonIgnore
     val ticket: Ticket

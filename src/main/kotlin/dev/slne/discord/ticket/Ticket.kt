@@ -4,6 +4,7 @@ import dev.slne.discord.DiscordBot
 import dev.slne.discord.message.Messages
 import dev.slne.discord.ticket.member.TicketMember
 import dev.slne.discord.ticket.message.TicketMessage
+import dev.slne.discord.ticket.result.TicketCreateResult
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.Role
@@ -95,7 +96,7 @@ class Ticket(
     val guild
         get() = guildId?.let { DiscordBot.jda.getGuildById(it) }
 
-    val channel
+    val thread
         get() = threadId?.let { DiscordBot.jda.getThreadChannelById(it) }
 
     val closedBy
@@ -115,4 +116,6 @@ class Ticket(
 
     val closeReasonOrDefault: String
         get() = closedReason ?: Messages.DEFAULT_TICKET_CLOSED_REASON
+
+    suspend fun openFromButton(): TicketCreateResult = TODO("Implement")
 }

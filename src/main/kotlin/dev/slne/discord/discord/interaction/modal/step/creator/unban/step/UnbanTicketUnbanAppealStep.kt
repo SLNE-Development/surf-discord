@@ -1,13 +1,18 @@
 package dev.slne.discord.discord.interaction.modal.step.creator.unban.step
 
-import dev.slne.discord.discord.interaction.modal.step.*
+import dev.slne.discord.discord.interaction.modal.step.MessageQueue
+import dev.slne.discord.discord.interaction.modal.step.ModalComponentBuilder
+import dev.slne.discord.discord.interaction.modal.step.ModalStep
 import dev.slne.discord.message.RawMessages.Companion.get
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.components.text.TextInput
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
 
+private const val COMPONENT_ID = "unban-appeal"
+
 class UnbanTicketUnbanAppealStep(parent: ModalStep?) : ModalStep() {
+
     private var unbanAppeal: String? = null
 
     override fun buildModalComponents(builder: ModalComponentBuilder) {
@@ -26,17 +31,12 @@ class UnbanTicketUnbanAppealStep(parent: ModalStep?) : ModalStep() {
         )
     }
 
-    @Throws(ModalStepInputVerificationException::class)
-    override fun verifyModalInput(event: ModalInteractionEvent) {
+    override suspend fun verifyModalInput(event: ModalInteractionEvent) {
         unbanAppeal = getRequiredInput(event, COMPONENT_ID)
     }
 
-    override fun buildOpenMessages(messages: MessageQueue, channel: TextChannel?) {
-        messages.addMessage(get("modal.unban.step.appeal.messages.appeal.title")!!)
-        messages.addMessage(get("modal.unban.step.appeal.messages.appeal", unbanAppeal)!!)
-    }
-
-    companion object {
-        private const val COMPONENT_ID = "unban-appeal"
+    override fun buildOpenMessages(messages: MessageQueue, thread: ThreadChannel) {
+        messages.addMessage(get("modal.unban.step.appeal.messages.appeal.title"))
+        messages.addMessage(get("modal.unban.step.appeal.messages.appeal", unbanAppeal))
     }
 }

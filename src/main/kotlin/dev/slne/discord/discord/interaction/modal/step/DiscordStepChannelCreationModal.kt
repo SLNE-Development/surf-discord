@@ -1,178 +1,94 @@
 package dev.slne.discord.discord.interaction.modal.step
 
+import dev.minn.jda.ktx.coroutines.await
+import dev.slne.discord.annotation.ChannelCreationModal
+import dev.slne.discord.discord.interaction.modal.DiscordModalManager
+import dev.slne.discord.spring.processor.ChannelCreationModalProcessor
 import dev.slne.discord.ticket.Ticket
-import lombok.Getter
+import dev.slne.discord.ticket.result.TicketCreateResult
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
 import net.dv8tion.jda.api.interactions.callbacks.IModalCallback
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback
-import net.dv8tion.jda.api.interactions.components.ActionComponent
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
 import net.dv8tion.jda.api.interactions.modals.Modal
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.annotations.Blocking
-import org.jetbrains.annotations.Contract
-import java.util.*
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Consumer
 
-/**
- * Represents a modal for creating a channel step by step in Discord.
- *
- *
- * This abstract class is intended to be extended to define the specific steps required for
- * creating a channel via modals in Discord. It handles the initialization and management of these
- * steps, as well as the interaction flow for users.
- */
-@Getter
-@Accessors(makeFinal = true)
-abstract class DiscordStepChannelCreationModal
-/**
- * Constructs a new DiscordStepChannelCreationModal with the specified parameters.
- *
- * @param title The title of the modal.
- */ protected constructor(@field:Nonnull @param:Nonnull private val title: String?) {
-    @Getter(lazy = true)
-    private val id: String = id0
+abstract class DiscordStepChannelCreationModal protected constructor(
+    private val title: String?
+) {
+    private val logger = ComponentLogger.logger(DiscordStepChannelCreationModal::class.java)
 
-    @Getter(lazy = true)
-    private val ticketType: TicketType = ticketType0
+    private val steps: List<ModalStep> by lazy { buildSteps().steps }
 
-    @Getter(lazy = true)
-    private val steps: LinkedList<ModalStep> = buildSteps().getSteps()
-
-    /**
-     * Builds the steps that will be used in this modal.
-     *
-     * @return A StepBuilder object containing the steps.
-     * @see StepBuilder.startWith
-     */
     @ApiStatus.OverrideOnly
     protected abstract fun buildSteps(): StepBuilder
 
     private fun buildModalComponents(): ModalComponentBuilder {
-        val builder: ModalComponentBuilder = ModalComponentBuilder()
-        getSteps().forEach { step -> step.fillModalComponents(builder) }
+        val builder = ModalComponentBuilder()
+
+        steps.forEach { it.fillModalComponents(builder) }
 
         return builder
     }
 
-    /**
-     * Initiates the channel creation process starting with any selection steps if required.
-     *
-     * @param interaction The interaction triggering the channel creation.
-     * @return A CompletableFuture that will be completed when the channel creation process is done.
-     */
-    fun startChannelCreation(
+    suspend fun startChannelCreation(
         interaction: StringSelectInteraction
-    ): CompletableFuture<Void?> {
-        val done: CompletableFuture<Void?> = CompletableFuture<Void?>()
-            .exceptionally({ throwable: Throwable? ->
-                LOGGER.error(
-                    "Error while creating ticket",
-                    throwable
-                )
-                null
-            })
-
-        interaction.deferReply(true).queue({ hook: InteractionHook ->
-            if (checkTicketExists(interaction.guild, interaction.user)) {
-                hook.editOriginal(
-                    "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo."
-                )
-                    .queue()
-                done.complete(null)
-                return@queue
-            }
-            DiscordModalManager.Companion.INSTANCE.setCurrentUserModal(
-                interaction.user.id,
-                this
-            )
-
-            if (!hasSelectionStep()) {
-                replyModal(interaction, done)
-                return@queue
-            }
-            startChannelCreationWithSelectionSteps(interaction, done, hook)
-        })
-
-        return done
-    }
-
-    /**
-     * Starts the channel creation process, handling any required selection steps.
-     *
-     * @param interaction The interaction triggering the channel creation.
-     * @param done        A CompletableFuture to signal the completion of the process.
-     */
-    private fun startChannelCreationWithSelectionSteps(
-        interaction: StringSelectInteraction,
-        done: CompletableFuture<Void?>,
-        hook: InteractionHook
     ) {
-        executeSelectionSteps(hook)
-            .thenAcceptAsync(
-                { lastSelectionEvent: StringSelectInteractionEvent? ->
-                    replyModalAfterSelectionSteps(
-                        lastSelectionEvent, interaction,
-                        done
-                    )
-                })
-    }
+        val hook = interaction.deferReply(true).await()
 
-    /**
-     * Replies with the modal after handling the selection steps.
-     *
-     * @param lastSelectionEvent The last selection event that occurred or null if there was none.
-     * @param interaction        The original interaction that started the process.
-     * @param done               A CompletableFuture to signal the completion of the process.
-     */
-    private fun replyModalAfterSelectionSteps(
-        lastSelectionEvent: StringSelectInteractionEvent?,
-        interaction: StringSelectInteraction,
-        done: CompletableFuture<Void?>
-    ) {
-        val callback: IModalCallback =
-            if (lastSelectionEvent != null) lastSelectionEvent else interaction
+        if (checkTicketExists(interaction.guild, interaction.user)) {
+            hook.editOriginal(
+                "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo."
+            ).await()
 
-        if (lastSelectionEvent != null) {
-            lastSelectionEvent.message.delete().queue()
+            return
         }
 
-        replyModal(callback, done)
+        DiscordModalManager.setCurrentUserModal(
+            interaction.user.id,
+            this
+        )
+
+        if (!hasSelectionStep()) {
+            replyModal(interaction)
+
+            return
+        }
+
+        startChannelCreationWithSelectionSteps(interaction, hook)
     }
 
-    /**
-     * Replies to the interaction with the modal.
-     *
-     * @param modalCallback The callback to reply to.
-     * @param callback      A CompletableFuture to signal the completion of the process.
-     */
-    private fun replyModal(
-        modalCallback: IModalCallback,
-        callback: CompletableFuture<Void?>
+    private suspend fun startChannelCreationWithSelectionSteps(
+        interaction: StringSelectInteraction,
+        hook: InteractionHook
+    ) = replyModalAfterSelectionSteps(
+        executeSelectionSteps(hook), interaction
+    )
+
+    private suspend fun replyModalAfterSelectionSteps(
+        lastSelectionEvent: StringSelectInteractionEvent?,
+        interaction: StringSelectInteraction,
     ) {
-        modalCallback.replyModal(buildModal())
-            .queue(
-                { unused: Void? -> callback.complete(null) },
-                { ex: Throwable? -> callback.completeExceptionally(ex) })
+        val callback = lastSelectionEvent ?: interaction
+        lastSelectionEvent?.message?.delete()?.queue()
+
+        replyModal(callback)
     }
 
-    /**
-     * Submits the modal input and proceeds with channel creation.
-     *
-     * @param event The modal interaction event.
-     */
-    @Blocking
-    fun handleUserSubmitModal(event: ModalInteractionEvent) {
-        val modalSteps: LinkedList<ModalStep> = getSteps()
-        val user: User = event.user
+    private suspend fun replyModal(
+        modalCallback: IModalCallback,
+    ) = modalCallback.replyModal(buildModal()).await()
+
+    suspend fun handleUserSubmitModal(event: ModalInteractionEvent) {
+        val modalSteps = steps
+        val user = event.user
 
         if (!verifyModalInput(event, modalSteps)) {
             return
@@ -182,115 +98,68 @@ abstract class DiscordStepChannelCreationModal
             return
         }
 
-        val ticket: Ticket = Ticket(event.guild, user, getTicketType())
-        ticket.openFromButton()
-            .thenAcceptAsync { result -> postChannelCreated(ticket, result, event, user) }
-            .exceptionally { e ->
-                reply(event, "Es ist ein Fehler aufgetreten! (ophdo9upou76967867)")
-                LOGGER.error(
-                    "Error while creating ticket",
-                    e
-                )
-                null
-            }
+        val ticket = Ticket(event.guild, user, ticketType)
+        val result = ticket.openFromButton()
+
+        postThreadCreated(ticket, result, event, user)
     }
 
-    private fun checkTicketExists(guild: Guild?, user: User): Boolean {
-        return checkTicketExistsFast(guild, getTicketType(), user)
-    }
+    private fun checkTicketExists(guild: Guild?, user: User): Boolean = TODO("Implement")
 
-    /**
-     * Builds the modal from the components generated by the steps.
-     *
-     * @return The built Modal object.
-     */
     private fun buildModal(): Modal {
-        val builder: Modal.Builder = Modal.create(
-            getId(),
-            title!!
-        )
+        val builder: Modal.Builder = Modal.create(id, title!!)
 
-        for (component: ActionComponent in buildModalComponents().getComponents()) {
+        for (component in buildModalComponents().components) {
             builder.addActionRow(component)
         }
 
         return builder.build()
     }
 
-    /**
-     * Performs the selection steps sequentially, waiting for user interaction at each step.
-     *
-     * @param hook The interaction hook used to send messages and interact with the user.
-     * @return A CompletableFuture that will complete with the last StringSelectInteractionEvent, or
-     * null if none occurred.
-     */
-    @Contract("_ -> new")
-    private fun executeSelectionSteps(
+    private suspend fun executeSelectionSteps(
         hook: InteractionHook
-    ): CompletableFuture<StringSelectInteractionEvent?> {
-        return CompletableFuture.supplyAsync<StringSelectInteractionEvent?>(
-            { executeSelectionSteps(hook, getSteps(), null, null) })
-    }
+    ) = executeSelectionSteps(hook, steps, null, null)
 
-    /**
-     * Performs the selection steps recursively.
-     *
-     * @param hook        The interaction hook used to send messages and interact with the user.
-     * @param steps       The list of steps to process.
-     * @param lastEvent   The last StringSelectInteractionEvent, which occurred, or null if none.
-     * @param lastMessage The last Message that was sent or null if none.
-     * @return The last StringSelectInteractionEvent, which occurred, or null if none.
-     */
-    private fun executeSelectionSteps(
+    private suspend fun executeSelectionSteps(
         hook: InteractionHook,
-        steps: LinkedList<ModalStep>,
+        steps: List<ModalStep>,
         lastEvent: StringSelectInteractionEvent?,
         lastMessage: Message?
     ): StringSelectInteractionEvent? {
-        var lastEvent: StringSelectInteractionEvent? = lastEvent
-        var lastMessage: Message? = lastMessage
-        for (step: ModalStep in steps) {
+        var lastStepEvent = lastEvent
+        var lastStepMessage = lastMessage
+
+        for (step in steps) {
             if (step is ModalSelectionStep) {
-                if (lastMessage != null) {
-                    lastMessage.delete().queue()
-                }
+                lastStepMessage?.delete()?.await()
 
-                val message: AtomicReference<Message> = AtomicReference()
-
-                hook.sendMessage(step.getSelectTitle())
+                lastStepMessage = hook.sendMessage(step.selectTitle)
                     .setEphemeral(true)
-                    .setActionRow(step.createSelection()).queue(
-                        Consumer<Message> { newValue: Message -> message.set(newValue) },
-                        Consumer<Throwable> { obj: Throwable -> obj.printStackTrace() })
+                    .setActionRow(step.createSelection()).await()
 
-                lastEvent = step.getSelectionFuture().join()
-                lastMessage = message.get()
+                lastStepEvent = step.event
             }
 
-            val children: LinkedList<ModalStep> = step.getChildren()
-            if (!children.isEmpty()) {
-                lastEvent = executeSelectionSteps(hook, children, lastEvent, lastMessage)
+            val children = step.children
+
+            if (children.isNotEmpty()) {
+                lastStepEvent =
+                    executeSelectionSteps(hook, children, lastStepEvent, lastStepMessage)
             }
         }
 
-        return lastEvent
+        return lastStepEvent
     }
 
-    /**
-     * Verifies the user input for all steps.
-     *
-     * @param event The modal interaction event.
-     * @param steps The list of steps to verify.
-     */
-    private fun verifyModalInput(
+    private suspend fun verifyModalInput(
         event: ModalInteractionEvent,
-        steps: LinkedList<ModalStep>
+        steps: List<ModalStep>
     ): Boolean {
-        for (step: ModalStep in steps) {
+        for (step in steps) {
             try {
                 step.runVerifyModalInput(event)
-            } catch (e: ModalStepInputVerificationException) {
-                reply(event, e.message)
+            } catch (exception: ModalStep.ModalStepInputVerificationException) {
+                reply(event, "${exception.message}")
                 return false
             }
         }
@@ -298,21 +167,16 @@ abstract class DiscordStepChannelCreationModal
         return true
     }
 
-    /**
-     * Prepares the channel creation process for all steps.
-     *
-     * @param event The modal interaction event.
-     * @param steps The list of steps to process.
-     */
-    private fun preChannelCreation(
+    private suspend fun preChannelCreation(
         event: ModalInteractionEvent,
-        steps: LinkedList<ModalStep>
+        steps: List<ModalStep>
     ): Boolean {
         for (step: ModalStep in steps) {
             try {
-                step.runPreChannelCreationAsync()
-            } catch (e: ModuleStepChannelCreationException) {
-                reply(event, e.message)
+                step.runPreThreadCreationAsync()
+            } catch (exception: ModalStep.ModuleStepChannelCreationException) {
+                reply(event, "${exception.message}")
+
                 return false
             }
         }
@@ -320,24 +184,22 @@ abstract class DiscordStepChannelCreationModal
         return true
     }
 
-    /**
-     * Handles the result of the channel creation process.
-     *
-     * @param ticket The ticket that was created.
-     * @param result The result of the ticket creation.
-     * @param event  The modal interaction event.
-     * @param user   The user who initiated the channel creation.
-     */
-    private fun postChannelCreated(
+    private suspend fun postThreadCreated(
         ticket: Ticket,
         result: TicketCreateResult,
         event: ModalInteractionEvent,
         user: User
     ) {
-        val channel: TextChannel? = ticket.channel
+        val thread = ticket.thread
+
+        if (thread == null) {
+            reply(event, "Es ist ein Fehler aufgetreten (postThreadCreated@threadNull)!")
+            logger.error("Ticket creation failed with result: {}", result)
+            return
+        }
 
         when (result) {
-            TicketCreateResult.SUCCESS -> handleSuccess(channel, event, user)
+            TicketCreateResult.SUCCESS -> handleSuccess(thread, event, user)
             TicketCreateResult.ALREADY_EXISTS -> reply(
                 event,
                 "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo."
@@ -349,142 +211,77 @@ abstract class DiscordStepChannelCreationModal
             )
 
             else -> {
-                reply(event, "Es ist ein Fehler aufgetreten (qopuewuopfbop8729)!")
-                LOGGER.error("Ticket creation failed with result: {}", result)
+                reply(event, "Es ist ein Fehler aufgetreten (postThreadCreated@unknownReason)!")
+                logger.error("Ticket creation failed with result: {}", result)
             }
         }
     }
 
-    /**
-     * Replies to the user with a specified message.
-     *
-     * @param callback The callback to reply to.
-     * @param message  The message to send.
-     */
-    private fun reply(callback: IReplyCallback, message: String) {
+    private suspend fun reply(callback: IReplyCallback, message: String) {
         if (callback.isAcknowledged) {
-            callback.hook.sendMessage(message).setEphemeral(true).queue()
+            callback.hook.sendMessage(message).setEphemeral(true).await()
         } else {
-            callback.deferReply(true)
-                .queue({ hook: InteractionHook -> hook.sendMessage(message).queue() })
+            callback.deferReply(true).await().sendMessage(message).await()
         }
     }
 
-    /**
-     * Handles successful channel creation, sending a confirmation message to the user and performing
-     * any additional setup.
-     *
-     * @param channel The channel that was created.
-     * @param event   The modal interaction event.
-     * @param user    The user who initiated the channel creation.
-     */
-    private fun handleSuccess(channel: TextChannel?, event: ModalInteractionEvent, user: User) {
-        val message: StringBuilder = StringBuilder()
-        message.append("Dein \"")
-        message.append(getTicketType().getName())
-        message.append("\"-Ticket wurde erfolgreich erstellt! ")
+    private suspend fun handleSuccess(
+        thread: ThreadChannel,
+        event: ModalInteractionEvent,
+        user: User
+    ) {
+        val message = buildString {
+            append("Dein \"")
+            append(ticketType.displayName)
+            append("\"-Ticket wurde erfolgreich erstellt! ")
 
-        if (channel != null) {
-            message.append(channel.asMention)
+            append(thread.asMention)
         }
 
-        reply(event, message.toString())
-
-        if (channel != null) {
-            doWithCreatedChannel(channel, user)
-        }
+        reply(event, message)
+        doWithCreatedThread(thread, user)
     }
 
-    /**
-     * Performs actions on the newly created channel, such as sending initial messages.
-     *
-     * @param channel The channel that was created.
-     * @param user    The user who initiated the channel creation.
-     */
-    private fun doWithCreatedChannel(channel: TextChannel, user: User) {
-        val messages: MessageQueue = MessageQueue()
+    private suspend fun doWithCreatedThread(thread: ThreadChannel, user: User) {
+        val messages = MessageQueue()
 
-        getOpenMessages(messages, channel, user)
-        for (step: ModalStep in getSteps()) {
-            step.getOpenMessages(messages, channel)
-        }
+        getOpenMessages(messages, thread, user)
 
-        val message: LinkedList<String?> = messages.buildMessages()
+        steps.forEach { it.getOpenMessages(messages, thread) }
 
-        sendOpenMessage(message, channel)
+        sendOpenMessage(messages.buildMessages(), thread)
 
-        onPostChannelCreated(channel)
-        getSteps().forEach { step -> step.runPostChannelCreated(channel) }
+        onPostThreadCreated(thread)
+        steps.forEach { it.runPostThreadCreated(thread) }
     }
 
-    /**
-     * Sends the queued messages to the specified channel in order.
-     *
-     * @param messages The list of messages to send.
-     * @param channel  The channel to send the messages to.
-     */
-    private fun sendOpenMessage(messages: LinkedList<String?>, channel: TextChannel) {
+    private suspend fun sendOpenMessage(messages: List<String>, thread: ThreadChannel) {
         if (messages.isEmpty()) {
             return
         }
 
-        channel.sendMessage(messages.first!!)
-            .queue({ message: Message? ->  // ensure messages are sent in order
-                messages.removeFirst()
-                sendOpenMessage(messages, channel)
-            })
+        thread.sendMessage(messages.first()).await()
+
+        sendOpenMessage(messages.drop(1), thread)
     }
 
-    /**
-     * Provides open messages related to the created channel.
-     *
-     * @param messages The message queue to which open messages are added.
-     * @param channel  The channel where the messages will be sent.
-     * @param user     The user associated with the channel creation.
-     */
     @ApiStatus.OverrideOnly
-    protected open fun getOpenMessages(messages: MessageQueue, channel: TextChannel?, user: User) {
+    protected open fun getOpenMessages(messages: MessageQueue, thread: ThreadChannel, user: User) {
         // Override if necessary
     }
 
-    /**
-     * Executes custom logic after the channel has been created.
-     *
-     * @param channel The channel that was created.
-     */
     @ApiStatus.OverrideOnly
-    protected fun onPostChannelCreated(channel: TextChannel?) {
+    protected fun onPostThreadCreated(thread: ThreadChannel) {
         // Override if necessary
     }
 
-    /**
-     * Determines if any of the steps involve a selection process.
-     *
-     * @return true if any step has a selection process, false otherwise.
-     */
-    fun hasSelectionStep(): Boolean {
-        return getSteps().stream().anyMatch { obj: ModalStep -> obj.hasSelectionStep() }
-    }
+    private fun hasSelectionStep() = steps.any { it.hasSelectionStep() }
 
-    private val id0: String
-        get() = ChannelCreationModalProcessor.getModalId(
-            Objects.requireNonNull<T>(
-                AnnotationUtils.findAnnotation(javaClass, ChannelCreationModal::class.java)
-            )
-        )
+    private val id = ChannelCreationModalProcessor.getModalId(
+        javaClass.getAnnotation(ChannelCreationModal::class.java)
+    )
 
-    private val ticketType0: TicketType
-        get() {
-            return ChannelCreationModalProcessor.getTicketType(
-                Objects.requireNonNull<T>(
-                    AnnotationUtils.findAnnotation(javaClass, ChannelCreationModal::class.java)
-                )
-            )
-        }
-
-    companion object {
-        private val LOGGER: ComponentLogger = ComponentLogger.logger(
-            "DiscordStepChannelCreationModal"
-        )
-    }
+    private val ticketType = ChannelCreationModalProcessor.getTicketType(
+        javaClass.getAnnotation(ChannelCreationModal::class.java)
+    )
 }

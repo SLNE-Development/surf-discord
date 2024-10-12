@@ -105,8 +105,8 @@ class TicketsMenu(idSuffix: String) : DiscordSelectMenu(
                         message.append(ticketType.getName())
                         message.append("\"-Ticket wurde erfolgreich erstellt! ")
 
-                        if (ticket.channel != null) {
-                            message.append(ticket.channel!!.getAsMention())
+                        if (ticket.thread != null) {
+                            message.append(ticket.thread!!.getAsMention())
                         }
 
                         hook.editOriginal(message.toString()).queue()

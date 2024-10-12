@@ -19,7 +19,7 @@ import java.time.ZonedDateTime
 object MessageManager {
 
     suspend fun sendTicketClosedMessages(ticket: Ticket) =
-        ticket.channel?.sendMessage(MessageCreate {
+        ticket.thread?.sendMessage(MessageCreate {
             embeds += EmbedManager.buildTicketClosedEmbed(ticket)
         })
 
