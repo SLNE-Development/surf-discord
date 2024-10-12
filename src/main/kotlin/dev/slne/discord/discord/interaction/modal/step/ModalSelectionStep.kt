@@ -7,7 +7,6 @@ import dev.slne.discord.DiscordBot
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
-import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.components.ItemComponent
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption
 import java.util.concurrent.atomic.AtomicInteger
@@ -24,7 +23,6 @@ abstract class ModalSelectionStep(
 
     init {
         steps[id] = this
-        // FIXME: 12.10.2024 08:51 test this and show to twisti?
     }
 
     fun createSelection(): ItemComponent = StringSelectMenu(id) {
@@ -40,7 +38,7 @@ abstract class ModalSelectionStep(
         this.event = event
     }
 
-    object ModalSelectionStepListener : ListenerAdapter() {
+    object ModalSelectionStepListener {
         init {
             DiscordBot.jda.listener<StringSelectInteractionEvent> { event ->
                 val step = steps[event.componentId] ?: return@listener

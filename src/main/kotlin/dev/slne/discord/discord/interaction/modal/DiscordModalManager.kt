@@ -29,7 +29,7 @@ object DiscordModalManager {
 
     fun registerAdvancedModal(
         modalId: String,
-        creator: Supplier<DiscordStepChannelCreationModal>
+        creator: () -> DiscordStepChannelCreationModal
     ) = advancedModals.putIfAbsent(modalId, creator)
 
     private fun getModalByClass(clazz: Class<DiscordModal>): DiscordModal {

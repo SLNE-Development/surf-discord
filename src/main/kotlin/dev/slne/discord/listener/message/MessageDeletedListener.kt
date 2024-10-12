@@ -2,11 +2,12 @@ package dev.slne.discord.listener.message
 
 import dev.minn.jda.ktx.events.listener
 import dev.slne.discord.DiscordBot
+import dev.slne.discord.extensions.ticket
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent
 
-object MessageDeletedListener : AbstractMessageListener() {
+object MessageDeletedListener {
 
     init {
         DiscordBot.jda.listener<MessageDeleteEvent> {
@@ -19,7 +20,7 @@ object MessageDeletedListener : AbstractMessageListener() {
     }
 
     private suspend fun deleteMessage(channel: MessageChannel, messageIds: List<String>) {
-        val ticket = getTicketByChannel(channel) ?: return
+        val ticket = channel.ticket ?: return
 
         messageIds
             .mapNotNull { ticket.getTicketMessage(it) }

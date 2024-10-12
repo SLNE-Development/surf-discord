@@ -2,10 +2,11 @@ package dev.slne.discord.listener.message
 
 import dev.minn.jda.ktx.events.listener
 import dev.slne.discord.DiscordBot
+import dev.slne.discord.extensions.ticket
 import dev.slne.discord.ticket.message.TicketMessage
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 
-object MessageCreatedListener : AbstractMessageListener() {
+object MessageCreatedListener {
 
     init {
         DiscordBot.jda.listener<MessageReceivedEvent> { event ->
@@ -13,9 +14,9 @@ object MessageCreatedListener : AbstractMessageListener() {
                 return@listener
             }
 
-            val ticket = getTicketByChannel(event.channel)
+            val ticket = event.channel.ticket ?: return@listener
 
-            ticket?.addTicketMessage(
+            ticket.addTicketMessage(
                 TicketMessage.fromTicketAndMessage(
                     ticket,
                     event.message

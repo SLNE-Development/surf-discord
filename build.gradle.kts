@@ -41,7 +41,6 @@ dependencies {
     implementation("net.kyori:adventure-api:4.17.0")
     implementation("net.kyori:adventure-text-logger-slf4j:4.17.0")
     implementation("jakarta.annotation:jakarta.annotation-api:3.0.0")
-    implementation("javax.annotation:jsr305:1.0")
     implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
 
     implementation(libs.fastutil)

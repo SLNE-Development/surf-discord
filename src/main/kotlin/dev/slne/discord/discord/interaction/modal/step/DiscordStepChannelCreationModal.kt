@@ -3,7 +3,7 @@ package dev.slne.discord.discord.interaction.modal.step
 import dev.minn.jda.ktx.coroutines.await
 import dev.slne.discord.annotation.ChannelCreationModal
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager
-import dev.slne.discord.spring.processor.ChannelCreationModalProcessor
+import dev.slne.discord.spring.processor.ChannelCreationModalManager
 import dev.slne.discord.ticket.Ticket
 import dev.slne.discord.ticket.result.TicketCreateResult
 import net.dv8tion.jda.api.entities.Guild
@@ -277,11 +277,11 @@ abstract class DiscordStepChannelCreationModal protected constructor(
 
     private fun hasSelectionStep() = steps.any { it.hasSelectionStep() }
 
-    private val id = ChannelCreationModalProcessor.getModalId(
+    private val id = ChannelCreationModalManager.getModalId(
         javaClass.getAnnotation(ChannelCreationModal::class.java)
     )
 
-    private val ticketType = ChannelCreationModalProcessor.getTicketType(
+    private val ticketType = ChannelCreationModalManager.getTicketType(
         javaClass.getAnnotation(ChannelCreationModal::class.java)
     )
 }

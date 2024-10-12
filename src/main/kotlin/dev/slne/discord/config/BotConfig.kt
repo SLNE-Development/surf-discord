@@ -8,9 +8,9 @@ import java.nio.file.Path
 
 @ApiStatus.Internal
 @ConfigSerializable
-class BotConfig {
+data class BotConfig(
     val botToken: String? = null
-}
+)
 
 val botConfig: BotConfig by lazy { loadConfig() }
 

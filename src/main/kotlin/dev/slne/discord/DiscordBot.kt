@@ -3,11 +3,16 @@ package dev.slne.discord
 import dev.slne.discord.config.botConfig
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenuManager
 import dev.slne.discord.settings.GatewayIntents
+import dev.slne.discord.spring.processor.ChannelCreationModalManager
+import dev.slne.discord.spring.processor.DiscordButtonManager
+import dev.slne.discord.spring.processor.DiscordCommandManager
+import dev.slne.discord.spring.processor.DiscordListenerManager
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
+import kotlin.system.exitProcess
 
 object DiscordBot {
 
@@ -21,8 +26,7 @@ object DiscordBot {
 
         if (botToken == null) {
             logger.error("Bot token is null. Please check your bot-connection.json file.")
-            System.exit(1000)
-            return
+            exitProcess(1000)
         }
 
         Thread.setDefaultUncaughtExceptionHandler { thread: Thread, throwable: Throwable? ->
@@ -47,15 +51,23 @@ object DiscordBot {
         }
 
         this.jda = builder.build()
+
         try {
             jda.awaitReady()
         } catch (exception: InterruptedException) {
             logger.error("Failed to await ready.", exception)
         }
 
-        selectMenuManager =
-            DiscordSelectMenuManager()
+        initObjects()
+
         logger.info("Discord Bot is ready")
+    }
+
+    private fun initObjects() {
+        DiscordListenerManager
+        ChannelCreationModalManager
+        DiscordButtonManager
+        DiscordCommandManager
     }
 
     fun onEnable() {

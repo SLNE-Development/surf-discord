@@ -32,13 +32,21 @@ class TicketMessage {
 
     suspend fun delete() = ticket?.let {
         messageDeletedAt = ZonedDateTime.now().toEuropeBerlin()
-        
+
         TicketMessageService.deleteTicketMessage(it, this)
     }
 
-    suspend fun create() = ticket?.let { TicketMessageService.createTicketMessage(it, this) }
+    suspend fun create() = ticket?.let {
+        messageCreatedAt = ZonedDateTime.now().toEuropeBerlin()
 
-    suspend fun update() = ticket?.let { TicketMessageService.updateTicketMessage(it, this) }
+        TicketMessageService.createTicketMessage(it, this)
+    }
+
+    suspend fun update() = ticket?.let {
+        messageEditedAt = ZonedDateTime.now().toEuropeBerlin()
+
+        TicketMessageService.updateTicketMessage(it, this)
+    }
 
     val message: RestAction<Message>?
         get() = messageId?.let { ticket?.thread?.retrieveMessageById(it) }
