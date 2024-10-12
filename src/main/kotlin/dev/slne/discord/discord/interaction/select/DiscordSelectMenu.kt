@@ -28,9 +28,9 @@ abstract class DiscordSelectMenu(
         }
     }
 
-    abstract fun onSelect(
+    abstract suspend fun onSelect(
         interaction: StringSelectInteraction,
-        selectedOptions: List<DiscordSelectMenuOption?>
+        selectedOptions: List<DiscordSelectMenuOption>
     )
 
     fun getOptionByValue(value: String?) = options.firstOrNull { option -> option.value == value }

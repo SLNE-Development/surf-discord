@@ -81,3 +81,5 @@ enum class TicketType(
 }
 
 fun getTicketTypeByDisplayName(name: String) = TicketType.entries.find { it.displayName == name }
+
+fun getTicketTypeByConfigName(name: String) = TicketType.entries.find { it.configName == name }

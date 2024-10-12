@@ -59,19 +59,6 @@ class WhitelistDTO(
         }
 
         /**
-         * Returns if a [User] is whitelisted.
-         *
-         * @param user The [User].
-         * @return The [CompletableFuture].
-         */
-        @JvmStatic
-        fun isWhitelisted(user: User): CompletableFuture<Boolean> {
-            return WhitelistService.INSTANCE.getWhitelistByDiscordId(user.id)
-                .thenApply { obj: Any? -> Objects.nonNull(obj) }
-                .exceptionally { e -> false }
-        }
-
-        /**
          * Returns a [MessageEmbed] for a [WhitelistDTO].
          *
          * @param whitelist The [WhitelistDTO].
