@@ -1,6 +1,8 @@
 package dev.slne.discord.ticket
 
+import dev.minn.jda.ktx.emoji.toUnicodeEmoji
 import dev.slne.discord.guild.permission.TicketViewPermission
+import dev.slne.discord.message.translatable
 import net.dv8tion.jda.api.entities.emoji.Emoji
 
 enum class TicketType(
@@ -13,71 +15,71 @@ enum class TicketType(
     val enabled: Boolean = true,
 ) {
     WHITELIST(
-        "WhitelistDTO",
+        translatable("modal.whitelist.title"),
         "whitelist",
-        "WhitelistDTO Anfragen für den Survival Server",
-        Emoji.fromUnicode("\uD83D\uDCDC"),
+        translatable("modal.whitelist.description"),
+        "📜".toUnicodeEmoji(),
         TicketViewPermission.VIEW_WHITELIST_TICKETS,
         shouldPrintWlQuery = false
     ),
 
     SURVIVAL_SUPPORT(
-        "Survival Support",
+        translatable("modal.support.survival.titel"),
         "survival-support",
-        "Anliegen bezüglich des Survival Servers",
-        Emoji.fromUnicode("\uD83D\uDEE0\uFE0F"),
+        translatable("modal.support.survival.description"),
+        "🛠️".toUnicodeEmoji(),
         TicketViewPermission.VIEW_SURVIVAL_SUPPORT_TICKETS,
     ),
 
     EVENT_SUPPORT(
-        "Event Support",
+        translatable("modal.support.event.titel"),
         "event-support",
-        "Anliegen bezüglich des Event Servers",
-        Emoji.fromUnicode("\uD83C\uDF89"),
+        translatable("modal.support.event.description"),
+        "🎉".toUnicodeEmoji(),
         TicketViewPermission.VIEW_EVENT_SUPPORT_TICKETS
     ),
 
     BUGREPORT(
-        "Bug Report",
+        translatable("modal.bug-report.title"),
         "bugreport",
-        "Fehler gefunden? Melde ihn hier.",
-        Emoji.fromUnicode("\uD83D\uDC1E"),
+        translatable("modal.bug-report.description"),
+        "🐞".toUnicodeEmoji(),
         TicketViewPermission.VIEW_BUGREPORT_TICKETS
     ),
 
     REPORT(
-        "Report",
+        translatable("modal.report.title"),
         "report",
-        "Melde Griefing, Cheating oder andere Regelverstöße.",
-        Emoji.fromUnicode("📢"),
+        translatable("modal.report.description"),
+        "📢".toUnicodeEmoji(),
         TicketViewPermission.VIEW_REPORT_TICKETS
     ),
 
     UNBAN(
-        "Entbannungsantrag",
+        translatable("modal.unban.title"),
         "unban",
-        "Entbannungsanträge für den Community Server",
-        Emoji.fromUnicode("\uD83D\uDEAB"),
+        translatable("modal.unban.description"),
+        "🚫".toUnicodeEmoji(),
         TicketViewPermission.VIEW_UNBAN_TICKETS
     ),
 
     DISCORD_SUPPORT(
-        "Discord Support",
+        translatable("modal.support.discord.titel"),
         "discord-support",
-        "Anliegen bezüglich des Discord Servers",
-        Emoji.fromUnicode("\uD83D\uDCAC"),
+        translatable("modal.support.discord.description"),
+        "💬".toUnicodeEmoji(),
         TicketViewPermission.VIEW_DISCORD_SUPPORT_TICKETS,
         shouldPrintWlQuery = false
     ),
 
-    APPLICATION(
-        "Bewerbung",
-        "application",
-        "Bewirb dich hier für ein Rang",
-        Emoji.fromUnicode("\uD83D\uDC68\u200D\uD83D\uDCBB"),
-        TicketViewPermission.VIEW_APPLICATION_TICKETS,
-        shouldPrintWlQuery = false
-    )
+//    APPLICATION(
+//        "Bewerbung",
+//        "application",
+//        "Bewirb dich hier für ein Rang",
+//        "👨‍💻".toUnicodeEmoji(),
+//        TicketViewPermission.VIEW_APPLICATION_TICKETS,
+//        shouldPrintWlQuery = false
+//    )
 }
 
 fun getTicketTypeByDisplayName(name: String) = TicketType.entries.find { it.displayName == name }

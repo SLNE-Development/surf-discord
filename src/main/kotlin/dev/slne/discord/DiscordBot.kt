@@ -4,7 +4,7 @@ import dev.minn.jda.ktx.jdabuilder.cache
 import dev.minn.jda.ktx.jdabuilder.default
 import dev.slne.discord.config.botConfig
 import dev.slne.discord.discord.interaction.command.DiscordCommandManager
-import dev.slne.discord.discord.interaction.modal.ChannelCreationModalManager
+import dev.slne.discord.discord.interaction.modal.DiscordModalManager
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenuManager
 import dev.slne.discord.listener.DiscordListenerManager
 import dev.slne.discord.settings.GatewayIntents
@@ -66,7 +66,7 @@ object DiscordBot {
 
     private fun initObjects() {
         DiscordListenerManager
-        ChannelCreationModalManager
+        DiscordModalManager
         DiscordButtonManager
         DiscordCommandManager
         DiscordSelectMenuManager

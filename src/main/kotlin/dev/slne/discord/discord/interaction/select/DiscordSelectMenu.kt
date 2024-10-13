@@ -1,45 +1,29 @@
 package dev.slne.discord.discord.interaction.select
 
 import dev.minn.jda.ktx.interactions.components.StringSelectMenu
-import dev.minn.jda.ktx.interactions.components.option
-import net.dv8tion.jda.api.entities.emoji.Emoji
+import net.dv8tion.jda.api.interactions.components.selections.SelectOption
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
 
 abstract class DiscordSelectMenu(
     val id: String,
     private val placeholder: String,
-    private val options: List<DiscordSelectMenuOption> = emptyList(),
+    private val options: List<SelectOption> = emptyList(),
 
-    private val minValues: Int = 1,
-    private val maxValues: Int = 1,
+    private val valueRange: IntRange
 ) {
     fun build() = StringSelectMenu(
         customId = id,
         placeholder = placeholder,
-        valueRange = minValues..maxValues
+        valueRange = valueRange
     ) {
-        for (option in this@DiscordSelectMenu.options) {
-            option(
-                label = option.label,
-                value = option.value,
-                description = option.description,
-                emoji = option.emoji
-            )
-        }
+        addOptions(options)
     }
 
     abstract suspend fun onSelect(
         interaction: StringSelectInteraction,
-        selectedOptions: List<DiscordSelectMenuOption>
+        selectedOptions: List<SelectOption>
     )
 
     fun getOptionByValue(value: String?) = options.firstOrNull { option -> option.value == value }
-
-    data class DiscordSelectMenuOption(
-        val label: String,
-        val value: String,
-        val description: String? = null,
-        val emoji: Emoji? = null
-    )
 }
 

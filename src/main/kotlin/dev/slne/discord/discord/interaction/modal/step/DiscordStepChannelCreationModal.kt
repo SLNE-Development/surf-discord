@@ -5,7 +5,6 @@ import dev.minn.jda.ktx.interactions.components.InlineModal
 import dev.minn.jda.ktx.interactions.components.replyModal
 import dev.minn.jda.ktx.messages.MessageCreate
 import dev.slne.discord.annotation.ChannelCreationModal
-import dev.slne.discord.discord.interaction.modal.ChannelCreationModalManager
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager
 import dev.slne.discord.message.RawMessages
 import dev.slne.discord.ticket.Ticket
@@ -31,9 +30,12 @@ abstract class DiscordStepChannelCreationModal(
     private val logger = ComponentLogger.logger(javaClass)
     private val steps: List<ModalStep> by lazy { buildSteps().steps }
 
-    private val ticketType = this::class.findAnnotation<ChannelCreationModal>()?.let {
-        ChannelCreationModalManager.getTicketType(it)
-    } ?: error("Creation modal must be annotated with @ChannelCreationModal")
+    private val annotation = this::class.findAnnotation<ChannelCreationModal>()
+        ?: error("Creation modal must be annotated with @ChannelCreationModal")
+
+    val ticketType = annotation.ticketType
+    val id = annotation.modalId.ifEmpty { annotation.ticketType.name }
+
 
     @ApiStatus.OverrideOnly
     protected abstract fun buildSteps(): StepBuilder
@@ -283,10 +285,6 @@ abstract class DiscordStepChannelCreationModal(
     }
 
     private fun hasSelectionStep() = steps.any { it.hasSelectionStep() }
-
-    private val id = ChannelCreationModalManager.getModalId(
-        javaClass.getAnnotation(ChannelCreationModal::class.java)
-    )
 
     open class PreThreadCreationException(message: String) : Exception(message) {
         companion object {

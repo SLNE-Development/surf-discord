@@ -13,7 +13,7 @@ object DiscordModalListener {
         DiscordBot.jda.listener<ModalInteractionEvent> { event ->
             val interaction = event.interaction
             val modalId = interaction.modalId
-            val advancedModal = DiscordModalManager.getAdvancedModal(modalId, event.user.id)
+            val advancedModal = DiscordModalManager.getModal(modalId, event.user.id)
 
             if (advancedModal != null) {
                 event.deferReply(true).await()
