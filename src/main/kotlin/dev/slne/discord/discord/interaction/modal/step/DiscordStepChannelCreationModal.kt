@@ -22,6 +22,7 @@ import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.jetbrains.annotations.ApiStatus
+import java.io.Serial
 import kotlin.reflect.full.findAnnotation
 
 abstract class DiscordStepChannelCreationModal(
@@ -52,6 +53,13 @@ abstract class DiscordStepChannelCreationModal(
             return
         }
 
+        try {
+            preStartCreationValidation(interaction, guild)
+        } catch (exception: PreThreadCreationException) {
+            hook.editOriginal(exception.message ?: "???").await()
+            return
+        }
+
         DiscordModalManager.setCurrentUserModal(
             interaction.user.id,
             this
@@ -63,6 +71,14 @@ abstract class DiscordStepChannelCreationModal(
         }
 
         startChannelCreationWithSelectionSteps(interaction, hook)
+    }
+
+    @Throws(PreThreadCreationException::class)
+    protected open suspend fun preStartCreationValidation(
+        interaction: StringSelectInteraction,
+        guild: Guild
+    ) {
+        // Override if necessary
     }
 
     private suspend fun startChannelCreationWithSelectionSteps(
@@ -257,12 +273,12 @@ abstract class DiscordStepChannelCreationModal(
     }
 
     @ApiStatus.OverrideOnly
-    protected open fun MessageQueue.getOpenMessages(thread: ThreadChannel, user: User) {
+    protected open suspend fun MessageQueue.getOpenMessages(thread: ThreadChannel, user: User) {
         // Override if necessary
     }
 
     @ApiStatus.OverrideOnly
-    protected fun onPostThreadCreated(thread: ThreadChannel) {
+    protected suspend fun onPostThreadCreated(thread: ThreadChannel) {
         // Override if necessary
     }
 
@@ -271,4 +287,12 @@ abstract class DiscordStepChannelCreationModal(
     private val id = ChannelCreationModalManager.getModalId(
         javaClass.getAnnotation(ChannelCreationModal::class.java)
     )
+
+    open class PreThreadCreationException(message: String) : Exception(message) {
+        companion object {
+            @JvmStatic
+            @Serial
+            private val serialVersionUID: Long = 6617748730394220873L
+        }
+    }
 }

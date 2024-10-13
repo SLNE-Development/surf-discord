@@ -4,6 +4,9 @@ import dev.slne.discord.annotation.ChannelCreationModal
 import dev.slne.discord.discord.interaction.modal.step.DiscordStepChannelCreationModal
 import dev.slne.discord.discord.interaction.modal.step.creator.bugreport.BugReportTicketChannelCreationModal
 import dev.slne.discord.discord.interaction.modal.step.creator.report.ReportTicketChannelCreationModal
+import dev.slne.discord.discord.interaction.modal.step.creator.support.discord.DiscordSupportTicketChannelCreationModal
+import dev.slne.discord.discord.interaction.modal.step.creator.support.event.EventSupportTicketChannelCreationModal
+import dev.slne.discord.discord.interaction.modal.step.creator.support.survival.SurvivalSupportTicketChannelCreationModal
 import dev.slne.discord.discord.interaction.modal.step.creator.unban.UnbanTicketChannelCreationModal
 import dev.slne.discord.discord.interaction.modal.step.creator.whitelist.WhitelistTicketChannelCreationModal
 import dev.slne.discord.ticket.TicketType
@@ -20,6 +23,18 @@ object ChannelCreationModalManager {
         register(
             BugReportTicketChannelCreationModal.MODAL_ID,
             ::BugReportTicketChannelCreationModal
+        )
+        register(
+            SurvivalSupportTicketChannelCreationModal.MODAL_ID,
+            ::SurvivalSupportTicketChannelCreationModal
+        )
+        register(
+            EventSupportTicketChannelCreationModal.MODAL_ID,
+            ::EventSupportTicketChannelCreationModal
+        )
+        register(
+            DiscordSupportTicketChannelCreationModal.MODAL_ID,
+            ::DiscordSupportTicketChannelCreationModal
         )
     }
 

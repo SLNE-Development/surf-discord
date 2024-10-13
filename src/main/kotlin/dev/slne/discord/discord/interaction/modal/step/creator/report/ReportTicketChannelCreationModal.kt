@@ -21,7 +21,7 @@ class ReportTicketChannelCreationModal :
         return StepBuilder.startWith(ReportTicketSelectTypeStep())
     }
 
-    override fun MessageQueue.getOpenMessages(thread: ThreadChannel, user: User) {
+    override suspend fun MessageQueue.getOpenMessages(thread: ThreadChannel, user: User) {
         addMessage(user.asMention)
         addMessage(get("modal.report.message"))
     }

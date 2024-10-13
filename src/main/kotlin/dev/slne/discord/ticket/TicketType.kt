@@ -77,7 +77,7 @@ enum class TicketType(
         Emoji.fromUnicode("\uD83D\uDC68\u200D\uD83D\uDCBB"),
         TicketViewPermission.VIEW_APPLICATION_TICKETS,
         shouldPrintWlQuery = false
-    );
+    )
 }
 
 fun getTicketTypeByDisplayName(name: String) = TicketType.entries.find { it.displayName == name }
