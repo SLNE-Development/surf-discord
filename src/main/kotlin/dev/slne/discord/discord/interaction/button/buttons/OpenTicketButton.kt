@@ -14,13 +14,17 @@ import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.interactions.components.selections.SelectMenu
 
+private const val _ID = "open-ticket"
+
 @DiscordButton(
-    id = "open-ticket",
+    id = _ID,
     label = "Ticket öffnen",
     style = ButtonStyle.SUCCESS,
     emoji = DiscordEmoji(unicode = "🎫")
 )
 object OpenTicketButton : DiscordButtonHandler {
+    const val ID = _ID
+
     override suspend fun ButtonInteractionEvent.onClick() {
         TicketsMenu(id).apply {
             DiscordSelectMenuManager.addMenu(this)
@@ -43,4 +47,5 @@ object OpenTicketButton : DiscordButtonHandler {
             .setEphemeral(true)
             .await()
     }
+
 }

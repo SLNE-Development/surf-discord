@@ -5,7 +5,7 @@ import dev.slne.discord.guild.role.DiscordRolePermissions
 import dev.slne.discord.ticket.TicketType
 import net.dv8tion.jda.api.entities.Role
 
-class DiscordGuild(
+data class DiscordGuild(
     val guildId: String,
     val whitelistRoleId: String,
 

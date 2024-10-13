@@ -17,7 +17,7 @@ class StepBuilder {
         check(lastStep != null) { "Cannot add a step to an empty builder" }
 
         this.lastStep = step(lastStep)
-        steps.add(lastStep)
+        steps.add(this.lastStep!!)
     }
 
     val firstStep: ModalStep?

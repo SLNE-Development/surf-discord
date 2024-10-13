@@ -131,9 +131,9 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
             ),
             roles = listOf(
                 DiscordRolePermissions(
-                    discordRoleIds = listOf(""),
-                    ticketViewPermissions = listOf(),
-                    commandPermissions = listOf(),
+                    discordRoleIds = listOf("449314761386098688"),
+                    ticketViewPermissions = TicketViewPermission.entries,
+                    commandPermissions = CommandPermission.entries,
                 )
             )
         )

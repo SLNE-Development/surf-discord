@@ -12,6 +12,5 @@ object CommandReceivedListener {
             DiscordCommandManager.getCommand(event.name)?.command?.execute(event)
                 ?: error("Command ${event.name} not found")
         }
-
     }
 }

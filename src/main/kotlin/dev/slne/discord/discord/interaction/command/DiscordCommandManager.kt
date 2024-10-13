@@ -21,6 +21,10 @@ import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import kotlin.reflect.full.findAnnotation
 
 object DiscordCommandManager {
+    private val logger = ComponentLogger.logger(DiscordCommandManager::class.java)
+    private val commands: Object2ObjectMap<String, DiscordCommandHolder> =
+        Object2ObjectOpenHashMap()
+
     init {
         register(WhitelistCommand)
         register(WhitelistedCommand)
@@ -34,10 +38,6 @@ object DiscordCommandManager {
         register(TicketMemberAddCommand)
         register(TicketMemberRemoveCommand)
     }
-
-    private val logger = ComponentLogger.logger(DiscordCommandManager::class.java)
-    private val commands: Object2ObjectMap<String, DiscordCommandHolder> =
-        Object2ObjectOpenHashMap()
 
     fun register(command: DiscordCommand) {
         val annotation = command::class.findAnnotation<DiscordCommandMeta>()
@@ -69,6 +69,9 @@ object DiscordCommandManager {
 //                    .setDefaultPermissions(commandHolder.command().getDefaultMemberPermissions()) // TODO: 24.08.2024 10:11 - why not in use?
             )
         }
+
+
+        guild.updateCommands().await()
 
         val updatedCommandNames =
             guild.updateCommands().addCommands(commandData).await().map { it.name }

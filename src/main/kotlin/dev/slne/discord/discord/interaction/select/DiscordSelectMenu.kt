@@ -16,7 +16,7 @@ abstract class DiscordSelectMenu(
         placeholder = placeholder,
         valueRange = valueRange
     ) {
-        addOptions(options)
+        addOptions(this@DiscordSelectMenu.options)
     }
 
     abstract suspend fun onSelect(

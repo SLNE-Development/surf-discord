@@ -5,6 +5,7 @@ import dev.minn.jda.ktx.interactions.components.row
 import dev.minn.jda.ktx.messages.MessageCreate
 import dev.slne.discord.annotation.DiscordCommandMeta
 import dev.slne.discord.annotation.toJdaButton
+import dev.slne.discord.discord.interaction.button.buttons.OpenTicketButton
 import dev.slne.discord.discord.interaction.command.DiscordCommand
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.EmbedColors
@@ -30,7 +31,8 @@ object TicketButtonCommand : DiscordCommand() {
         hook.deleteOriginal().await()
 
         val channel = interaction.channel
-        val openTicketInfo = DiscordButtonManager[ID]?.info ?: error("Button not found")
+        val openTicketInfo =
+            DiscordButtonManager[OpenTicketButton.ID]?.info ?: error("Button not found")
 
         sendEmbed(openTicketInfo.toJdaButton(), channel)
     }

@@ -35,7 +35,7 @@ object WhitelistQueryCommand : DiscordCommand() {
             MINECRAFT_OPTION,
             RawMessages.get("interaction.command.ticket.wlquery.arg.minecraft-name"),
             required = false
-        ) { range(3..16) },
+        ) { length(3..16) },
         option<String>(
             TWITCH_OPTION,
             RawMessages.get("interaction.command.ticket.wlquery.arg.twitch-name"),

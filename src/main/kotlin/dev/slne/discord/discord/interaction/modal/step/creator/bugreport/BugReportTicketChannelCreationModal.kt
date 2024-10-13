@@ -25,7 +25,7 @@ class BugReportTicketChannelCreationModal :
 
     override suspend fun MessageQueue.getOpenMessages(thread: ThreadChannel, user: User) {
         addMessage(user.asMention)
-        addMessage("> " + translatable("modal.bug-report.message"))
+        addMessage(translatable("modal.bug-report.message"))
     }
 
     companion object {

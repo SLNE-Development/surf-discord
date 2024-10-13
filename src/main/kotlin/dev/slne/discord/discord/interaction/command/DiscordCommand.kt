@@ -19,7 +19,6 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
-import org.apache.commons.lang3.DoubleRange
 import org.intellij.lang.annotations.Language
 import java.util.*
 import kotlin.reflect.full.findAnnotation
@@ -200,12 +199,7 @@ abstract class DiscordCommand {
         description: String,
         builder: SubcommandData.() -> Unit = {}
     ) = Subcommand(name, description, builder)
-
-    protected fun OptionData.range(range: LongRange) = setRequiredRange(range.first, range.last)
-    protected fun OptionData.range(range: IntRange) =
-        setRequiredRange(range.first.toLong(), range.last.toLong())
-
-    protected fun OptionData.range(range: DoubleRange) =
-        setRequiredRange(range.minimum, range.maximum)
+    
+    protected fun OptionData.length(range: IntRange) = setRequiredLength(range.first, range.last)
 
 }

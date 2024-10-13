@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
 
-private const val MINECRAFT_NAME = "minecraftName"
+private const val MINECRAFT_NAME = "minecraftName-753489785403534870"
 
 class MinecraftSupportMinecraftNameStep : ModalStep() {
     private var minecraftName: String? = null

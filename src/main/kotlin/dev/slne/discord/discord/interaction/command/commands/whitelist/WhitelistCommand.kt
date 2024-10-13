@@ -38,7 +38,7 @@ object WhitelistCommand : DiscordCommand() {
         option<String>(
             MINECRAFT_OPTION,
             RawMessages.get("interaction.command.ticket.whitelist.arg.minecraft-name")
-        ) { range(3..16) },
+        ) { length(3..16) },
         option<String>(
             TWITCH_OPTION,
             RawMessages.get("interaction.command.ticket.whitelist.arg.twitch-name")

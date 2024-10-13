@@ -13,6 +13,13 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 
 object DiscordModalManager {
 
+    private val modals =
+        Object2ObjectOpenHashMap<String, () -> DiscordStepChannelCreationModal>()
+    private val currentUserModals =
+        Object2ObjectOpenHashMap<String, DiscordStepChannelCreationModal>()
+    private val byTicketType =
+        Object2ObjectOpenHashMap<TicketType, () -> DiscordStepChannelCreationModal>()
+
     init {
         register(::WhitelistTicketChannelCreationModal)
         register(::UnbanTicketChannelCreationModal)
@@ -22,13 +29,6 @@ object DiscordModalManager {
         register(::EventSupportTicketChannelCreationModal)
         register(::DiscordSupportTicketChannelCreationModal)
     }
-
-    private val modals =
-        Object2ObjectOpenHashMap<String, () -> DiscordStepChannelCreationModal>()
-    private val currentUserModals =
-        Object2ObjectOpenHashMap<String, DiscordStepChannelCreationModal>()
-    private val byTicketType =
-        Object2ObjectOpenHashMap<TicketType, () -> DiscordStepChannelCreationModal>()
 
     private fun register(supplier: () -> DiscordStepChannelCreationModal) {
         val temp = supplier()
@@ -41,7 +41,7 @@ object DiscordModalManager {
 
     fun getModal(customId: String, userId: String): DiscordStepChannelCreationModal? {
         val modalCreator = modals[customId] ?: return null
-        return currentUserModals[userId] ?: modalCreator()
+        return currentUserModals[userId] ?: modalCreator.invoke()
     }
 
     fun createByTicketType(ticketType: TicketType): DiscordStepChannelCreationModal {

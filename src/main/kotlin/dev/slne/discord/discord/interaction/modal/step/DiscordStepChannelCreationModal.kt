@@ -22,6 +22,7 @@ import net.dv8tion.jda.api.interactions.components.selections.StringSelectIntera
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.jetbrains.annotations.ApiStatus
 import java.io.Serial
+import java.util.*
 import kotlin.reflect.full.findAnnotation
 
 abstract class DiscordStepChannelCreationModal(
@@ -41,24 +42,24 @@ abstract class DiscordStepChannelCreationModal(
     protected abstract fun buildSteps(): StepBuilder
 
     private fun InlineModal.buildModalComponents(interaction: StringSelectInteraction) {
+        println("steps: $steps")
         steps.forEach { it.fillModalComponents(this, interaction) }
     }
 
     suspend fun startChannelCreation(
         interaction: StringSelectInteraction,
-        guild: Guild
+        guild: Guild,
+//        hook: InteractionHook
     ) {
-        val hook = interaction.deferReply(true).await()
-
         if (checkTicketExists(guild, interaction.user)) {
-            hook.editOriginal(RawMessages.get("error.ticket.type.already-open")).await()
+            reply(interaction, RawMessages.get("error.ticket.type.already-open"))
             return
         }
 
         try {
             preStartCreationValidation(interaction, guild)
         } catch (exception: PreThreadCreationException) {
-            hook.editOriginal(exception.message ?: "???").await()
+            reply(interaction, exception.message ?: "???")
             return
         }
 
@@ -68,9 +69,12 @@ abstract class DiscordStepChannelCreationModal(
         )
 
         if (!hasSelectionStep()) {
+            println("No selection step")
             replyModal(interaction)
             return
         }
+
+        val hook = interaction.deferReply(true).await()
 
         startChannelCreationWithSelectionSteps(interaction, hook)
     }
@@ -100,7 +104,14 @@ abstract class DiscordStepChannelCreationModal(
 
     private suspend fun replyModal(
         modalCallback: StringSelectInteraction,
-    ) = modalCallback.replyModal(id, title) { buildModalComponents(modalCallback) }.await()
+    ) {
+
+        println("Replying modal with id: $id")
+
+        modalCallback.replyModal(id, title) {
+            buildModalComponents(modalCallback)
+        }.await()
+    }
 
     suspend fun handleUserSubmitModal(event: ModalInteractionEvent) {
         val modalSteps = steps

@@ -9,12 +9,12 @@ import kotlin.reflect.full.findAnnotation
 
 
 object DiscordButtonManager {
+    private val logger = ComponentLogger.logger()
+    private val handlers = Object2ObjectOpenHashMap<String, DiscordButtonHandlerHolder>()
+
     init {
         register(OpenTicketButton)
     }
-
-    private val logger = ComponentLogger.logger(DiscordButtonManager::class.java)
-    private val handlers = Object2ObjectOpenHashMap<String, DiscordButtonHandlerHolder>()
 
     private fun register(handler: DiscordButtonHandler) {
         val annotation = handler::class.findAnnotation<DiscordButton>()

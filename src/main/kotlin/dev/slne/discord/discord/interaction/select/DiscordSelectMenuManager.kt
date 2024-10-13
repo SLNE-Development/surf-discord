@@ -6,13 +6,13 @@ import java.time.Duration
 
 object DiscordSelectMenuManager {
 
-    init {
-
-    }
-
     private val staticMenus: MutableList<DiscordSelectMenu> = mutableListOf()
     private val menus: Cache<String, DiscordSelectMenu> =
         Caffeine.newBuilder().expireAfterWrite(Duration.ofMinutes(5)).build()
+
+    init {
+
+    }
 
     fun addMenu(menu: DiscordSelectMenu) = menus.put(menu.id, menu)
 

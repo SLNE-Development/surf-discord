@@ -42,15 +42,13 @@ dependencies {
     implementation("net.kyori:adventure-text-logger-slf4j:4.17.0")
     implementation("jakarta.annotation:jakarta.annotation-api:3.0.0")
     implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
+    implementation("ch.qos.logback:logback-classic:1.5.6")
 
     implementation(libs.fastutil)
     implementation(libs.configurate.yaml)
     implementation(libs.configurate.jackson)
     implementation(libs.net.dv8tion.jda) {
         isChanging = true
-        exclude(group = "org.slf4j", module = "slf4j-api")
-        exclude(group = "ch.qos.logback", module = "logback-classic")
-        exclude(group = "ch.qos.logback", module = "logback-core")
     }
     implementation(libs.kotlin.coroutines)
     implementation(libs.jda.ktx)

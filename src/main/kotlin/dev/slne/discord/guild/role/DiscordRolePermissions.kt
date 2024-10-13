@@ -4,7 +4,7 @@ import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.guild.permission.TicketViewPermission
 import dev.slne.discord.ticket.TicketType
 
-class DiscordRolePermissions(
+data class DiscordRolePermissions(
     val discordRoleIds: List<String>,
     val ticketViewPermissions: List<TicketViewPermission>,
     private val commandPermissions: List<CommandPermission>,
