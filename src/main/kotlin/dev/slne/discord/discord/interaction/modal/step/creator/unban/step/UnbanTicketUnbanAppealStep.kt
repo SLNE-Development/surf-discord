@@ -6,6 +6,7 @@ import dev.slne.discord.discord.interaction.modal.step.ModalStep
 import dev.slne.discord.message.RawMessages.Companion.get
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
 
 private const val COMPONENT_ID = "unban-appeal"
 
@@ -13,7 +14,7 @@ class UnbanTicketUnbanAppealStep(parent: ModalStep) : ModalStep() {
 
     private var unbanAppeal: String? = null
 
-    override fun InlineModal.buildModalComponents() {
+    override fun InlineModal.buildModalComponents(interaction: StringSelectInteraction) {
         paragraph(
             COMPONENT_ID,
             get("modal.unban.step.appeal.input.appeal.label"),

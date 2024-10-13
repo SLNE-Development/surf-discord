@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
 import org.jetbrains.annotations.ApiStatus
 import java.io.Serial
 
@@ -12,13 +13,13 @@ abstract class ModalStep {
     val children: MutableList<ModalStep> by lazy { buildChildSteps().steps }
 
     @ApiStatus.OverrideOnly
-    protected abstract fun InlineModal.buildModalComponents()
+    protected abstract fun InlineModal.buildModalComponents(interaction: StringSelectInteraction)
 
-    fun fillModalComponents(modal: InlineModal) {
-        modal.buildModalComponents()
+    fun fillModalComponents(modal: InlineModal, interaction: StringSelectInteraction) {
+        modal.buildModalComponents(interaction)
 
         for (child in children) {
-            child.fillModalComponents(modal)
+            child.fillModalComponents(modal, interaction)
         }
     }
 

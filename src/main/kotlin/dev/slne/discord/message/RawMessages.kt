@@ -92,8 +92,8 @@ class RawMessages private constructor() {
 
     companion object {
         private val LOGGER = ComponentLogger.logger("RawMessages")
-        private const val BUNDLE_NAME = "messages"
-        private const val BUNDLE_PATH = BUNDLE_NAME + ".properties"
+        const val BUNDLE_NAME = "messages"
+        private const val BUNDLE_PATH = "$BUNDLE_NAME.properties"
         private const val TARGET_PATH = "messages/messages.properties"
 
         private val INSTANCE = RawMessages()
@@ -106,4 +106,11 @@ class RawMessages private constructor() {
             return INSTANCE.getMessage(key, *params)
         }
     }
+}
+
+fun translatable(
+    key: @NonNls @PropertyKey(resourceBundle = RawMessages.BUNDLE_NAME) String,
+    vararg params: Any?
+): String {
+    return RawMessages.get(key, *params)
 }

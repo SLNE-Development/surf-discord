@@ -7,6 +7,7 @@ import dev.slne.discord.discord.interaction.modal.step.ModalSelectionStep
 import dev.slne.discord.message.RawMessages.Companion.get
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
 
 private const val OPTION_SURVIVAL_01 = "survival-1"
 private const val OPTION_SURVIVAL_02 = "survival-2"
@@ -40,7 +41,7 @@ class ReportTicketGriefingStep : ModalSelectionStep(
     private var whatGriefed: String? = null
     private var additionalInformation: String? = null
 
-    override fun InlineModal.buildModalComponents() {
+    override fun InlineModal.buildModalComponents(interaction: StringSelectInteraction) {
         short(
             WORLD_INPUT,
             get("modal.report.step.griefing.input.world.label"),

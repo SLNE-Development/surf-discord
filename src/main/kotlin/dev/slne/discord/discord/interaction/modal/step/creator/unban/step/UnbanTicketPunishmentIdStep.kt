@@ -7,6 +7,7 @@ import dev.slne.discord.message.RawMessages
 import dev.slne.discord.spring.service.punishment.PunishmentService
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
 
 private const val PUNISHMENT_ID = "punishment-id"
 
@@ -14,7 +15,7 @@ class UnbanTicketPunishmentIdStep : ModalStep() {
 
     private var punishmentId: String? = null
 
-    override fun InlineModal.buildModalComponents() {
+    override fun InlineModal.buildModalComponents(interaction: StringSelectInteraction) {
         short(
             PUNISHMENT_ID,
             RawMessages.get("modal.unban.step.punishment-id.input.label"),

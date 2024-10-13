@@ -2,6 +2,7 @@ package dev.slne.discord.discord.interaction.modal
 
 import dev.slne.discord.annotation.ChannelCreationModal
 import dev.slne.discord.discord.interaction.modal.step.DiscordStepChannelCreationModal
+import dev.slne.discord.discord.interaction.modal.step.creator.bugreport.BugReportTicketChannelCreationModal
 import dev.slne.discord.discord.interaction.modal.step.creator.report.ReportTicketChannelCreationModal
 import dev.slne.discord.discord.interaction.modal.step.creator.unban.UnbanTicketChannelCreationModal
 import dev.slne.discord.discord.interaction.modal.step.creator.whitelist.WhitelistTicketChannelCreationModal
@@ -16,6 +17,10 @@ object ChannelCreationModalManager {
         )
         register(UnbanTicketChannelCreationModal.MODAL_ID, ::UnbanTicketChannelCreationModal)
         register(ReportTicketChannelCreationModal.MODAL_ID, ::ReportTicketChannelCreationModal)
+        register(
+            BugReportTicketChannelCreationModal.MODAL_ID,
+            ::BugReportTicketChannelCreationModal
+        )
     }
 
     fun register(modalId: String, supplier: () -> DiscordStepChannelCreationModal) =

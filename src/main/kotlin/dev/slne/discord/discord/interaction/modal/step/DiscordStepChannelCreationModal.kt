@@ -18,7 +18,6 @@ import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
-import net.dv8tion.jda.api.interactions.callbacks.IModalCallback
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
@@ -38,8 +37,8 @@ abstract class DiscordStepChannelCreationModal(
     @ApiStatus.OverrideOnly
     protected abstract fun buildSteps(): StepBuilder
 
-    private fun InlineModal.buildModalComponents() {
-        steps.forEach { it.fillModalComponents(this) }
+    private fun InlineModal.buildModalComponents(interaction: StringSelectInteraction) {
+        steps.forEach { it.fillModalComponents(this, interaction) }
     }
 
     suspend fun startChannelCreation(
@@ -82,8 +81,8 @@ abstract class DiscordStepChannelCreationModal(
     }
 
     private suspend fun replyModal(
-        modalCallback: IModalCallback,
-    ) = modalCallback.replyModal(id, title) { buildModalComponents() }.await()
+        modalCallback: StringSelectInteraction,
+    ) = modalCallback.replyModal(id, title) { buildModalComponents(modalCallback) }.await()
 
     suspend fun handleUserSubmitModal(event: ModalInteractionEvent) {
         val modalSteps = steps

@@ -8,6 +8,7 @@ import dev.slne.discord.spring.service.user.UserService
 import dev.slne.discord.spring.service.whitelist.WhitelistService
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
 
 private const val MINECRAFT_NAME = "minecraft-name"
 
@@ -15,7 +16,7 @@ class WhitelistTicketMinecraftNameStep(parent: ModalStep) : ModalStep() {
 
     private var minecraftName: String? = null
 
-    override fun InlineModal.buildModalComponents() {
+    override fun InlineModal.buildModalComponents(interaction: StringSelectInteraction) {
         short(
             MINECRAFT_NAME,
             RawMessages.get("modal.whitelist.step.minecraft.label"),

@@ -6,6 +6,7 @@ import dev.minn.jda.ktx.interactions.components.SelectOption
 import dev.slne.discord.discord.interaction.modal.step.ModalSelectionStep
 import dev.slne.discord.message.RawMessages.Companion.get
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
 
 private const val TWITCH_CONNECT_TUTORIAL = "https://server.castcrafter.de/support.html#link-twitch"
 private const val OPTION_YES = "yes"
@@ -24,7 +25,7 @@ class WhitelistTicketConfirmTwitchConnected : ModalSelectionStep(
         emoji = "❌".toUnicodeEmoji()
     )
 ) {
-    override fun InlineModal.buildModalComponents() {
+    override fun InlineModal.buildModalComponents(interaction: StringSelectInteraction) {
     }
 
     override suspend fun verifyModalInput(event: ModalInteractionEvent) {

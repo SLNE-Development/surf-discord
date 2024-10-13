@@ -10,6 +10,7 @@ import dev.slne.discord.discord.interaction.modal.step.creator.report.steps.play
 import dev.slne.discord.message.RawMessages.Companion.get
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
 
 private const val OPTION_GRIEFING = "griefing"
 private const val OPTION_PLAYER = "player"
@@ -31,7 +32,7 @@ class ReportTicketSelectTypeStep : ModalSelectionStep(
 ) {
     private var playerName: String? = null
 
-    override fun InlineModal.buildModalComponents() {
+    override fun InlineModal.buildModalComponents(interaction: StringSelectInteraction) {
         val label = if (isGriefing) {
             get("modal.report.step.type.input.griefing.own-name")
         } else {
