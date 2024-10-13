@@ -12,8 +12,6 @@ import dev.slne.discord.ticket.result.TicketCloseResult
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
-import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.OptionData
 
 
 private const val REASON_OPTION = "reason"
@@ -23,14 +21,12 @@ private const val REASON_OPTION = "reason"
     description = "Closes a ticket.",
     permission = CommandPermission.TICKET_CLOSE
 )
-class TicketCloseCommand : TicketCommand() {
+object TicketCloseCommand : TicketCommand() {
 
     override val options = listOf(
-        OptionData(
-            OptionType.STRING,
+        option<String>(
             REASON_OPTION,
             RawMessages.get("interaction.command.ticket.close.arg.reason"),
-            true
         )
     )
 
@@ -39,22 +35,28 @@ class TicketCloseCommand : TicketCommand() {
         hook: InteractionHook
     ) {
         val closer = interaction.user
-        val reason = interaction.getStringOrThrow(REASON_OPTION, "You must provide a reason.")
+        val reason = interaction.getOptionOrThrow<String>(
+            REASON_OPTION,
+            exceptionMessage = "You must provide a reason."
+        )
         val ticket = interaction.getTicketOrThrow()
 
         hook.editOriginal(RawMessages.get("interaction.command.ticket.close.closing")).await()
-        closeTicket(closer, ticket, reason)
+        closeTicket(closer, ticket, reason, hook)
     }
 
     private suspend fun closeTicket(
         closer: User,
         ticket: Ticket,
-        closeReason: String
+        closeReason: String,
+        hook: InteractionHook
     ) {
         val closeResult = TicketCreator.closeTicket(ticket, closer, closeReason)
 
         if (closeResult != TicketCloseResult.SUCCESS) {
-            throw CommandExceptions.TICKET_CLOSE.create(closeResult)
+            throw CommandExceptions.TICKET_CLOSE(closeResult)
         }
+
+        hook.deleteOriginal().await()
     }
 }

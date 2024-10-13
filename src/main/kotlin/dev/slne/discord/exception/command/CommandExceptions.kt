@@ -76,4 +76,19 @@ object CommandExceptions {
 
     val ARG_MISSING_USER =
         CommandExceptionFactory { CommandException(get("error.command.arg.missing.user")) }
+
+    val ARG_MISSING_ROLE =
+        CommandExceptionFactory { CommandException(get("error.command.arg.missing.role")) }
+
+    val ARG_MISSING_NUMBER =
+        CommandExceptionFactory { CommandException(get("error.command.arg.missing.number")) }
+
+    val ARG_MISSING_BOOLEAN =
+        CommandExceptionFactory { CommandException(get("error.command.arg.missing.boolean")) }
+
+    val ARG_MISSING_STRING =
+        CommandExceptionFactory { CommandException(get("error.command.arg.missing.string")) }
+
+    val ARG_MISSING_ATTACHMENT =
+        CommandExceptionFactory { CommandException(get("error.command.arg.missing.attachment")) }
 }

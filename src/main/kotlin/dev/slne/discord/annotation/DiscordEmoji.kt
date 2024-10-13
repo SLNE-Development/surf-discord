@@ -1,5 +1,7 @@
 package dev.slne.discord.annotation
 
+import dev.minn.jda.ktx.emoji.toEmoji
+import dev.minn.jda.ktx.emoji.toUnicodeEmoji
 import net.dv8tion.jda.api.entities.emoji.Emoji
 
 @Target(AnnotationTarget.CLASS)
@@ -25,9 +27,9 @@ annotation class DiscordEmoji(
             val custom = discordEmoji.custom
 
             if (unicode.isNotEmpty()) {
-                return Emoji.fromUnicode(unicode)
+                return unicode.toUnicodeEmoji()
             } else if (formatted.isNotEmpty()) {
-                return Emoji.fromFormatted(formatted)
+                return formatted.toEmoji()
             } else {
                 val id = custom.id
                 val name = custom.name

@@ -1,6 +1,7 @@
 package dev.slne.discord.discord.interaction.command
 
 import dev.minn.jda.ktx.coroutines.await
+import dev.minn.jda.ktx.interactions.commands.*
 import dev.slne.discord.annotation.DiscordCommandMeta
 import dev.slne.discord.exception.DiscordException
 import dev.slne.discord.exception.command.CommandException
@@ -8,9 +9,9 @@ import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.exception.command.pre.PreCommandCheckException
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.RawMessages
-import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.entities.Member
-import net.dv8tion.jda.api.entities.User
+import dev.slne.discord.util.ExceptionFactory
+import net.dv8tion.jda.api.entities.*
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
 import net.dv8tion.jda.api.interactions.commands.CommandInteractionPayload
@@ -18,14 +19,14 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
+import org.apache.commons.lang3.DoubleRange
 import org.intellij.lang.annotations.Language
 import java.util.*
 import kotlin.reflect.full.findAnnotation
 
 abstract class DiscordCommand {
 
-    private var logger = ComponentLogger.logger(DiscordCommand::class.java)
-
+    private val logger = ComponentLogger.logger()
     open val subCommands: List<SubcommandData> = listOf()
     open val options: List<OptionData> = listOf()
 
@@ -56,7 +57,7 @@ abstract class DiscordCommand {
         user: User,
         guild: Guild,
         interaction: SlashCommandInteractionEvent,
-        hook: InteractionHook?
+        hook: InteractionHook
     ) = true
 
     private suspend fun performDiscordCommandChecks(
@@ -71,22 +72,19 @@ abstract class DiscordCommand {
             throw PreCommandCheckException(e)
         }
 
-        val member: Member = guild.retrieveMember(user).await()
-            ?: throw PreCommandCheckException(CommandExceptions.GENERIC.create())
+        val member = guild.retrieveMember(user).await()
+            ?: throw PreCommandCheckException(CommandExceptions.GENERIC())
 
         val guildConfig = guild.getGuildConfigOrThrow()
         val roles = guildConfig.discordGuild.roles
 
         val memberDiscordRoles = member.roles
-        val memberRoles = memberDiscordRoles.map { role ->
-            roles.filter { rolePermissions -> role.id in rolePermissions.discordRoleIds }
-        }.flatten()
-
+        val memberRoles = memberDiscordRoles
+            .flatMap { role -> roles.filter { rolePermissions -> role.id in rolePermissions.discordRoleIds } }
         val hasPermission = memberRoles.any { it.hasCommandPermission(permission) }
 
         if (!hasPermission) {
             hook.editOriginal(RawMessages.get("error.command.no-permission")).await()
-
             return false
         }
 
@@ -119,7 +117,7 @@ abstract class DiscordCommand {
 
     protected fun CommandInteractionPayload.getUserOrThrow(
         name: String
-    ) = getUser(name) ?: throw CommandExceptions.ARG_MISSING_USER.create()
+    ) = getUser(name) ?: throw CommandExceptions.ARG_MISSING_USER()
 
     protected fun CommandInteractionPayload.getString(
         name: String
@@ -130,4 +128,84 @@ abstract class DiscordCommand {
         name: String,
         @Language("markdown") errorMessage: String?
     ) = getString(name) ?: throw CommandException(errorMessage)
+
+    protected inline fun <reified T> CommandInteractionPayload.getOptionOrThrow(
+        name: String,
+        exception: ExceptionFactory.CommandExceptionFactory? = null,
+        @Language("markdown") exceptionMessage: String? = null
+    ): T {
+        val except = exception?.create() ?: exceptionMessage?.let { CommandException(it) }
+
+        return when (T::class.java) {
+            User::class.java -> getOption(name, OptionMapping::getAsUser) as? T
+                ?: throw except ?: CommandExceptions.ARG_MISSING_USER()
+
+            Member::class.java -> getOption(name, OptionMapping::getAsMember) as? T
+                ?: throw except ?: CommandExceptions.ARG_MISSING_USER()
+
+            Role::class.java -> getOption(name, OptionMapping::getAsRole) as? T
+                ?: throw except ?: CommandExceptions.ARG_MISSING_ROLE()
+
+            Integer::class.java, Int::class.java -> getOption(name, OptionMapping::getAsInt) as? T
+                ?: throw except ?: CommandExceptions.ARG_MISSING_NUMBER()
+
+            Long::class.java, java.lang.Long::class.java -> getOption(
+                name,
+                OptionMapping::getAsLong
+            ) as? T ?: throw except ?: CommandExceptions.ARG_MISSING_NUMBER()
+
+            Double::class.java -> getOption(name, OptionMapping::getAsDouble) as? T
+                ?: throw except ?: CommandExceptions.ARG_MISSING_NUMBER()
+
+            Boolean::class.java, java.lang.Boolean::class.java -> getOption(
+                name,
+                OptionMapping::getAsBoolean
+            ) as? T ?: throw except ?: CommandExceptions.ARG_MISSING_BOOLEAN()
+
+            String::class.java -> getOption(name, OptionMapping::getAsString) as? T ?: throw except
+                ?: CommandExceptions.ARG_MISSING_STRING()
+
+            Message.Attachment::class.java -> getOption(name, OptionMapping::getAsAttachment) as? T
+                ?: throw except ?: CommandExceptions.ARG_MISSING_ATTACHMENT()
+
+            IMentionable::class.java -> getOption(name, OptionMapping::getAsMentionable) as? T
+                ?: throw except ?: CommandExceptions.ARG_MISSING_USER()
+
+            else -> {
+                if (GuildChannel::class.java.isAssignableFrom(T::class.java)) {
+                    val channel = getOption(name, OptionMapping::getAsChannel) ?: throw except
+                        ?: CommandExceptions.ARG_MISSING_USER()
+                    when (channel) {
+                        is T -> channel
+                        else -> throw NoSuchElementException("Cannot resolve channel of type ${T::class.java.simpleName}")
+                    }
+                } else {
+                    throw NoSuchElementException("Type ${T::class.java.simpleName} is unsupported for getOption(name) resolution. Try updating or using a different type!")
+                }
+            }
+
+        }
+    }
+
+    protected inline fun <reified T> option(
+        name: String,
+        description: String,
+        required: Boolean = true,
+        autocomplete: Boolean = false,
+        builder: OptionData.() -> Unit = {}
+    ) = Option<T>(name, description, required, autocomplete, builder)
+
+    protected inline fun subcommand(
+        name: String,
+        description: String,
+        builder: SubcommandData.() -> Unit = {}
+    ) = Subcommand(name, description, builder)
+
+    protected fun OptionData.range(range: LongRange) = setRequiredRange(range.first, range.last)
+    protected fun OptionData.range(range: IntRange) =
+        setRequiredRange(range.first.toLong(), range.last.toLong())
+
+    protected fun OptionData.range(range: DoubleRange) =
+        setRequiredRange(range.minimum, range.maximum)
+
 }

@@ -22,7 +22,7 @@ private const val ID = "ticket-buttons"
     description = "Print the ticket button and embed.",
     permission = CommandPermission.TICKET_BUTTONS
 )
-class TicketButtonCommand : DiscordCommand() {
+object TicketButtonCommand : DiscordCommand() {
     override suspend fun internalExecute(
         interaction: SlashCommandInteractionEvent,
         hook: InteractionHook

@@ -2,7 +2,7 @@ package dev.slne.discord.discord.interaction.command.commands.ticket.members
 
 import dev.minn.jda.ktx.coroutines.await
 import dev.slne.discord.annotation.DiscordCommandMeta
-import dev.slne.discord.discord.interaction.command.checkUserNotBot
+import dev.slne.discord.discord.interaction.command.checkMemberNotBot
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand
 import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.guild.permission.CommandPermission
@@ -12,8 +12,6 @@ import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
-import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.OptionData
 
 
 private const val USER_OPTION = "user"
@@ -23,15 +21,12 @@ private const val USER_OPTION = "user"
     description = "Entferne einen Nutzer aus einem Ticket.",
     permission = CommandPermission.TICKET_REMOVE_USER
 )
-class TicketMemberRemoveCommand : TicketCommand() {
+object TicketMemberRemoveCommand : TicketCommand() {
 
     override val options = listOf(
-        OptionData(
-            OptionType.USER,
+        option<User>(
             USER_OPTION,
             RawMessages.get("interaction.command.ticket.member.remove.arg.member"),
-            true,
-            false
         )
     )
 
@@ -40,19 +35,18 @@ class TicketMemberRemoveCommand : TicketCommand() {
         interaction: SlashCommandInteractionEvent,
         hook: InteractionHook
     ) {
-        val user = interaction.getUserOrThrow(USER_OPTION)
-        user.checkUserNotBot(CommandExceptions.TICKET_BOT_REMOVE)
+        val member = interaction.getOptionOrThrow<Member>(USER_OPTION)
+        member.checkMemberNotBot(CommandExceptions.TICKET_BOT_REMOVE)
 
         val thread = interaction.getThreadChannelOrThrow()
         val ticketMembers = thread.retrieveThreadMembers().await()
-        val userMember = thread.guild.retrieveMember(user).await()
 
-        if (ticketMembers.none { it.id == userMember.id }) {
+        if (ticketMembers.none { it.id == member.id }) {
             throw CommandExceptions.TICKET_MEMBER_NOT_IN_TICKET.create()
         }
 
         val executor = interaction.user
-        removeTicketMember(userMember, executor, thread, hook)
+        removeTicketMember(member, executor, thread, hook)
     }
 
     private suspend fun removeTicketMember(

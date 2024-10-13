@@ -1,8 +1,16 @@
-package dev.slne.discord.spring.processor
+package dev.slne.discord.discord.interaction.command
 
 import dev.minn.jda.ktx.coroutines.await
 import dev.slne.discord.annotation.DiscordCommandMeta
-import dev.slne.discord.discord.interaction.command.DiscordCommand
+import dev.slne.discord.discord.interaction.command.commands.ticket.TicketButtonCommand
+import dev.slne.discord.discord.interaction.command.commands.ticket.TicketCloseCommand
+import dev.slne.discord.discord.interaction.command.commands.ticket.TicketDependenciesNotMetCommand
+import dev.slne.discord.discord.interaction.command.commands.ticket.members.TicketMemberAddCommand
+import dev.slne.discord.discord.interaction.command.commands.ticket.members.TicketMemberRemoveCommand
+import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistCommand
+import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistQueryCommand
+import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistRoleRemoveCommand
+import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistedCommand
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.objects.ObjectArrayList
@@ -13,14 +21,23 @@ import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import kotlin.reflect.full.findAnnotation
 
 object DiscordCommandManager {
-    private val logger = ComponentLogger.logger(DiscordCommandManager::class.java)
+    init {
+        register(WhitelistCommand)
+        register(WhitelistedCommand)
+        register(WhitelistQueryCommand)
+        register(WhitelistRoleRemoveCommand)
 
+        register(TicketButtonCommand)
+        register(TicketCloseCommand)
+        register(TicketDependenciesNotMetCommand)
+
+        register(TicketMemberAddCommand)
+        register(TicketMemberRemoveCommand)
+    }
+
+    private val logger = ComponentLogger.logger(DiscordCommandManager::class.java)
     private val commands: Object2ObjectMap<String, DiscordCommandHolder> =
         Object2ObjectOpenHashMap()
-
-    init {
-
-    }
 
     fun register(command: DiscordCommand) {
         val annotation = command::class.findAnnotation<DiscordCommandMeta>()

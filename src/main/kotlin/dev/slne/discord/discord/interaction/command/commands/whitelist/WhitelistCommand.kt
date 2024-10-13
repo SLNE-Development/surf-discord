@@ -6,7 +6,6 @@ import dev.slne.discord.annotation.DiscordCommandMeta
 import dev.slne.discord.discord.interaction.command.DiscordCommand
 import dev.slne.discord.discord.interaction.command.getThreadChannelOrThrow
 import dev.slne.discord.exception.command.CommandExceptions
-import dev.slne.discord.guild.DiscordGuild
 import dev.slne.discord.guild.getDiscordGuildByGuildId
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.MessageManager
@@ -19,8 +18,6 @@ import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
-import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.OptionData
 
 private const val USER_OPTION: String = "user"
 private const val MINECRAFT_OPTION: String = "minecraft"
@@ -31,46 +28,37 @@ private const val TWITCH_OPTION: String = "twitch"
     description = "Füge einen Spieler zur Whitelist hinzu.",
     permission = CommandPermission.WHITELIST
 )
-class WhitelistCommand() : DiscordCommand() {
+object WhitelistCommand : DiscordCommand() {
 
-    override val options: List<OptionData>
-        get() {
-            return listOf(
-                OptionData(
-                    OptionType.USER,
-                    USER_OPTION,
-                    RawMessages.get("interaction.command.ticket.whitelist.arg.user"),
-                    true
-                ),
-                OptionData(
-                    OptionType.STRING,
-                    MINECRAFT_OPTION,
-                    RawMessages.get("interaction.command.ticket.whitelist.arg.minecraft-name"),
-                    true
-                )
-                    .setRequiredRange(3, 16),
-                OptionData(
-                    OptionType.STRING,
-                    TWITCH_OPTION,
-                    RawMessages.get("interaction.command.ticket.whitelist.arg.twitch-name"),
-                    true
-                )
-            )
-        }
+    override val options = listOf(
+        option<User>(
+            USER_OPTION,
+            RawMessages.get("interaction.command.ticket.whitelist.arg.user")
+        ),
+        option<String>(
+            MINECRAFT_OPTION,
+            RawMessages.get("interaction.command.ticket.whitelist.arg.minecraft-name")
+        ) { range(3..16) },
+        option<String>(
+            TWITCH_OPTION,
+            RawMessages.get("interaction.command.ticket.whitelist.arg.twitch-name")
+        )
+    )
+
 
     override suspend fun internalExecute(
         interaction: SlashCommandInteractionEvent,
         hook: InteractionHook
     ) {
         val channel = interaction.getThreadChannelOrThrow()
-        val user = interaction.getUserOrThrow(USER_OPTION)
-        val minecraft = interaction.getStringOrThrow(
+        val user = interaction.getOptionOrThrow<User>(USER_OPTION)
+        val minecraft = interaction.getOptionOrThrow<String>(
             MINECRAFT_OPTION,
-            "Du musst einen Minecraft Namen angeben."
+            exceptionMessage = "Du musst einen Minecraft Namen angeben."
         )
-        val twitch = interaction.getStringOrThrow(
+        val twitch = interaction.getOptionOrThrow<String>(
             TWITCH_OPTION,
-            "Du musst einen Twitch Namen angeben."
+            exceptionMessage = "Du musst einen Twitch Namen angeben."
         )
         val discordId = user.id
         val executor = interaction.user
@@ -121,7 +109,7 @@ class WhitelistCommand() : DiscordCommand() {
             )
 
             if (createdWhitelist == null) {
-                throw CommandExceptions.TICKET_WHITELIST.create()
+                throw CommandExceptions.TICKET_WHITELIST()
             }
 
             addWhitelistedRole(interaction.guild, user)
@@ -138,14 +126,12 @@ class WhitelistCommand() : DiscordCommand() {
         }
     }
 
-    private suspend fun addWhitelistedRole(guild: Guild?, user: User) =
-        guild?.let {
-            getDiscordGuildByGuildId(guild.id)?.discordGuild.let { discordGuild: DiscordGuild? ->
-                discordGuild?.whitelistRoleId?.let { roleId ->
-                    guild.getRoleById(roleId)?.let { role ->
-                        guild.addRoleToMember(user, role).await()
-                    }
-                }
-            }
-        }
+    private suspend fun addWhitelistedRole(guild: Guild?, user: User) {
+        if (guild == null) return
+        val discordGuild = getDiscordGuildByGuildId(guild.id)?.discordGuild ?: return
+        val roleId = discordGuild.whitelistRoleId
+        val role = guild.getRoleById(roleId) ?: return
+
+        guild.addRoleToMember(user, role).await()
+    }
 }

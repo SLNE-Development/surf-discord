@@ -1,41 +1,44 @@
 package dev.slne.discord
 
+import dev.minn.jda.ktx.jdabuilder.cache
+import dev.minn.jda.ktx.jdabuilder.default
 import dev.slne.discord.config.botConfig
+import dev.slne.discord.discord.interaction.command.DiscordCommandManager
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenuManager
 import dev.slne.discord.settings.GatewayIntents
 import dev.slne.discord.spring.processor.ChannelCreationModalManager
 import dev.slne.discord.spring.processor.DiscordButtonManager
-import dev.slne.discord.spring.processor.DiscordCommandManager
 import dev.slne.discord.spring.processor.DiscordListenerManager
 import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
-import kotlin.system.exitProcess
 
 object DiscordBot {
 
-    private var logger = ComponentLogger.logger(DiscordBot::class.java)
+    private val logger = ComponentLogger.logger()
 
     lateinit var jda: JDA
-    lateinit var selectMenuManager: DiscordSelectMenuManager
 
     fun onLoad() {
         val botToken = botConfig.botToken
 
         if (botToken == null) {
             logger.error("Bot token is null. Please check your bot-connection.json file.")
-            exitProcess(1000)
+            ExitCodes.BOT_TOKEN_NOT_SET.exit()
         }
 
-        Thread.setDefaultUncaughtExceptionHandler { thread: Thread, throwable: Throwable? ->
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             logger.error("Uncaught exception in thread ${thread.name}", throwable)
         }
 
-        val builder = JDABuilder.createDefault(botToken).apply {
+        this.jda = default(
+            token = botToken,
+            intents = GatewayIntents.gatewayIntents
+        ) {
             setAutoReconnect(true)
-            enableCache(
+
+            cache += listOf(
                 CacheFlag.ACTIVITY,
                 CacheFlag.CLIENT_STATUS,
                 CacheFlag.EMOJI,
@@ -45,21 +48,19 @@ object DiscordBot {
                 CacheFlag.STICKER,
                 CacheFlag.SCHEDULED_EVENTS
             )
-            disableCache(CacheFlag.VOICE_STATE)
-            setEnabledIntents(GatewayIntents.gatewayIntents)
+            cache -= CacheFlag.VOICE_STATE
+
             setStatus(OnlineStatus.DO_NOT_DISTURB)
         }
-
-        this.jda = builder.build()
 
         try {
             jda.awaitReady()
         } catch (exception: InterruptedException) {
             logger.error("Failed to await ready.", exception)
+            ExitCodes.FAILED_AWAIT_READY_JDA.exit()
         }
 
         initObjects()
-
         logger.info("Discord Bot is ready")
     }
 
@@ -68,6 +69,7 @@ object DiscordBot {
         ChannelCreationModalManager
         DiscordButtonManager
         DiscordCommandManager
+        DiscordSelectMenuManager
     }
 
     fun onEnable() {

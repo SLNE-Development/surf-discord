@@ -20,10 +20,8 @@ import net.kyori.adventure.text.logger.slf4j.ComponentLogger
     description = "Entfernt alle Benutzer aus der Whitelist Rolle.",
     permission = CommandPermission.WHITELIST_ROLE
 )
-class WhitelistRoleRemoveCommand : DiscordCommand() {
-
-    private val logger: ComponentLogger =
-        ComponentLogger.logger(WhitelistRoleRemoveCommand::class.java)
+object WhitelistRoleRemoveCommand : DiscordCommand() {
+    private val logger = ComponentLogger.logger()
 
     override suspend fun internalExecute(
         interaction: SlashCommandInteractionEvent,
@@ -32,7 +30,7 @@ class WhitelistRoleRemoveCommand : DiscordCommand() {
         val guild = interaction.getGuildOrThrow()
         val guildConfig = guild.getGuildConfigOrThrow()
         val whitelistedRole = guild.getRoleById(guildConfig.discordGuild.whitelistRoleId)
-            ?: throw CommandExceptions.WHITELIST_ROLE_NOT_REGISTERED.create()
+            ?: throw CommandExceptions.WHITELIST_ROLE_NOT_REGISTERED()
 
         removeRoleFromMembers(guild, whitelistedRole, hook)
     }
@@ -42,29 +40,43 @@ class WhitelistRoleRemoveCommand : DiscordCommand() {
         whitelistedRole: Role,
         hook: InteractionHook
     ) {
-        hook.editOriginal(
-            RawMessages.get("interaction.command.ticket.whitelist.role.remove.removing")
-        ).await()
+        hook.editOriginal(RawMessages.get("interaction.command.ticket.whitelist.role.remove.removing"))
+            .await()
 
-        guild.findMembersWithRoles(whitelistedRole)
-            .onSuccess { members: List<Member> ->
-                suspend {
-                    for (member in members) {
-                        guild.removeRoleFromMember(member, whitelistedRole).await()
-                    }
+        val failed = mutableListOf<Member>()
 
-                    hook.editOriginal(
-                        RawMessages.get(
-                            "interaction.command.ticket.whitelist.role.remove.removed",
-                            members.size
-                        )
-                    ).await()
+        try {
+            val members = guild.findMembersWithRoles(whitelistedRole).await()
+            logger.info("Removing ${members.size} members from whitelist role")
+
+            try {
+                for (member in members) {
+                    guild.removeRoleFromMember(member, whitelistedRole).await()
                 }
-            }.onError { error ->
-                suspend {
-                    logger.error("Error while removing role from members", error)
-                    hook.editOriginal(RawMessages.get("error.generic")).await()
-                }
+            } catch (error: Throwable) {
+                logger.error("Error while removing role from members", error)
+                failed.addAll(members)
             }
+
+            hook.editOriginal(
+                RawMessages.get(
+                    "interaction.command.ticket.whitelist.role.remove.removed",
+                    members.size - failed.size
+                )
+            ).await()
+        } catch (error: Throwable) {
+            logger.error("Error while fetching members with role", error)
+            hook.editOriginal(RawMessages.get("error.generic")).await()
+        }
+
+        if (failed.isNotEmpty()) {
+            hook.editOriginal(
+                RawMessages.get(
+                    "interaction.command.ticket.whitelist.role.remove.failed",
+                    failed.size,
+                    failed.joinToString(", ") { it.effectiveName }
+                )
+            ).await()
+        }
     }
 }

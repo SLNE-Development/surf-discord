@@ -2,10 +2,10 @@ package dev.slne.discord.discord.interaction.button.buttons
 
 import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.messages.Embed
-import dev.slne.discord.DiscordBot
 import dev.slne.discord.annotation.DiscordButton
 import dev.slne.discord.annotation.DiscordEmoji
 import dev.slne.discord.discord.interaction.button.DiscordButtonHandler
+import dev.slne.discord.discord.interaction.select.DiscordSelectMenuManager
 import dev.slne.discord.discord.interaction.select.menus.TicketsMenu
 import dev.slne.discord.message.EmbedColors
 import dev.slne.discord.message.RawMessages.Companion.get
@@ -20,10 +20,10 @@ import net.dv8tion.jda.api.interactions.components.selections.SelectMenu
     style = ButtonStyle.SUCCESS,
     emoji = DiscordEmoji(unicode = "🎫")
 )
-class OpenTicketButton : DiscordButtonHandler {
+object OpenTicketButton : DiscordButtonHandler {
     override suspend fun onClick(event: ButtonInteractionEvent) {
         TicketsMenu(event.id).apply {
-            DiscordBot.selectMenuManager.addMenu(this)
+            DiscordSelectMenuManager.addMenu(this)
 
             sendEmbed(build(), event.interaction)
         }
@@ -36,7 +36,11 @@ class OpenTicketButton : DiscordButtonHandler {
             color = EmbedColors.SELECT_TICKET_TYPE
         }
 
-        interaction.deferReply(true).await().sendMessageEmbeds(embed).setActionRow(menu)
-            .setEphemeral(true).await()
+        interaction.deferReply(true)
+            .await()
+            .sendMessageEmbeds(embed)
+            .setActionRow(menu)
+            .setEphemeral(true)
+            .await()
     }
 }
