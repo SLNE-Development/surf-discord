@@ -13,14 +13,6 @@ object DiscordModalListener {
         DiscordBot.jda.listener<ModalInteractionEvent> { event ->
             val interaction = event.interaction
             val modalId = interaction.modalId
-            val modal = DiscordModalManager.getModal(modalId)
-
-            if (modal != null) {
-                modal.execute(event)
-
-                return@listener
-            }
-
             val advancedModal = DiscordModalManager.getAdvancedModal(modalId, event.user.id)
 
             if (advancedModal != null) {
