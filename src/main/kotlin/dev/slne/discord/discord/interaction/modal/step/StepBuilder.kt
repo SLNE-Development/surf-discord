@@ -1,11 +1,8 @@
 package dev.slne.discord.discord.interaction.modal.step
 
-import java.util.function.Function
-
 class StepBuilder {
-
-    val steps: MutableList<ModalStep> = mutableListOf()
-    var lastStep: ModalStep? = null
+    val steps = mutableListOf<ModalStep>()
+    private var lastStep: ModalStep? = null
 
     private constructor(firstStep: ModalStep) {
         lastStep = firstStep
@@ -15,25 +12,19 @@ class StepBuilder {
 
     private constructor()
 
-    fun then(step: Function<ModalStep, ModalStep>): StepBuilder {
+    fun then(step: (ModalStep) -> ModalStep) = apply {
+        val lastStep = lastStep
         check(lastStep != null) { "Cannot add a step to an empty builder" }
 
-        lastStep = step.apply(lastStep!!)
-        steps.add(lastStep!!)
-
-        return this
+        this.lastStep = step(lastStep)
+        steps.add(lastStep)
     }
 
     val firstStep: ModalStep?
-        get() = steps.first()
+        get() = steps.firstOrNull()
 
     companion object {
-        fun startWith(firstStep: ModalStep): StepBuilder {
-            return StepBuilder(firstStep)
-        }
-
-        fun empty(): StepBuilder {
-            return StepBuilder()
-        }
+        fun startWith(firstStep: ModalStep) = StepBuilder(firstStep)
+        fun empty() = StepBuilder()
     }
 }

@@ -10,16 +10,23 @@ import dev.slne.discord.ticket.TicketType
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 
-@ChannelCreationModal(ticketType = TicketType.REPORT)
+@ChannelCreationModal(
+    ticketType = TicketType.REPORT,
+    modalId = ReportTicketChannelCreationModal.MODAL_ID
+)
 class ReportTicketChannelCreationModal :
     DiscordStepChannelCreationModal(get("modal.report.title")) {
-        
+
     override fun buildSteps(): StepBuilder {
         return StepBuilder.startWith(ReportTicketSelectTypeStep())
     }
 
-    override fun getOpenMessages(messages: MessageQueue, thread: ThreadChannel, user: User) {
-        messages.addMessage(user.asMention)
-        messages.addMessage(get("modal.report.message"))
+    override fun MessageQueue.getOpenMessages(thread: ThreadChannel, user: User) {
+        addMessage(user.asMention)
+        addMessage(get("modal.report.message"))
+    }
+
+    companion object {
+        const val MODAL_ID = "report"
     }
 }

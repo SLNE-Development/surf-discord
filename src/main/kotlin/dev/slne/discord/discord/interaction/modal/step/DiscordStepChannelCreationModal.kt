@@ -1,10 +1,15 @@
 package dev.slne.discord.discord.interaction.modal.step
 
 import dev.minn.jda.ktx.coroutines.await
+import dev.minn.jda.ktx.interactions.components.InlineModal
+import dev.minn.jda.ktx.interactions.components.replyModal
+import dev.minn.jda.ktx.messages.MessageCreate
 import dev.slne.discord.annotation.ChannelCreationModal
+import dev.slne.discord.discord.interaction.modal.ChannelCreationModalManager
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager
-import dev.slne.discord.spring.processor.ChannelCreationModalManager
+import dev.slne.discord.message.RawMessages
 import dev.slne.discord.ticket.Ticket
+import dev.slne.discord.ticket.TicketChannelHelper
 import dev.slne.discord.ticket.result.TicketCreateResult
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
@@ -16,38 +21,35 @@ import net.dv8tion.jda.api.interactions.InteractionHook
 import net.dv8tion.jda.api.interactions.callbacks.IModalCallback
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
-import net.dv8tion.jda.api.interactions.modals.Modal
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.jetbrains.annotations.ApiStatus
+import kotlin.reflect.full.findAnnotation
 
-abstract class DiscordStepChannelCreationModal protected constructor(
-    private val title: String?
+abstract class DiscordStepChannelCreationModal(
+    private val title: String
 ) {
-    private val logger = ComponentLogger.logger(DiscordStepChannelCreationModal::class.java)
-
+    private val logger = ComponentLogger.logger(javaClass)
     private val steps: List<ModalStep> by lazy { buildSteps().steps }
+
+    private val ticketType = this::class.findAnnotation<ChannelCreationModal>()?.let {
+        ChannelCreationModalManager.getTicketType(it)
+    } ?: error("Creation modal must be annotated with @ChannelCreationModal")
 
     @ApiStatus.OverrideOnly
     protected abstract fun buildSteps(): StepBuilder
 
-    private fun buildModalComponents(): ModalComponentBuilder {
-        val builder = ModalComponentBuilder()
-
-        steps.forEach { it.fillModalComponents(builder) }
-
-        return builder
+    private fun InlineModal.buildModalComponents() {
+        steps.forEach { it.fillModalComponents(this) }
     }
 
     suspend fun startChannelCreation(
-        interaction: StringSelectInteraction
+        interaction: StringSelectInteraction,
+        guild: Guild
     ) {
         val hook = interaction.deferReply(true).await()
 
-        if (checkTicketExists(interaction.guild, interaction.user)) {
-            hook.editOriginal(
-                "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo."
-            ).await()
-
+        if (checkTicketExists(guild, interaction.user)) {
+            hook.editOriginal(RawMessages.get("error.ticket.type.already-open")).await()
             return
         }
 
@@ -58,7 +60,6 @@ abstract class DiscordStepChannelCreationModal protected constructor(
 
         if (!hasSelectionStep()) {
             replyModal(interaction)
-
             return
         }
 
@@ -68,23 +69,21 @@ abstract class DiscordStepChannelCreationModal protected constructor(
     private suspend fun startChannelCreationWithSelectionSteps(
         interaction: StringSelectInteraction,
         hook: InteractionHook
-    ) = replyModalAfterSelectionSteps(
-        executeSelectionSteps(hook), interaction
-    )
+    ) = replyModalAfterSelectionSteps(executeSelectionSteps(hook), interaction)
 
     private suspend fun replyModalAfterSelectionSteps(
         lastSelectionEvent: StringSelectInteractionEvent?,
         interaction: StringSelectInteraction,
     ) {
         val callback = lastSelectionEvent ?: interaction
-        lastSelectionEvent?.message?.delete()?.queue()
+        lastSelectionEvent?.message?.delete()?.await()
 
         replyModal(callback)
     }
 
     private suspend fun replyModal(
         modalCallback: IModalCallback,
-    ) = modalCallback.replyModal(buildModal()).await()
+    ) = modalCallback.replyModal(id, title) { buildModalComponents() }.await()
 
     suspend fun handleUserSubmitModal(event: ModalInteractionEvent) {
         val modalSteps = steps
@@ -94,7 +93,7 @@ abstract class DiscordStepChannelCreationModal protected constructor(
             return
         }
 
-        if (!preChannelCreation(event, modalSteps)) {
+        if (!preThreadCreation(event, modalSteps)) {
             return
         }
 
@@ -104,17 +103,8 @@ abstract class DiscordStepChannelCreationModal protected constructor(
         postThreadCreated(ticket, result, event, user)
     }
 
-    private fun checkTicketExists(guild: Guild?, user: User): Boolean = TODO("Implement")
-
-    private fun buildModal(): Modal {
-        val builder: Modal.Builder = Modal.create(id, title!!)
-
-        for (component in buildModalComponents().components) {
-            builder.addActionRow(component)
-        }
-
-        return builder.build()
-    }
+    private fun checkTicketExists(guild: Guild, user: User): Boolean =
+        TicketChannelHelper.checkTicketExists(guild, ticketType, user)
 
     private suspend fun executeSelectionSteps(
         hook: InteractionHook
@@ -133,9 +123,10 @@ abstract class DiscordStepChannelCreationModal protected constructor(
             if (step is ModalSelectionStep) {
                 lastStepMessage?.delete()?.await()
 
-                lastStepMessage = hook.sendMessage(step.selectTitle)
-                    .setEphemeral(true)
-                    .setActionRow(step.createSelection()).await()
+                lastStepMessage = hook.sendMessage(MessageCreate {
+                    content = step.selectTitle
+                    actionRow(step.createSelection())
+                }).setEphemeral(true).await()
 
                 lastStepEvent = step.event
             }
@@ -167,13 +158,13 @@ abstract class DiscordStepChannelCreationModal protected constructor(
         return true
     }
 
-    private suspend fun preChannelCreation(
+    private suspend fun preThreadCreation(
         event: ModalInteractionEvent,
         steps: List<ModalStep>
     ): Boolean {
         for (step: ModalStep in steps) {
             try {
-                step.runPreThreadCreationAsync()
+                step.runPreThreadCreation()
             } catch (exception: ModalStep.ModuleStepChannelCreationException) {
                 reply(event, "${exception.message}")
 
@@ -202,12 +193,12 @@ abstract class DiscordStepChannelCreationModal protected constructor(
             TicketCreateResult.SUCCESS -> handleSuccess(thread, event, user)
             TicketCreateResult.ALREADY_EXISTS -> reply(
                 event,
-                "Du hast bereits ein Ticket mit dem angegeben Typ geöffnet. Sollte dies nicht der Fall sein, wende dich per Ping an @notammo."
+                RawMessages.get("error.ticket.type.already-open")
             )
 
             TicketCreateResult.MISSING_PERMISSIONS -> reply(
                 event,
-                "Du hast nicht die benötigten Berechtigungen, um ein Ticket zu erstellen!"
+                RawMessages.get("error.ticket.permission.open")
             )
 
             else -> {
@@ -217,7 +208,10 @@ abstract class DiscordStepChannelCreationModal protected constructor(
         }
     }
 
-    private suspend fun reply(callback: IReplyCallback, message: String) {
+    private suspend fun reply(
+        callback: IReplyCallback,
+        message: String
+    ) { // TODO: is this even correct?
         if (callback.isAcknowledged) {
             callback.hook.sendMessage(message).setEphemeral(true).await()
         } else {
@@ -231,10 +225,8 @@ abstract class DiscordStepChannelCreationModal protected constructor(
         user: User
     ) {
         val message = buildString {
-            append("Dein \"")
-            append(ticketType.displayName)
-            append("\"-Ticket wurde erfolgreich erstellt! ")
-
+            append(RawMessages.get("ticket.open.success", ticketType.displayName))
+            ticketType
             append(thread.asMention)
         }
 
@@ -245,7 +237,7 @@ abstract class DiscordStepChannelCreationModal protected constructor(
     private suspend fun doWithCreatedThread(thread: ThreadChannel, user: User) {
         val messages = MessageQueue()
 
-        getOpenMessages(messages, thread, user)
+        messages.getOpenMessages(thread, user)
 
         steps.forEach { it.getOpenMessages(messages, thread) }
 
@@ -266,7 +258,7 @@ abstract class DiscordStepChannelCreationModal protected constructor(
     }
 
     @ApiStatus.OverrideOnly
-    protected open fun getOpenMessages(messages: MessageQueue, thread: ThreadChannel, user: User) {
+    protected open fun MessageQueue.getOpenMessages(thread: ThreadChannel, user: User) {
         // Override if necessary
     }
 
@@ -278,10 +270,6 @@ abstract class DiscordStepChannelCreationModal protected constructor(
     private fun hasSelectionStep() = steps.any { it.hasSelectionStep() }
 
     private val id = ChannelCreationModalManager.getModalId(
-        javaClass.getAnnotation(ChannelCreationModal::class.java)
-    )
-
-    private val ticketType = ChannelCreationModalManager.getTicketType(
         javaClass.getAnnotation(ChannelCreationModal::class.java)
     )
 }

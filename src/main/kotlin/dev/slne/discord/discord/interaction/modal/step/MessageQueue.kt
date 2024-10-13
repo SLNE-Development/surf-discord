@@ -10,25 +10,16 @@ class MessageQueue {
     private val messageLines = mutableListOf<String>()
 
     @Synchronized
-    fun addMessage(message: String): MessageQueue {
-        messageLines.addAll(
-            listOf(
-                *message.split("\n".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            )
-        )
-
-        return this
+    fun addMessage(message: String) = apply {
+        messageLines.addAll(message.lineSequence().filter { it.isNotEmpty() }.toList())
     }
 
     @Synchronized
-    fun addEmptyLine(): MessageQueue {
-        return addMessage(" ")
-    }
+    fun addEmptyLine() = apply { addMessage(" ") }
 
     @Synchronized
-    fun addMessage(message: String, vararg args: Any?): MessageQueue {
-        return addMessage(String.format(message, *args))
-    }
+    fun addMessage(message: String, vararg args: Any?) =
+        apply { addMessage(String.format(message, *args)) }
 
     @Synchronized
     fun buildMessages(): LinkedList<String> {

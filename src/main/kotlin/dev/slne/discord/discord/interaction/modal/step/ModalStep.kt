@@ -1,5 +1,8 @@
 package dev.slne.discord.discord.interaction.modal.step
 
+import dev.minn.jda.ktx.interactions.components.InlineModal
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import org.jetbrains.annotations.ApiStatus
@@ -9,12 +12,14 @@ abstract class ModalStep {
     val children: MutableList<ModalStep> by lazy { buildChildSteps().steps }
 
     @ApiStatus.OverrideOnly
-    protected abstract fun buildModalComponents(builder: ModalComponentBuilder)
+    protected abstract fun InlineModal.buildModalComponents()
 
-    fun fillModalComponents(builder: ModalComponentBuilder) {
-        buildModalComponents(builder)
+    fun fillModalComponents(modal: InlineModal) {
+        modal.buildModalComponents()
 
-        children.forEach { child -> child.fillModalComponents(builder) }
+        for (child in children) {
+            child.fillModalComponents(modal)
+        }
     }
 
     @ApiStatus.OverrideOnly
@@ -28,33 +33,35 @@ abstract class ModalStep {
         children.forEach { it.runVerifyModalInput(event) }
     }
 
-    protected fun getRequiredInput(event: ModalInteractionEvent, key: String) =
-        event.getValue(key)?.asString
-            ?: throw ModalStepInputVerificationException("Missing required input: $key")
-
     protected fun getOptionalInput(
         event: ModalInteractionEvent,
         key: String
     ) = event.getValue(key)?.asString
 
+    protected fun getInput(event: ModalInteractionEvent, key: String) =
+        getOptionalInput(event, key)
+            ?: throw ModalStepInputVerificationException("Missing required input: $key")
+
+    protected operator fun ModalInteractionEvent.get(key: String) = getInput(this, key)
+
     @ApiStatus.OverrideOnly
-    protected suspend fun prepareThreadCreationAsync() {
+    protected suspend fun prepareThreadCreation() {
         // Override to implement preparation logic
     }
 
-    suspend fun runPreThreadCreationAsync() {
-        prepareThreadCreationAsync()
+    suspend fun runPreThreadCreation(): Unit = withContext(Dispatchers.IO) {
+        prepareThreadCreation()
 
-        children.forEach { it.runPreThreadCreationAsync() }
+        children.forEach { it.runPreThreadCreation() }
     }
 
     @ApiStatus.OverrideOnly
-    protected open fun buildOpenMessages(messages: MessageQueue, thread: ThreadChannel) {
+    protected open fun MessageQueue.buildOpenMessages(thread: ThreadChannel) {
         // Override to add custom open messages
     }
 
     fun getOpenMessages(messages: MessageQueue, thread: ThreadChannel) {
-        buildOpenMessages(messages, thread)
+        messages.buildOpenMessages(thread)
 
         children.forEach { it.getOpenMessages(messages, thread) }
     }
@@ -88,14 +95,16 @@ abstract class ModalStep {
 
     open class ModalStepInputVerificationException(message: String) : Exception(message) {
         companion object {
+            @JvmStatic
             @Serial
-            private const val serialVersionUID = 7427250171852391L
+            private val serialVersionUID = 7427250171852391L
         }
     }
 
     open class ModuleStepChannelCreationException(message: String) :
         ModalStepInputVerificationException(message) {
         companion object {
+            @JvmStatic
             @Serial
             private val serialVersionUID = -4690438162011591307L
         }

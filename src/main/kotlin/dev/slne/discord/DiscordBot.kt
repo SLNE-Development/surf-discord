@@ -4,11 +4,11 @@ import dev.minn.jda.ktx.jdabuilder.cache
 import dev.minn.jda.ktx.jdabuilder.default
 import dev.slne.discord.config.botConfig
 import dev.slne.discord.discord.interaction.command.DiscordCommandManager
+import dev.slne.discord.discord.interaction.modal.ChannelCreationModalManager
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenuManager
+import dev.slne.discord.listener.DiscordListenerManager
 import dev.slne.discord.settings.GatewayIntents
-import dev.slne.discord.spring.processor.ChannelCreationModalManager
 import dev.slne.discord.spring.processor.DiscordButtonManager
-import dev.slne.discord.spring.processor.DiscordListenerManager
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.utils.cache.CacheFlag

@@ -9,8 +9,7 @@ object DiscordButtonListener {
     init {
         DiscordBot.jda.listener<ButtonInteractionEvent> { event ->
             val id = event.button.id ?: return@listener
-
-            DiscordButtonManager.getHandler(id)?.handler?.onClick(event)
+            DiscordButtonManager.getHandler(id)?.handler?.apply { event.onClick() }
         }
     }
 }

@@ -21,11 +21,11 @@ import net.dv8tion.jda.api.interactions.components.selections.SelectMenu
     emoji = DiscordEmoji(unicode = "🎫")
 )
 object OpenTicketButton : DiscordButtonHandler {
-    override suspend fun onClick(event: ButtonInteractionEvent) {
-        TicketsMenu(event.id).apply {
+    override suspend fun ButtonInteractionEvent.onClick() {
+        TicketsMenu(id).apply {
             DiscordSelectMenuManager.addMenu(this)
 
-            sendEmbed(build(), event.interaction)
+            sendEmbed(build(), interaction)
         }
     }
 

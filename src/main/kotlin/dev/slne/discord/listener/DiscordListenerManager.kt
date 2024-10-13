@@ -1,4 +1,4 @@
-package dev.slne.discord.spring.processor
+package dev.slne.discord.listener
 
 import dev.slne.discord.discord.interaction.modal.step.ModalSelectionStep
 import dev.slne.discord.listener.interaction.button.DiscordButtonListener
