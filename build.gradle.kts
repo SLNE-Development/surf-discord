@@ -10,8 +10,9 @@ plugins {
     id("com.gradleup.shadow") version "8.3.3"
 
     kotlin("jvm") version "2.0.20"
-    kotlin("plugin.spring") version "1.9.25"
     kotlin("plugin.serialization") version "2.0.21"
+    kotlin("plugin.noarg") version "2.0.21"
+
     application
 }
 
@@ -48,6 +49,12 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.14")
     implementation("com.squareup.okhttp3:okhttp-coroutines:5.0.0-alpha.14")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+
+    // https://mvnrepository.com/artifact/org.hibernate.orm/hibernate-core
+    implementation("org.hibernate.orm:hibernate-core:6.6.1.Final")
+// https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
+    runtimeOnly("org.mariadb.jdbc:mariadb-java-client:3.4.1")
+
 
     implementation(libs.fastutil)
     implementation(libs.configurate.yaml)

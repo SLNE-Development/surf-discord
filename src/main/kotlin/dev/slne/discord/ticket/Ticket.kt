@@ -4,23 +4,23 @@ import dev.slne.discord.DiscordBot
 import dev.slne.discord.message.Messages
 import dev.slne.discord.ticket.message.TicketMessage
 import dev.slne.discord.ticket.result.TicketCreateResult
-import net.dv8tion.jda.api.entities.Guild
+import jakarta.persistence.*
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.Role
-import net.dv8tion.jda.api.entities.User
 import java.time.ZonedDateTime
 import java.util.*
 
+@Entity
 class Ticket(
-    guild: Guild?,
-    ticketAuthor: User?,
-    ticketType: TicketType?
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long?,
+
+    @Column(nullable = false)
+    val ticketId: UUID
+
 ) {
-    constructor() : this(null, null, null)
-
-    var id: Long = -1
-
-    var ticketId: UUID? = null
 
     var openedAt: ZonedDateTime = ZonedDateTime.now()
 
