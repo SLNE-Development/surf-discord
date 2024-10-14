@@ -12,7 +12,7 @@ object TicketService {
 
     private val logger = ComponentLogger.logger(TicketService::class.java)
 
-    private var fetched = false
+    private var fetched = true // Only for testing
     private val pendingTickets: ObjectList<Ticket> = ObjectLists.synchronize(
         ObjectArrayList(1)
     )
@@ -56,11 +56,11 @@ object TicketService {
 
     fun getTicketByThreadId(threadId: String) = tickets.firstOrNull { it.threadId == threadId }
 
-    fun createTicket(ticket: Ticket): Ticket = TODO("Implement")
+    fun createTicket(ticket: Ticket): Ticket = ticket
 
-    fun updateTicket(ticket: Ticket): Ticket = TODO("Implement")
+    fun updateTicket(ticket: Ticket): Ticket = ticket
 
-    fun closeTicket(ticket: Ticket): Ticket = TODO("Implement")
+    fun closeTicket(ticket: Ticket): Ticket = ticket
 
     suspend fun addTicketMessage(
         ticket: Ticket,

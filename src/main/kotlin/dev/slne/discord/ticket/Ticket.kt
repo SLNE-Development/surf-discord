@@ -1,8 +1,6 @@
 package dev.slne.discord.ticket
 
-import dev.minn.jda.ktx.coroutines.await
 import dev.slne.discord.DiscordBot
-import dev.slne.discord.guild.getDiscordGuildByGuildId
 import dev.slne.discord.message.Messages
 import dev.slne.discord.ticket.message.TicketMessage
 import dev.slne.discord.ticket.result.TicketCreateResult
@@ -97,22 +95,11 @@ class Ticket(
     val closeReasonOrDefault: String
         get() = closedReason ?: Messages.DEFAULT_TICKET_CLOSED_REASON
 
-    suspend fun openFromButton(): TicketCreateResult { // TODO: 14.10.2024 18:56 - remove exclamations
-        val channelId =
-            getDiscordGuildByGuildId(guildId!!)!!.discordGuild.ticketChannels[ticketType]!!
-        val textChannelById = guild?.getTextChannelById(channelId)!!
+    suspend fun openFromButton(): TicketCreateResult = TicketCreator.openTicket(this)
 
-        TicketChannelHelper.createThread(
-            this,
-            TicketChannelHelper.generateTicketName(ticketType, ticketAuthor!!.await()),
-            textChannelById
-        )
-
-        return TicketCreateResult.SUCCESS
-    }
 
     suspend fun addTicketMessage(fromTicketAndMessage: TicketMessage): TicketMessage =
-        TODO("Implement")
+        fromTicketAndMessage // TODO: Implement
 
     suspend fun save(): Ticket = this // TODO: Implement
 }

@@ -81,7 +81,7 @@ object TicketCreator {
         }
     }
 
-    suspend fun openTicket(ticket: Ticket, afterOpen: suspend () -> Unit): TicketCreateResult {
+    suspend fun openTicket(ticket: Ticket, afterOpen: suspend () -> Unit = {}): TicketCreateResult {
         contract {
             callsInPlace(afterOpen, InvocationKind.EXACTLY_ONCE)
         }
