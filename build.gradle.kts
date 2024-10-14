@@ -44,6 +44,7 @@ dependencies {
     implementation("jakarta.annotation:jakarta.annotation-api:3.0.0")
     implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
     implementation("ch.qos.logback:logback-classic:1.5.6")
+    implementation("org.danilopianini:khttp:1.6.3")
 
     implementation(libs.fastutil)
     implementation(libs.configurate.yaml)

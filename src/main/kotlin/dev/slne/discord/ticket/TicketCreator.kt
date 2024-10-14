@@ -47,6 +47,10 @@ object TicketCreator {
         ticketChannel: TextChannel,
         callback: suspend () -> Unit
     ): TicketCreateResult {
+        contract {
+            callsInPlace(callback, InvocationKind.EXACTLY_ONCE)
+        }
+
         val result = TicketChannelHelper.createThread(ticket, ticketName, ticketChannel)
 
         if (result != TicketCreateResult.SUCCESS) {
@@ -63,6 +67,10 @@ object TicketCreator {
         author: User,
         runnable: suspend () -> Unit
     ) {
+        contract {
+            callsInPlace(runnable, InvocationKind.EXACTLY_ONCE)
+        }
+
         val ticketType = ticket.ticketType
         val channel = ticket.thread ?: return
 

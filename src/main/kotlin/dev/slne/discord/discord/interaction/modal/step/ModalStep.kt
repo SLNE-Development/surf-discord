@@ -68,10 +68,11 @@ abstract class ModalStep {
     }
 
     @ApiStatus.OverrideOnly
-    protected fun onPostThreadCreated(thread: ThreadChannel) {
+    protected open suspend fun onPostThreadCreated(thread: ThreadChannel) {
+        // Override to add custom post thread creation logic
     }
 
-    fun runPostThreadCreated(thread: ThreadChannel) {
+    suspend fun runPostThreadCreated(thread: ThreadChannel) {
         onPostThreadCreated(thread)
 
         children.forEach { it.runPostThreadCreated(thread) }

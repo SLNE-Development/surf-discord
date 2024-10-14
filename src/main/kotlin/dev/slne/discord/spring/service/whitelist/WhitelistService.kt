@@ -13,9 +13,9 @@ object WhitelistService {
     suspend fun getWhitelistByDiscordId(discordId: String): WhitelistDTO? = TODO("Implement")
 
     suspend fun checkWhitelists(
-        uuid: UUID?,
-        discordId: String?,
-        twitchLink: String?
+        uuid: UUID? = null,
+        discordId: String? = null,
+        twitchLink: String? = null
     ): List<WhitelistDTO> = TODO("Implement")
 
     suspend fun isWhitelisted(
