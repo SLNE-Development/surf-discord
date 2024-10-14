@@ -42,7 +42,6 @@ abstract class DiscordStepChannelCreationModal(
     protected abstract fun buildSteps(): StepBuilder
 
     private fun InlineModal.buildModalComponents(interaction: StringSelectInteraction) {
-        println("steps: $steps")
         steps.forEach { it.fillModalComponents(this, interaction) }
     }
 
@@ -69,7 +68,6 @@ abstract class DiscordStepChannelCreationModal(
         )
 
         if (!hasSelectionStep()) {
-            println("No selection step")
             replyModal(interaction)
             return
         }
@@ -96,23 +94,16 @@ abstract class DiscordStepChannelCreationModal(
         lastSelectionEvent: StringSelectInteractionEvent?,
         interaction: StringSelectInteraction,
     ) {
-        println("lastSelectionEvent: $lastSelectionEvent")
         val callback = lastSelectionEvent ?: interaction
-        lastSelectionEvent?.message?.delete()?.await()
 
         replyModal(callback)
+        lastSelectionEvent?.message?.delete()?.await()
     }
 
     private suspend fun replyModal(
         modalCallback: StringSelectInteraction,
-    ) {
+    ) = modalCallback.replyModal(id, title) { buildModalComponents(modalCallback) }.await()
 
-        println("Replying modal with id: $id")
-
-        modalCallback.replyModal(id, title) {
-            buildModalComponents(modalCallback)
-        }.await()
-    }
 
     suspend fun handleUserSubmitModal(event: ModalInteractionEvent) {
         val modalSteps = steps

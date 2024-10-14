@@ -20,6 +20,7 @@ abstract class ModalSelectionStep(
 
     var selected: String? = null
     private var event: StringSelectInteractionEvent? = null
+    private var onSelectionCallback: ((StringSelectInteractionEvent) -> Unit)? = null
 
     init {
         steps[id] = this
@@ -33,6 +34,7 @@ abstract class ModalSelectionStep(
     private fun setSelected(selected: String, event: StringSelectInteractionEvent) {
         this.selected = selected
         this.event = event
+        onSelectionCallback?.invoke(event)
     }
 
     suspend fun awaitSelection(): StringSelectInteractionEvent =
@@ -40,7 +42,7 @@ abstract class ModalSelectionStep(
             if (event != null) {
                 continuation.resume(event!!)
             } else {
-                onSelection {
+                onSelectionCallback = {
                     if (continuation.isActive) {
                         continuation.resume(it)
                     }
@@ -48,13 +50,7 @@ abstract class ModalSelectionStep(
             }
         }
 
-    private fun onSelection(callback: (StringSelectInteractionEvent) -> Unit) {
-        // Call the callback when the selection is made
-        ModalSelectionStepListener.listeners[id] = callback
-    }
-
     object ModalSelectionStepListener {
-        val listeners = mutableMapOf<String, (StringSelectInteractionEvent) -> Unit>()
 
         init {
             DiscordBot.jda.listener<StringSelectInteractionEvent> { event ->
@@ -62,7 +58,6 @@ abstract class ModalSelectionStep(
                 val selected = event.values.first()
 
                 step.setSelected(selected, event)
-                listeners[step.id]?.invoke(event)
             }
         }
     }

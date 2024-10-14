@@ -5,6 +5,7 @@ import dev.minn.jda.ktx.interactions.components.SelectOption
 import dev.slne.discord.discord.interaction.modal.step.MessageQueue
 import dev.slne.discord.discord.interaction.modal.step.ModalSelectionStep
 import dev.slne.discord.message.RawMessages.Companion.get
+import dev.slne.discord.message.translatable
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
@@ -65,7 +66,7 @@ class ReportTicketGriefingStep : ModalSelectionStep(
 
         paragraph(
             ADDITIONAL_INFORMATION_INPUT,
-            get("modal.report.step.griefing.input.additional-info.label"),
+            translatable("modal.report.step.griefing.input.additional-info.label"),
             placeholder = get("modal.report.step.griefing.input.additional-info.placeholder"),
             required = false
         )
@@ -93,14 +94,14 @@ class ReportTicketGriefingStep : ModalSelectionStep(
         )
         addMessage("> $whatGriefed")
 
-        additionalInformation?.let {
+        if (!additionalInformation.isNullOrEmpty()) {
             addEmptyLine()
             addMessage(
                 "## " + get(
                     "modal.report.step.griefing.input.additional-info.label"
                 )
             )
-            addMessage("> $it")
+            addMessage("> $additionalInformation")
         }
     }
 

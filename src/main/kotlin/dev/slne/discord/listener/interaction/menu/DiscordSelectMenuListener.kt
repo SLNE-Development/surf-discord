@@ -1,6 +1,5 @@
 package dev.slne.discord.listener.interaction.menu
 
-import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.events.listener
 import dev.slne.discord.DiscordBot
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenuManager
@@ -12,10 +11,10 @@ object DiscordSelectMenuListener {
         DiscordBot.jda.listener<StringSelectInteractionEvent> { event ->
             val menu = DiscordSelectMenuManager.getMenu(event.componentId)
 
-            if (menu == null) {
-                event.reply("Die Interaktion ist abgelaufen, oder konnte nicht gefunden werden!")
-                    .setEphemeral(true)
-                    .await()
+            if (menu == null) { // TODO: does not work - needed?
+//                event.reply("Die Interaktion ist abgelaufen, oder konnte nicht gefunden werden!")
+//                    .setEphemeral(true)
+//                    .await()
 
                 return@listener
             }
