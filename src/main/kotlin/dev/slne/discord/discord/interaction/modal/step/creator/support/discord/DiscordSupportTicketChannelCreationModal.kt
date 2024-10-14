@@ -11,7 +11,7 @@ import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 
 @ChannelCreationModal(
-    ticketType = TicketType.SURVIVAL_SUPPORT,
+    ticketType = TicketType.DISCORD_SUPPORT,
     modalId = DiscordSupportTicketChannelCreationModal.MODAL_ID
 )
 class DiscordSupportTicketChannelCreationModal :

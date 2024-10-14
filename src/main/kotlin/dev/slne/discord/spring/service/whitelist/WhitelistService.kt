@@ -6,23 +6,23 @@ import java.util.*
 
 object WhitelistService {
 
-    suspend fun updateWhitelist(whitelist: WhitelistDTO): WhitelistDTO? = TODO("Implement")
+    suspend fun updateWhitelist(whitelist: WhitelistDTO): WhitelistDTO? = null
 
-    suspend fun addWhitelist(whitelist: WhitelistDTO): WhitelistDTO? = TODO("Implement")
+    suspend fun addWhitelist(whitelist: WhitelistDTO): WhitelistDTO? = null
 
-    suspend fun getWhitelistByDiscordId(discordId: String): WhitelistDTO? = TODO("Implement")
+    suspend fun getWhitelistByDiscordId(discordId: String): WhitelistDTO? = null
 
     suspend fun checkWhitelists(
         uuid: UUID? = null,
         discordId: String? = null,
         twitchLink: String? = null
-    ): List<WhitelistDTO> = TODO("Implement")
+    ): List<WhitelistDTO> = emptyList()
 
     suspend fun isWhitelisted(
         uuid: UUID?,
         discordId: String?,
         twitchLink: String?
-    ): Boolean = TODO("Implement")
+    ): Boolean = true
 
-    suspend fun isWhitelisted(user: User): Boolean = TODO("Implement")
+    suspend fun isWhitelisted(user: User): Boolean = true
 }
