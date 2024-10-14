@@ -7,11 +7,9 @@ import dev.slne.discord.discord.interaction.modal.step.ModalSelectionStep
 import dev.slne.discord.discord.interaction.modal.step.StepBuilder
 import dev.slne.discord.discord.interaction.modal.step.creator.report.steps.griefing.ReportTicketGriefingStep
 import dev.slne.discord.discord.interaction.modal.step.creator.report.steps.player.ReportTicketPlayerStep
-import dev.slne.discord.message.MessageManager
 import dev.slne.discord.message.RawMessages.Companion.get
 import dev.slne.discord.message.translatable
 import dev.slne.discord.spring.service.user.UserService
-import dev.slne.discord.spring.service.whitelist.WhitelistService
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
@@ -66,12 +64,14 @@ class ReportTicketSelectTypeStep : ModalSelectionStep(
 
         if (playerName != null) {
             val uuid = UserService.getUuidByUsername(playerName)
-            val whitelists = WhitelistService.checkWhitelists(uuid = uuid)
-
-            for (whitelist in whitelists) {
-                val embed = MessageManager.getWhitelistQueryEmbed(whitelist)
-                thread.sendMessageEmbeds(embed).queue()
-            }
+            println("UUID: $uuid")
+//
+//            val whitelists = WhitelistService.checkWhitelists(uuid = uuid)
+//
+//            for (whitelist in whitelists) {
+//                val embed = MessageManager.getWhitelistQueryEmbed(whitelist)
+//                thread.sendMessageEmbeds(embed).queue()
+//            }
         }
     }
 

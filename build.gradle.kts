@@ -11,6 +11,7 @@ plugins {
 
     kotlin("jvm") version "2.0.20"
     kotlin("plugin.spring") version "1.9.25"
+    kotlin("plugin.serialization") version "2.0.21"
     application
 }
 
@@ -44,7 +45,9 @@ dependencies {
     implementation("jakarta.annotation:jakarta.annotation-api:3.0.0")
     implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
     implementation("ch.qos.logback:logback-classic:1.5.6")
-    implementation("org.danilopianini:khttp:1.6.3")
+    implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.14")
+    implementation("com.squareup.okhttp3:okhttp-coroutines:5.0.0-alpha.14")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
 
     implementation(libs.fastutil)
     implementation(libs.configurate.yaml)

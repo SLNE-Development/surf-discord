@@ -1,75 +1,77 @@
-@file:OptIn(ExperimentalUuidApi::class)
-
 package dev.slne.discord.spring.service.user
 
-import khttp.get
-import khttp.responses.Response
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import com.github.benmanes.caffeine.cache.Caffeine
+import kotlinx.coroutines.*
+import kotlinx.coroutines.future.await
+import kotlinx.coroutines.future.future
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.coroutines.executeAsync
 import java.io.Serial
 import java.util.*
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.days
+import kotlin.time.toJavaDuration
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 import kotlin.uuid.toJavaUuid
 
+
+@OptIn(DelicateCoroutinesApi::class, ExperimentalUuidApi::class, ExperimentalCoroutinesApi::class)
 object UserService {
     private const val RATE_LIMIT_CODE = 429
 
-    suspend fun getUsernameByUuid(
-        uuid: UUID,
-        context: CoroutineContext = Dispatchers.IO
-    ): String = withContext(context) {
-        try {
-            val minecraftUsername = getMinecraftApiUsername(uuid)
-            minecraftUsername ?: getFallbackApiUsername(uuid)
-        } catch (e: RateLimitException) {
-            getFallbackApiUsername(uuid)
+    private val uuidToNameCache = Caffeine.newBuilder()
+        .expireAfterWrite(1.days.toJavaDuration())
+        .buildAsync<String, UUID> { key, _ ->
+            GlobalScope.future {
+                try {
+                    getMinecraftApiUuid(key)
+                } catch (e: RateLimitException) {
+                    getFallbackApiUuid(key)
+                }
+            }
         }
-    }
+    private val client = OkHttpClient()
 
     suspend fun getUuidByUsername(
         username: String,
         context: CoroutineContext = Dispatchers.IO
-    ): UUID = withContext(context) {
-        try {
-            val minecraftUuid = getMinecraftApiUuid(username)
-            minecraftUuid ?: getFallbackApiUuid(username)
-        } catch (e: RateLimitException) {
-            getFallbackApiUuid(username)
-        }
-    }
+    ): UUID = withContext(context) { uuidToNameCache.get(username).await() }
 
-    private suspend fun getMinecraftApiUsername(uuid: UUID): String? = withContext(Dispatchers.IO) {
-        get(url = "https://api.mojang.com/user/profile/$uuid").run {
-            if (statusCode == RATE_LIMIT_CODE) throw RateLimitException("Rate limit reached for Minecraft API")
-            jsonObject.getString("name")
-        }
-    }
+    private suspend fun getMinecraftApiUuid(username: String): UUID = withContext(Dispatchers.IO) {
+        val request = Request.Builder()
+            .url("https://api.mojang.com/users/profiles/minecraft/$username")
+            .build()
 
-    private suspend fun getFallbackApiUsername(uuid: UUID): String = withContext(Dispatchers.IO) {
-        get(url = "https://api.minetools.eu/uuid/$uuid").run {
-            if (!isSuccessful) throw Exception("Failed to get username from fallback API")
-            jsonObject.getString("name")
-        }
-    }
+        val response = client.newCall(request).executeAsync()
+        if (response.code == RATE_LIMIT_CODE) throw RateLimitException("Rate limit reached for Minecraft API")
+        if (!response.isSuccessful) throw Exception("Failed to get UUID from Minecraft API")
 
-    private suspend fun getMinecraftApiUuid(username: String): UUID? = withContext(Dispatchers.IO) {
-        get(url = "https://api.mojang.com/users/profiles/minecraft/$username").run {
-            if (statusCode == RATE_LIMIT_CODE) throw RateLimitException("Rate limit reached for Minecraft API")
-            Uuid.parseHex(jsonObject.getString("id")).toJavaUuid()
-        }
+        val decoded = Json.decodeFromString<MinecraftApiUuidResponse>(response.body.string())
+        Uuid.parseHex(decoded.id).toJavaUuid()
     }
 
     private suspend fun getFallbackApiUuid(username: String): UUID = withContext(Dispatchers.IO) {
-        get(url = "https://api.minetools.eu/uuid/$username").run {
-            if (!isSuccessful) throw Exception("Failed to get UUID from fallback API")
-            Uuid.parseHex(jsonObject.getString("id")).toJavaUuid()
-        }
+        val request = Request.Builder()
+            .url("https://api.minetools.eu/uuid/$username")
+            .build()
+
+        val response = client.newCall(request).executeAsync()
+        if (!response.isSuccessful) throw Exception("Failed to get UUID from fallback API")
+
+        val decoded =
+            Json.decodeFromString<MinecraftApiUuidResponse>(response.body.string())// TODO: 14.10.2024 18:24 - testme
+        Uuid.parseHex(decoded.id).toJavaUuid()
     }
 
-    private val Response.isSuccessful: Boolean
-        get() = this.statusCode in 200..299
+    @Serializable
+    private data class MinecraftApiUuidResponse(
+        val id: String,
+        val name: String
+    )
 }
 
 class RateLimitException(message: String) : Exception(message) {
