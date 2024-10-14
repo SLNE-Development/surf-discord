@@ -11,6 +11,7 @@ plugins {
 
     kotlin("jvm") version "2.0.20"
     kotlin("plugin.spring") version "1.9.25"
+    application
 }
 
 repositories {
@@ -77,6 +78,11 @@ publishing {
     }
 }
 
+
+application {
+    mainClass.set("dev.slne.discord.BootstrapKt")
+}
+
 tasks {
     compileJava {
         options.encoding = Charsets.UTF_8.name()
@@ -87,17 +93,8 @@ tasks {
         options.encoding = Charsets.UTF_8.name()
     }
 
-    jar {
-        manifest {
-            attributes["Main-Class"] = "dev.slne.discord.Launcher"
-        }
-    }
-
     shadowJar {
         archiveFileName.set("bot.jar")
-        manifest {
-            attributes["Main-Class"] = "dev.slne.discord.Launcher"
-        }
     }
 }
 

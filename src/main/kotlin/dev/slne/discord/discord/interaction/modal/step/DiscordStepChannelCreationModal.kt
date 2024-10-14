@@ -96,6 +96,7 @@ abstract class DiscordStepChannelCreationModal(
         lastSelectionEvent: StringSelectInteractionEvent?,
         interaction: StringSelectInteraction,
     ) {
+        println("lastSelectionEvent: $lastSelectionEvent")
         val callback = lastSelectionEvent ?: interaction
         lastSelectionEvent?.message?.delete()?.await()
 
@@ -156,7 +157,7 @@ abstract class DiscordStepChannelCreationModal(
                     actionRow(step.createSelection())
                 }).setEphemeral(true).await()
 
-                lastStepEvent = step.event
+                lastStepEvent = step.awaitSelection()
             }
 
             val children = step.children

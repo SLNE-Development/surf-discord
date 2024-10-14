@@ -34,12 +34,14 @@ object TicketCloseCommand : TicketCommand() {
         interaction: SlashCommandInteractionEvent,
         hook: InteractionHook
     ) {
+        println("TicketCloseCommand.internalExecute")
         val closer = interaction.user
         val reason = interaction.getOptionOrThrow<String>(
             REASON_OPTION,
             exceptionMessage = "You must provide a reason."
         )
         val ticket = interaction.getTicketOrThrow()
+        println("TicketCloseCommand.internalExecute ticket: $ticket")
 
         hook.editOriginal(RawMessages.get("interaction.command.ticket.close.closing")).await()
         closeTicket(closer, ticket, reason, hook)

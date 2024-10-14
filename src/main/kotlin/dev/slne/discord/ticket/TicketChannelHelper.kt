@@ -62,7 +62,9 @@ object TicketChannelHelper {
         ticketName: String,
         ticketChannel: TextChannel
     ): TicketCreateResult {
-        val thread = ticketChannel.createThreadChannel(ticketName, true).await()
+        val thread = ticketChannel.createThreadChannel(ticketName, true)
+            .setInvitable(false)
+            .await()
         ticket.threadId = thread.id
 
         addTicketMember(
