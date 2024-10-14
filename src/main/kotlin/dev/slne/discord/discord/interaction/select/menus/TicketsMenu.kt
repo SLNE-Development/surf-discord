@@ -16,7 +16,7 @@ class TicketsMenu(idSuffix: String) : DiscordSelectMenu(
     translatable("menu.ticket.select.placeholder"),
     TicketType.entries.map { ticketType ->
         SelectOption(
-            ticketType.name,
+            ticketType.displayName,
             ticketType.configName,
             ticketType.description.run { substring(0, min(length, 100)) },
             ticketType.emoji
