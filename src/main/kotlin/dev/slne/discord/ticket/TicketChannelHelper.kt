@@ -35,11 +35,6 @@ object TicketChannelHelper {
             ?: throw TicketAddMemberException("Member not found")
     )
 
-    suspend fun addTicketRole(ticket: Ticket, role: Role) {
-        ticket.thread?.permissionContainer?.upsertPermissionOverride(role)
-            ?.grant(Permission.VIEW_CHANNEL)?.await()
-    }
-
     suspend fun removeTicketMember(ticket: Ticket, member: Member) {
         val thread = ticket.thread ?: throw TicketRemoveMemberException("Thread not found")
 
@@ -67,11 +62,6 @@ object TicketChannelHelper {
             .await()
         ticket.threadId = thread.id
 
-        addTicketMember(
-            ticket,
-            ticket.ticketAuthor?.await() ?: return TicketCreateResult.AUTHOR_NOT_FOUND
-        )
-
         val guild = ticket.guild ?: return TicketCreateResult.GUILD_NOT_FOUND
         val discordGuild = getDiscordGuildByGuildId(guild.id)?.discordGuild
             ?: return TicketCreateResult.GUILD_CONFIG_NOT_FOUND
@@ -79,12 +69,24 @@ object TicketChannelHelper {
         val roleIds = discordGuild.roles.filter { it.canViewTicketType(ticket.ticketType) }
             .flatMap { it.discordRoleIds }
 
-        roleIds.forEach { roleId ->
-            addTicketRole(
-                ticket,
-                guild.getRoleById(roleId) ?: return TicketCreateResult.ROLE_NOT_FOUND
-            )
+
+//        val pingParty = buildString {
+//            roleIds.forEach { roleId ->
+//                val role = guild.getRoleById(roleId) ?: return TicketCreateResult.ROLE_NOT_FOUND
+//                append(role.asMention)
+//            }
+//        }
+//
+//        thread.sendMessage(pingParty).await()
+
+        for (member in guild.findMembersWithRoles(roleIds.mapNotNull { guild.getRoleById(it) })
+            .await()) {
+            thread.addThreadMember(member).await()
         }
+
+        thread.addThreadMember(
+            ticket.ticketAuthor?.await() ?: return TicketCreateResult.AUTHOR_NOT_FOUND
+        ).await()
 
         ticket.save()
 

@@ -97,9 +97,10 @@ class Ticket(
     val closeReasonOrDefault: String
         get() = closedReason ?: Messages.DEFAULT_TICKET_CLOSED_REASON
 
-    suspend fun openFromButton(): TicketCreateResult {
-        val s = getDiscordGuildByGuildId(guildId!!)!!.discordGuild.ticketChannels[ticketType]!!
-        val textChannelById = guild?.getTextChannelById(s)!!
+    suspend fun openFromButton(): TicketCreateResult { // TODO: 14.10.2024 18:56 - remove exclamations
+        val channelId =
+            getDiscordGuildByGuildId(guildId!!)!!.discordGuild.ticketChannels[ticketType]!!
+        val textChannelById = guild?.getTextChannelById(channelId)!!
 
         TicketChannelHelper.createThread(
             this,
