@@ -23,7 +23,6 @@ class SurvivalSupportTicketChannelCreationModal :
     override fun buildSteps(): StepBuilder = StepBuilder.startWith(SupportInputStep())
 
     override suspend fun MessageQueue.getOpenMessages(thread: ThreadChannel, user: User) {
-        addMessage(user.asMention)
         addMessage(translatable("modal.support.survival.message"))
     }
 

@@ -28,9 +28,13 @@ object UserService {
         .buildAsync<String, UUID> { key, _ ->
             GlobalScope.future {
                 try {
-                    getMinecraftApiUuid(key)
-                } catch (e: RateLimitException) {
-                    getFallbackApiUuid(key)
+                    try {
+                        getMinecraftApiUuid(key)
+                    } catch (e: RateLimitException) {
+                        getFallbackApiUuid(key)
+                    }
+                } catch (e: Exception) {
+                    null
                 }
             }
         }
@@ -39,7 +43,7 @@ object UserService {
     suspend fun getUuidByUsername(
         username: String,
         context: CoroutineContext = Dispatchers.IO
-    ): UUID = withContext(context) { uuidToNameCache.get(username).await() }
+    ): UUID? = withContext(context) { uuidToNameCache.get(username).await() }
 
     private suspend fun getMinecraftApiUuid(username: String): UUID = withContext(Dispatchers.IO) {
         val request = Request.Builder()
