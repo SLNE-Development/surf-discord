@@ -42,8 +42,6 @@ class TicketsMenu(idSuffix: String) : DiscordSelectMenu(
             return
         }
 
-//        interaction.message.delete().await()
-//
         DiscordModalManager.createByTicketType(ticketType)
             .startChannelCreation(interaction, guild)
     }

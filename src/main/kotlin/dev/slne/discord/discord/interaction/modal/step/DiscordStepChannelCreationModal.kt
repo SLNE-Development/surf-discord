@@ -48,7 +48,6 @@ abstract class DiscordStepChannelCreationModal(
     suspend fun startChannelCreation(
         interaction: StringSelectInteraction,
         guild: Guild,
-//        hook: InteractionHook
     ) {
         if (checkTicketExists(guild, interaction.user)) {
             reply(interaction, RawMessages.get("error.ticket.type.already-open"))
@@ -69,10 +68,12 @@ abstract class DiscordStepChannelCreationModal(
 
         if (!hasSelectionStep()) {
             replyModal(interaction)
+            interaction.message.delete().await()
             return
         }
 
         val hook = interaction.deferReply(true).await()
+        interaction.message.delete().await()
 
         startChannelCreationWithSelectionSteps(interaction, hook)
     }

@@ -1,5 +1,7 @@
 package dev.slne.discord
 
+import dev.minn.jda.ktx.events.CoroutineEventManager
+import dev.minn.jda.ktx.events.getDefaultScope
 import dev.minn.jda.ktx.jdabuilder.cache
 import dev.minn.jda.ktx.jdabuilder.default
 import dev.slne.discord.config.botConfig
@@ -9,6 +11,7 @@ import dev.slne.discord.discord.interaction.select.DiscordSelectMenuManager
 import dev.slne.discord.listener.DiscordListenerManager
 import dev.slne.discord.settings.GatewayIntents
 import dev.slne.discord.spring.processor.DiscordButtonManager
+import kotlinx.coroutines.Dispatchers
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.utils.cache.CacheFlag
@@ -34,8 +37,10 @@ object DiscordBot {
 
         this.jda = default(
             token = botToken,
-            intents = GatewayIntents.gatewayIntents
+            intents = GatewayIntents.gatewayIntents,
+            enableCoroutines = false
         ) {
+            setEventManager(CoroutineEventManager(scope = getDefaultScope(context = Dispatchers.IO)))
             setAutoReconnect(true)
 
             cache += listOf(

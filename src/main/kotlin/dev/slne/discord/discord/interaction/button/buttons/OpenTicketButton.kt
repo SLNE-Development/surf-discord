@@ -26,11 +26,10 @@ object OpenTicketButton : DiscordButtonHandler {
     const val ID = _ID
 
     override suspend fun ButtonInteractionEvent.onClick() {
-        TicketsMenu(id).apply {
-            DiscordSelectMenuManager.addMenu(this)
+        val menu = TicketsMenu(id)
+        DiscordSelectMenuManager.addMenu(menu)
 
-            sendEmbed(build(), interaction)
-        }
+        sendEmbed(menu.build(), interaction)
     }
 
     private suspend fun sendEmbed(menu: SelectMenu, interaction: ButtonInteraction) {
