@@ -1,4 +1,4 @@
-package dev.slne.discord.spring.service.user
+package dev.slne.discord.persistence.service.user
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import kotlinx.coroutines.*

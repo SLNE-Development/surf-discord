@@ -2,10 +2,11 @@ package dev.slne.discord.ticket.message
 
 import dev.slne.discord.DiscordBot
 import dev.slne.discord.message.toEuropeBerlin
-import dev.slne.discord.spring.service.ticket.TicketMessageService
-import dev.slne.discord.spring.service.ticket.TicketService
+import dev.slne.discord.persistence.service.ticket.TicketMessageService
+import dev.slne.discord.persistence.service.ticket.TicketService
 import dev.slne.discord.ticket.Ticket
 import dev.slne.discord.ticket.message.attachment.TicketMessageAttachment
+import jakarta.persistence.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.dv8tion.jda.api.entities.Message
@@ -14,12 +15,27 @@ import net.dv8tion.jda.api.requests.RestAction
 import java.time.ZonedDateTime
 import java.util.*
 
-class TicketMessage {
+@Entity
+@Table(name = "ticket_messages")
+data class TicketMessage(
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long? = null,
 
-    val id: Long = 0
-    var ticketId: UUID? = null
-    var jsonContent: String? = null
+    @Column(nullable = false)
+    var ticketId: UUID? = null,
+) {
+    constructor() : this() {
+
+    }
+
+    var message: RestAction<Message>?
+        get() = messageId?.let { ticket?.thread?.retrieveMessageById(it) }
+
+    @Column(nullable = true, name = "message_id")
     var messageId: String? = null
+
+    var jsonContent: String? = null
     var authorId: String? = null
     var authorName: String? = null
     var authorAvatarUrl: String? = null
@@ -29,6 +45,10 @@ class TicketMessage {
     var referencesMessageId: String? = null
     var attachments = listOf<TicketMessageAttachment>()
     var botMessage = false
+
+    init {
+        messageId = message.id
+    }
 
     suspend fun delete() = ticket?.let {
         messageDeletedAt = ZonedDateTime.now().toEuropeBerlin()
@@ -47,9 +67,6 @@ class TicketMessage {
 
         TicketMessageService.updateTicketMessage(it, this)
     }
-
-    val message: RestAction<Message>?
-        get() = messageId?.let { ticket?.thread?.retrieveMessageById(it) }
 
     val author: RestAction<User>?
         get() = authorId?.let { DiscordBot.jda.retrieveUserById(it) }

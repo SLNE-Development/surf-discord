@@ -6,7 +6,7 @@ import dev.slne.discord.exception.ticket.DeleteTicketChannelException
 import dev.slne.discord.message.MessageManager
 import dev.slne.discord.message.Messages
 import dev.slne.discord.message.toEuropeBerlin
-import dev.slne.discord.spring.service.ticket.TicketService
+import dev.slne.discord.persistence.service.ticket.TicketService
 import dev.slne.discord.ticket.result.TicketCloseResult
 import dev.slne.discord.ticket.result.TicketCreateResult
 import net.dv8tion.jda.api.entities.User

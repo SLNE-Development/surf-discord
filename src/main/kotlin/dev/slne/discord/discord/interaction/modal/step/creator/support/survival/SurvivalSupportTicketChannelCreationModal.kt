@@ -6,7 +6,7 @@ import dev.slne.discord.discord.interaction.modal.step.MessageQueue
 import dev.slne.discord.discord.interaction.modal.step.StepBuilder
 import dev.slne.discord.discord.interaction.modal.step.creator.support.SupportInputStep
 import dev.slne.discord.message.translatable
-import dev.slne.discord.spring.service.whitelist.WhitelistService
+import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import dev.slne.discord.ticket.TicketType
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User

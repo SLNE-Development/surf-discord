@@ -4,7 +4,7 @@ import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.events.listener
 import dev.slne.discord.DiscordBot
 import dev.slne.discord.guild.getDiscordGuildByGuildId
-import dev.slne.discord.spring.service.whitelist.WhitelistService
+import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
 
 object WhitelistJoinListener {

@@ -10,7 +10,7 @@ import dev.slne.discord.discord.interaction.command.DiscordCommand
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.EmbedColors
 import dev.slne.discord.message.RawMessages
-import dev.slne.discord.spring.processor.DiscordButtonManager
+import dev.slne.discord.persistence.processor.DiscordButtonManager
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook

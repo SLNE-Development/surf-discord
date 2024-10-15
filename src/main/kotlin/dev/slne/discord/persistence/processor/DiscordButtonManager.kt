@@ -1,4 +1,4 @@
-package dev.slne.discord.spring.processor
+package dev.slne.discord.persistence.processor
 
 import dev.slne.discord.annotation.DiscordButton
 import dev.slne.discord.discord.interaction.button.DiscordButtonHandler

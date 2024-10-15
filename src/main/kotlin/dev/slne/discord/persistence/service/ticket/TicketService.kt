@@ -1,12 +1,15 @@
-package dev.slne.discord.spring.service.ticket
+package dev.slne.discord.persistence.service.ticket
 
 import dev.slne.discord.ticket.Ticket
 import dev.slne.discord.ticket.message.TicketMessage
 import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import it.unimi.dsi.fastutil.objects.ObjectList
 import it.unimi.dsi.fastutil.objects.ObjectLists
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import java.util.*
+import kotlin.system.measureTimeMillis
 
 object TicketService {
 
@@ -18,18 +21,20 @@ object TicketService {
     )
     var tickets: ObjectList<Ticket> = ObjectLists.synchronize(ObjectArrayList(1))
 
-    suspend fun fetchActiveTickets() {
+    suspend fun fetchActiveTickets() = withContext(Dispatchers.IO) {
         fetched = false
-        val start = System.currentTimeMillis()
 
-        TODO("Implement")
+        val ms = measureTimeMillis {
+            TicketRepository.findAll().forEach { tickets.add(it) }
+        }
 
-        val end = System.currentTimeMillis()
-        val time = end - start
-
-        logger.info("Fetched {} tickets in {}ms.", tickets.size, time)
+        logger.info("Fetched {} tickets in {}ms.", tickets.size, ms)
         fetched = true
         popQueue()
+    }
+
+    suspend fun saveTicket(ticket: Ticket) = withContext(Dispatchers.IO) {
+        TicketRepository.save(ticket)
     }
 
     private fun popQueue() {

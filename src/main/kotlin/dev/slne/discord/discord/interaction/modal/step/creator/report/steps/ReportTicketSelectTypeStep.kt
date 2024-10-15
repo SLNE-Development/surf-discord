@@ -9,7 +9,7 @@ import dev.slne.discord.discord.interaction.modal.step.creator.report.steps.grie
 import dev.slne.discord.discord.interaction.modal.step.creator.report.steps.player.ReportTicketPlayerStep
 import dev.slne.discord.message.RawMessages.Companion.get
 import dev.slne.discord.message.translatable
-import dev.slne.discord.spring.service.user.UserService
+import dev.slne.discord.persistence.service.user.UserService
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction

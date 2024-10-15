@@ -1,4 +1,4 @@
-package dev.slne.discord.spring.feign.dto
+package dev.slne.discord.persistence.feign.dto
 
 class PunishmentBanDTO {
     private val id: Long = 0

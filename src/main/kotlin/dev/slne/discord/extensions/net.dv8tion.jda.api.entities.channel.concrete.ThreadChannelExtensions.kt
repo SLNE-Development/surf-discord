@@ -2,7 +2,7 @@ package dev.slne.discord.extensions
 
 import dev.slne.discord.exception.command.pre.PreTicketCommandException
 import dev.slne.discord.message.RawMessages
-import dev.slne.discord.spring.service.ticket.TicketService
+import dev.slne.discord.persistence.service.ticket.TicketService
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 
 fun ThreadChannel.getTicket() = TicketService.getTicketByThreadId(id)

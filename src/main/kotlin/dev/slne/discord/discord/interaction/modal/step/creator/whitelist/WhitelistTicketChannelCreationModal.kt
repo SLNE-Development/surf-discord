@@ -7,7 +7,7 @@ import dev.slne.discord.discord.interaction.modal.step.creator.whitelist.step.Wh
 import dev.slne.discord.discord.interaction.modal.step.creator.whitelist.step.WhitelistTicketMinecraftNameStep
 import dev.slne.discord.message.RawMessages.Companion.get
 import dev.slne.discord.message.translatable
-import dev.slne.discord.spring.service.whitelist.WhitelistService
+import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import dev.slne.discord.ticket.TicketType
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction

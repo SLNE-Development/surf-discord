@@ -9,8 +9,8 @@ import dev.slne.discord.discord.interaction.command.DiscordCommandManager
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenuManager
 import dev.slne.discord.listener.DiscordListenerManager
+import dev.slne.discord.persistence.processor.DiscordButtonManager
 import dev.slne.discord.settings.GatewayIntents
-import dev.slne.discord.spring.processor.DiscordButtonManager
 import kotlinx.coroutines.Dispatchers
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.OnlineStatus

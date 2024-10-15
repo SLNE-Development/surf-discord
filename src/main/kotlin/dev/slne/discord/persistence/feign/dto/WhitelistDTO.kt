@@ -1,4 +1,4 @@
-package dev.slne.discord.spring.feign.dto
+package dev.slne.discord.persistence.feign.dto
 
 import dev.slne.discord.DiscordBot
 import net.dv8tion.jda.api.entities.User

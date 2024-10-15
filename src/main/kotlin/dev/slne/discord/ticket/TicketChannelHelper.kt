@@ -6,7 +6,7 @@ import dev.slne.discord.exception.ticket.UnableToGetTicketNameException
 import dev.slne.discord.exception.ticket.member.TicketAddMemberException
 import dev.slne.discord.exception.ticket.member.TicketRemoveMemberException
 import dev.slne.discord.guild.getDiscordGuildByGuildId
-import dev.slne.discord.spring.service.ticket.TicketService
+import dev.slne.discord.persistence.service.ticket.TicketService
 import dev.slne.discord.ticket.result.TicketCreateResult
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild

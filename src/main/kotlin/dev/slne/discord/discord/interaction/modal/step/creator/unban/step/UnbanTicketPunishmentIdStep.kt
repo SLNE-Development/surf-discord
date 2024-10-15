@@ -4,7 +4,7 @@ import dev.minn.jda.ktx.interactions.components.InlineModal
 import dev.slne.discord.discord.interaction.modal.step.MessageQueue
 import dev.slne.discord.discord.interaction.modal.step.ModalStep
 import dev.slne.discord.message.RawMessages
-import dev.slne.discord.spring.service.punishment.PunishmentService
+import dev.slne.discord.persistence.service.punishment.PunishmentService
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction

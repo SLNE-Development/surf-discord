@@ -1,6 +1,6 @@
-package dev.slne.discord.spring.service.whitelist
+package dev.slne.discord.persistence.service.whitelist
 
-import dev.slne.discord.spring.feign.dto.WhitelistDTO
+import dev.slne.discord.persistence.feign.dto.WhitelistDTO
 import net.dv8tion.jda.api.entities.User
 import java.util.*
 

@@ -4,8 +4,8 @@ import dev.minn.jda.ktx.interactions.components.InlineModal
 import dev.slne.discord.discord.interaction.modal.step.MessageQueue
 import dev.slne.discord.discord.interaction.modal.step.ModalStep
 import dev.slne.discord.message.RawMessages
-import dev.slne.discord.spring.service.user.UserService
-import dev.slne.discord.spring.service.whitelist.WhitelistService
+import dev.slne.discord.persistence.service.user.UserService
+import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction

@@ -8,8 +8,8 @@ import dev.slne.discord.exception.command.CommandException
 import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.message.EmbedColors.ERROR_COLOR
 import dev.slne.discord.message.EmbedColors.WL_QUERY
-import dev.slne.discord.spring.feign.dto.WhitelistDTO
-import dev.slne.discord.spring.service.whitelist.WhitelistService
+import dev.slne.discord.persistence.feign.dto.WhitelistDTO
+import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import dev.slne.discord.ticket.Ticket
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel

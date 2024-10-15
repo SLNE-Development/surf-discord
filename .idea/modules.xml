@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/IdeaProjects.surf-discord.test.iml" filepath="$PROJECT_DIR$/.idea/modules/IdeaProjects.surf-discord.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/dev.slne.surf-discord.main.iml" filepath="$PROJECT_DIR$/.idea/modules/dev.slne.surf-discord.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/dev.slne.surf-discord.test.iml" filepath="$PROJECT_DIR$/.idea/modules/dev.slne.surf-discord.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/surf-discord.main.iml" filepath="$PROJECT_DIR$/.idea/modules/surf-discord.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/surf-discord.test.iml" filepath="$PROJECT_DIR$/.idea/modules/surf-discord.test.iml" />
     </modules>
   </component>

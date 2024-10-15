@@ -1,4 +1,4 @@
-package dev.slne.discord.spring.service.ticket
+package dev.slne.discord.persistence.service.ticket
 
 import dev.slne.discord.ticket.Ticket
 import dev.slne.discord.ticket.message.TicketMessage

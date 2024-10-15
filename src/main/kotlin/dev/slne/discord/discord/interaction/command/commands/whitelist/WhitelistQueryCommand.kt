@@ -8,8 +8,8 @@ import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.MessageManager
 import dev.slne.discord.message.RawMessages
-import dev.slne.discord.spring.service.user.UserService
-import dev.slne.discord.spring.service.whitelist.WhitelistService
+import dev.slne.discord.persistence.service.user.UserService
+import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
