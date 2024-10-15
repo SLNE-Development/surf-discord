@@ -33,9 +33,8 @@ object TicketService {
         popQueue()
     }
 
-    suspend fun saveTicket(ticket: Ticket) = withContext(Dispatchers.IO) {
-        TicketRepository.save(ticket)
-    }
+    suspend fun saveTicket(ticket: Ticket) = TicketRepository.save(ticket)
+
 
     private fun popQueue() {
         if (fetched) {
