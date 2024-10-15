@@ -109,6 +109,7 @@ abstract class DiscordStepChannelCreationModal(
     suspend fun handleUserSubmitModal(event: ModalInteractionEvent) {
         val modalSteps = steps
         val user = event.user
+        val guild = event.guild ?: error("Cannot open ticket in DMs")
 
         if (!verifyModalInput(event, modalSteps)) {
             return
@@ -118,7 +119,7 @@ abstract class DiscordStepChannelCreationModal(
             return
         }
 
-        val ticket = Ticket(event.guild.id, user, ticketType)
+        val ticket = Ticket(guild, user, ticketType)
         val result = ticket.openFromButton()
 
         postThreadCreated(ticket, result, event, user)

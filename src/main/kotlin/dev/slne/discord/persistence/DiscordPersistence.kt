@@ -12,7 +12,9 @@ import org.hibernate.cfg.Configuration
 val persistenceManager = Persistence.createEntityManagerFactory("discord")
 val sessionFactory = DiscordPersistence.configureHibernate()
 
+
 object DiscordPersistence {
+
     fun configureHibernate(): SessionFactory {
         val configuration = Configuration()
         configuration.setProperty("hibernate.connection.driver_class", "org.postgresql.Driver")
@@ -62,8 +64,8 @@ suspend inline fun <reified T> Session.findAll(): List<T> = sessionFactory.withS
     session.createQuery(query.select(root)).resultList
 }
 
-fun <T> Session.upsert(entity: T): T {
-    if (contains(entity)) {
+fun <T> Session.upsert(entity: T, persisted: T.() -> Boolean): T {
+    if (entity.persisted()) {
         return merge(entity)
     } else {
         persist(entity)

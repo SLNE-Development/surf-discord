@@ -2,9 +2,8 @@ package dev.slne.discord.persistence.service.ticket
 
 import dev.slne.discord.ticket.Ticket
 import dev.slne.discord.ticket.message.TicketMessage
-import it.unimi.dsi.fastutil.objects.ObjectArrayList
-import it.unimi.dsi.fastutil.objects.ObjectList
-import it.unimi.dsi.fastutil.objects.ObjectLists
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet
+import it.unimi.dsi.fastutil.objects.ObjectSets
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
@@ -16,10 +15,9 @@ object TicketService {
     private val logger = ComponentLogger.logger(TicketService::class.java)
 
     private var fetched = true // Only for testing
-    private val pendingTickets: ObjectList<Ticket> = ObjectLists.synchronize(
-        ObjectArrayList(1)
-    )
-    var tickets: ObjectList<Ticket> = ObjectLists.synchronize(ObjectArrayList(1))
+    private val pendingTickets = ObjectSets.synchronize(ObjectOpenHashSet<Ticket>())
+    private var tickets =
+        ObjectSets.synchronize(ObjectOpenHashSet<Ticket>(1_024)) // We have a lot of tickets
 
     suspend fun fetchActiveTickets() = withContext(Dispatchers.IO) {
         fetched = false
@@ -58,7 +56,7 @@ object TicketService {
 
     fun getTicketById(id: UUID) = tickets.firstOrNull { it.ticketId == id }
 
-    fun getTicketByThreadId(threadId: String) = tickets.firstOrNull { it.threadId == threadId }
+    fun getTicketByThreadId(threadId: String) = tickets.firstOrNull { it.thread?.id == threadId }
 
     fun createTicket(ticket: Ticket): Ticket = ticket
 

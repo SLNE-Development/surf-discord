@@ -17,7 +17,7 @@ import java.util.*
 
 @Entity
 @Table(name = "ticket_messages")
-data class TicketMessage(
+class TicketMessage(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
