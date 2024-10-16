@@ -11,17 +11,21 @@ import dev.slne.discord.message.EmbedColors.WL_QUERY
 import dev.slne.discord.persistence.feign.dto.WhitelistDTO
 import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import dev.slne.discord.ticket.Ticket
+import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.interactions.InteractionHook
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import java.time.ZonedDateTime
 
 object MessageManager {
 
-    suspend fun sendTicketClosedMessages(ticket: Ticket) =
+    private val logger = ComponentLogger.logger()
+
+    suspend fun sendTicketClosedMessages(ticket: Ticket): Message =
         ticket.thread?.sendMessage(MessageCreate {
             embeds += EmbedManager.buildTicketClosedEmbed(ticket)
-        })
+        })!!.await()
 
     suspend fun printUserWlQuery(user: User, channel: ThreadChannel) {
         channel.sendTyping().await()
