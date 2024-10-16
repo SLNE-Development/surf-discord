@@ -15,17 +15,14 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.interactions.InteractionHook
-import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import java.time.ZonedDateTime
 
 object MessageManager {
 
-    private val logger = ComponentLogger.logger()
-
-    suspend fun sendTicketClosedMessages(ticket: Ticket): Message =
+    suspend fun sendTicketClosedMessages(ticket: Ticket): Message? =
         ticket.thread?.sendMessage(MessageCreate {
             embeds += EmbedManager.buildTicketClosedEmbed(ticket)
-        })!!.await()
+        })?.await()
 
     suspend fun printUserWlQuery(user: User, channel: ThreadChannel) {
         channel.sendTyping().await()
