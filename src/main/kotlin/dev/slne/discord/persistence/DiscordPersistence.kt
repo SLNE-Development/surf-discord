@@ -1,5 +1,6 @@
 package dev.slne.discord.persistence
 
+import dev.slne.discord.config.botConfig
 import dev.slne.discord.ticket.Ticket
 import dev.slne.discord.ticket.message.TicketMessage
 import dev.slne.discord.ticket.message.attachment.TicketMessageAttachment
@@ -15,14 +16,17 @@ val sessionFactory = DiscordPersistence.configureHibernate()
 object DiscordPersistence {
 
     fun configureHibernate(): SessionFactory {
+        val config = botConfig.database
+
+
         val configuration = Configuration()
         configuration.setProperty("hibernate.connection.driver_class", "org.mariadb.jdbc.Driver")
         configuration.setProperty(
             "hibernate.connection.url",
-            "jdbc:mariadb://51.195.3.239:3306/s23_surf_dev"
+            "jdbc:mariadb://${config!!.hostname}:${config.port}/${config.database}"
         )
-        configuration.setProperty("hibernate.connection.username", "u23_evmQtjuUbU")
-        configuration.setProperty("hibernate.connection.password", "N.ooV2nNsM1POH+iPc9+3s43")
+        configuration.setProperty("hibernate.connection.username", "${config.username}")
+        configuration.setProperty("hibernate.connection.password", "${config.password}")
         configuration.setProperty("hibernate.hbm2ddl.auto", "none")
 
         configuration.setProperty("hibernate.show_sql", "false");
