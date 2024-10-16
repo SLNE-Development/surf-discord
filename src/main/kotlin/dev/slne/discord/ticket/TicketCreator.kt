@@ -31,10 +31,10 @@ object TicketCreator {
         callback: suspend () -> Unit
     ): TicketCreateResult {
         contract {
-            callsInPlace(callback, InvocationKind.EXACTLY_ONCE)
+            callsInPlace(callback, InvocationKind.AT_MOST_ONCE)
         }
 
-        val createdTicket = TicketService.createTicket(ticket)
+        val createdTicket = ticket.create()
         TicketService.queueOrAddTicket(createdTicket)
 
         return createTicketChannel(ticket, author, ticketName, ticketChannel, callback)
@@ -48,7 +48,7 @@ object TicketCreator {
         callback: suspend () -> Unit
     ): TicketCreateResult {
         contract {
-            callsInPlace(callback, InvocationKind.EXACTLY_ONCE)
+            callsInPlace(callback, InvocationKind.AT_MOST_ONCE)
         }
 
         val result = TicketChannelHelper.createThread(ticket, ticketName, ticketChannel)
@@ -71,7 +71,7 @@ object TicketCreator {
             callsInPlace(runnable, InvocationKind.EXACTLY_ONCE)
         }
 
-        val ticketType = ticket.ticketType
+        val ticketType = ticket.ticketType!!
         val channel = ticket.thread ?: return
 
         runnable()
@@ -83,11 +83,11 @@ object TicketCreator {
 
     suspend fun openTicket(ticket: Ticket, afterOpen: suspend () -> Unit = {}): TicketCreateResult {
         contract {
-            callsInPlace(afterOpen, InvocationKind.EXACTLY_ONCE)
+            callsInPlace(afterOpen, InvocationKind.AT_MOST_ONCE)
         }
 
-        val author = ticket.ticketAuthor?.await() ?: return TicketCreateResult.AUTHOR_NOT_FOUND
-        val ticketType = ticket.ticketType
+        val author = ticket.author?.await() ?: return TicketCreateResult.AUTHOR_NOT_FOUND
+        val ticketType = ticket.ticketType!!
         val ticketChannelName = TicketChannelHelper.generateTicketName(ticketType, author)
         val guild = ticket.guild ?: return TicketCreateResult.GUILD_NOT_FOUND
 
@@ -101,13 +101,11 @@ object TicketCreator {
         val ticketExists = TicketChannelHelper.checkTicketExists(
             ticketChannelName,
             channel,
-            ticket.ticketType,
+            ticketType,
             author
         )
 
-        if (ticketExists) {
-            return TicketCreateResult.ALREADY_EXISTS
-        }
+        if (ticketExists) return TicketCreateResult.ALREADY_EXISTS
 
         return createTicket(ticket, author, ticketChannelName, channel, afterOpen)
     }

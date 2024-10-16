@@ -119,7 +119,7 @@ abstract class DiscordStepChannelCreationModal(
             return
         }
 
-        val ticket = Ticket(guild, user, ticketType)
+        val ticket = Ticket.open(guild = guild, ticketAuthor = user, ticketType = ticketType)
         val result = ticket.openFromButton()
 
         postThreadCreated(ticket, result, event, user)

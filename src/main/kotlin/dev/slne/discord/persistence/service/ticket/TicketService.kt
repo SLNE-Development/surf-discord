@@ -1,7 +1,6 @@
 package dev.slne.discord.persistence.service.ticket
 
 import dev.slne.discord.ticket.Ticket
-import dev.slne.discord.ticket.message.TicketMessage
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet
 import it.unimi.dsi.fastutil.objects.ObjectSets
 import kotlinx.coroutines.Dispatchers
@@ -16,8 +15,9 @@ object TicketService {
 
     private var fetched = true // Only for testing
     private val pendingTickets = ObjectSets.synchronize(ObjectOpenHashSet<Ticket>())
-    private var tickets =
+    var tickets =
         ObjectSets.synchronize(ObjectOpenHashSet<Ticket>(1_024)) // We have a lot of tickets
+        private set
 
     suspend fun fetchActiveTickets() = withContext(Dispatchers.IO) {
         fetched = false
@@ -63,10 +63,5 @@ object TicketService {
     fun updateTicket(ticket: Ticket): Ticket = ticket
 
     fun closeTicket(ticket: Ticket): Ticket = ticket
-
-    suspend fun addTicketMessage(
-        ticket: Ticket,
-        message: TicketMessage
-    ) = ticket.addRawTicketMessage(TicketMessageService.createTicketMessage(ticket, message))
 
 }
