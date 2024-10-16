@@ -101,9 +101,8 @@ open class Ticket protected constructor() {
         fetch = FetchType.EAGER,
         orphanRemoval = true
     )
-    protected open var _messages: MutableList<TicketMessage> = mutableListOf()
+    open var messages: MutableList<TicketMessage> = mutableListOf()
 
-    val messages: List<TicketMessage> get() = _messages
     val thread get() = threadId?.let { DiscordBot.jda.getThreadChannelById(it) }
     val closedBy get() = closedById?.let { DiscordBot.jda.retrieveUserById(it) }
     val closeReasonOrDefault: String get() = closedReason ?: Messages.DEFAULT_TICKET_CLOSED_REASON
@@ -112,11 +111,6 @@ open class Ticket protected constructor() {
 
     val isClosed
         get() = closedAt != null
-
-    fun addTicketMessage(ticketMessage: TicketMessage) {
-        _messages.add(ticketMessage)
-        ticketMessage.ticket = this
-    }
 
     fun getTicketMessage(message: Message) = messages.find { it.messageId.equals(message.id) }
     fun getTicketMessage(messageId: String) = messages.find { it.messageId == messageId }
@@ -145,7 +139,7 @@ open class Ticket protected constructor() {
     }
 
     override fun toString(): String {
-        return "Ticket(id=$id, ticketId=$ticketId, openedAt=$openedAt, guildId=$guildId, threadId=$threadId, ticketType=$ticketType, ticketAuthorId=$ticketAuthorId, ticketAuthorName=$ticketAuthorName, ticketAuthorAvatarUrl=$ticketAuthorAvatarUrl, closedById=$closedById, closedReason=$closedReason, closedByAvatarUrl=$closedByAvatarUrl, closedByName=$closedByName, closedAt=$closedAt, _messages=$_messages)"
+        return "Ticket(id=$id, ticketId=$ticketId, openedAt=$openedAt, guildId=$guildId, threadId=$threadId, ticketType=$ticketType, ticketAuthorId=$ticketAuthorId, ticketAuthorName=$ticketAuthorName, ticketAuthorAvatarUrl=$ticketAuthorAvatarUrl, closedById=$closedById, closedReason=$closedReason, closedByAvatarUrl=$closedByAvatarUrl, closedByName=$closedByName, closedAt=$closedAt, messages=$messages)"
     }
 
     companion object {

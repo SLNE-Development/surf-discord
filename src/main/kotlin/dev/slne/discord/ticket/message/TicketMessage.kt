@@ -109,9 +109,7 @@ open class TicketMessage protected constructor() {
     }
 
     suspend fun create() = ticket?.let {
-//        val created = TicketMessageService.createTicketMessage(it, this)
-
-        it.addTicketMessage(this)
+        it.messages.add(this)
         it.save()
         this
     }

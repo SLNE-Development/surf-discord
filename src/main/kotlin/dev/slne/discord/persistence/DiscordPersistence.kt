@@ -66,7 +66,6 @@ suspend fun <T> SessionFactory.withSession(block: suspend (session: Session) -> 
         }
     }
 
-// TODO: 15.10.2024 17:54 - does this work?
 suspend inline fun <reified T> Session.findAll(): List<T> = sessionFactory.withSession { session ->
     val query = session.criteriaBuilder.createQuery(T::class.java)
     val root = query.from(T::class.java)

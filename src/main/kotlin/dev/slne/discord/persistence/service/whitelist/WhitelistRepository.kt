@@ -16,9 +16,12 @@ object WhitelistRepository {
 
     suspend fun getWhitelistByDiscordId(discordId: String): Whitelist? =
         sessionFactory.withSession { session ->
-            val query = session.criteriaBuilder.createQuery(Whitelist::class.java)
+            val criteriaBuilder = session.criteriaBuilder
+
+            val query = criteriaBuilder.createQuery(Whitelist::class.java)
             val root = query.from(Whitelist::class.java)
-            query.where(session.criteriaBuilder.equal(root.get<String>("discordId"), discordId))
+            query.where(criteriaBuilder.equal(root.get<String>("discordId"), discordId))
+            
             session.createQuery(query.select(root)).resultList.firstOrNull()
         }
 
