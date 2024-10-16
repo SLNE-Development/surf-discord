@@ -70,19 +70,19 @@ object TicketChannelHelper {
             .flatMap { it.discordRoleIds }
 
 
-//        val pingParty = buildString {
-//            roleIds.forEach { roleId ->
-//                val role = guild.getRoleById(roleId) ?: return TicketCreateResult.ROLE_NOT_FOUND
-//                append(role.asMention)
-//            }
-//        }
-//
-//        thread.sendMessage(pingParty).await()
-
-        for (member in guild.findMembersWithRoles(roleIds.mapNotNull { guild.getRoleById(it) })
-            .await()) {
-            thread.addThreadMember(member).await()
+        val pingParty = buildString {
+            roleIds.forEach { roleId ->
+                val role = guild.getRoleById(roleId) ?: return TicketCreateResult.ROLE_NOT_FOUND
+                append(role.asMention)
+            }
         }
+
+        thread.sendMessage(pingParty).await()
+
+//        for (member in guild.findMembersWithRoles(roleIds.mapNotNull { guild.getRoleById(it) })
+//            .await()) {
+//            thread.addThreadMember(member).await()
+//        }
 
         thread.addThreadMember(
             ticket.author?.await() ?: return TicketCreateResult.AUTHOR_NOT_FOUND
