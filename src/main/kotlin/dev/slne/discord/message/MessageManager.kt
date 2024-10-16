@@ -52,7 +52,7 @@ object MessageManager {
         title: String,
         whitelists: List<WhitelistDTO>
     ) {
-        channel.sendMessage(RawMessages.get("whitelist.query.start", title.replace("\"", "")))
+        channel.sendMessage(translatable("whitelist.query.start", title.replace("\"", "")))
             .await()
 
         for (whitelist in whitelists) {
@@ -68,12 +68,12 @@ object MessageManager {
     }
 
     suspend fun getWhitelistQueryEmbed(whitelist: WhitelistDTO) = Embed {
-        title = RawMessages.get("whitelist.query.embed.title")
+        title = translatable("whitelist.query.embed.title")
         footer {
-            name = RawMessages.get("whitelist.query.embed.footer")
+            name = translatable("whitelist.query.embed.footer")
             iconUrl = jda.selfUser.avatarUrl
         }
-        description = RawMessages.get("whitelist.query.embed.description")
+        description = translatable("whitelist.query.embed.description")
         color = WL_QUERY
         timestamp = ZonedDateTime.now()
 
@@ -84,35 +84,35 @@ object MessageManager {
         val addedBy = whitelist.addedBy?.await()
 
         field {
-            name = RawMessages.get("whitelist.query.embed.field.uuid")
+            name = translatable("whitelist.query.embed.field.uuid")
             value = uuid.toString()
             inline = false
         }
 
         if (minecraftName != null) {
             field {
-                name = RawMessages.get("whitelist.query.embed.field.minecraft-name")
+                name = translatable("whitelist.query.embed.field.minecraft-name")
                 value = minecraftName
             }
         }
 
         if (twitchLink != null) {
             field {
-                name = RawMessages.get("whitelist.query.embed.field.twitch-name")
+                name = translatable("whitelist.query.embed.field.twitch-name")
                 value = twitchLink
             }
         }
 
         if (discordUser != null) {
             field {
-                name = RawMessages.get("whitelist.query.embed.field.discord-user")
+                name = translatable("whitelist.query.embed.field.discord-user")
                 value = discordUser.asMention
             }
         }
 
         if (addedBy != null) {
             field {
-                name = RawMessages.get("whitelist.query.embed.field.added-by")
+                name = translatable("whitelist.query.embed.field.added-by")
                 value = addedBy.asMention
             }
         }

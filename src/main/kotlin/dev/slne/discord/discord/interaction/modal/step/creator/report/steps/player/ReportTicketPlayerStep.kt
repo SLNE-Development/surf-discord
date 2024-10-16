@@ -3,7 +3,7 @@ package dev.slne.discord.discord.interaction.modal.step.creator.report.steps.pla
 import dev.minn.jda.ktx.interactions.components.InlineModal
 import dev.slne.discord.discord.interaction.modal.step.MessageQueue
 import dev.slne.discord.discord.interaction.modal.step.ModalStep
-import dev.slne.discord.message.RawMessages.Companion.get
+import dev.slne.discord.message.translatable
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
@@ -19,16 +19,16 @@ class ReportTicketPlayerStep : ModalStep() {
     override fun InlineModal.buildModalComponents(interaction: StringSelectInteraction) {
         short(
             REPORT_PLAYER_NAME,
-            get("modal.report.step.player.input.reporting-player.label"),
+            translatable("modal.report.step.player.input.reporting-player.label"),
             required = true,
             requiredLength = 3..16,
         )
 
         paragraph(
             REPORT_PLAYER_REASON_INPUT,
-            get("modal.report.step.player.input.reason.label"),
+            translatable("modal.report.step.player.input.reason.label"),
             required = true,
-            placeholder = get("modal.report.step.player.input.reason.placeholder"),
+            placeholder = translatable("modal.report.step.player.input.reason.placeholder"),
         ) { minLength = 20 }
     }
 
@@ -39,11 +39,11 @@ class ReportTicketPlayerStep : ModalStep() {
 
     override fun MessageQueue.buildOpenMessages(thread: ThreadChannel) {
         addMessage(
-            get("modal.report.step.player.messages.reporting-player", reportPlayerName)
+            translatable("modal.report.step.player.messages.reporting-player", reportPlayerName)
         )
         addEmptyLine()
         addMessage(
-            "# " + get("modal.report.step.player.input.reason.placeholder")
+            "# " + translatable("modal.report.step.player.input.reason.placeholder")
         )
         addMessage("> %s", reportReason)
     }

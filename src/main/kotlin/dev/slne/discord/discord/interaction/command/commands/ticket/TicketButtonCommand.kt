@@ -9,7 +9,7 @@ import dev.slne.discord.discord.interaction.button.buttons.OpenTicketButton
 import dev.slne.discord.discord.interaction.command.DiscordCommand
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.EmbedColors
-import dev.slne.discord.message.RawMessages
+import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.processor.DiscordButtonManager
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
@@ -40,9 +40,9 @@ object TicketButtonCommand : DiscordCommand() {
     private suspend fun sendEmbed(button: Button, channel: MessageChannel) =
         channel.sendMessage(MessageCreate {
             embed {
-                title = RawMessages.get("interaction.command.ticket.ticket-button.title")
+                title = translatable("interaction.command.ticket.ticket-button.title")
                 description =
-                    RawMessages.get("interaction.command.ticket.ticket-button.description")
+                    translatable("interaction.command.ticket.ticket-button.description")
                 color = EmbedColors.CREATE_TICKET
             }
 

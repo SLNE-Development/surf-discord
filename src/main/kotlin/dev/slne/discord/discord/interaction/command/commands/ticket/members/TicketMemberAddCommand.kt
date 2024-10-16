@@ -8,7 +8,7 @@ import dev.slne.discord.discord.interaction.command.commands.TicketCommand
 import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.EmbedColors
-import dev.slne.discord.message.RawMessages
+import dev.slne.discord.message.translatable
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
@@ -28,7 +28,7 @@ object TicketMemberAddCommand : TicketCommand() {
     override val options = listOf(
         option<Member>(
             USER_OPTION,
-            RawMessages.get("interaction.command.ticket.member.add.arg.member"),
+            translatable("interaction.command.ticket.member.add.arg.member"),
         )
     )
 
@@ -40,7 +40,7 @@ object TicketMemberAddCommand : TicketCommand() {
         val member = interaction.getOptionOrThrow<Member>(USER_OPTION)
         member.checkMemberNotBot(CommandExceptions.TICKET_BOT_ADD)
 
-        hook.editOriginal(RawMessages.get("interaction.command.ticket.member.add.adding")).await()
+        hook.editOriginal(translatable("interaction.command.ticket.member.add.adding")).await()
 
         val thread = interaction.getThreadChannelOrThrow()
         val ticketMembers = thread.retrieveThreadMembers().await()
@@ -60,17 +60,17 @@ object TicketMemberAddCommand : TicketCommand() {
     ) {
         threadChannel.addThreadMember(member).await()
 
-        hook.editOriginal(RawMessages.get("interaction.command.ticket.member.add.added")).await()
+        hook.editOriginal(translatable("interaction.command.ticket.member.add.added")).await()
 
         hook.sendMessage(MessageCreate {
             content = member.asMention
             embed {
-                title = RawMessages.get("interaction.command.ticket.member.embed.title")
-                description = RawMessages.get("interaction.command.ticket.member.embed.description")
+                title = translatable("interaction.command.ticket.member.embed.title")
+                description = translatable("interaction.command.ticket.member.embed.description")
                 timestamp = ZonedDateTime.now()
                 color = EmbedColors.ADD_TICKET_MEMBER
                 footer {
-                    name = RawMessages.get(
+                    name = translatable(
                         "interaction.command.ticket.member.embed.footer",
                         executor.name
                     )

@@ -9,7 +9,7 @@ import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.guild.getDiscordGuildByGuildId
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.MessageManager
-import dev.slne.discord.message.RawMessages
+import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.feign.dto.WhitelistDTO
 import dev.slne.discord.persistence.service.user.UserService
 import dev.slne.discord.persistence.service.whitelist.WhitelistService
@@ -33,15 +33,15 @@ object WhitelistCommand : DiscordCommand() {
     override val options = listOf(
         option<User>(
             USER_OPTION,
-            RawMessages.get("interaction.command.ticket.whitelist.arg.user")
+            translatable("interaction.command.ticket.whitelist.arg.user")
         ),
         option<String>(
             MINECRAFT_OPTION,
-            RawMessages.get("interaction.command.ticket.whitelist.arg.minecraft-name")
+            translatable("interaction.command.ticket.whitelist.arg.minecraft-name")
         ) { length(3..16) },
         option<String>(
             TWITCH_OPTION,
-            RawMessages.get("interaction.command.ticket.whitelist.arg.twitch-name")
+            translatable("interaction.command.ticket.whitelist.arg.twitch-name")
         )
     )
 
@@ -79,7 +79,7 @@ object WhitelistCommand : DiscordCommand() {
         val minecraftUuid = UserService.getUuidByUsername(minecraft)
             ?: throw CommandExceptions.MINECRAFT_USER_NOT_FOUND.create()
 
-        hook.editOriginal(RawMessages.get("interaction.command.ticket.whitelist.checking")).await()
+        hook.editOriginal(translatable("interaction.command.ticket.whitelist.checking")).await()
 
         val whitelists: List<WhitelistDTO> = WhitelistService.checkWhitelists(
             minecraftUuid, discordId, twitch
@@ -87,7 +87,7 @@ object WhitelistCommand : DiscordCommand() {
 
         if (whitelists.isNotEmpty()) {
             hook.editOriginal(
-                RawMessages.get("interaction.command.ticket.whitelist.already-whitelisted")
+                translatable("interaction.command.ticket.whitelist.already-whitelisted")
             ).await()
 
             for (whitelist: WhitelistDTO in whitelists) {
@@ -95,7 +95,7 @@ object WhitelistCommand : DiscordCommand() {
             }
         } else {
             hook.editOriginal(
-                RawMessages.get("interaction.command.ticket.whitelist.adding")
+                translatable("interaction.command.ticket.whitelist.adding")
             ).await()
 
             val createdWhitelist: WhitelistDTO? = WhitelistService.addWhitelist(
@@ -115,7 +115,7 @@ object WhitelistCommand : DiscordCommand() {
             addWhitelistedRole(interaction.guild, user)
 
             channel.sendMessage(MessageCreate {
-                content = RawMessages.get(
+                content = translatable(
                     "interaction.command.ticket.whitelist.added",
                     user.asMention
                 )

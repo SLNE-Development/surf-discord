@@ -8,8 +8,13 @@ import java.io.*
 import java.text.MessageFormat
 import java.util.*
 
-class RawMessages private constructor() {
+private const val BUNDLE_NAME = "messages"
+private const val BUNDLE_PATH = "$BUNDLE_NAME.properties"
+private const val TARGET_PATH = "messages/messages.properties"
+
+object RawMessages {
     private var properties: Properties
+    private val logger = ComponentLogger.logger()
 
     init {
         properties = Properties()
@@ -24,7 +29,7 @@ class RawMessages private constructor() {
                     }
                 }
         } catch (e: IOException) {
-            LOGGER.error("Error while loading default properties", e)
+            logger.error("Error while loading default properties", e)
         }
 
         val file = File(TARGET_PATH)
@@ -48,7 +53,7 @@ class RawMessages private constructor() {
                     }
                 }
             } catch (e: IOException) {
-                LOGGER.error("Error while loading existing properties", e)
+                logger.error("Error while loading existing properties", e)
             }
         } else {
             try {
@@ -56,17 +61,17 @@ class RawMessages private constructor() {
 
                 if (parentFile != null) {
                     if (!parentFile.mkdirs()) {
-                        LOGGER.error("Error while creating parent directories")
+                        logger.error("Error while creating parent directories")
                     }
                 }
 
                 if (!file.createNewFile()) {
-                    LOGGER.error("Error while creating properties file")
+                    logger.error("Error while creating properties file")
                 }
 
                 saveProperties()
             } catch (e: IOException) {
-                LOGGER.error("Error while creating properties file", e)
+                logger.error("Error while creating properties file", e)
             }
         }
     }
@@ -86,31 +91,14 @@ class RawMessages private constructor() {
                 properties.store(outputStream, "Updated properties")
             }
         } catch (e: IOException) {
-            LOGGER.error("Error while saving properties", e)
-        }
-    }
-
-    companion object {
-        private val LOGGER = ComponentLogger.logger("RawMessages")
-        const val BUNDLE_NAME = "messages"
-        private const val BUNDLE_PATH = "$BUNDLE_NAME.properties"
-        private const val TARGET_PATH = "messages/messages.properties"
-
-        private val INSTANCE = RawMessages()
-
-        @JvmStatic
-        fun get(
-            key: @NonNls @PropertyKey(resourceBundle = BUNDLE_NAME) String?,
-            vararg params: Any?
-        ): @Nls String {
-            return INSTANCE.getMessage(key, *params)
+            logger.error("Error while saving properties", e)
         }
     }
 }
 
 fun translatable(
-    key: @NonNls @PropertyKey(resourceBundle = RawMessages.BUNDLE_NAME) String,
+    key: @NonNls @PropertyKey(resourceBundle = BUNDLE_NAME) String,
     vararg params: Any?
 ): String {
-    return RawMessages.get(key, *params)
+    return RawMessages.getMessage(key, *params)
 }

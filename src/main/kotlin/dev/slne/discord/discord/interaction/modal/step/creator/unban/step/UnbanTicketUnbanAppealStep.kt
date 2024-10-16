@@ -3,7 +3,7 @@ package dev.slne.discord.discord.interaction.modal.step.creator.unban.step
 import dev.minn.jda.ktx.interactions.components.InlineModal
 import dev.slne.discord.discord.interaction.modal.step.MessageQueue
 import dev.slne.discord.discord.interaction.modal.step.ModalStep
-import dev.slne.discord.message.RawMessages.Companion.get
+import dev.slne.discord.message.translatable
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
@@ -17,9 +17,9 @@ class UnbanTicketUnbanAppealStep(parent: ModalStep) : ModalStep() {
     override fun InlineModal.buildModalComponents(interaction: StringSelectInteraction) {
         paragraph(
             COMPONENT_ID,
-            get("modal.unban.step.appeal.input.appeal.label"),
+            translatable("modal.unban.step.appeal.input.appeal.label"),
             required = true,
-            placeholder = get("modal.unban.step.appeal.input.appeal.placeholder"),
+            placeholder = translatable("modal.unban.step.appeal.input.appeal.placeholder"),
         ) { minLength = 300 }
     }
 
@@ -28,7 +28,7 @@ class UnbanTicketUnbanAppealStep(parent: ModalStep) : ModalStep() {
     }
 
     override fun MessageQueue.buildOpenMessages(thread: ThreadChannel) {
-        addMessage(get("modal.unban.step.appeal.messages.appeal.title"))
-        addMessage(get("modal.unban.step.appeal.messages.appeal", unbanAppeal))
+        addMessage(translatable("modal.unban.step.appeal.messages.appeal.title"))
+        addMessage(translatable("modal.unban.step.appeal.messages.appeal", unbanAppeal))
     }
 }

@@ -5,7 +5,7 @@ import dev.slne.discord.annotation.DiscordCommandMeta
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand
 import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.guild.permission.CommandPermission
-import dev.slne.discord.message.RawMessages
+import dev.slne.discord.message.translatable
 import dev.slne.discord.ticket.Ticket
 import dev.slne.discord.ticket.TicketCreator
 import dev.slne.discord.ticket.result.TicketCloseResult
@@ -24,7 +24,7 @@ object WhitelistedCommand : TicketCommand() {
         interaction: SlashCommandInteractionEvent,
         hook: InteractionHook
     ) {
-        hook.editOriginal(RawMessages.get("interaction.command.ticket.close.closing")).await()
+        hook.editOriginal(translatable("interaction.command.ticket.close.closing")).await()
 
         closeTicket(interaction.user, interaction.getTicketOrThrow())
     }
@@ -33,7 +33,7 @@ object WhitelistedCommand : TicketCommand() {
         val closeResult = TicketCreator.closeTicket(
             ticket,
             closer,
-            RawMessages.get("interaction.command.ticket.whitelisted.close-reason")
+            translatable("interaction.command.ticket.whitelisted.close-reason")
         )
 
         if (closeResult != TicketCloseResult.SUCCESS) {

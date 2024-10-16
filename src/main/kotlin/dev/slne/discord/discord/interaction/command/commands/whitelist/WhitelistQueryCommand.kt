@@ -7,7 +7,7 @@ import dev.slne.discord.discord.interaction.command.getThreadChannelOrThrow
 import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.MessageManager
-import dev.slne.discord.message.RawMessages
+import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.user.UserService
 import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import net.dv8tion.jda.api.entities.User
@@ -28,17 +28,17 @@ object WhitelistQueryCommand : DiscordCommand() {
     override val options = listOf(
         option<User>(
             USER_OPTION,
-            RawMessages.get("interaction.command.ticket.wlquery.arg.user"),
+            translatable("interaction.command.ticket.wlquery.arg.user"),
             required = false
         ),
         option<String>(
             MINECRAFT_OPTION,
-            RawMessages.get("interaction.command.ticket.wlquery.arg.minecraft-name"),
+            translatable("interaction.command.ticket.wlquery.arg.minecraft-name"),
             required = false
         ) { length(3..16) },
         option<String>(
             TWITCH_OPTION,
-            RawMessages.get("interaction.command.ticket.wlquery.arg.twitch-name"),
+            translatable("interaction.command.ticket.wlquery.arg.twitch-name"),
             required = false
         )
     )

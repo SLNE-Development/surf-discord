@@ -3,7 +3,7 @@ package dev.slne.discord.discord.interaction.modal.step.creator.whitelist.step
 import dev.minn.jda.ktx.interactions.components.InlineModal
 import dev.slne.discord.discord.interaction.modal.step.MessageQueue
 import dev.slne.discord.discord.interaction.modal.step.ModalStep
-import dev.slne.discord.message.RawMessages
+import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.user.UserService
 import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
@@ -19,7 +19,7 @@ class WhitelistTicketMinecraftNameStep(parent: ModalStep) : ModalStep() {
     override fun InlineModal.buildModalComponents(interaction: StringSelectInteraction) {
         short(
             MINECRAFT_NAME,
-            RawMessages.get("modal.whitelist.step.minecraft.label"),
+            translatable("modal.whitelist.step.minecraft.label"),
             required = true,
             requiredLength = 3..16
         )
@@ -30,19 +30,19 @@ class WhitelistTicketMinecraftNameStep(parent: ModalStep) : ModalStep() {
 
         val uuid = UserService.getUuidByUsername(minecraftName!!)
             ?: throw ModalStepInputVerificationException(
-                RawMessages.get("modal.whitelist.step.minecraft.invalid")
+                translatable("modal.whitelist.step.minecraft.invalid")
             )
 
         if (WhitelistService.isWhitelisted(uuid, null, null)) {
             throw ModalStepInputVerificationException(
-                RawMessages.get("interaction.command.ticket.whitelist.already-whitelisted")
+                translatable("interaction.command.ticket.whitelist.already-whitelisted")
             )
         }
     }
 
     override fun MessageQueue.buildOpenMessages(thread: ThreadChannel) {
         addMessage(
-            RawMessages.get(
+            translatable(
                 "modal.whitelist.step.minecraft.open",
                 minecraftName
             )

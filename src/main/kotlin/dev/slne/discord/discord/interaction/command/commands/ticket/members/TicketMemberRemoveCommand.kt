@@ -6,7 +6,7 @@ import dev.slne.discord.discord.interaction.command.checkMemberNotBot
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand
 import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.guild.permission.CommandPermission
-import dev.slne.discord.message.RawMessages
+import dev.slne.discord.message.translatable
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
@@ -26,7 +26,7 @@ object TicketMemberRemoveCommand : TicketCommand() {
     override val options = listOf(
         option<User>(
             USER_OPTION,
-            RawMessages.get("interaction.command.ticket.member.remove.arg.member"),
+            translatable("interaction.command.ticket.member.remove.arg.member"),
         )
     )
 
@@ -55,16 +55,16 @@ object TicketMemberRemoveCommand : TicketCommand() {
         thread: ThreadChannel,
         hook: InteractionHook,
     ) {
-        hook.editOriginal(RawMessages.get("interaction.command.ticket.member.remove.removing"))
+        hook.editOriginal(translatable("interaction.command.ticket.member.remove.removing"))
             .await()
 
         thread.removeThreadMember(member).await()
 
-        hook.editOriginal(RawMessages.get("interaction.command.ticket.member.remove.removed"))
+        hook.editOriginal(translatable("interaction.command.ticket.member.remove.removed"))
             .await()
 
         thread.sendMessage(
-            RawMessages.get(
+            translatable(
                 "interaction.command.ticket.member.remove.announcement",
                 member.asMention, executor.asMention
             )

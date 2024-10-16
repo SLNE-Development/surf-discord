@@ -5,7 +5,6 @@ import dev.slne.discord.discord.interaction.modal.step.DiscordStepChannelCreatio
 import dev.slne.discord.discord.interaction.modal.step.StepBuilder
 import dev.slne.discord.discord.interaction.modal.step.creator.whitelist.step.WhitelistTicketConfirmTwitchConnected
 import dev.slne.discord.discord.interaction.modal.step.creator.whitelist.step.WhitelistTicketMinecraftNameStep
-import dev.slne.discord.message.RawMessages.Companion.get
 import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import dev.slne.discord.ticket.TicketType
@@ -17,7 +16,7 @@ import net.dv8tion.jda.api.interactions.components.selections.StringSelectIntera
     modalId = WhitelistTicketChannelCreationModal.MODAL_ID
 )
 class WhitelistTicketChannelCreationModal :
-    DiscordStepChannelCreationModal(get("modal.whitelist.title")) {
+    DiscordStepChannelCreationModal(translatable("modal.whitelist.title")) {
 
     override fun buildSteps() = StepBuilder.startWith(WhitelistTicketConfirmTwitchConnected())
         .then(::WhitelistTicketMinecraftNameStep)

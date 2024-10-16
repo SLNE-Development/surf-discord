@@ -4,7 +4,7 @@ import dev.slne.discord.annotation.DiscordCommandMeta
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand
 import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.guild.permission.CommandPermission
-import dev.slne.discord.message.RawMessages
+import dev.slne.discord.message.translatable
 import dev.slne.discord.ticket.TicketCreator
 import dev.slne.discord.ticket.result.TicketCloseResult
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
@@ -30,7 +30,7 @@ object TicketDependenciesNotMetCommand : TicketCommand() {
         val closeResult = TicketCreator.closeTicket(
             ticket,
             closer,
-            RawMessages.get("interaction.command.ticket.dependencies-not-met.close-reason")
+            translatable("interaction.command.ticket.dependencies-not-met.close-reason")
         )
 
         if (closeResult != TicketCloseResult.SUCCESS) {

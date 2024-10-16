@@ -6,7 +6,7 @@ import dev.minn.jda.ktx.interactions.components.replyModal
 import dev.minn.jda.ktx.messages.MessageCreate
 import dev.slne.discord.annotation.ChannelCreationModal
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager
-import dev.slne.discord.message.RawMessages
+import dev.slne.discord.message.translatable
 import dev.slne.discord.ticket.Ticket
 import dev.slne.discord.ticket.TicketChannelHelper
 import dev.slne.discord.ticket.result.TicketCreateResult
@@ -50,7 +50,7 @@ abstract class DiscordStepChannelCreationModal(
         guild: Guild,
     ) {
         if (checkTicketExists(guild, interaction.user)) {
-            reply(interaction, RawMessages.get("error.ticket.type.already-open"))
+            reply(interaction, translatable("error.ticket.type.already-open"))
             return
         }
 
@@ -215,12 +215,12 @@ abstract class DiscordStepChannelCreationModal(
             TicketCreateResult.SUCCESS -> handleSuccess(thread, event, user)
             TicketCreateResult.ALREADY_EXISTS -> reply(
                 event,
-                RawMessages.get("error.ticket.type.already-open")
+                translatable("error.ticket.type.already-open")
             )
 
             TicketCreateResult.MISSING_PERMISSIONS -> reply(
                 event,
-                RawMessages.get("error.ticket.permission.open")
+                translatable("error.ticket.permission.open")
             )
 
             else -> {
@@ -247,7 +247,7 @@ abstract class DiscordStepChannelCreationModal(
         user: User
     ) {
         val message = buildString {
-            append(RawMessages.get("ticket.open.success", ticketType.displayName))
+            append(translatable("ticket.open.success", ticketType.displayName))
             ticketType
             append(thread.asMention)
         }

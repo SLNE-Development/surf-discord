@@ -3,7 +3,7 @@ package dev.slne.discord.discord.interaction.modal.step.creator.unban.step
 import dev.minn.jda.ktx.interactions.components.InlineModal
 import dev.slne.discord.discord.interaction.modal.step.MessageQueue
 import dev.slne.discord.discord.interaction.modal.step.ModalStep
-import dev.slne.discord.message.RawMessages
+import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.punishment.PunishmentService
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
@@ -18,8 +18,8 @@ class UnbanTicketPunishmentIdStep : ModalStep() {
     override fun InlineModal.buildModalComponents(interaction: StringSelectInteraction) {
         short(
             PUNISHMENT_ID,
-            RawMessages.get("modal.unban.step.punishment-id.input.label"),
-            placeholder = RawMessages.get("modal.unban.step.punishment-id.input.placeholder"),
+            translatable("modal.unban.step.punishment-id.input.label"),
+            placeholder = translatable("modal.unban.step.punishment-id.input.placeholder"),
             required = true,
             requiredLength = 6..8
         )
@@ -30,14 +30,14 @@ class UnbanTicketPunishmentIdStep : ModalStep() {
 
         if (!PunishmentService.isValidPunishmentId(punishmentId!!)) {
             throw ModalStepInputVerificationException(
-                RawMessages.get("modal.unban.step.punishment-id.error.invalid")
+                translatable("modal.unban.step.punishment-id.error.invalid")
             )
         }
     }
 
     override fun MessageQueue.buildOpenMessages(thread: ThreadChannel) {
         addMessage(
-            RawMessages.get(
+            translatable(
                 "modal.unban.step.punishment-id.messages.punishment-id",
                 punishmentId
             )

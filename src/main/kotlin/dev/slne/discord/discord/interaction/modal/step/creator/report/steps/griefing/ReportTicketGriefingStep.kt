@@ -4,7 +4,6 @@ import dev.minn.jda.ktx.interactions.components.InlineModal
 import dev.minn.jda.ktx.interactions.components.SelectOption
 import dev.slne.discord.discord.interaction.modal.step.MessageQueue
 import dev.slne.discord.discord.interaction.modal.step.ModalSelectionStep
-import dev.slne.discord.message.RawMessages.Companion.get
 import dev.slne.discord.message.translatable
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
@@ -20,21 +19,21 @@ private const val WHAT_GRIEFED_INPUT = "what-griefed"
 private const val ADDITIONAL_INFORMATION_INPUT = "additional-information"
 
 class ReportTicketGriefingStep : ModalSelectionStep(
-    get("modal.report.step.selection.griefing.title"),
+    translatable("modal.report.step.selection.griefing.title"),
     SelectOption(
-        get("modal.report.step.selection.griefing.survival1.label"),
+        translatable("modal.report.step.selection.griefing.survival1.label"),
         OPTION_SURVIVAL_01,
-        description = get("modal.report.step.selection.griefing.survival.description")
+        description = translatable("modal.report.step.selection.griefing.survival.description")
     ),
     SelectOption(
-        get("modal.report.step.selection.griefing.survival2.label"),
+        translatable("modal.report.step.selection.griefing.survival2.label"),
         OPTION_SURVIVAL_02,
-        description = get("modal.report.step.selection.griefing.survival.description")
+        description = translatable("modal.report.step.selection.griefing.survival.description")
     ),
     SelectOption(
-        get("modal.report.step.selection.griefing.event.label"),
+        translatable("modal.report.step.selection.griefing.event.label"),
         OPTION_EVENT,
-        description = get("modal.report.step.selection.griefing.event.description")
+        description = translatable("modal.report.step.selection.griefing.event.description")
     )
 ) {
     private var world: String? = null
@@ -45,29 +44,29 @@ class ReportTicketGriefingStep : ModalSelectionStep(
     override fun InlineModal.buildModalComponents(interaction: StringSelectInteraction) {
         short(
             WORLD_INPUT,
-            get("modal.report.step.griefing.input.world.label"),
-            placeholder = get("modal.report.step.griefing.input.world.placeholder"),
+            translatable("modal.report.step.griefing.input.world.label"),
+            placeholder = translatable("modal.report.step.griefing.input.world.placeholder"),
             required = true
         )
 
         short(
             XYZ_INPUT,
-            get("modal.report.step.griefing.input.xyz.label"),
-            placeholder = get("modal.report.step.griefing.input.xyz.placeholder"),
+            translatable("modal.report.step.griefing.input.xyz.label"),
+            placeholder = translatable("modal.report.step.griefing.input.xyz.placeholder"),
             required = true
         ) { minLength = 5 }
 
         paragraph(
             WHAT_GRIEFED_INPUT,
-            get("modal.report.step.griefing.input.what-griefed.label"),
-            placeholder = get("modal.report.step.griefing.input.what-griefed.placeholder"),
+            translatable("modal.report.step.griefing.input.what-griefed.label"),
+            placeholder = translatable("modal.report.step.griefing.input.what-griefed.placeholder"),
             required = true
         )
 
         paragraph(
             ADDITIONAL_INFORMATION_INPUT,
             translatable("modal.report.step.griefing.input.additional-info.label"),
-            placeholder = get("modal.report.step.griefing.input.additional-info.placeholder"),
+            placeholder = translatable("modal.report.step.griefing.input.additional-info.placeholder"),
             required = false
         )
     }
@@ -81,14 +80,14 @@ class ReportTicketGriefingStep : ModalSelectionStep(
 
     override fun MessageQueue.buildOpenMessages(thread: ThreadChannel) {
         addMessage(
-            get("modal.report.step.griefing.messages.server", selectedServer)
+            translatable("modal.report.step.griefing.messages.server", selectedServer)
         )
         addMessage(
-            get("modal.report.step.griefing.messages.location", xYZ, world)
+            translatable("modal.report.step.griefing.messages.location", xYZ, world)
         )
         addEmptyLine()
         addMessage(
-            "# " + get(
+            "# " + translatable(
                 "modal.report.step.griefing.input.what-griefed.label"
             )
         )
@@ -97,7 +96,7 @@ class ReportTicketGriefingStep : ModalSelectionStep(
         if (!additionalInformation.isNullOrEmpty()) {
             addEmptyLine()
             addMessage(
-                "## " + get(
+                "## " + translatable(
                     "modal.report.step.griefing.input.additional-info.label"
                 )
             )
@@ -107,9 +106,9 @@ class ReportTicketGriefingStep : ModalSelectionStep(
 
     private val selectedServer: String
         get() = when (selected) {
-            OPTION_SURVIVAL_01 -> get("modal.report.step.selection.griefing.survival1.label")
-            OPTION_SURVIVAL_02 -> get("modal.report.step.selection.griefing.survival2.label")
-            OPTION_EVENT -> get("modal.report.step.selection.griefing.event.label")
+            OPTION_SURVIVAL_01 -> translatable("modal.report.step.selection.griefing.survival1.label")
+            OPTION_SURVIVAL_02 -> translatable("modal.report.step.selection.griefing.survival2.label")
+            OPTION_EVENT -> translatable("modal.report.step.selection.griefing.event.label")
             else -> throw IllegalStateException("Unexpected value: $selected")
         }
 }

@@ -7,7 +7,6 @@ import dev.slne.discord.discord.interaction.modal.step.ModalSelectionStep
 import dev.slne.discord.discord.interaction.modal.step.StepBuilder
 import dev.slne.discord.discord.interaction.modal.step.creator.report.steps.griefing.ReportTicketGriefingStep
 import dev.slne.discord.discord.interaction.modal.step.creator.report.steps.player.ReportTicketPlayerStep
-import dev.slne.discord.message.RawMessages.Companion.get
 import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.user.UserService
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
@@ -20,25 +19,25 @@ private const val OPTION_PLAYER = "player"
 private const val REPORTING_PLAYER_NAME_INPUT = "player-name"
 
 class ReportTicketSelectTypeStep : ModalSelectionStep(
-    get("modal.report.step.type.selection.title"),
+    translatable("modal.report.step.type.selection.title"),
     SelectOption(
-        get("modal.report.step.type.selection.griefing.label"),
+        translatable("modal.report.step.type.selection.griefing.label"),
         OPTION_GRIEFING,
-        description = get("modal.report.step.type.selection.griefing.description")
+        description = translatable("modal.report.step.type.selection.griefing.description")
     ),
     SelectOption(
-        get("modal.report.step.type.selection.player.label"),
+        translatable("modal.report.step.type.selection.player.label"),
         OPTION_PLAYER,
-        description = get("modal.report.step.type.selection.player.description")
+        description = translatable("modal.report.step.type.selection.player.description")
     )
 ) {
     private var playerName: String? = null
 
     override fun InlineModal.buildModalComponents(interaction: StringSelectInteraction) {
         val label = if (isGriefing) {
-            get("modal.report.step.type.input.griefing.own-name")
+            translatable("modal.report.step.type.input.griefing.own-name")
         } else {
-            get("modal.report.step.type.input.report.reported-player")
+            translatable("modal.report.step.type.input.report.reported-player")
         }
 
         short(

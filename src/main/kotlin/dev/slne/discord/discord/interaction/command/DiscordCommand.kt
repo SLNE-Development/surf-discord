@@ -8,7 +8,7 @@ import dev.slne.discord.exception.command.CommandException
 import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.exception.command.pre.PreCommandCheckException
 import dev.slne.discord.guild.permission.CommandPermission
-import dev.slne.discord.message.RawMessages
+import dev.slne.discord.message.translatable
 import dev.slne.discord.util.ExceptionFactory
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel
@@ -83,7 +83,7 @@ abstract class DiscordCommand {
         val hasPermission = memberRoles.any { it.hasCommandPermission(permission) }
 
         if (!hasPermission) {
-            hook.editOriginal(RawMessages.get("error.command.no-permission")).await()
+            hook.editOriginal(translatable("error.command.no-permission")).await()
             return false
         }
 
@@ -199,7 +199,7 @@ abstract class DiscordCommand {
         description: String,
         builder: SubcommandData.() -> Unit = {}
     ) = Subcommand(name, description, builder)
-    
+
     protected fun OptionData.length(range: IntRange) = setRequiredLength(range.first, range.last)
 
 }
