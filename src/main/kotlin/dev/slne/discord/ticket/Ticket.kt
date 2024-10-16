@@ -92,6 +92,9 @@ open class Ticket protected constructor() {
     open var closedAt: ZonedDateTime? = null
         protected set
 
+    @Transient
+    open var isClosing = false
+
     @OneToMany(mappedBy = "ticket", cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     protected open var _messages: MutableList<TicketMessage> = mutableListOf()
 
@@ -101,6 +104,9 @@ open class Ticket protected constructor() {
     val closeReasonOrDefault: String get() = closedReason ?: Messages.DEFAULT_TICKET_CLOSED_REASON
     val author get() = ticketAuthorId?.let { DiscordBot.jda.retrieveUserById(it) }
     val guild get() = guildId?.let { DiscordBot.jda.getGuildById(it) }
+
+    val isClosed
+        get() = closedAt != null
 
     fun addTicketMessage(ticketMessage: TicketMessage) {
         _messages.add(ticketMessage)
@@ -126,6 +132,18 @@ open class Ticket protected constructor() {
         this.closedAt = closedAt
     }
 
+    fun reopen() {
+        this.closedById = null
+        this.closedByName = null
+        this.closedByAvatarUrl = null
+        this.closedReason = null
+        this.closedAt = null
+    }
+
+    override fun toString(): String {
+        return "Ticket(id=$id, ticketId=$ticketId, openedAt=$openedAt, guildId=$guildId, threadId=$threadId, ticketType=$ticketType, ticketAuthorId=$ticketAuthorId, ticketAuthorName=$ticketAuthorName, ticketAuthorAvatarUrl=$ticketAuthorAvatarUrl, closedById=$closedById, closedReason=$closedReason, closedByAvatarUrl=$closedByAvatarUrl, closedByName=$closedByName, closedAt=$closedAt, _messages=$_messages)"
+    }
+
     companion object {
         fun open(
             guild: Guild,
@@ -142,4 +160,6 @@ open class Ticket protected constructor() {
             this.ticketAuthorAvatarUrl = ticketAuthor.avatarUrl
         }
     }
+
+
 }

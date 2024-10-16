@@ -17,4 +17,11 @@ object TicketRepository {
         query.where(session.criteriaBuilder.isNull(root.get<Ticket>("closedAt")))
         session.createQuery(query.select(root)).resultList
     }
+
+    suspend fun findByThreadId(threadId: String): Ticket? = sessionFactory.withSession { session ->
+        val query = session.criteriaBuilder.createQuery(Ticket::class.java)
+        val root = query.from(Ticket::class.java)
+        query.where(session.criteriaBuilder.equal(root.get<String>("threadId"), threadId))
+        session.createQuery(query.select(root)).resultList.firstOrNull()
+    }
 }

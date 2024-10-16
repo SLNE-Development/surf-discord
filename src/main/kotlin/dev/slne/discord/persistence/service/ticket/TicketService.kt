@@ -57,7 +57,7 @@ object TicketService {
 
     fun getTicketById(id: UUID) = tickets.firstOrNull { it.ticketId == id }
 
-    fun getTicketByThreadId(threadId: String) = tickets.firstOrNull { it.thread?.id == threadId }
+    fun getTicketByThreadId(threadId: String) = tickets.firstOrNull { it.threadId == threadId }
 
     fun createTicket(ticket: Ticket): Ticket = ticket
 

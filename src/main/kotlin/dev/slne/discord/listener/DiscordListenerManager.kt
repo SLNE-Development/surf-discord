@@ -8,6 +8,7 @@ import dev.slne.discord.listener.interaction.modal.DiscordModalListener
 import dev.slne.discord.listener.message.MessageCreatedListener
 import dev.slne.discord.listener.message.MessageDeletedListener
 import dev.slne.discord.listener.message.MessageUpdatedListener
+import dev.slne.discord.listener.ticket.TicketArchiveListener
 import dev.slne.discord.listener.whitelist.WhitelistJoinListener
 import dev.slne.discord.listener.whitelist.WhitelistQuitListener
 
@@ -27,5 +28,7 @@ object DiscordListenerManager {
 
         WhitelistJoinListener
         WhitelistQuitListener
+
+        TicketArchiveListener
     }
 }
