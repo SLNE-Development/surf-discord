@@ -24,7 +24,7 @@ object DiscordPersistence {
         configuration.setProperty("hibernate.connection.username", "u23_evmQtjuUbU")
         configuration.setProperty("hibernate.connection.password", "N.ooV2nNsM1POH+iPc9+3s43")
         configuration.setProperty("hibernate.dialect", "org.hibernate.dialect.MariaDBDialect")
-        configuration.setProperty("hibernate.hbm2ddl.auto", "update")
+        configuration.setProperty("hibernate.hbm2ddl.auto", "none")
         configuration.setProperty("hibernate.show_sql", "true")
 
 
