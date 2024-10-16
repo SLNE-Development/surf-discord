@@ -77,7 +77,8 @@ object TicketChannelHelper {
             }
         }
 
-        thread.sendMessage(pingParty).await()
+        val pingPartyMessage = thread.sendMessage("Warte auf Pings...").await()
+        pingPartyMessage.editMessage(pingParty).await()
 
 //        for (member in guild.findMembersWithRoles(roleIds.mapNotNull { guild.getRoleById(it) })
 //            .await()) {
