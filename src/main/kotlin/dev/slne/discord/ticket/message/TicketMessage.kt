@@ -75,7 +75,12 @@ open class TicketMessage protected constructor() {
     open var botMessage: Boolean? = null
         protected set
 
-    @OneToMany(mappedBy = "ticketMessage", cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
+    @OneToMany(
+        mappedBy = "ticketMessage",
+        cascade = [CascadeType.ALL],
+        fetch = FetchType.EAGER,
+        orphanRemoval = true
+    )
     protected open var _attachments: MutableList<TicketMessageAttachment> = mutableListOf()
 
     @ManyToOne

@@ -95,7 +95,12 @@ open class Ticket protected constructor() {
     @Transient
     open var isClosing = false
 
-    @OneToMany(mappedBy = "ticket", cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
+    @OneToMany(
+        mappedBy = "ticket",
+        cascade = [CascadeType.ALL],
+        fetch = FetchType.EAGER,
+        orphanRemoval = true
+    )
     protected open var _messages: MutableList<TicketMessage> = mutableListOf()
 
     val messages: List<TicketMessage> get() = _messages
