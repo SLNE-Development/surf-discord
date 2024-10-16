@@ -2,8 +2,6 @@ package dev.slne.discord.ticket.message
 
 import dev.minn.jda.ktx.coroutines.await
 import dev.slne.discord.DiscordBot
-import dev.slne.discord.message.toEuropeBerlin
-import dev.slne.discord.persistence.service.ticket.TicketMessageService
 import dev.slne.discord.persistence.service.ticket.TicketService
 import dev.slne.discord.ticket.Ticket
 import dev.slne.discord.ticket.message.attachment.TicketMessageAttachment
@@ -17,7 +15,7 @@ import org.hibernate.type.SqlTypes
 import java.time.ZonedDateTime
 
 @Entity
-@Table(name = "ticket_messages")
+@Table(name = "ticket_test_messages")
 open class TicketMessage protected constructor() {
 
     @Id
@@ -32,7 +30,6 @@ open class TicketMessage protected constructor() {
     open var messageId: String? = null
         protected set
 
-    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Lob
     @Column(name = "json_content")
     open var jsonContent: String? = null
@@ -78,7 +75,7 @@ open class TicketMessage protected constructor() {
     open var botMessage: Boolean? = null
         protected set
 
-    @OneToMany(mappedBy = "ticketMessage")
+    @OneToMany(mappedBy = "ticketMessage", cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     protected open var _attachments: MutableList<TicketMessageAttachment> = mutableListOf()
 
     @ManyToOne
@@ -99,25 +96,50 @@ open class TicketMessage protected constructor() {
         if (jsonContent != null) jsonContent else message?.await()?.contentDisplay
 
     suspend fun delete() = ticket?.let {
-        messageDeletedAt = ZonedDateTime.now().toEuropeBerlin()
+        val copy = copy()
 
-        TicketMessageService.deleteTicketMessage(it, this)
+        copy.messageDeletedAt = ZonedDateTime.now()
+
+        copy.create()
     }
 
     suspend fun create() = ticket?.let {
-        messageCreatedAt = ZonedDateTime.now().toEuropeBerlin()
+//        val created = TicketMessageService.createTicketMessage(it, this)
 
-        TicketMessageService.createTicketMessage(it, this)
+        it.addTicketMessage(this)
+        it.save()
+        this
     }
 
-    suspend fun update() = ticket?.let {
-        messageEditedAt = ZonedDateTime.now().toEuropeBerlin()
+    suspend fun update(message: Message): TicketMessage? {
+        val copy = copy()
 
-        TicketMessageService.updateTicketMessage(it, this)
+        copy.jsonContent = message.contentDisplay
+        copy.messageCreatedAt = message.timeCreated.toZonedDateTime()
+        copy.messageEditedAt = message.timeEdited?.toZonedDateTime()
+
+        return copy.create()
+    }
+
+    private fun copy(): TicketMessage {
+        val copy = TicketMessage()
+        copy.messageId = messageId
+        copy.jsonContent = jsonContent
+        copy.authorId = authorId
+        copy.authorName = authorName
+        copy.authorAvatarUrl = authorAvatarUrl
+        copy.messageCreatedAt = messageCreatedAt
+        copy.messageEditedAt = messageEditedAt
+        copy.referencesMessageId = referencesMessageId
+        copy.botMessage = botMessage
+        copy.ticket = ticket
+        copy._attachments = _attachments
+
+        return copy
     }
 
     companion object {
-        fun fromJda(message: Message) = TicketMessage().apply {
+        fun fromJda(message: Message, ticket: Ticket) = TicketMessage().apply {
             this.messageId = message.id
             this.jsonContent = message.contentDisplay
             this.authorId = message.author.id
@@ -127,6 +149,7 @@ open class TicketMessage protected constructor() {
             this.messageEditedAt = message.timeEdited?.toZonedDateTime()
             this.referencesMessageId = message.messageReference?.messageId
             this.botMessage = message.author.isBot
+            this.ticket = ticket
 
             message.attachments.map { it.toTicketMessageAttachment() }
                 .forEach(::addAttachment)
@@ -138,4 +161,4 @@ open class TicketMessage protected constructor() {
     }
 }
 
-fun Message.toTicketMessage() = TicketMessage.fromJda(this)
+fun Message.toTicketMessage(ticket: Ticket) = TicketMessage.fromJda(this, ticket)

@@ -13,7 +13,7 @@ object TicketService {
 
     private val logger = ComponentLogger.logger(TicketService::class.java)
 
-    private var fetched = true // Only for testing
+    private var fetched = false // Only for testing
     private val pendingTickets = ObjectSets.synchronize(ObjectOpenHashSet<Ticket>())
     var tickets =
         ObjectSets.synchronize(ObjectOpenHashSet<Ticket>(1_024)) // We have a lot of tickets

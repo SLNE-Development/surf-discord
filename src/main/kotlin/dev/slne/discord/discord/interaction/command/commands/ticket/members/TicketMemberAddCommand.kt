@@ -9,7 +9,6 @@ import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.EmbedColors
 import dev.slne.discord.message.RawMessages
-import dev.slne.discord.message.toEuropeBerlin
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
@@ -68,7 +67,7 @@ object TicketMemberAddCommand : TicketCommand() {
             embed {
                 title = RawMessages.get("interaction.command.ticket.member.embed.title")
                 description = RawMessages.get("interaction.command.ticket.member.embed.description")
-                timestamp = ZonedDateTime.now().toEuropeBerlin()
+                timestamp = ZonedDateTime.now()
                 color = EmbedColors.ADD_TICKET_MEMBER
                 footer {
                     name = RawMessages.get(

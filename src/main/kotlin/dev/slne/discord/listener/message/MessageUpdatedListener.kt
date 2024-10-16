@@ -16,10 +16,7 @@ object MessageUpdatedListener {
             }
 
             val ticketMessage = ticket.getTicketMessage(event.messageId) ?: return@listener
-
-            ticketMessage.update()?.let {
-                ticket.addRawTicketMessage(it)
-            }
+            ticketMessage.update(event.message)
         }
     }
 }

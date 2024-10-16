@@ -27,27 +27,27 @@ object EmbedManager {
 
             field {
                 name = "Ticket-Type"
-                value = ticket.ticketType.displayName
+                value = ticket.ticketType!!.displayName
             }
 
             field {
                 name = "Ticket-Author"
-                value = ticket.ticketAuthor?.await()?.asMention ?: "Unbekannt"
+                value = ticket.author?.await()?.asMention ?: "Unbekannt"
             }
 
             field {
                 name = "Ticket-Eröffnungszeit"
-                value = ticket.openedAt.formatEuropeBerlin()
+                value = ticket.openedAt.format()
             }
 
             field {
                 name = "Ticket-Schließzeit"
-                value = ticket.closedAt!!.formatEuropeBerlin()
+                value = ticket.closedAt.format()
             }
 
             field {
                 name = "Ticket-Dauer"
-                value = formatDuration(ticket.openedAt, ticket.closedAt!!)
+                value = formatDuration(ticket.openedAt, ticket.closedAt)
             }
         }
 }

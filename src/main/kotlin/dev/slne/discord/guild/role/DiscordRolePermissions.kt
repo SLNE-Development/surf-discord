@@ -14,9 +14,8 @@ data class DiscordRolePermissions(
     fun hasCommandPermission(commandPermission: CommandPermission) =
         commandPermission in commandPermissions
 
-    fun hasDiscordPermission(permission: TicketViewPermission) =
-        permission in ticketViewPermissions
+    fun hasDiscordPermission(permission: TicketViewPermission) = permission in ticketViewPermissions
 
-    fun canViewTicketType(ticketType: TicketType) =
-        ticketType.viewPermission in ticketViewPermissions
+    fun canViewTicketType(ticketType: TicketType?) =
+        if (ticketType == null) false else ticketType.viewPermission in ticketViewPermissions
 }

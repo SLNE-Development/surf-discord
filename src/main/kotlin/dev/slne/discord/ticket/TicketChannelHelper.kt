@@ -85,7 +85,7 @@ object TicketChannelHelper {
         }
 
         thread.addThreadMember(
-            ticket.ticketAuthor?.await() ?: return TicketCreateResult.AUTHOR_NOT_FOUND
+            ticket.author?.await() ?: return TicketCreateResult.AUTHOR_NOT_FOUND
         ).await()
 
         ticket.save()
@@ -95,10 +95,10 @@ object TicketChannelHelper {
 
     suspend fun getTicketName(ticket: Ticket): String {
         val ticketType = ticket.ticketType
-        val author = ticket.ticketAuthor?.await()
+        val author = ticket.author?.await()
             ?: throw UnableToGetTicketNameException("Ticket author not found")
 
-        return generateTicketName(ticketType, author)
+        return generateTicketName(ticketType!!, author)
     }
 
     fun generateTicketName(

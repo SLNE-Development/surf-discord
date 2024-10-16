@@ -5,7 +5,6 @@ import dev.slne.discord.discord.interaction.command.getGuildConfig
 import dev.slne.discord.exception.ticket.DeleteTicketChannelException
 import dev.slne.discord.message.MessageManager
 import dev.slne.discord.message.Messages
-import dev.slne.discord.message.toEuropeBerlin
 import dev.slne.discord.persistence.service.ticket.TicketService
 import dev.slne.discord.ticket.result.TicketCloseResult
 import dev.slne.discord.ticket.result.TicketCreateResult
@@ -118,12 +117,7 @@ object TicketCreator {
     ): TicketCloseResult {
         with(ticket) {
             thread ?: return TicketCloseResult.TICKET_NOT_FOUND
-
-            closedById = closer.id
-            closedByAvatarUrl = closer.avatarUrl
-            closedByName = closer.name
-            closedAt = ZonedDateTime.now().toEuropeBerlin()
-            closedReason = reason ?: Messages.DEFAULT_TICKET_CLOSED_REASON
+            close(closer, reason ?: Messages.DEFAULT_TICKET_CLOSED_REASON, ZonedDateTime.now())
         }
 
         try {

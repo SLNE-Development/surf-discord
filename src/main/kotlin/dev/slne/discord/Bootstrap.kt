@@ -1,6 +1,7 @@
 package dev.slne.discord
 
 import dev.slne.discord.message.RawMessages
+import dev.slne.discord.persistence.service.ticket.TicketService
 import kotlinx.coroutines.runBlocking
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import kotlin.system.measureTimeMillis
@@ -22,7 +23,7 @@ class Bootstrap {
     suspend fun onLoad() {
         val duration = measureTimeMillis {
             DiscordBot.onLoad()
-//            TicketService.fetchActiveTickets()
+            TicketService.fetchActiveTickets()
         }
 
         logger.info("Done ({}ms)! Type 'help' for a list of commands.", duration)

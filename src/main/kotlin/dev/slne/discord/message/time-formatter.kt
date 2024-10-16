@@ -1,23 +1,28 @@
 package dev.slne.discord.message
 
-import dev.slne.discord.util.berlinZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
 val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
 
-fun formatDuration(startTime: ZonedDateTime, endTime: ZonedDateTime): String {
+fun formatDuration(startTime: ZonedDateTime?, endTime: ZonedDateTime?): String {
     var start = startTime
 
     val days = ChronoUnit.DAYS.between(start, endTime)
-    start = start.plusDays(days)
+    if (start != null) {
+        start = start.plusDays(days)
+    }
 
     val hours = ChronoUnit.HOURS.between(start, endTime)
-    start = start.plusHours(hours)
+    if (start != null) {
+        start = start.plusHours(hours)
+    }
 
     val minutes = ChronoUnit.MINUTES.between(start, endTime)
-    start = start.plusMinutes(minutes)
+    if (start != null) {
+        start = start.plusMinutes(minutes)
+    }
 
     val seconds = ChronoUnit.SECONDS.between(start, endTime)
 
@@ -54,13 +59,8 @@ fun formatDuration(startTime: ZonedDateTime, endTime: ZonedDateTime): String {
     return result.toString()
 }
 
-fun formatEuropeBerlinDuration(
-    start: ZonedDateTime,
-    end: ZonedDateTime
-) = formatDuration(start.toEuropeBerlin(), end.toEuropeBerlin())
 
-
-fun ZonedDateTime.toEuropeBerlin(): ZonedDateTime = withZoneSameInstant(berlinZoneId)
-
-fun ZonedDateTime.formatEuropeBerlin(): String = DATE_FORMATTER.format(toEuropeBerlin())
+//fun ZonedDateTime.toEuropeBerlin(): ZonedDateTime = withZoneSameInstant(berlinZoneId)
+//
+fun ZonedDateTime?.format(): String = this?.format(DATE_FORMATTER) ?: "???"
 

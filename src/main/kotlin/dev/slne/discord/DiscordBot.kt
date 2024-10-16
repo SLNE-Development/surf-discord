@@ -42,6 +42,7 @@ object DiscordBot {
         ) {
             setEventManager(CoroutineEventManager(scope = getDefaultScope(context = Dispatchers.IO)))
             setAutoReconnect(true)
+            setBulkDeleteSplittingEnabled(true)
 
             cache += listOf(
                 CacheFlag.ACTIVITY,

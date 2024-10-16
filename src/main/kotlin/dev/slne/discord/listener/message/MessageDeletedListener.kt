@@ -14,8 +14,8 @@ object MessageDeletedListener {
             deleteMessage(it.channel, listOf(it.messageId))
         }
 
-        DiscordBot.jda.listener<MessageBulkDeleteEvent> {
-            deleteMessage(it.channel, it.messageIds)
+        DiscordBot.jda.listener<MessageBulkDeleteEvent> { event ->
+            deleteMessage(event.channel, event.messageIds)
         }
     }
 
@@ -25,6 +25,6 @@ object MessageDeletedListener {
         messageIds
             .mapNotNull { ticket.getTicketMessage(it) }
             .mapNotNull { it.delete() }
-            .forEach { ticket.addRawTicketMessage(it) }
+            .forEach { ticket.addTicketMessage(it) }
     }
 }

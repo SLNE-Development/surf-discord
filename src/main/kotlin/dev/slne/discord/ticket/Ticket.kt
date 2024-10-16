@@ -16,7 +16,6 @@ import org.hibernate.type.SqlTypes
 import java.time.ZonedDateTime
 import java.util.*
 
-@Suppress("JpaDataSourceORMInspection")
 @Entity
 @Table(name = "ticket_tickets")
 open class Ticket protected constructor() {
@@ -24,6 +23,7 @@ open class Ticket protected constructor() {
     @Id
     @JdbcTypeCode(SqlTypes.BIGINT)
     @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     open var id: Long? = null
         protected set
 
@@ -72,7 +72,6 @@ open class Ticket protected constructor() {
     open var closedById: String? = null
         protected set
 
-    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Lob
     @Column(name = "closed_reason")
     open var closedReason: String? = null
@@ -93,7 +92,7 @@ open class Ticket protected constructor() {
     open var closedAt: ZonedDateTime? = null
         protected set
 
-    @OneToMany(mappedBy = "ticket")
+    @OneToMany(mappedBy = "ticket", cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     protected open var _messages: MutableList<TicketMessage> = mutableListOf()
 
     val messages: List<TicketMessage> get() = _messages

@@ -3,5 +3,6 @@
   <component name="DiffGenerationConfig" isInitGenerateDdl="true">
     <option name="initGenerateDdl" value="true" />
     <option name="sourceModelValue" value="IdeaProjects.surf-discord.main:IdeaProjects.surf-discord.main" />
+    <option name="targetDbValue" value="eccde7bf-dd24-4f87-ae67-235c68c9f76d" />
   </component>
 </project>

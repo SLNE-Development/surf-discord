@@ -5,7 +5,6 @@ import dev.slne.discord.persistence.sessionFactory
 import dev.slne.discord.persistence.upsert
 import dev.slne.discord.persistence.withSession
 import dev.slne.discord.ticket.Ticket
-import dev.slne.discord.ticket.TicketDto
 
 object TicketRepository {
 
@@ -19,7 +18,5 @@ object TicketRepository {
         session.upsert(ticket) { id != null }
     }
 
-    suspend fun findAll(): List<Ticket> =
-        sessionFactory.withSession<List<TicketDto>> { it.findAll() }
-            .map { it.toTicket() }
+    suspend fun findAll(): List<Ticket> = sessionFactory.withSession { it.findAll() }
 }

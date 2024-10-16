@@ -63,7 +63,7 @@ object MessageManager {
         this.title = title
         this.description = description
         color = ERROR_COLOR
-        timestamp = ZonedDateTime.now().toEuropeBerlin()
+        timestamp = ZonedDateTime.now()
     }
 
     suspend fun getWhitelistQueryEmbed(whitelist: WhitelistDTO) = Embed {
@@ -74,7 +74,7 @@ object MessageManager {
         }
         description = RawMessages.get("whitelist.query.embed.description")
         color = WL_QUERY
-        timestamp = ZonedDateTime.now().toEuropeBerlin()
+        timestamp = ZonedDateTime.now()
 
         val minecraftName = whitelist.minecraftName
         val twitchLink = whitelist.twitchLink
