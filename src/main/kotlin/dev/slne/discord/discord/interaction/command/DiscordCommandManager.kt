@@ -39,7 +39,7 @@ object DiscordCommandManager {
         register(TicketMemberRemoveCommand)
     }
 
-    fun register(command: DiscordCommand) {
+    private fun register(command: DiscordCommand) {
         val annotation = command::class.findAnnotation<DiscordCommandMeta>()
             ?: error("Command $command does not have a DiscordCommandMeta annotation")
         check(annotation.name !in commands) { "Duplicate command handler id ${annotation.name}" }
