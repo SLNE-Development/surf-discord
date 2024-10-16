@@ -83,6 +83,12 @@ object MessageManager {
         val discordUser = whitelist.discordUser?.await()
         val addedBy = whitelist.addedBy?.await()
 
+        field {
+            name = RawMessages.get("whitelist.query.embed.field.uuid")
+            value = uuid.toString()
+            inline = false
+        }
+
         if (minecraftName != null) {
             field {
                 name = RawMessages.get("whitelist.query.embed.field.minecraft-name")
@@ -112,13 +118,8 @@ object MessageManager {
         }
 
         field {
-            name = RawMessages.get("whitelist.query.embed.field.uuid")
-            value = uuid.toString()
-        }
-
-        field {
-            name = RawMessages.get("whitelist.query.embed.field.blocked")
-            value = whitelist.blocked.toString()
+            name = translatable("whitelist.query.embed.field.blocked")
+            value = if (whitelist.blocked) translatable("common.yes") else translatable("common.no")
         }
     }
 }
