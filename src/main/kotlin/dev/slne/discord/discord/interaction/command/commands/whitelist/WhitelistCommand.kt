@@ -10,9 +10,9 @@ import dev.slne.discord.guild.getDiscordGuildByGuildId
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.MessageManager
 import dev.slne.discord.message.translatable
-import dev.slne.discord.persistence.feign.dto.WhitelistDTO
+import dev.slne.discord.persistence.external.Whitelist
 import dev.slne.discord.persistence.service.user.UserService
-import dev.slne.discord.persistence.service.whitelist.WhitelistService
+import dev.slne.discord.persistence.service.whitelist.WhitelistRepository
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
@@ -81,7 +81,7 @@ object WhitelistCommand : DiscordCommand() {
 
         hook.editOriginal(translatable("interaction.command.ticket.whitelist.checking")).await()
 
-        val whitelists: List<WhitelistDTO> = WhitelistService.checkWhitelists(
+        val whitelists = WhitelistRepository.findWhitelists(
             minecraftUuid, discordId, twitch
         )
 
@@ -90,7 +90,7 @@ object WhitelistCommand : DiscordCommand() {
                 translatable("interaction.command.ticket.whitelist.already-whitelisted")
             ).await()
 
-            for (whitelist: WhitelistDTO in whitelists) {
+            for (whitelist in whitelists) {
                 channel.sendMessageEmbeds(MessageManager.getWhitelistQueryEmbed(whitelist)).await()
             }
         } else {
@@ -98,19 +98,14 @@ object WhitelistCommand : DiscordCommand() {
                 translatable("interaction.command.ticket.whitelist.adding")
             ).await()
 
-            val createdWhitelist: WhitelistDTO? = WhitelistService.addWhitelist(
-                WhitelistDTO.createFrom(
-                    minecraftUuid,
-                    minecraft,
-                    twitch,
-                    user,
-                    executor
-                )
-            )
-
-            if (createdWhitelist == null) {
-                throw CommandExceptions.TICKET_WHITELIST()
-            }
+            val createdWhitelist = Whitelist().apply {
+                uuid = minecraftUuid
+                twitchLink = twitch
+                addedByAvatarUrl = executor?.avatarUrl
+                addedById = executor?.id
+                addedByName = executor?.name
+                this.discordId = discordId
+            }.save()
 
             addWhitelistedRole(interaction.guild, user)
 

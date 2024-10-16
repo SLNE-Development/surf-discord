@@ -37,27 +37,8 @@ object CommandExceptions {
     val TICKET_MEMBER_NOT_IN_TICKET =
         CommandExceptionFactory { CommandException(translatable("error.ticket.member.not-in-ticket")) }
 
-    val TICKET_ADD_MEMBER =
-        CommandExceptionFactory1 { cause: Throwable? ->
-            CommandException(
-                translatable("error.ticket.add.member"),
-                cause
-            )
-        }
-
-    val TICKET_REMOVE_MEMBER =
-        CommandExceptionFactory1 { cause: Throwable? ->
-            CommandException(
-                translatable("error.ticket.remove.member"),
-                cause
-            )
-        }
-
     val MINECRAFT_USER_NOT_FOUND =
         CommandExceptionFactory { CommandException(translatable("error.minecraft.not-found")) }
-
-    val TICKET_WHITELIST =
-        CommandExceptionFactory { CommandException(translatable("error.ticket.whitelist")) }
 
     val TICKET_WLQUERY_NO_USER =
         CommandExceptionFactory { CommandException(translatable("error.ticket.wlquery.no-user")) }

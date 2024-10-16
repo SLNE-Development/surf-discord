@@ -1,6 +1,6 @@
 package dev.slne.discord.persistence.service.punishment
 
-import dev.slne.discord.persistence.feign.dto.PunishmentBanDTO
+import dev.slne.discord.persistence.external.dto.PunishmentBanDTO
 
 object PunishmentService {
 

@@ -8,8 +8,8 @@ import dev.slne.discord.exception.command.CommandException
 import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.message.EmbedColors.ERROR_COLOR
 import dev.slne.discord.message.EmbedColors.WL_QUERY
-import dev.slne.discord.persistence.feign.dto.WhitelistDTO
-import dev.slne.discord.persistence.service.whitelist.WhitelistService
+import dev.slne.discord.persistence.external.Whitelist
+import dev.slne.discord.persistence.service.whitelist.WhitelistRepository
 import dev.slne.discord.ticket.Ticket
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
@@ -26,7 +26,7 @@ object MessageManager {
 
     suspend fun printUserWlQuery(user: User, channel: ThreadChannel) {
         channel.sendTyping().await()
-        val whitelists = WhitelistService.checkWhitelists(null, user.id, null)
+        val whitelists = WhitelistRepository.findWhitelists(null, user.id, null)
 
         try {
             printUserWlQuery(whitelists, user.name, channel, null)
@@ -36,7 +36,7 @@ object MessageManager {
     }
 
     suspend fun printUserWlQuery(
-        whitelists: List<WhitelistDTO>, name: String, channel: ThreadChannel, hook: InteractionHook?
+        whitelists: List<Whitelist>, name: String, channel: ThreadChannel, hook: InteractionHook?
     ) {
         if (whitelists.isEmpty()) {
             throw CommandExceptions.WHITELIST_QUERY_NO_ENTRIES.create(name)
@@ -50,7 +50,7 @@ object MessageManager {
     suspend fun printWlQuery(
         channel: ThreadChannel,
         title: String,
-        whitelists: List<WhitelistDTO>
+        whitelists: List<Whitelist>
     ) {
         channel.sendMessage(translatable("whitelist.query.start", title.replace("\"", "")))
             .await()
@@ -67,7 +67,7 @@ object MessageManager {
         timestamp = ZonedDateTime.now()
     }
 
-    suspend fun getWhitelistQueryEmbed(whitelist: WhitelistDTO) = Embed {
+    suspend fun getWhitelistQueryEmbed(whitelist: Whitelist) = Embed {
         title = translatable("whitelist.query.embed.title")
         footer {
             name = translatable("whitelist.query.embed.footer")
@@ -77,10 +77,10 @@ object MessageManager {
         color = WL_QUERY
         timestamp = ZonedDateTime.now()
 
-        val minecraftName = whitelist.minecraftName
+        val minecraftName = whitelist.minecraftName()
         val twitchLink = whitelist.twitchLink
         val uuid = whitelist.uuid
-        val discordUser = whitelist.discordUser?.await()
+        val discordUser = whitelist.user?.await()
         val addedBy = whitelist.addedBy?.await()
 
         field {
@@ -92,14 +92,14 @@ object MessageManager {
         if (minecraftName != null) {
             field {
                 name = translatable("whitelist.query.embed.field.minecraft-name")
-                value = minecraftName
+                value = "`${minecraftName}`"
             }
         }
 
         if (twitchLink != null) {
             field {
                 name = translatable("whitelist.query.embed.field.twitch-name")
-                value = twitchLink
+                value = "[${twitchLink}](${whitelist.clickableTwitchLink})"
             }
         }
 
@@ -119,7 +119,8 @@ object MessageManager {
 
         field {
             name = translatable("whitelist.query.embed.field.blocked")
-            value = if (whitelist.blocked) translatable("common.yes") else translatable("common.no")
+            value =
+                if (whitelist.blocked == true) translatable("common.yes") else translatable("common.no")
         }
     }
 }

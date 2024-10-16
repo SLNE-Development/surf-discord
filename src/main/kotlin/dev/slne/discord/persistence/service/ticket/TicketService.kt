@@ -7,17 +7,16 @@ import it.unimi.dsi.fastutil.objects.ObjectSets
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
-import java.util.*
 import kotlin.system.measureTimeMillis
 
 object TicketService {
 
     private val logger = ComponentLogger.logger(TicketService::class.java)
 
-    private var fetched = false // Only for testing
+    private var fetched = false
     private val pendingTickets = ObjectSets.synchronize(ObjectOpenHashSet<Ticket>())
     var tickets: ObjectSet<Ticket> =
-        ObjectSets.synchronize(ObjectOpenHashSet(1_024)) // We have a lot of tickets
+        ObjectSets.synchronize(ObjectOpenHashSet())
         private set
 
     suspend fun fetchActiveTickets() = withContext(Dispatchers.IO) {
@@ -33,7 +32,6 @@ object TicketService {
     }
 
     suspend fun saveTicket(ticket: Ticket) = TicketRepository.save(ticket)
-
 
     private fun popQueue() {
         if (fetched) {
@@ -55,14 +53,6 @@ object TicketService {
         pendingTickets.remove(ticket)
     }
 
-    fun getTicketById(id: UUID) = tickets.firstOrNull { it.ticketId == id }
-
     fun getTicketByThreadId(threadId: String) = tickets.firstOrNull { it.threadId == threadId }
-
-    fun createTicket(ticket: Ticket): Ticket = ticket
-
-    fun updateTicket(ticket: Ticket): Ticket = ticket
-
-    fun closeTicket(ticket: Ticket): Ticket = ticket
 
 }

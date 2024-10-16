@@ -12,9 +12,7 @@ fun interface ExceptionFactory<T : Throwable> {
 
     fun interface ExceptionFactory1<A, T : Throwable> {
         fun create(a: A): T
-
-        operator fun invoke(a: A): T = create(a)
-
+        
         @FunctionalInterface
         fun interface CommandExceptionFactory1<A> : ExceptionFactory1<A, CommandException>
     }

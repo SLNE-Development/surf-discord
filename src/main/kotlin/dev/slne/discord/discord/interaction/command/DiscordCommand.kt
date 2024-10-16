@@ -46,8 +46,10 @@ abstract class DiscordCommand {
                 internalExecute(interaction, hook)
             }
         } catch (exception: DiscordException) {
-            logger.error("Error while executing command", exception)
             hook.editOriginal("${exception.message}").await()
+        } catch (exception: Exception) {
+            logger.error("Error while executing command", exception)
+            hook.editOriginal(translatable("error.generic")).await()
         }
     }
 

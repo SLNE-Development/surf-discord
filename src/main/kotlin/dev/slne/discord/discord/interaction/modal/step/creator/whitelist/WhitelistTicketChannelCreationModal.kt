@@ -6,7 +6,7 @@ import dev.slne.discord.discord.interaction.modal.step.StepBuilder
 import dev.slne.discord.discord.interaction.modal.step.creator.whitelist.step.WhitelistTicketConfirmTwitchConnected
 import dev.slne.discord.discord.interaction.modal.step.creator.whitelist.step.WhitelistTicketMinecraftNameStep
 import dev.slne.discord.message.translatable
-import dev.slne.discord.persistence.service.whitelist.WhitelistService
+import dev.slne.discord.persistence.service.whitelist.WhitelistRepository
 import dev.slne.discord.ticket.TicketType
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
@@ -25,7 +25,7 @@ class WhitelistTicketChannelCreationModal :
         interaction: StringSelectInteraction,
         guild: Guild
     ) {
-        if (WhitelistService.isWhitelisted(interaction.user)) {
+        if (WhitelistRepository.isWhitelisted(interaction.user)) {
             throw PreThreadCreationException(translatable("error.ticket.whitelist.already-whitelisted"))
         }
     }

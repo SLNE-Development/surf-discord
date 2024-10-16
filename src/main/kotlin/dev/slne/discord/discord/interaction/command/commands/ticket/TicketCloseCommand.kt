@@ -54,7 +54,7 @@ object TicketCloseCommand : TicketCommand() {
         val closeResult = TicketCreator.closeTicket(ticket, closer, closeReason)
 
         if (closeResult != TicketCloseResult.SUCCESS) {
-            throw CommandExceptions.TICKET_CLOSE(closeResult)
+            throw CommandExceptions.TICKET_CLOSE.create(closeResult)
         }
 
         hook.deleteOriginal().await()

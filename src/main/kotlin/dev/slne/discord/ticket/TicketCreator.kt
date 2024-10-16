@@ -33,7 +33,7 @@ object TicketCreator {
             callsInPlace(callback, InvocationKind.AT_MOST_ONCE)
         }
 
-        val createdTicket = ticket.create()
+        val createdTicket = ticket.save()
         TicketService.queueOrAddTicket(createdTicket)
 
         return createTicketChannel(ticket, author, ticketName, ticketChannel, callback)
@@ -122,7 +122,7 @@ object TicketCreator {
 
         try {
             MessageManager.sendTicketClosedMessages(ticket)
-            TicketService.closeTicket(ticket)
+            ticket.save()
             TicketChannelHelper.closeThread(ticket)
         } catch (e: DeleteTicketChannelException) {
             logger.error("Failed to close ticket thread with id {}.", ticket.ticketId, e)

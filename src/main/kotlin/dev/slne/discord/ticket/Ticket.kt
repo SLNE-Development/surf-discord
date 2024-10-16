@@ -118,7 +118,6 @@ open class Ticket protected constructor() {
 
     suspend fun openFromButton(): TicketCreateResult = TicketCreator.openTicket(this)
     suspend fun save(): Ticket = TicketService.saveTicket(this)
-    suspend fun create(): Ticket = TicketService.createTicket(this)
 
     fun close(
         closedBy: User,

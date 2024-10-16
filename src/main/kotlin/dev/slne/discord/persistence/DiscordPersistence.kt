@@ -1,6 +1,7 @@
 package dev.slne.discord.persistence
 
 import dev.slne.discord.config.botConfig
+import dev.slne.discord.persistence.external.Whitelist
 import dev.slne.discord.ticket.Ticket
 import dev.slne.discord.ticket.message.TicketMessage
 import dev.slne.discord.ticket.message.attachment.TicketMessageAttachment
@@ -37,6 +38,7 @@ object DiscordPersistence {
         configuration.addAnnotatedClass(Ticket::class.java)
         configuration.addAnnotatedClass(TicketMessage::class.java)
         configuration.addAnnotatedClass(TicketMessageAttachment::class.java)
+        configuration.addAnnotatedClass(Whitelist::class.java)
 
         val serviceRegistry = StandardServiceRegistryBuilder()
             .applySettings(configuration.properties)

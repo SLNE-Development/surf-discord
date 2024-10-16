@@ -7,10 +7,7 @@ import dev.slne.discord.discord.interaction.command.commands.ticket.TicketCloseC
 import dev.slne.discord.discord.interaction.command.commands.ticket.TicketDependenciesNotMetCommand
 import dev.slne.discord.discord.interaction.command.commands.ticket.members.TicketMemberAddCommand
 import dev.slne.discord.discord.interaction.command.commands.ticket.members.TicketMemberRemoveCommand
-import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistCommand
-import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistQueryCommand
-import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistRoleRemoveCommand
-import dev.slne.discord.discord.interaction.command.commands.whitelist.WhitelistedCommand
+import dev.slne.discord.discord.interaction.command.commands.whitelist.*
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.objects.ObjectArrayList
@@ -30,6 +27,7 @@ object DiscordCommandManager {
         register(WhitelistedCommand)
         register(WhitelistQueryCommand)
         register(WhitelistRoleRemoveCommand)
+        register(WhitelistUnblockCommand)
 
         register(TicketButtonCommand)
         register(TicketCloseCommand)

@@ -37,7 +37,7 @@ object WhitelistedCommand : TicketCommand() {
         )
 
         if (closeResult != TicketCloseResult.SUCCESS) {
-            throw CommandExceptions.TICKET_CLOSE(closeResult)
+            throw CommandExceptions.TICKET_CLOSE.create(closeResult)
         }
     }
 }

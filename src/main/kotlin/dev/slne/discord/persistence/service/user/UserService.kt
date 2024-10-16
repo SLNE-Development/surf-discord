@@ -12,7 +12,7 @@ import okhttp3.coroutines.executeAsync
 import java.io.Serial
 import java.util.*
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.toJavaDuration
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -23,27 +23,63 @@ import kotlin.uuid.toJavaUuid
 object UserService {
     private const val RATE_LIMIT_CODE = 429
 
-    private val uuidToNameCache = Caffeine.newBuilder()
-        .expireAfterWrite(1.days.toJavaDuration())
+    private val nameToUuidCache = Caffeine.newBuilder()
+        .expireAfterWrite(1.hours.toJavaDuration())
         .buildAsync<String, UUID> { key, _ ->
             GlobalScope.future {
                 try {
                     try {
                         getMinecraftApiUuid(key)
-                    } catch (e: RateLimitException) {
-                        getFallbackApiUuid(key)
+                    } catch (_: RateLimitException) {
+                        Uuid.parseHex(getFallbackApiUuid(key).id).toJavaUuid()
                     }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     null
                 }
             }
         }
+
+    private val uuidToNameCache = Caffeine.newBuilder()
+        .expireAfterWrite(1.hours.toJavaDuration())
+        .buildAsync<UUID, String> { key, _ ->
+            GlobalScope.future {
+                try {
+                    try {
+                        getMinecraftApiUsername(key)
+                    } catch (_: RateLimitException) {
+                        getFallbackApiUuid(key).name
+                    }
+                } catch (_: Exception) {
+                    null
+                }
+            }
+        }
+
     private val client = OkHttpClient()
 
     suspend fun getUuidByUsername(
         username: String,
         context: CoroutineContext = Dispatchers.IO
-    ): UUID? = withContext(context) { uuidToNameCache.get(username).await() }
+    ): UUID? = withContext(context) { nameToUuidCache.get(username).await() }
+
+    suspend fun getUsernameByUuid(
+        uuid: UUID,
+        context: CoroutineContext = Dispatchers.IO
+    ): String? = withContext(context) { uuidToNameCache.get(uuid).await() }
+
+    private suspend fun getMinecraftApiUsername(uuid: UUID): String = withContext(Dispatchers.IO) {
+        val request = Request.Builder()
+            .url("https://api.mojang.com/user/profile/${uuid}")
+            .build()
+
+        val response = client.newCall(request).executeAsync()
+        if (response.code == RATE_LIMIT_CODE) throw RateLimitException("Rate limit reached for Minecraft API")
+        if (!response.isSuccessful) throw Exception("Failed to get username from Minecraft API")
+
+        val decoded = Json.decodeFromString<MinecraftApiUuidResponse>(response.body.string())
+
+        decoded.name
+    }
 
     private suspend fun getMinecraftApiUuid(username: String): UUID = withContext(Dispatchers.IO) {
         val request = Request.Builder()
@@ -58,18 +94,17 @@ object UserService {
         Uuid.parseHex(decoded.id).toJavaUuid()
     }
 
-    private suspend fun getFallbackApiUuid(username: String): UUID = withContext(Dispatchers.IO) {
-        val request = Request.Builder()
-            .url("https://api.minetools.eu/uuid/$username")
-            .build()
+    private suspend fun getFallbackApiUuid(usernameOrUuid: Any): MinecraftApiUuidResponse =
+        withContext(Dispatchers.IO) {
+            val request = Request.Builder()
+                .url("https://api.minetools.eu/uuid/$usernameOrUuid")
+                .build()
 
-        val response = client.newCall(request).executeAsync()
-        if (!response.isSuccessful) throw Exception("Failed to get UUID from fallback API")
+            val response = client.newCall(request).executeAsync()
+            if (!response.isSuccessful) throw Exception("Failed to get UUID from fallback API")
 
-        val decoded =
-            Json.decodeFromString<MinecraftApiUuidResponse>(response.body.string())// TODO: 14.10.2024 18:24 - testme
-        Uuid.parseHex(decoded.id).toJavaUuid()
-    }
+            Json.decodeFromString<MinecraftApiUuidResponse>(response.body.string())
+        }
 
     @Serializable
     private data class MinecraftApiUuidResponse(

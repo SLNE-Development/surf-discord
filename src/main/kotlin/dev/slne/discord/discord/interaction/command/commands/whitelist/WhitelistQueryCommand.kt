@@ -9,7 +9,7 @@ import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.MessageManager
 import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.user.UserService
-import dev.slne.discord.persistence.service.whitelist.WhitelistService
+import dev.slne.discord.persistence.service.whitelist.WhitelistRepository
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
@@ -73,12 +73,12 @@ object WhitelistQueryCommand : DiscordCommand() {
         minecraft: String?,
         twitch: String?
     ) = if (user != null) {
-        WhitelistService.checkWhitelists(null, user.id, null)
+        WhitelistRepository.findWhitelists(null, user.id, null)
     } else if (twitch != null) {
-        WhitelistService.checkWhitelists(null, null, twitch)
+        WhitelistRepository.findWhitelists(null, null, twitch)
     } else if (minecraft != null) {
         UserService.getUuidByUsername(minecraft)?.let {
-            WhitelistService.checkWhitelists(it, null, null)
+            WhitelistRepository.findWhitelists(it, null, null)
         } ?: emptyList()
     } else {
         throw CommandExceptions.TICKET_WLQUERY_NO_USER()

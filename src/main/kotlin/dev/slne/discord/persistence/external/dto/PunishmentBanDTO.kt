@@ -1,4 +1,4 @@
-package dev.slne.discord.persistence.feign.dto
+package dev.slne.discord.persistence.external.dto
 
 class PunishmentBanDTO {
     private val id: Long = 0
