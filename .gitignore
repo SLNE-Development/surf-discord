@@ -129,3 +129,5 @@ gradle-app.setting
 
 /.idea/conventionalCommit.xml
 messages/**
+
+.kotlin/**/**
