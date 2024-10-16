@@ -1,6 +1,5 @@
 package dev.slne.discord.persistence.service.ticket
 
-import dev.slne.discord.persistence.findAll
 import dev.slne.discord.persistence.sessionFactory
 import dev.slne.discord.persistence.upsert
 import dev.slne.discord.persistence.withSession
@@ -9,14 +8,13 @@ import dev.slne.discord.ticket.Ticket
 object TicketRepository {
 
     suspend fun save(ticket: Ticket): Ticket = sessionFactory.withSession { session ->
-//        if (ticket.id == null) {
-//            session.persist(ticket)
-//            ticket
-//        } else {
-//            session.merge(ticket)
-//        }
         session.upsert(ticket) { id != null }
     }
 
-    suspend fun findAll(): List<Ticket> = sessionFactory.withSession { it.findAll() }
+    suspend fun findActive(): List<Ticket> = sessionFactory.withSession { session ->
+        val query = session.criteriaBuilder.createQuery(Ticket::class.java)
+        val root = query.from(Ticket::class.java)
+        query.where(session.criteriaBuilder.isNull(root.get<Ticket>("closedAt")))
+        session.createQuery(query.select(root)).resultList
+    }
 }
