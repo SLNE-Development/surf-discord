@@ -11,6 +11,10 @@ import org.hibernate.Session
 import org.hibernate.SessionFactory
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder
 import org.hibernate.cfg.Configuration
+import org.hibernate.cfg.FetchSettings
+import org.hibernate.cfg.JdbcSettings
+import org.hibernate.cfg.SchemaToolingSettings
+import org.hibernate.tool.schema.Action
 
 val sessionFactory = DiscordPersistence.configureHibernate()
 
@@ -21,19 +25,20 @@ object DiscordPersistence {
 
 
         val configuration = Configuration()
-        configuration.setProperty("hibernate.connection.driver_class", "org.mariadb.jdbc.Driver")
+        configuration.setProperty(JdbcSettings.JAKARTA_JDBC_DRIVER, "org.mariadb.jdbc.Driver")
         configuration.setProperty(
-            "hibernate.connection.url",
+            JdbcSettings.JAKARTA_JDBC_URL,
             "jdbc:mariadb://${config!!.hostname}:${config.port}/${config.database}"
         )
-        configuration.setProperty("hibernate.connection.username", "${config.username}")
-        configuration.setProperty("hibernate.connection.password", "${config.password}")
-        configuration.setProperty("hibernate.hbm2ddl.auto", "none")
+        configuration.setProperty(JdbcSettings.JAKARTA_JDBC_USER, "${config.username}")
+        configuration.setProperty(JdbcSettings.JAKARTA_JDBC_PASSWORD, "${config.password}")
+        configuration.setProperty(SchemaToolingSettings.HBM2DDL_AUTO, Action.ACTION_NONE)
 
-        configuration.setProperty("hibernate.show_sql", "false");
-        configuration.setProperty("hibernate.format_sql", "true");
-        configuration.setProperty("hibernate.use_sql_comments", "true");
-//        configuration.setProperty("hibernate.generate_statistics", "true");
+        configuration.setProperty(JdbcSettings.SHOW_SQL, false)
+        configuration.setProperty(JdbcSettings.FORMAT_SQL, true)
+        configuration.setProperty(JdbcSettings.USE_SQL_COMMENTS, true)
+        configuration.setProperty(FetchSettings.DEFAULT_BATCH_FETCH_SIZE, 50)
+//        configuration.setProperty(StatisticsSettings.GENERATE_STATISTICS, true)
 
         configuration.addAnnotatedClass(Ticket::class.java)
         configuration.addAnnotatedClass(TicketMessage::class.java)
