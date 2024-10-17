@@ -25,6 +25,6 @@ object MessageDeletedListener {
         messageIds
             .mapNotNull { ticket.getTicketMessage(it) }
             .mapNotNull { it.delete() }
-            .forEach { ticket.messages.add(it) }
+            .forEach { ticket.addMessage(it) }
     }
 }

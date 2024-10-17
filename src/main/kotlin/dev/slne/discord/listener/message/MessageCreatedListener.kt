@@ -16,7 +16,8 @@ object MessageCreatedListener {
 
             val ticket = event.channel.ticket ?: return@listener
 
-            val message = event.message.toTicketMessage(ticket)
+            val message = event.message.toTicketMessage()
+            ticket.addMessage(message)
             message.create()
         }
     }

@@ -101,7 +101,9 @@ open class Ticket protected constructor() {
         fetch = FetchType.EAGER,
         orphanRemoval = true
     )
-    open var messages: MutableList<TicketMessage> = mutableListOf()
+    protected open var _messages: MutableList<TicketMessage> = mutableListOf()
+
+    val messages get() = synchronized(this) { _messages.toList() }
 
     val thread get() = threadId?.let { DiscordBot.jda.getThreadChannelById(it) }
     val closedBy get() = closedById?.let { DiscordBot.jda.retrieveUserById(it) }
@@ -112,8 +114,14 @@ open class Ticket protected constructor() {
     val isClosed
         get() = closedAt != null
 
-    fun getTicketMessage(message: Message) = messages.find { it.messageId.equals(message.id) }
-    fun getTicketMessage(messageId: String) = messages.find { it.messageId == messageId }
+    fun addMessage(message: TicketMessage) {
+        message.ticket = this
+        synchronized(_messages) { _messages.add(message) }
+    }
+
+
+    fun getTicketMessage(message: Message) = _messages.find { it.messageId.equals(message.id) }
+    fun getTicketMessage(messageId: String) = _messages.find { it.messageId == messageId }
 
     suspend fun openFromButton(): TicketCreateResult = TicketCreator.openTicket(this)
     suspend fun save(): Ticket = TicketService.saveTicket(this)
@@ -139,7 +147,7 @@ open class Ticket protected constructor() {
     }
 
     override fun toString(): String {
-        return "Ticket(id=$id, ticketId=$ticketId, openedAt=$openedAt, guildId=$guildId, threadId=$threadId, ticketType=$ticketType, ticketAuthorId=$ticketAuthorId, ticketAuthorName=$ticketAuthorName, ticketAuthorAvatarUrl=$ticketAuthorAvatarUrl, closedById=$closedById, closedReason=$closedReason, closedByAvatarUrl=$closedByAvatarUrl, closedByName=$closedByName, closedAt=$closedAt, messages=$messages)"
+        return "Ticket(id=$id, ticketId=$ticketId, openedAt=$openedAt, guildId=$guildId, threadId=$threadId, ticketType=$ticketType, ticketAuthorId=$ticketAuthorId, ticketAuthorName=$ticketAuthorName, ticketAuthorAvatarUrl=$ticketAuthorAvatarUrl, closedById=$closedById, closedReason=$closedReason, closedByAvatarUrl=$closedByAvatarUrl, closedByName=$closedByName, closedAt=$closedAt, messages=$_messages)"
     }
 
     companion object {

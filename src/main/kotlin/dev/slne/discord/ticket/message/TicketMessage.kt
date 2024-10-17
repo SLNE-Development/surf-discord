@@ -2,6 +2,7 @@ package dev.slne.discord.ticket.message
 
 import dev.minn.jda.ktx.coroutines.await
 import dev.slne.discord.DiscordBot
+import dev.slne.discord.persistence.service.ticket.TicketRepository
 import dev.slne.discord.persistence.service.ticket.TicketService
 import dev.slne.discord.ticket.Ticket
 import dev.slne.discord.ticket.message.attachment.TicketMessageAttachment
@@ -109,9 +110,7 @@ open class TicketMessage protected constructor() {
     }
 
     suspend fun create() = ticket?.let {
-        it.messages.add(this)
-        it.save()
-        this
+        TicketRepository.saveMessage(this)
     }
 
     suspend fun update(message: Message): TicketMessage? {
@@ -142,7 +141,7 @@ open class TicketMessage protected constructor() {
     }
 
     companion object {
-        fun fromJda(message: Message, ticket: Ticket) = TicketMessage().apply {
+        fun fromJda(message: Message) = TicketMessage().apply {
             this.messageId = message.id
             this.jsonContent = message.contentDisplay
             this.authorId = message.author.id
@@ -152,7 +151,6 @@ open class TicketMessage protected constructor() {
             this.messageEditedAt = message.timeEdited?.toZonedDateTime()
             this.referencesMessageId = message.messageReference?.messageId
             this.botMessage = message.author.isBot
-            this.ticket = ticket
 
             message.attachments.map { it.toTicketMessageAttachment() }
                 .forEach(::addAttachment)
@@ -164,4 +162,4 @@ open class TicketMessage protected constructor() {
     }
 }
 
-fun Message.toTicketMessage(ticket: Ticket) = TicketMessage.fromJda(this, ticket)
+fun Message.toTicketMessage() = TicketMessage.fromJda(this)
