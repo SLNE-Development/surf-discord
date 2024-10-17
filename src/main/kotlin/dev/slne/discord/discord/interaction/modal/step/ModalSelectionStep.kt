@@ -3,6 +3,7 @@ package dev.slne.discord.discord.interaction.modal.step
 import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.interactions.components.StringSelectMenu
 import dev.slne.discord.DiscordBot
+import dev.slne.discord.exception.step.modal.selection.ValidateModalSelectionException
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import kotlinx.coroutines.suspendCancellableCoroutine
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
@@ -29,6 +30,11 @@ abstract class ModalSelectionStep(
     fun createSelection() = StringSelectMenu(id) {
         addOptions(this@ModalSelectionStep.options)
         maxValues = 1
+    }
+
+    @Throws(ValidateModalSelectionException::class)
+    open suspend fun afterSelection(event: StringSelectInteractionEvent) {
+        // Override this method to validate the selection
     }
 
     private fun setSelected(selected: String, event: StringSelectInteractionEvent) {

@@ -6,6 +6,7 @@ import dev.minn.jda.ktx.interactions.components.replyModal
 import dev.minn.jda.ktx.messages.MessageCreate
 import dev.slne.discord.annotation.ChannelCreationModal
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager
+import dev.slne.discord.exception.DiscordException
 import dev.slne.discord.message.translatable
 import dev.slne.discord.ticket.Ticket
 import dev.slne.discord.ticket.TicketChannelHelper
@@ -89,7 +90,16 @@ abstract class DiscordStepChannelCreationModal(
     private suspend fun startChannelCreationWithSelectionSteps(
         interaction: StringSelectInteraction,
         hook: InteractionHook
-    ) = replyModalAfterSelectionSteps(executeSelectionSteps(hook), interaction)
+    ) {
+
+        val result = executeSelectionSteps(hook)
+
+        if (result.second) { // If the step failed
+            return
+        }
+
+        replyModalAfterSelectionSteps(result.first, interaction)
+    }
 
     private suspend fun replyModalAfterSelectionSteps(
         lastSelectionEvent: StringSelectInteractionEvent?,
@@ -137,7 +147,7 @@ abstract class DiscordStepChannelCreationModal(
         steps: List<ModalStep>,
         lastEvent: StringSelectInteractionEvent?,
         lastMessage: Message?
-    ): StringSelectInteractionEvent? {
+    ): Pair<StringSelectInteractionEvent?, Boolean> {
         var lastStepEvent = lastEvent
         var lastStepMessage = lastMessage
 
@@ -151,17 +161,28 @@ abstract class DiscordStepChannelCreationModal(
                 }).setEphemeral(true).await()
 
                 lastStepEvent = step.awaitSelection()
+
+                try {
+                    step.afterSelection(lastStepEvent)
+                } catch (exception: DiscordException) {
+                    hook.editOriginal(exception.message ?: "???").setReplace(true).await()
+                    return null to true
+                }
             }
 
             val children = step.children
 
             if (children.isNotEmpty()) {
-                lastStepEvent =
-                    executeSelectionSteps(hook, children, lastStepEvent, lastStepMessage)
+                val result = executeSelectionSteps(hook, children, lastStepEvent, lastStepMessage)
+                if (result.second) { // If the step failed
+                    return result
+                }
+
+                lastStepEvent = result.first
             }
         }
 
-        return lastStepEvent
+        return lastStepEvent to false
     }
 
     private suspend fun verifyModalInput(

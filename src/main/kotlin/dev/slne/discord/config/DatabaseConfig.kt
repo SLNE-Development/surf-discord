@@ -7,7 +7,7 @@ import org.spongepowered.configurate.objectmapping.ConfigSerializable
 @ConfigSerializable
 data class DatabaseConfig(
     val hostname: String? = null,
-    val port: Int? = null,
+    val port: Int? = 3306,
     val database: String? = null,
     val username: String? = null,
     val password: String? = null
