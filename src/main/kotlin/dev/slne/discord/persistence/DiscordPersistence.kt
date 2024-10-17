@@ -37,7 +37,7 @@ object DiscordPersistence {
         configuration.setProperty(JdbcSettings.SHOW_SQL, false)
         configuration.setProperty(JdbcSettings.FORMAT_SQL, true)
         configuration.setProperty(JdbcSettings.USE_SQL_COMMENTS, true)
-        configuration.setProperty(FetchSettings.DEFAULT_BATCH_FETCH_SIZE, 50)
+        configuration.setProperty(FetchSettings.DEFAULT_BATCH_FETCH_SIZE, 20)
 //        configuration.setProperty(StatisticsSettings.GENERATE_STATISTICS, true)
 
         configuration.addAnnotatedClass(Ticket::class.java)
