@@ -53,6 +53,10 @@ object TicketService {
         pendingTickets.remove(ticket)
     }
 
+    fun addReopenedTicket(ticket: Ticket) {
+        tickets.add(ticket)
+    }
+
     fun getTicketByThreadId(threadId: String) = tickets.firstOrNull { it.threadId == threadId }
 
 }

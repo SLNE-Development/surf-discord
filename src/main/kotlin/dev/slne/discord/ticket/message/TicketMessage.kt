@@ -1,7 +1,7 @@
 package dev.slne.discord.ticket.message
 
 import dev.minn.jda.ktx.coroutines.await
-import dev.slne.discord.DiscordBot
+import dev.slne.discord.jda
 import dev.slne.discord.persistence.service.ticket.TicketRepository
 import dev.slne.discord.persistence.service.ticket.TicketService
 import dev.slne.discord.ticket.Ticket
@@ -90,7 +90,7 @@ open class TicketMessage protected constructor() {
 
     val attachments: List<TicketMessageAttachment> get() = _attachments
     val message get() = messageId?.let { ticket?.thread?.retrieveMessageById(it) }
-    val author get() = authorId?.let { DiscordBot.jda.retrieveUserById(it) }
+    val author get() = authorId?.let { jda.retrieveUserById(it) }
     val referencesMessage get() = referencesMessageId?.let { ticket?.thread?.retrieveMessageById(it) }
 
     fun addAttachment(attachment: TicketMessageAttachment) {

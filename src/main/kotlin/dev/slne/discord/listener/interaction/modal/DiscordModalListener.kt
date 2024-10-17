@@ -2,15 +2,15 @@ package dev.slne.discord.listener.interaction.modal
 
 import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.events.listener
-import dev.slne.discord.DiscordBot
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager
+import dev.slne.discord.jda
 import dev.slne.discord.message.MessageManager
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 
 object DiscordModalListener {
 
     init {
-        DiscordBot.jda.listener<ModalInteractionEvent> { event ->
+        jda.listener<ModalInteractionEvent> { event ->
             val interaction = event.interaction
             val modalId = interaction.modalId
             val advancedModal = DiscordModalManager.getModal(modalId, event.user.id)

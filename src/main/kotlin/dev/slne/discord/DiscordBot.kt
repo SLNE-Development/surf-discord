@@ -17,11 +17,11 @@ import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 
+lateinit var jda: JDA
+
 object DiscordBot {
 
     private val logger = ComponentLogger.logger()
-
-    lateinit var jda: JDA
 
     suspend fun onLoad() {
         val botToken = botConfig.botToken
@@ -35,7 +35,7 @@ object DiscordBot {
             logger.error("Uncaught exception in thread ${thread.name}", throwable)
         }
 
-        this.jda = default(
+        jda = default(
             token = botToken,
             intents = GatewayIntents.gatewayIntents,
             enableCoroutines = false

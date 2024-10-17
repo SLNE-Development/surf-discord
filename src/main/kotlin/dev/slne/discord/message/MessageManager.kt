@@ -3,9 +3,9 @@ package dev.slne.discord.message
 import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.messages.Embed
 import dev.minn.jda.ktx.messages.MessageCreate
-import dev.slne.discord.DiscordBot.jda
 import dev.slne.discord.exception.command.CommandException
 import dev.slne.discord.exception.command.CommandExceptions
+import dev.slne.discord.jda
 import dev.slne.discord.message.EmbedColors.ERROR_COLOR
 import dev.slne.discord.message.EmbedColors.WL_QUERY
 import dev.slne.discord.persistence.external.Whitelist

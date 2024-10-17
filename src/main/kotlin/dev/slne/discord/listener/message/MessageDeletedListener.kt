@@ -1,8 +1,8 @@
 package dev.slne.discord.listener.message
 
 import dev.minn.jda.ktx.events.listener
-import dev.slne.discord.DiscordBot
 import dev.slne.discord.extensions.ticket
+import dev.slne.discord.jda
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent
@@ -10,11 +10,11 @@ import net.dv8tion.jda.api.events.message.MessageDeleteEvent
 object MessageDeletedListener {
 
     init {
-        DiscordBot.jda.listener<MessageDeleteEvent> {
+        jda.listener<MessageDeleteEvent> {
             deleteMessage(it.channel, listOf(it.messageId))
         }
 
-        DiscordBot.jda.listener<MessageBulkDeleteEvent> { event ->
+        jda.listener<MessageBulkDeleteEvent> { event ->
             deleteMessage(event.channel, event.messageIds)
         }
     }

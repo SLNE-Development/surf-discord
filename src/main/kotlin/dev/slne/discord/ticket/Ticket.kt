@@ -1,6 +1,6 @@
 package dev.slne.discord.ticket
 
-import dev.slne.discord.DiscordBot
+import dev.slne.discord.jda
 import dev.slne.discord.message.Messages
 import dev.slne.discord.persistence.service.ticket.TicketService
 import dev.slne.discord.ticket.message.TicketMessage
@@ -105,11 +105,11 @@ open class Ticket protected constructor() {
 
     val messages get() = synchronized(this) { _messages.toList() }
 
-    val thread get() = threadId?.let { DiscordBot.jda.getThreadChannelById(it) }
-    val closedBy get() = closedById?.let { DiscordBot.jda.retrieveUserById(it) }
+    val thread get() = threadId?.let { jda.getThreadChannelById(it) }
+    val closedBy get() = closedById?.let { jda.retrieveUserById(it) }
     val closeReasonOrDefault: String get() = closedReason ?: Messages.DEFAULT_TICKET_CLOSED_REASON
-    val author get() = ticketAuthorId?.let { DiscordBot.jda.retrieveUserById(it) }
-    val guild get() = guildId?.let { DiscordBot.jda.getGuildById(it) }
+    val author get() = ticketAuthorId?.let { jda.retrieveUserById(it) }
+    val guild get() = guildId?.let { jda.getGuildById(it) }
 
     val isClosed
         get() = closedAt != null
@@ -144,6 +144,8 @@ open class Ticket protected constructor() {
         this.closedByAvatarUrl = null
         this.closedReason = null
         this.closedAt = null
+
+        TicketService.addReopenedTicket(this)
     }
 
     override fun toString(): String {
