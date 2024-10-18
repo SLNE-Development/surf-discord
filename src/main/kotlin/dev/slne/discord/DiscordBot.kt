@@ -67,9 +67,6 @@ object DiscordBot {
         }
 
         initObjects()
-//        for (guild in jda.guilds) {
-//            DiscordCommandManager.updateCommands(guild)
-//        }
         logger.info("Discord Bot is ready")
     }
 
