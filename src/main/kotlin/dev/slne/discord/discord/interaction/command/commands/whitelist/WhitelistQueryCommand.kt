@@ -57,6 +57,7 @@ object WhitelistQueryCommand : DiscordCommand() {
             throw CommandExceptions.TICKET_WLQUERY_NO_USER.create()
         }
 
+        hook.editOriginal(translatable("interaction.command.ticket.wlquery.querying")).queue()
         val whitelists = getWhitelists(user, minecraft, twitch)
 
         if (user != null) {

@@ -36,9 +36,15 @@ object TicketMemberRemoveCommand : TicketCommand() {
         hook: InteractionHook
     ) {
         val member = interaction.getOptionOrThrow<Member>(USER_OPTION)
+
+        hook.editOriginal(translatable("interaction.command.ticket.member.remove.checking-bot"))
+            .await()
         member.checkMemberNotBot(CommandExceptions.TICKET_BOT_REMOVE)
 
         val thread = interaction.getThreadChannelOrThrow()
+
+        hook.editOriginal(translatable("interaction.command.ticket.member.remove.checking-in-ticket"))
+            .await()
         val ticketMembers = thread.retrieveThreadMembers().await()
 
         if (ticketMembers.none { it.id == member.id }) {
@@ -58,16 +64,20 @@ object TicketMemberRemoveCommand : TicketCommand() {
         hook.editOriginal(translatable("interaction.command.ticket.member.remove.removing"))
             .await()
 
-        thread.removeThreadMember(member).await()
-
-        hook.editOriginal(translatable("interaction.command.ticket.member.remove.removed"))
-            .await()
-
-        thread.sendMessage(
+        val removedMessage = thread.sendMessage(
             translatable(
                 "interaction.command.ticket.member.remove.announcement",
                 member.asMention, executor.asMention
             )
         ).await()
+
+        try {
+            thread.removeThreadMember(member).await()
+            hook.editOriginal(translatable("interaction.command.ticket.member.remove.removed"))
+                .await()
+        } catch (e: Exception) {
+            removedMessage.editMessage(translatable("interaction.command.ticket.member.remove.error"))
+                .await()
+        }
     }
 }
