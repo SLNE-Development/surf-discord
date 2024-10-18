@@ -1,10 +1,15 @@
 package dev.slne.discord.persistence.service.punishment
 
-import dev.slne.discord.persistence.external.dto.PunishmentBanDTO
+import dev.slne.discord.persistence.sessionFactory
+import dev.slne.discord.persistence.withSession
 
 object PunishmentService {
-
-    suspend fun getBanByPunishmentId(punishmentId: String): PunishmentBanDTO? = TODO("Implement")
-
-    suspend fun isValidPunishmentId(punishmentId: String): Boolean = TODO("Implement")
+    suspend fun isValidPunishmentId(punishmentId: String) = sessionFactory.withSession { session ->
+        val query = session.createNativeQuery(
+            "SELECT EXISTS(SELECT 1 FROM punishment_bans WHERE punishment_id = :punishmentId)",
+            arrayOf<Any>()::class.java
+        )
+        query.setParameter("punishmentId", punishmentId)
+        query.singleResult as Long == 1L
+    }
 }

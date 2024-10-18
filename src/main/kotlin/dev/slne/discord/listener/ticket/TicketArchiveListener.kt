@@ -36,15 +36,15 @@ object TicketArchiveListener {
                     .await()
                 thread.manager.setArchived(true).setLocked(true).await()
 
-                ticket.save()
-                ticket.isClosing = false
+                val save = ticket.save()
+                save.isClosing = false
             } else if (newValue == false) {
                 if (!ticket.isClosed || ticket.isClosing) return@listener
 
                 ticket.reopen()
-                ticket.save()
+                val save = ticket.save()
 
-                thread.sendMessageEmbeds(EmbedManager.buildTicketReopenEmbed(ticket)).await()
+                thread.sendMessageEmbeds(EmbedManager.buildTicketReopenEmbed(save)).await()
             }
         }
     }

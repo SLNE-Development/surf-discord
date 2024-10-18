@@ -11,7 +11,6 @@ import dev.slne.discord.ticket.result.TicketCreateResult
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
-import java.time.ZonedDateTime
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -70,12 +69,12 @@ object TicketCreator {
             callsInPlace(runnable, InvocationKind.EXACTLY_ONCE)
         }
 
-        val ticketType = ticket.ticketType!!
-        val channel = ticket.thread ?: return
+        val channel = ticket.thread
+        checkNotNull(channel) { "Ticket thread is not yet set." }
 
         runnable()
 
-        if (ticketType.shouldPrintWlQuery) {
+        if (ticket.ticketType?.shouldPrintWlQuery == true) {
             MessageManager.printUserWlQuery(author, channel)
         }
     }
@@ -115,10 +114,12 @@ object TicketCreator {
         closer: User,
         reason: String?
     ): TicketCloseResult {
-        with(ticket) {
-            thread ?: return TicketCloseResult.TICKET_NOT_FOUND
-            close(closer, reason ?: Messages.DEFAULT_TICKET_CLOSED_REASON, ZonedDateTime.now())
-        }
+        if (ticket.isClosing) return TicketCloseResult.TICKET_ALREADY_CLOSING
+        if (ticket.isClosed) return TicketCloseResult.TICKET_ALREADY_CLOSED
+        if (ticket.thread == null) return TicketCloseResult.TICKET_NOT_FOUND
+
+        ticket.isClosing = true
+        ticket.close(closer, reason ?: Messages.DEFAULT_TICKET_CLOSED_REASON)
 
         try {
             MessageManager.sendTicketClosedMessages(ticket)
@@ -127,6 +128,8 @@ object TicketCreator {
         } catch (e: DeleteTicketChannelException) {
             logger.error("Failed to close ticket thread with id {}.", ticket.ticketId, e)
             return TicketCloseResult.TICKET_CHANNEL_NOT_CLOSABLE
+        } finally {
+            ticket.isClosing = false
         }
 
         logger.debug("Ticket with id {} closed by {}.", ticket.ticketId, closer.name)

@@ -11,6 +11,7 @@ import dev.slne.discord.message.EmbedColors.WL_QUERY
 import dev.slne.discord.persistence.external.Whitelist
 import dev.slne.discord.persistence.service.whitelist.WhitelistRepository
 import dev.slne.discord.ticket.Ticket
+import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
@@ -121,6 +122,26 @@ object MessageManager {
             name = translatable("whitelist.query.embed.field.blocked")
             value =
                 if (whitelist.blocked == true) translatable("common.yes") else translatable("common.no")
+        }
+    }
+
+    suspend fun buildMemberAddedMessage(
+        member: Member,
+        executor: User
+    ) = MessageCreate {
+        content = member.asMention
+        embed {
+            title = translatable("interaction.command.ticket.member.embed.title")
+            description = translatable("interaction.command.ticket.member.embed.description")
+            timestamp = ZonedDateTime.now()
+            color = EmbedColors.ADD_TICKET_MEMBER
+            footer {
+                name = translatable(
+                    "interaction.command.ticket.member.embed.footer",
+                    executor.name
+                )
+                iconUrl = executor.getAvatarUrl()
+            }
         }
     }
 }

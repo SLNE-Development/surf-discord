@@ -186,18 +186,22 @@ object TicketChannelHelper {
         expectedType: TicketType,
         expectedAuthor: User
     ): Boolean {
-        if (containsChannelName(channel, ticketChannelName)) {
+        if (containsActiveChannelName(channel, ticketChannelName)) {
             return true
         }
 
         return hasAuthorTicketOfType(expectedType, expectedAuthor)
     }
 
-    fun containsChannelName(channel: TextChannel, name: String?) =
-        channel.threadChannels.any { it.name.equals(name, ignoreCase = true) }
+    private fun containsActiveChannelName(channel: TextChannel, name: String?) =
+        channel.threadChannels.asSequence()
+            .filter { !it.isArchived }
+            .any { it.name.equals(name, ignoreCase = true) }
 
 
-    fun hasAuthorTicketOfType(type: TicketType, user: User) = TicketService.tickets
-        .filter { it.ticketAuthorId == user.id }
-        .any { it.ticketType == type }
+    private fun hasAuthorTicketOfType(type: TicketType, user: User) =
+        TicketService.tickets.asSequence()
+            .filter { !it.isClosed }
+            .filter { it.ticketAuthorId == user.id }
+            .any { it.ticketType == type }
 }

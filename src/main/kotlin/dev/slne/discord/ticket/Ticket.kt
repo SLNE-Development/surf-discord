@@ -98,8 +98,7 @@ open class Ticket protected constructor() {
     @OneToMany(
         mappedBy = "ticket",
         cascade = [CascadeType.ALL],
-        fetch = FetchType.EAGER,
-        orphanRemoval = true
+        fetch = FetchType.EAGER
     )
     protected open var _messages: MutableList<TicketMessage> = mutableListOf()
 
@@ -119,9 +118,11 @@ open class Ticket protected constructor() {
         synchronized(_messages) { _messages.add(message) }
     }
 
+    fun getTicketMessage(message: Message) =
+        synchronized(_messages) { _messages.find { it.messageId.equals(message.id) } }
 
-    fun getTicketMessage(message: Message) = _messages.find { it.messageId.equals(message.id) }
-    fun getTicketMessage(messageId: String) = _messages.find { it.messageId == messageId }
+    fun getTicketMessage(messageId: String) =
+        synchronized(_messages) { _messages.find { it.messageId == messageId } }
 
     suspend fun openFromButton(): TicketCreateResult = TicketCreator.openTicket(this)
     suspend fun save(): Ticket = TicketService.saveTicket(this)

@@ -79,8 +79,7 @@ open class TicketMessage protected constructor() {
     @OneToMany(
         mappedBy = "ticketMessage",
         cascade = [CascadeType.ALL],
-        fetch = FetchType.EAGER,
-        orphanRemoval = true
+        fetch = FetchType.EAGER
     )
     protected open var _attachments: MutableList<TicketMessageAttachment> = mutableListOf()
 

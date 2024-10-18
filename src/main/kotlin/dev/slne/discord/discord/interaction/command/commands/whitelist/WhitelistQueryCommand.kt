@@ -54,7 +54,7 @@ object WhitelistQueryCommand : DiscordCommand() {
         val twitch = interaction.getOption<String>(TWITCH_OPTION)
 
         if (user == null && minecraft == null && twitch == null) {
-            throw CommandExceptions.TICKET_WLQUERY_NO_USER()
+            throw CommandExceptions.TICKET_WLQUERY_NO_USER.create()
         }
 
         val whitelists = getWhitelists(user, minecraft, twitch)
@@ -81,6 +81,6 @@ object WhitelistQueryCommand : DiscordCommand() {
             WhitelistRepository.findWhitelists(it, null, null)
         } ?: emptyList()
     } else {
-        throw CommandExceptions.TICKET_WLQUERY_NO_USER()
+        throw CommandExceptions.TICKET_WLQUERY_NO_USER.create()
     }
 }

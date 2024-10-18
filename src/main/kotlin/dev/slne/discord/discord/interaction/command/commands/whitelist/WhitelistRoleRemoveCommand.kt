@@ -30,7 +30,7 @@ object WhitelistRoleRemoveCommand : DiscordCommand() {
         val guild = interaction.getGuildOrThrow()
         val guildConfig = guild.getGuildConfigOrThrow()
         val whitelistedRole = guild.getRoleById(guildConfig.discordGuild.whitelistRoleId)
-            ?: throw CommandExceptions.WHITELIST_ROLE_NOT_REGISTERED()
+            ?: throw CommandExceptions.WHITELIST_ROLE_NOT_REGISTERED.create()
 
         removeRoleFromMembers(guild, whitelistedRole, hook)
     }
