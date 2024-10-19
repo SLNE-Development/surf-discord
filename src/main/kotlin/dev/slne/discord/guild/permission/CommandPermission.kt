@@ -13,4 +13,5 @@ enum class CommandPermission(val permission: String) {
     TICKET_BUTTONS("TICKET_BUTTONS"),
     DONT_ASK_TO_ASK("DONT_ASK_TO_ASK"),
     HOW_TO_JOIN("HOW_TO_JOIN"),
+    FAQ("FAQ"),
 }

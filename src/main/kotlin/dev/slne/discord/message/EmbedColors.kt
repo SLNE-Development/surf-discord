@@ -10,4 +10,5 @@ object EmbedColors {
     const val ERROR_COLOR = 0xff0000
     const val DO_NOT_ASK = 0x3498db
     const val HOW_TO_JOIN = 0xf39c12
+    const val FAQ = 0x7f8c8d
 }

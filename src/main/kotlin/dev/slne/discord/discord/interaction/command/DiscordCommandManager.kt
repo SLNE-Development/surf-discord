@@ -3,6 +3,7 @@ package dev.slne.discord.discord.interaction.command
 import dev.minn.jda.ktx.coroutines.await
 import dev.slne.discord.annotation.DiscordCommandMeta
 import dev.slne.discord.discord.interaction.command.commands.misc.DontAskToAsk
+import dev.slne.discord.discord.interaction.command.commands.misc.FAQCommand
 import dev.slne.discord.discord.interaction.command.commands.misc.HowToJoin
 import dev.slne.discord.discord.interaction.command.commands.ticket.TicketButtonCommand
 import dev.slne.discord.discord.interaction.command.commands.ticket.TicketCloseCommand
@@ -40,6 +41,7 @@ object DiscordCommandManager {
 
         register(DontAskToAsk)
         register(HowToJoin)
+        register(FAQCommand)
     }
 
     private fun register(command: DiscordCommand) {
