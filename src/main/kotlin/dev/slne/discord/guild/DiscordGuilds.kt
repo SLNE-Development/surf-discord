@@ -15,13 +15,13 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
             guildId = "133198459531558912",
             whitelistRoleId = "1052361599484170300",
             ticketChannels = mapOf(
-                TicketType.WHITELIST to "",
-                TicketType.DISCORD_SUPPORT to "",
-                TicketType.UNBAN to "",
-                TicketType.REPORT to "",
-                TicketType.BUGREPORT to "",
-                TicketType.EVENT_SUPPORT to "",
-                TicketType.SURVIVAL_SUPPORT to ""
+                TicketType.WHITELIST to "1297293392203616376",
+                TicketType.DISCORD_SUPPORT to "1297295256500437013",
+                TicketType.UNBAN to "1297295313115287552",
+                TicketType.REPORT to "1297295129614221332",
+                TicketType.BUGREPORT to "1297295229870800907",
+                TicketType.EVENT_SUPPORT to "1297294593179783270",
+                TicketType.SURVIVAL_SUPPORT to "1297294096477716590"
             ),
             roles = listOf(
                 // Discord Admin

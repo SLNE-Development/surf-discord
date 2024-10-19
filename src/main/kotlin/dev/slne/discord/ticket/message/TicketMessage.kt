@@ -16,7 +16,7 @@ import org.hibernate.type.SqlTypes
 import java.time.ZonedDateTime
 
 @Entity
-@Table(name = "ticket_test_messages")
+@Table(name = "ticket_messages")
 open class TicketMessage protected constructor() {
 
     @Id
