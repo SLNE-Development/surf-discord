@@ -112,7 +112,8 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.TICKET_REMOVE_USER,
                         CommandPermission.TICKET_CLOSE,
                         CommandPermission.HOW_TO_JOIN,
-                        CommandPermission.DONT_ASK_TO_ASK
+                        CommandPermission.DONT_ASK_TO_ASK,
+                        CommandPermission.FAQ
                     ),
                 ),
             )
