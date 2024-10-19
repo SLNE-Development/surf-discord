@@ -2,6 +2,8 @@ package dev.slne.discord.discord.interaction.command
 
 import dev.minn.jda.ktx.coroutines.await
 import dev.slne.discord.annotation.DiscordCommandMeta
+import dev.slne.discord.discord.interaction.command.commands.misc.DontAskToAsk
+import dev.slne.discord.discord.interaction.command.commands.misc.HowToJoin
 import dev.slne.discord.discord.interaction.command.commands.ticket.TicketButtonCommand
 import dev.slne.discord.discord.interaction.command.commands.ticket.TicketCloseCommand
 import dev.slne.discord.discord.interaction.command.commands.ticket.TicketDependenciesNotMetCommand
@@ -35,6 +37,9 @@ object DiscordCommandManager {
 
         register(TicketMemberAddCommand)
         register(TicketMemberRemoveCommand)
+
+        register(DontAskToAsk)
+        register(HowToJoin)
     }
 
     private fun register(command: DiscordCommand) {

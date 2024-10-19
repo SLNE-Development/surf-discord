@@ -29,15 +29,17 @@ abstract class DiscordCommand {
     open val subCommands: List<SubcommandData> = listOf()
     open val options: List<OptionData> = listOf()
 
-    protected val permission: CommandPermission by lazy {
-        this::class.findAnnotation<DiscordCommandMeta>()?.permission
+    private val meta: DiscordCommandMeta by lazy {
+        this::class.findAnnotation<DiscordCommandMeta>()
             ?: error("No @DiscordCommandMeta annotation found")
     }
+    protected val permission: CommandPermission by lazy { meta.permission }
+    private val deferReply: Boolean by lazy { meta.deferReply }
 
     suspend fun execute(interaction: SlashCommandInteractionEvent) {
         val user = interaction.user
         val guild = interaction.guild ?: error("Execute cannot be called in direct messages")
-        val hook = interaction.deferReply(true).await()
+        val hook = if (deferReply) interaction.deferReply(true).await() else interaction.hook
 
         try {
             if (performDiscordCommandChecks(user, guild, interaction, hook)

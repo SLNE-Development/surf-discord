@@ -6,8 +6,8 @@ import dev.slne.discord.ticket.TicketType
 
 data class DiscordRolePermissions(
     val discordRoleIds: List<String>,
-    val ticketViewPermissions: List<TicketViewPermission>,
-    private val commandPermissions: List<CommandPermission>,
+    val ticketViewPermissions: List<TicketViewPermission> = emptyList(),
+    private val commandPermissions: List<CommandPermission> = emptyList(),
     val defaultRole: Boolean = false
 ) {
 
