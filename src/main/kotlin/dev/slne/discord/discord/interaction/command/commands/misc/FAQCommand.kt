@@ -55,6 +55,16 @@ object FAQCommand : DiscordCommand() {
             translatable("command.faq.questions.server-modpack.answer")
         ),
         Question(
+            "problem-ressourcepack",
+            translatable("command.faq.questions.problem-ressourcepack"),
+            translatable("command.faq.questions.problem-ressourcepack.answer")
+        ),
+        Question(
+            "problem-connection",
+            translatable("command.faq.questions.problem-connection"),
+            translatable("command.faq.questions.problem-connection.answer")
+        ),
+        Question(
             "read-the-docs",
             translatable("command.faq.questions.read-the-docs"),
             translatable("command.faq.questions.read-the-docs.answer")
