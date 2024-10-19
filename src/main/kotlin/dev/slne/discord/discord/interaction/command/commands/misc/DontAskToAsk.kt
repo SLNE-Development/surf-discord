@@ -14,14 +14,14 @@ import net.dv8tion.jda.api.interactions.InteractionHook
     name = "ask",
     description = "Fordert Nutzer auf, ihre Fragen direkt im Kanal zu stellen, ohne vorher um Erlaubnis zu fragen",
     permission = CommandPermission.DONT_ASK_TO_ASK,
-    deferReply = false
+    ephemeral = false
 )
 object DontAskToAsk : DiscordCommand() {
     override suspend fun internalExecute(
         interaction: SlashCommandInteractionEvent,
         hook: InteractionHook
     ) {
-        interaction.replyEmbeds(Embed {
+        hook.editOriginalEmbeds(Embed {
             title = translatable("command.dontasktoask.message.title")
             description = translatable("command.dontasktoask.message.content")
             color = EmbedColors.DO_NOT_ASK

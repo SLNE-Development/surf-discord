@@ -35,7 +35,10 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.WHITELIST_QUERY,
                         CommandPermission.TICKET_ADD_USER,
                         CommandPermission.TICKET_REMOVE_USER,
-                        CommandPermission.TICKET_CLOSE
+                        CommandPermission.TICKET_CLOSE,
+                        CommandPermission.HOW_TO_JOIN,
+                        CommandPermission.DONT_ASK_TO_ASK,
+                        CommandPermission.FAQ
                     ),
                 ),
                 // Discord Moderator
@@ -49,7 +52,10 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.WHITELIST_QUERY,
                         CommandPermission.TICKET_ADD_USER,
                         CommandPermission.TICKET_REMOVE_USER,
-                        CommandPermission.TICKET_CLOSE
+                        CommandPermission.TICKET_CLOSE,
+                        CommandPermission.HOW_TO_JOIN,
+                        CommandPermission.DONT_ASK_TO_ASK,
+                        CommandPermission.FAQ
                     ),
                 ),
                 // Server Admin
@@ -71,7 +77,10 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.WHITELIST_QUERY,
                         CommandPermission.TICKET_ADD_USER,
                         CommandPermission.TICKET_REMOVE_USER,
-                        CommandPermission.TICKET_CLOSE
+                        CommandPermission.TICKET_CLOSE,
+                        CommandPermission.HOW_TO_JOIN,
+                        CommandPermission.DONT_ASK_TO_ASK,
+                        CommandPermission.FAQ
                     ),
                 ),
                 // Server Moderator
@@ -91,7 +100,10 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.WHITELIST_QUERY,
                         CommandPermission.TICKET_ADD_USER,
                         CommandPermission.TICKET_REMOVE_USER,
-                        CommandPermission.TICKET_CLOSE
+                        CommandPermission.TICKET_CLOSE,
+                        CommandPermission.HOW_TO_JOIN,
+                        CommandPermission.DONT_ASK_TO_ASK,
+                        CommandPermission.FAQ
                     ),
                 ),
                 // Server Supporter

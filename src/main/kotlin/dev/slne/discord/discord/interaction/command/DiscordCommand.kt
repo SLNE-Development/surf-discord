@@ -34,12 +34,12 @@ abstract class DiscordCommand {
             ?: error("No @DiscordCommandMeta annotation found")
     }
     protected val permission: CommandPermission by lazy { meta.permission }
-    private val deferReply: Boolean by lazy { meta.deferReply }
+    private val ephemeral: Boolean by lazy { meta.ephemeral }
 
     suspend fun execute(interaction: SlashCommandInteractionEvent) {
         val user = interaction.user
         val guild = interaction.guild ?: error("Execute cannot be called in direct messages")
-        val hook = if (deferReply) interaction.deferReply(true).await() else interaction.hook
+        val hook = interaction.deferReply(ephemeral).await()
 
         try {
             if (performDiscordCommandChecks(user, guild, interaction, hook)

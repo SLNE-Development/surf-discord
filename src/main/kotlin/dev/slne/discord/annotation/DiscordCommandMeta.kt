@@ -10,5 +10,5 @@ annotation class DiscordCommandMeta(
     val permission: CommandPermission,
     val guildOnly: Boolean = true,
     val nsfw: Boolean = false,
-    val deferReply: Boolean = true
+    val ephemeral: Boolean = true
 )
