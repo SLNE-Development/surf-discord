@@ -44,6 +44,21 @@ object FAQCommand : DiscordCommand() {
             translatable("command.faq.questions.open-ticket"),
             translatable("command.faq.questions.open-ticket.answer")
         ),
+        Question(
+            "rulebook",
+            translatable("command.faq.questions.rulebook"),
+            translatable("command.faq.questions.rulebook.answer")
+        ),
+        Question(
+            "server-modpack",
+            translatable("command.faq.questions.server-modpack"),
+            translatable("command.faq.questions.server-modpack.answer")
+        ),
+        Question(
+            "read-the-docs",
+            translatable("command.faq.questions.read-the-docs"),
+            translatable("command.faq.questions.read-the-docs.answer")
+        )
     ).associateBy { it.identifier }
 
     override val options = listOf(
