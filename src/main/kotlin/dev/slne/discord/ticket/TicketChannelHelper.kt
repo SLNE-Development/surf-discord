@@ -6,6 +6,7 @@ import dev.slne.discord.exception.ticket.UnableToGetTicketNameException
 import dev.slne.discord.exception.ticket.member.TicketAddMemberException
 import dev.slne.discord.exception.ticket.member.TicketRemoveMemberException
 import dev.slne.discord.guild.getDiscordGuildByGuildId
+import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.ticket.TicketService
 import dev.slne.discord.ticket.result.TicketCreateResult
 import net.dv8tion.jda.api.Permission
@@ -77,8 +78,9 @@ object TicketChannelHelper {
             }
         }
 
-        val pingPartyMessage = thread.sendMessage("Warte auf Pings...").await()
+        val pingPartyMessage = thread.sendMessage(translatable("common.waiting.for.ping")).await()
         pingPartyMessage.editMessage(pingParty).await()
+        pingPartyMessage.delete().await()
 
 //        for (member in guild.findMembersWithRoles(roleIds.mapNotNull { guild.getRoleById(it) })
 //            .await()) {
