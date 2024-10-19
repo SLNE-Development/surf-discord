@@ -270,6 +270,7 @@ abstract class DiscordStepChannelCreationModal(
         val message = buildString {
             append(translatable("ticket.open.success", ticketType.displayName))
             ticketType
+            append(" ")
             append(thread.asMention)
         }
 
