@@ -55,6 +55,13 @@ abstract class DiscordStepChannelCreationModal(
             return
         }
 
+        val hasSelectionStep = hasSelectionStep()
+        var hook: InteractionHook? = null
+
+        if (hasSelectionStep) {
+            hook = interaction.deferReply(true).await()
+        }
+
         try {
             preStartCreationValidation(interaction, guild)
         } catch (exception: PreThreadCreationException) {
@@ -67,16 +74,14 @@ abstract class DiscordStepChannelCreationModal(
             this
         )
 
-        if (!hasSelectionStep()) {
+        if (!hasSelectionStep) {
             replyModal(interaction)
             interaction.message.delete().await()
             return
         }
 
-        val hook = interaction.deferReply(true).await()
         interaction.message.delete().await()
-
-        startChannelCreationWithSelectionSteps(interaction, hook)
+        startChannelCreationWithSelectionSteps(interaction, hook!!)
     }
 
     @Throws(PreThreadCreationException::class)
@@ -307,7 +312,7 @@ abstract class DiscordStepChannelCreationModal(
     }
 
     @ApiStatus.OverrideOnly
-    protected suspend fun onPostThreadCreated(thread: ThreadChannel) {
+    protected open suspend fun onPostThreadCreated(thread: ThreadChannel) {
         // Override if necessary
     }
 
