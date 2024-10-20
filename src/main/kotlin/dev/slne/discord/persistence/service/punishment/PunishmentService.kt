@@ -10,6 +10,6 @@ object PunishmentService {
             arrayOf<Any>()::class.java
         )
         query.setParameter("punishmentId", punishmentId)
-        query.singleResult as Long == 1L
+        query.singleResult as Int == 1
     }
 }
