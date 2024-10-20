@@ -12,7 +12,7 @@ import kotlin.concurrent.thread
 
 private val logger = ComponentLogger.logger("Bootstrap")
 
-fun main(args: Array<String>): Unit {
+fun main(args: Array<String>) {
     runBlocking {
         val bootstrap = Bootstrap()
 

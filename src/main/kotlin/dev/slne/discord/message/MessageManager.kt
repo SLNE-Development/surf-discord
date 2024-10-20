@@ -14,7 +14,7 @@ import dev.slne.discord.ticket.Ticket
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
-import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import net.dv8tion.jda.api.interactions.InteractionHook
 import java.time.ZonedDateTime
 
@@ -25,7 +25,7 @@ object MessageManager {
             embeds += EmbedManager.buildTicketClosedEmbed(ticket)
         })?.await()
 
-    suspend fun printUserWlQuery(user: User, channel: ThreadChannel) {
+    suspend fun printUserWlQuery(user: User, channel: MessageChannel) {
         channel.sendTyping().await()
         val whitelists = WhitelistRepository.findWhitelists(null, user.id, null)
 
@@ -37,7 +37,7 @@ object MessageManager {
     }
 
     suspend fun printUserWlQuery(
-        whitelists: List<Whitelist>, name: String, channel: ThreadChannel, hook: InteractionHook?
+        whitelists: List<Whitelist>, name: String, channel: MessageChannel, hook: InteractionHook?
     ) {
         if (whitelists.isEmpty()) {
             throw CommandExceptions.WHITELIST_QUERY_NO_ENTRIES.create(name)
@@ -49,7 +49,7 @@ object MessageManager {
     }
 
     suspend fun printWlQuery(
-        channel: ThreadChannel,
+        channel: MessageChannel,
         title: String,
         whitelists: List<Whitelist>
     ) {
