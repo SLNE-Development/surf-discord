@@ -1,14 +1,14 @@
 package dev.slne.discord.listener.message
 
 import dev.minn.jda.ktx.events.listener
-import dev.slne.discord.DiscordBot
 import dev.slne.discord.extensions.ticket
+import dev.slne.discord.jda
 import net.dv8tion.jda.api.events.message.MessageUpdateEvent
 
 object MessageUpdatedListener {
 
     init {
-        DiscordBot.jda.listener<MessageUpdateEvent> { event ->
+        jda.listener<MessageUpdateEvent> { event ->
             val ticket = event.channel.ticket ?: return@listener
 
             if (event.message.isWebhookMessage) {

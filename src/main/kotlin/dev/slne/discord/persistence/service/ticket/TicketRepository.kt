@@ -4,6 +4,7 @@ import dev.slne.discord.persistence.sessionFactory
 import dev.slne.discord.persistence.upsert
 import dev.slne.discord.persistence.withSession
 import dev.slne.discord.ticket.Ticket
+import dev.slne.discord.ticket.message.TicketMessage
 
 object TicketRepository {
 
@@ -29,5 +30,9 @@ object TicketRepository {
         query.where(criteriaBuilder.equal(root.get<String>("threadId"), threadId))
 
         session.createQuery(query.select(root)).resultList.firstOrNull()
+    }
+
+    suspend fun saveMessage(message: TicketMessage) = sessionFactory.withSession { session ->
+        session.upsert(message) { id != null }
     }
 }

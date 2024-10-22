@@ -15,13 +15,13 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
             guildId = "133198459531558912",
             whitelistRoleId = "1052361599484170300",
             ticketChannels = mapOf(
-                TicketType.WHITELIST to "",
-                TicketType.DISCORD_SUPPORT to "",
-                TicketType.UNBAN to "",
-                TicketType.REPORT to "",
-                TicketType.BUGREPORT to "",
-                TicketType.EVENT_SUPPORT to "",
-                TicketType.SURVIVAL_SUPPORT to ""
+                TicketType.WHITELIST to "1297293392203616376",
+                TicketType.DISCORD_SUPPORT to "1297295256500437013",
+                TicketType.UNBAN to "1297295313115287552",
+                TicketType.REPORT to "1297295129614221332",
+                TicketType.BUGREPORT to "1297295229870800907",
+                TicketType.EVENT_SUPPORT to "1297294593179783270",
+                TicketType.SURVIVAL_SUPPORT to "1297294096477716590"
             ),
             roles = listOf(
                 // Discord Admin
@@ -35,7 +35,10 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.WHITELIST_QUERY,
                         CommandPermission.TICKET_ADD_USER,
                         CommandPermission.TICKET_REMOVE_USER,
-                        CommandPermission.TICKET_CLOSE
+                        CommandPermission.TICKET_CLOSE,
+                        CommandPermission.HOW_TO_JOIN,
+                        CommandPermission.DONT_ASK_TO_ASK,
+                        CommandPermission.FAQ
                     ),
                 ),
                 // Discord Moderator
@@ -49,7 +52,10 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.WHITELIST_QUERY,
                         CommandPermission.TICKET_ADD_USER,
                         CommandPermission.TICKET_REMOVE_USER,
-                        CommandPermission.TICKET_CLOSE
+                        CommandPermission.TICKET_CLOSE,
+                        CommandPermission.HOW_TO_JOIN,
+                        CommandPermission.DONT_ASK_TO_ASK,
+                        CommandPermission.FAQ
                     ),
                 ),
                 // Server Admin
@@ -71,7 +77,10 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.WHITELIST_QUERY,
                         CommandPermission.TICKET_ADD_USER,
                         CommandPermission.TICKET_REMOVE_USER,
-                        CommandPermission.TICKET_CLOSE
+                        CommandPermission.TICKET_CLOSE,
+                        CommandPermission.HOW_TO_JOIN,
+                        CommandPermission.DONT_ASK_TO_ASK,
+                        CommandPermission.FAQ
                     ),
                 ),
                 // Server Moderator
@@ -91,7 +100,10 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.WHITELIST_QUERY,
                         CommandPermission.TICKET_ADD_USER,
                         CommandPermission.TICKET_REMOVE_USER,
-                        CommandPermission.TICKET_CLOSE
+                        CommandPermission.TICKET_CLOSE,
+                        CommandPermission.HOW_TO_JOIN,
+                        CommandPermission.DONT_ASK_TO_ASK,
+                        CommandPermission.FAQ
                     ),
                 ),
                 // Server Supporter
@@ -110,7 +122,10 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.WHITELIST_QUERY,
                         CommandPermission.TICKET_ADD_USER,
                         CommandPermission.TICKET_REMOVE_USER,
-                        CommandPermission.TICKET_CLOSE
+                        CommandPermission.TICKET_CLOSE,
+                        CommandPermission.HOW_TO_JOIN,
+                        CommandPermission.DONT_ASK_TO_ASK,
+                        CommandPermission.FAQ
                     ),
                 ),
             )
@@ -134,6 +149,14 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                     discordRoleIds = listOf("449314761386098688"),
                     ticketViewPermissions = TicketViewPermission.entries,
                     commandPermissions = CommandPermission.entries,
+                ),
+                // Developer
+                DiscordRolePermissions(
+                    discordRoleIds = listOf("998912043862208532"),
+                    commandPermissions = listOf(
+                        CommandPermission.DONT_ASK_TO_ASK,
+                        CommandPermission.HOW_TO_JOIN
+                    )
                 )
             )
         )

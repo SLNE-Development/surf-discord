@@ -76,6 +76,8 @@ object WhitelistCommand : DiscordCommand() {
         discordId: String,
         channel: ThreadChannel
     ) {
+        hook.editOriginal(translatable("interaction.command.ticket.whitelist.uuid-fetching"))
+            .await()
         val minecraftUuid = UserService.getUuidByUsername(minecraft)
             ?: throw CommandExceptions.MINECRAFT_USER_NOT_FOUND.create()
 
@@ -107,6 +109,9 @@ object WhitelistCommand : DiscordCommand() {
                 this.discordId = discordId
             }.save()
 
+            hook.editOriginal(
+                translatable("interaction.command.ticket.whitelist.adding-role")
+            ).await()
             addWhitelistedRole(interaction.guild, user)
 
             channel.sendMessage(MessageCreate {

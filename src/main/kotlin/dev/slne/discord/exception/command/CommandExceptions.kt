@@ -17,13 +17,18 @@ object CommandExceptions {
     val NO_THREAD_CHANNEL =
         CommandExceptionFactory { CommandException(translatable("error.no-thread-channel")) }
 
-    val TICKET_CLOSE =
-        CommandExceptionFactory1 { result: TicketCloseResult ->
-            CommandException(
+    val TICKET_CLOSE = CommandExceptionFactory1 { result: TicketCloseResult ->
+        when (result) {
+            TicketCloseResult.TICKET_NOT_FOUND -> CommandException(translatable("error.ticket.close.not-found"))
+            TicketCloseResult.TICKET_CHANNEL_NOT_CLOSABLE -> CommandException(translatable("error.ticket.close.not-closable"))
+            TicketCloseResult.TICKET_ALREADY_CLOSING -> CommandException(translatable("error.ticket.close.already-closing"))
+            TicketCloseResult.TICKET_ALREADY_CLOSED -> CommandException(translatable("error.ticket.close.already-closed"))
+            else -> CommandException(
                 translatable("error.ticket.close"),
                 IllegalStateException("TicketCloseResult: $result")
             )
         }
+    }
 
     val TICKET_BOT_ADD =
         CommandExceptionFactory { CommandException(translatable("error.ticket.bot.add")) }
@@ -44,7 +49,7 @@ object CommandExceptions {
         CommandExceptionFactory { CommandException(translatable("error.ticket.wlquery.no-user")) }
 
     val WHITELIST_QUERY_NO_ENTRIES =
-        CommandExceptionFactory1 { name: String? ->
+        CommandExceptionFactory1 { name: String ->
             CommandException(
                 translatable(
                     "error.whitelist.query.no-results",

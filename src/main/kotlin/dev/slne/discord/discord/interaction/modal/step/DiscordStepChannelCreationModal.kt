@@ -6,6 +6,7 @@ import dev.minn.jda.ktx.interactions.components.replyModal
 import dev.minn.jda.ktx.messages.MessageCreate
 import dev.slne.discord.annotation.ChannelCreationModal
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager
+import dev.slne.discord.exception.DiscordException
 import dev.slne.discord.message.translatable
 import dev.slne.discord.ticket.Ticket
 import dev.slne.discord.ticket.TicketChannelHelper
@@ -54,6 +55,13 @@ abstract class DiscordStepChannelCreationModal(
             return
         }
 
+        val hasSelectionStep = hasSelectionStep()
+        var hook: InteractionHook? = null
+
+        if (hasSelectionStep) {
+            hook = interaction.deferReply(true).await()
+        }
+
         try {
             preStartCreationValidation(interaction, guild)
         } catch (exception: PreThreadCreationException) {
@@ -66,16 +74,14 @@ abstract class DiscordStepChannelCreationModal(
             this
         )
 
-        if (!hasSelectionStep()) {
+        if (!hasSelectionStep) {
             replyModal(interaction)
             interaction.message.delete().await()
             return
         }
 
-        val hook = interaction.deferReply(true).await()
         interaction.message.delete().await()
-
-        startChannelCreationWithSelectionSteps(interaction, hook)
+        startChannelCreationWithSelectionSteps(interaction, hook!!)
     }
 
     @Throws(PreThreadCreationException::class)
@@ -89,7 +95,16 @@ abstract class DiscordStepChannelCreationModal(
     private suspend fun startChannelCreationWithSelectionSteps(
         interaction: StringSelectInteraction,
         hook: InteractionHook
-    ) = replyModalAfterSelectionSteps(executeSelectionSteps(hook), interaction)
+    ) {
+
+        val result = executeSelectionSteps(hook)
+
+        if (result.second) { // If the step failed
+            return
+        }
+
+        replyModalAfterSelectionSteps(result.first, interaction)
+    }
 
     private suspend fun replyModalAfterSelectionSteps(
         lastSelectionEvent: StringSelectInteractionEvent?,
@@ -137,7 +152,7 @@ abstract class DiscordStepChannelCreationModal(
         steps: List<ModalStep>,
         lastEvent: StringSelectInteractionEvent?,
         lastMessage: Message?
-    ): StringSelectInteractionEvent? {
+    ): Pair<StringSelectInteractionEvent?, Boolean> {
         var lastStepEvent = lastEvent
         var lastStepMessage = lastMessage
 
@@ -151,17 +166,28 @@ abstract class DiscordStepChannelCreationModal(
                 }).setEphemeral(true).await()
 
                 lastStepEvent = step.awaitSelection()
+
+                try {
+                    step.afterSelection(lastStepEvent)
+                } catch (exception: DiscordException) {
+                    hook.editOriginal(exception.message ?: "???").setReplace(true).await()
+                    return null to true
+                }
             }
 
             val children = step.children
 
             if (children.isNotEmpty()) {
-                lastStepEvent =
-                    executeSelectionSteps(hook, children, lastStepEvent, lastStepMessage)
+                val result = executeSelectionSteps(hook, children, lastStepEvent, lastStepMessage)
+                if (result.second) { // If the step failed
+                    return result
+                }
+
+                lastStepEvent = result.first
             }
         }
 
-        return lastStepEvent
+        return lastStepEvent to false
     }
 
     private suspend fun verifyModalInput(
@@ -249,6 +275,7 @@ abstract class DiscordStepChannelCreationModal(
         val message = buildString {
             append(translatable("ticket.open.success", ticketType.displayName))
             ticketType
+            append(" ")
             append(thread.asMention)
         }
 
@@ -285,7 +312,7 @@ abstract class DiscordStepChannelCreationModal(
     }
 
     @ApiStatus.OverrideOnly
-    protected suspend fun onPostThreadCreated(thread: ThreadChannel) {
+    protected open suspend fun onPostThreadCreated(thread: ThreadChannel) {
         // Override if necessary
     }
 

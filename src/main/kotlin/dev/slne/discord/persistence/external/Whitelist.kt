@@ -1,6 +1,6 @@
 package dev.slne.discord.persistence.external
 
-import dev.slne.discord.DiscordBot
+import dev.slne.discord.jda
 import dev.slne.discord.persistence.service.user.UserService
 import dev.slne.discord.persistence.service.whitelist.WhitelistRepository
 import jakarta.persistence.*
@@ -48,10 +48,10 @@ open class Whitelist {
     open var blocked: Boolean? = false
 
     val addedBy: RestAction<User>?
-        get() = addedById?.let { DiscordBot.jda.retrieveUserById(it) }
+        get() = addedById?.let { jda.retrieveUserById(it) }
 
     val user: RestAction<User>?
-        get() = discordId?.let { DiscordBot.jda.retrieveUserById(it) }
+        get() = discordId?.let { jda.retrieveUserById(it) }
 
     val clickableTwitchLink: String?
         get() = twitchLink?.let { "https://twitch.tv/$it" }

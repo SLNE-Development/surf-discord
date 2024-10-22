@@ -1,9 +1,9 @@
 package dev.slne.discord.discord.interaction.command.commands.whitelist
 
+import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.interactions.components.getOption
 import dev.slne.discord.annotation.DiscordCommandMeta
 import dev.slne.discord.discord.interaction.command.DiscordCommand
-import dev.slne.discord.discord.interaction.command.getThreadChannelOrThrow
 import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.MessageManager
@@ -47,16 +47,16 @@ object WhitelistQueryCommand : DiscordCommand() {
         interaction: SlashCommandInteractionEvent,
         hook: InteractionHook
     ) {
-        val channel = interaction.getThreadChannelOrThrow()
-
+        val channel = interaction.channel
         val user = interaction.getOption<User>(USER_OPTION)
         val minecraft = interaction.getOption<String>(MINECRAFT_OPTION)
         val twitch = interaction.getOption<String>(TWITCH_OPTION)
 
         if (user == null && minecraft == null && twitch == null) {
-            throw CommandExceptions.TICKET_WLQUERY_NO_USER()
+            throw CommandExceptions.TICKET_WLQUERY_NO_USER.create()
         }
 
+        hook.editOriginal(translatable("interaction.command.ticket.wlquery.querying")).await()
         val whitelists = getWhitelists(user, minecraft, twitch)
 
         if (user != null) {
@@ -81,6 +81,6 @@ object WhitelistQueryCommand : DiscordCommand() {
             WhitelistRepository.findWhitelists(it, null, null)
         } ?: emptyList()
     } else {
-        throw CommandExceptions.TICKET_WLQUERY_NO_USER()
+        throw CommandExceptions.TICKET_WLQUERY_NO_USER.create()
     }
 }

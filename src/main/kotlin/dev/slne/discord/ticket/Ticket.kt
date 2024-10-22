@@ -1,6 +1,6 @@
 package dev.slne.discord.ticket
 
-import dev.slne.discord.DiscordBot
+import dev.slne.discord.jda
 import dev.slne.discord.message.Messages
 import dev.slne.discord.persistence.service.ticket.TicketService
 import dev.slne.discord.ticket.message.TicketMessage
@@ -98,22 +98,31 @@ open class Ticket protected constructor() {
     @OneToMany(
         mappedBy = "ticket",
         cascade = [CascadeType.ALL],
-        fetch = FetchType.EAGER,
-        orphanRemoval = true
+        fetch = FetchType.EAGER
     )
-    open var messages: MutableList<TicketMessage> = mutableListOf()
+    protected open var _messages: MutableList<TicketMessage> = mutableListOf()
 
-    val thread get() = threadId?.let { DiscordBot.jda.getThreadChannelById(it) }
-    val closedBy get() = closedById?.let { DiscordBot.jda.retrieveUserById(it) }
+    val messages get() = synchronized(this) { _messages.toList() }
+
+    val thread get() = threadId?.let { jda.getThreadChannelById(it) }
+    val closedBy get() = closedById?.let { jda.retrieveUserById(it) }
     val closeReasonOrDefault: String get() = closedReason ?: Messages.DEFAULT_TICKET_CLOSED_REASON
-    val author get() = ticketAuthorId?.let { DiscordBot.jda.retrieveUserById(it) }
-    val guild get() = guildId?.let { DiscordBot.jda.getGuildById(it) }
+    val author get() = ticketAuthorId?.let { jda.retrieveUserById(it) }
+    val guild get() = guildId?.let { jda.getGuildById(it) }
 
     val isClosed
         get() = closedAt != null
 
-    fun getTicketMessage(message: Message) = messages.find { it.messageId.equals(message.id) }
-    fun getTicketMessage(messageId: String) = messages.find { it.messageId == messageId }
+    fun addMessage(message: TicketMessage) {
+        message.ticket = this
+        synchronized(_messages) { _messages.add(message) }
+    }
+
+    fun getTicketMessage(message: Message) =
+        synchronized(_messages) { _messages.find { it.messageId.equals(message.id) } }
+
+    fun getTicketMessage(messageId: String) =
+        synchronized(_messages) { _messages.find { it.messageId == messageId } }
 
     suspend fun openFromButton(): TicketCreateResult = TicketCreator.openTicket(this)
     suspend fun save(): Ticket = TicketService.saveTicket(this)
@@ -136,10 +145,12 @@ open class Ticket protected constructor() {
         this.closedByAvatarUrl = null
         this.closedReason = null
         this.closedAt = null
+
+        TicketService.addReopenedTicket(this)
     }
 
     override fun toString(): String {
-        return "Ticket(id=$id, ticketId=$ticketId, openedAt=$openedAt, guildId=$guildId, threadId=$threadId, ticketType=$ticketType, ticketAuthorId=$ticketAuthorId, ticketAuthorName=$ticketAuthorName, ticketAuthorAvatarUrl=$ticketAuthorAvatarUrl, closedById=$closedById, closedReason=$closedReason, closedByAvatarUrl=$closedByAvatarUrl, closedByName=$closedByName, closedAt=$closedAt, messages=$messages)"
+        return "Ticket(id=$id, ticketId=$ticketId, openedAt=$openedAt, guildId=$guildId, threadId=$threadId, ticketType=$ticketType, ticketAuthorId=$ticketAuthorId, ticketAuthorName=$ticketAuthorName, ticketAuthorAvatarUrl=$ticketAuthorAvatarUrl, closedById=$closedById, closedReason=$closedReason, closedByAvatarUrl=$closedByAvatarUrl, closedByName=$closedByName, closedAt=$closedAt, messages=$_messages)"
     }
 
     companion object {

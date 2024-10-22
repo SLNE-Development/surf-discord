@@ -13,7 +13,7 @@ fun <T : Throwable> User.checkUserNotBot(
     exceptionFactory: ExceptionFactory<T>
 ) {
     if (this == jda.selfUser) {
-        throw exceptionFactory()
+        throw exceptionFactory.create()
     }
 }
 
@@ -24,12 +24,12 @@ fun <T : Throwable> Member.checkMemberNotBot(
 }
 
 
-fun Interaction.getGuildOrThrow() = guild ?: throw CommandExceptions.NO_GUILD()
+fun Interaction.getGuildOrThrow() = guild ?: throw CommandExceptions.NO_GUILD.create()
 
 fun Guild.getGuildConfig() = getDiscordGuildByGuildId(id)
 
 fun Guild.getGuildConfigOrThrow() =
-    getGuildConfig() ?: throw CommandExceptions.SERVER_NOT_REGISTERED()
+    getGuildConfig() ?: throw CommandExceptions.SERVER_NOT_REGISTERED.create()
 
 fun Interaction.getThreadChannelOrThrow() =
-    channel as? ThreadChannel ?: throw CommandExceptions.NO_THREAD_CHANNEL()
+    channel as? ThreadChannel ?: throw CommandExceptions.NO_THREAD_CHANNEL.create()
