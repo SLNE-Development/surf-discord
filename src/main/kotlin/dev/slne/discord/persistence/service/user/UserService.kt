@@ -77,6 +77,7 @@ object UserService {
         if (!response.isSuccessful) throw Exception("Failed to get username from Minecraft API")
 
         val decoded = Json.decodeFromString<MinecraftApiUuidResponse>(response.body.string())
+        response.close()
 
         decoded.name
     }
@@ -91,6 +92,8 @@ object UserService {
         if (!response.isSuccessful) throw Exception("Failed to get UUID from Minecraft API")
 
         val decoded = Json.decodeFromString<MinecraftApiUuidResponse>(response.body.string())
+        response.close()
+
         Uuid.parseHex(decoded.id).toJavaUuid()
     }
 
@@ -103,6 +106,7 @@ object UserService {
             val response = client.newCall(request).executeAsync()
             if (!response.isSuccessful) throw Exception("Failed to get UUID from fallback API")
 
+            response.close()
             Json.decodeFromString<MinecraftApiUuidResponse>(response.body.string())
         }
 
