@@ -52,14 +52,11 @@ object DiscordPersistence {
 suspend fun <T> SessionFactory.withSession(block: suspend (session: Session) -> T): T =
     withContext(Dispatchers.IO) {
         val session = openSession()
-        val transaction = session.beginTransaction()
 
         try {
             val result = block(session)
-            transaction.commit()
             result
         } catch (e: Exception) {
-            transaction.rollback()
             throw e
         } finally {
             session.close()
