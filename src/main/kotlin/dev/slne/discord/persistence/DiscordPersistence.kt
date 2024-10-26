@@ -76,9 +76,12 @@ suspend inline fun <reified T> Session.findAll(): List<T> = sessionFactory.withS
 
 fun <T> Session.upsert(entity: T, persisted: T.() -> Boolean): T {
     if (entity.persisted()) {
-        return merge(entity)
+        update(entity)
+
+        println("Updating entity ${entity}")
+        return entity
     } else {
-        persist(entity)
+        save(entity)
         return entity
     }
 }
