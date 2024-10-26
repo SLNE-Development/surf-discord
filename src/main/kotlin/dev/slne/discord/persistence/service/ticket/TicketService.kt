@@ -15,8 +15,7 @@ object TicketService {
 
     private var fetched = false
     private val pendingTickets = ObjectSets.synchronize(ObjectOpenHashSet<Ticket>())
-    var tickets: ObjectSet<Ticket> = ObjectSets.synchronize(ObjectOpenHashSet())
-        private set
+    private var tickets: ObjectSet<Ticket> = ObjectSets.synchronize(ObjectOpenHashSet())
 
     suspend fun fetchActiveTickets() = withContext(Dispatchers.IO) {
         fetched = false
@@ -31,11 +30,10 @@ object TicketService {
     }
 
     suspend fun saveTicket(ticket: Ticket): Ticket {
-        tickets.remove(ticket)
-        val saved = TicketRepository.save(ticket)
-        tickets.add(saved)
+        TicketRepository.save(ticket)
+        tickets.add(ticket)
 
-        return saved
+        return ticket
     }
 
     private fun popQueue() {

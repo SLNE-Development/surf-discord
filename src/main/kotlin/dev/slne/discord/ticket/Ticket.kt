@@ -153,6 +153,26 @@ open class Ticket protected constructor() {
         return "Ticket(id=$id, ticketId=$ticketId, openedAt=$openedAt, guildId=$guildId, threadId=$threadId, ticketType=$ticketType, ticketAuthorId=$ticketAuthorId, ticketAuthorName=$ticketAuthorName, ticketAuthorAvatarUrl=$ticketAuthorAvatarUrl, closedById=$closedById, closedReason=$closedReason, closedByAvatarUrl=$closedByAvatarUrl, closedByName=$closedByName, closedAt=$closedAt, messages=$_messages)"
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Ticket
+
+        if (id != other.id) return false
+        if (ticketId != other.ticketId) return false
+        if (threadId != other.threadId) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id?.hashCode() ?: 0
+        result = 31 * result + (ticketId?.hashCode() ?: 0)
+        result = 31 * result + (threadId?.hashCode() ?: 0)
+        return result
+    }
+
     companion object {
         fun open(
             guild: Guild,

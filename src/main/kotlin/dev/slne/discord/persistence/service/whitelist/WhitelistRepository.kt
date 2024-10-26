@@ -2,7 +2,6 @@ package dev.slne.discord.persistence.service.whitelist
 
 import dev.slne.discord.persistence.external.Whitelist
 import dev.slne.discord.persistence.sessionFactory
-import dev.slne.discord.persistence.upsert
 import dev.slne.discord.persistence.withSession
 import jakarta.persistence.criteria.Predicate
 import net.dv8tion.jda.api.entities.User
@@ -11,7 +10,7 @@ import java.util.*
 object WhitelistRepository {
 
     suspend fun saveWhitelist(whitelist: Whitelist): Whitelist = sessionFactory.withSession {
-        it.upsert(whitelist) { id != null }
+        it.merge(whitelist)
     }
 
     suspend fun getWhitelistByDiscordId(discordId: String): Whitelist? =
@@ -21,7 +20,7 @@ object WhitelistRepository {
             val query = criteriaBuilder.createQuery(Whitelist::class.java)
             val root = query.from(Whitelist::class.java)
             query.where(criteriaBuilder.equal(root.get<String>("discordId"), discordId))
-            
+
             session.createQuery(query.select(root)).resultList.firstOrNull()
         }
 

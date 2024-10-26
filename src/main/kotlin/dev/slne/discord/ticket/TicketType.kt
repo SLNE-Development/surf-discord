@@ -70,16 +70,16 @@ enum class TicketType(
         "💬".toUnicodeEmoji(),
         TicketViewPermission.VIEW_DISCORD_SUPPORT_TICKETS,
         shouldPrintWlQuery = false
-    ),
+    );
+    
+    companion object {
+        fun fromChannelName(channelName: String): TicketType {
+            val ticketTypeString = channelName.split("-").first()
 
-//    APPLICATION(
-//        "Bewerbung",
-//        "application",
-//        "Bewirb dich hier für ein Rang",
-//        "👨‍💻".toUnicodeEmoji(),
-//        TicketViewPermission.VIEW_APPLICATION_TICKETS,
-//        shouldPrintWlQuery = false
-//    )
+            return entries.find { it.configName == ticketTypeString }
+                ?: throw IllegalArgumentException("TicketType not found for channel name: $channelName")
+        }
+    }
 }
 
 fun getTicketTypeByDisplayName(name: String) = TicketType.entries.find { it.displayName == name }

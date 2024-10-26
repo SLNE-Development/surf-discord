@@ -57,11 +57,13 @@ object DiscordPersistence {
 suspend fun <T> SessionFactory.withSession(block: suspend (session: Session) -> T): T =
     withContext(Dispatchers.IO) {
         val session = openSession()
-
+        session.beginTransaction()
         try {
             val result = block(session)
+            session.transaction.commit()
             result
         } catch (e: Exception) {
+            session.transaction.rollback()
             throw e
         } finally {
             session.close()
@@ -72,16 +74,4 @@ suspend inline fun <reified T> Session.findAll(): List<T> = sessionFactory.withS
     val query = session.criteriaBuilder.createQuery(T::class.java)
     val root = query.from(T::class.java)
     session.createQuery(query.select(root)).resultList
-}
-
-fun <T> Session.upsert(entity: T, persisted: T.() -> Boolean): T {
-    if (entity.persisted()) {
-        update(entity)
-
-        println("Updating entity ${entity}")
-        return entity
-    } else {
-        save(entity)
-        return entity
-    }
 }
