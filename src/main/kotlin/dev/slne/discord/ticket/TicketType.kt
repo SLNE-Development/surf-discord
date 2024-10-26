@@ -71,12 +71,12 @@ enum class TicketType(
         TicketViewPermission.VIEW_DISCORD_SUPPORT_TICKETS,
         shouldPrintWlQuery = false
     );
-    
+
     companion object {
         fun fromChannelName(channelName: String): TicketType {
             val ticketTypeString = channelName.split("-").first()
 
-            return entries.find { it.configName == ticketTypeString }
+            return entries.find { it.configName.replace('-', '_') == ticketTypeString }
                 ?: throw IllegalArgumentException("TicketType not found for channel name: $channelName")
         }
     }

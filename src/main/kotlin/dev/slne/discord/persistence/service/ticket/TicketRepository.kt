@@ -1,6 +1,7 @@
 package dev.slne.discord.persistence.service.ticket
 
 import dev.slne.discord.persistence.sessionFactory
+import dev.slne.discord.persistence.upsert
 import dev.slne.discord.persistence.withSession
 import dev.slne.discord.ticket.Ticket
 import dev.slne.discord.ticket.message.TicketMessage
@@ -8,7 +9,7 @@ import dev.slne.discord.ticket.message.TicketMessage
 object TicketRepository {
 
     suspend fun save(ticket: Ticket): Ticket = sessionFactory.withSession { session ->
-        session.merge(ticket)
+        session.upsert(ticket) { id != null }
     }
 
     suspend fun findActive(): List<Ticket> = sessionFactory.withSession { session ->
@@ -33,6 +34,6 @@ object TicketRepository {
 
     suspend fun saveMessage(message: TicketMessage): TicketMessage =
         sessionFactory.withSession { session ->
-            session.merge(message)
+            session.upsert(message) { id != null }
         }
 }

@@ -53,6 +53,15 @@ object DiscordPersistence {
     }
 }
 
+fun <T> Session.upsert(entity: T, persisted: T.() -> Boolean): T {
+    if (entity.persisted()) {
+        return merge(entity)
+    } else {
+        persist(entity)
+
+        return entity
+    }
+}
 
 suspend fun <T> SessionFactory.withSession(block: suspend (session: Session) -> T): T =
     withContext(Dispatchers.IO) {
