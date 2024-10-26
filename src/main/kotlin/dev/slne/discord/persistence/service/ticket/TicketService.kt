@@ -15,7 +15,7 @@ object TicketService {
 
     private var fetched = false
     private val pendingTickets = ObjectSets.synchronize(ObjectOpenHashSet<Ticket>())
-    private var tickets: ObjectSet<Ticket> = ObjectSets.synchronize(ObjectOpenHashSet())
+    var tickets: ObjectSet<Ticket> = ObjectSets.synchronize(ObjectOpenHashSet())
 
     suspend fun fetchActiveTickets() = withContext(Dispatchers.IO) {
         fetched = false
