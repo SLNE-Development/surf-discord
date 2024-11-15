@@ -5,10 +5,7 @@ import dev.slne.discord.annotation.DiscordCommandMeta
 import dev.slne.discord.discord.interaction.command.commands.misc.DontAskToAsk
 import dev.slne.discord.discord.interaction.command.commands.misc.FAQCommand
 import dev.slne.discord.discord.interaction.command.commands.misc.HowToJoin
-import dev.slne.discord.discord.interaction.command.commands.ticket.TicketButtonCommand
-import dev.slne.discord.discord.interaction.command.commands.ticket.TicketCloseCommand
-import dev.slne.discord.discord.interaction.command.commands.ticket.TicketDependenciesNotMetCommand
-import dev.slne.discord.discord.interaction.command.commands.ticket.TicketFixCommand
+import dev.slne.discord.discord.interaction.command.commands.ticket.*
 import dev.slne.discord.discord.interaction.command.commands.ticket.members.TicketMemberAddCommand
 import dev.slne.discord.discord.interaction.command.commands.ticket.members.TicketMemberRemoveCommand
 import dev.slne.discord.discord.interaction.command.commands.whitelist.*
@@ -37,6 +34,7 @@ object DiscordCommandManager {
         register(TicketCloseCommand)
         register(TicketDependenciesNotMetCommand)
         register(TicketFixCommand)
+        register(TicketReplyDeadlineCommand)
 
         register(TicketMemberAddCommand)
         register(TicketMemberRemoveCommand)
