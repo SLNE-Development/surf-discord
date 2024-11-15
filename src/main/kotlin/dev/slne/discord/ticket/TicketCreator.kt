@@ -75,7 +75,7 @@ object TicketCreator {
         runnable()
 
         if (ticket.ticketType?.shouldPrintWlQuery == true) {
-            MessageManager.printUserWlQuery(author, channel)
+            runCatching { MessageManager.printUserWlQuery(author, channel) }
         }
     }
 
