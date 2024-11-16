@@ -5,6 +5,7 @@ import dev.slne.discord.annotation.DiscordCommandMeta
 import dev.slne.discord.discord.interaction.command.commands.misc.DontAskToAsk
 import dev.slne.discord.discord.interaction.command.commands.misc.FAQCommand
 import dev.slne.discord.discord.interaction.command.commands.misc.HowToJoin
+import dev.slne.discord.discord.interaction.command.commands.misc.MissingInformationCommand
 import dev.slne.discord.discord.interaction.command.commands.ticket.*
 import dev.slne.discord.discord.interaction.command.commands.ticket.members.TicketMemberAddCommand
 import dev.slne.discord.discord.interaction.command.commands.ticket.members.TicketMemberRemoveCommand
@@ -42,6 +43,7 @@ object DiscordCommandManager {
         register(DontAskToAsk)
         register(HowToJoin)
         register(FAQCommand)
+        register(MissingInformationCommand)
     }
 
     private fun register(command: DiscordCommand) {

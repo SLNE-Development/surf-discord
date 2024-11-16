@@ -13,8 +13,8 @@ import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
 
-const val QUESTION_IDENTIFIER = "question"
-const val USER_IDENTIFIER = "user"
+private const val QUESTION_IDENTIFIER = "question"
+private const val USER_IDENTIFIER = "user"
 
 @DiscordCommandMeta(
     name = "faq",
