@@ -6,9 +6,12 @@ import dev.slne.discord.persistence.upsert
 import dev.slne.discord.persistence.withSession
 import jakarta.persistence.criteria.Predicate
 import net.dv8tion.jda.api.entities.User
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import java.util.*
 
 object WhitelistRepository {
+
+    val logger = ComponentLogger.logger()
 
     suspend fun saveWhitelist(whitelist: Whitelist): Whitelist =
         sessionFactory.withSession { session ->
@@ -25,6 +28,42 @@ object WhitelistRepository {
 
             session.createQuery(query.select(root)).resultList.firstOrNull()
         }
+
+    suspend fun deleteWhitelists(
+        uuid: UUID? = null,
+        discordId: String? = null,
+        twitchLink: String? = null
+    ) = sessionFactory.withSession { session ->
+        val criteriaBuilder = session.criteriaBuilder
+        val query = criteriaBuilder.createCriteriaDelete(Whitelist::class.java)
+        val root = query.from(Whitelist::class.java)
+        val predicates = mutableListOf<Predicate>()
+
+        if (uuid != null) {
+            predicates.add(criteriaBuilder.equal(root.get<UUID>("uuid"), uuid))
+        }
+
+        if (discordId != null) {
+            predicates.add(criteriaBuilder.equal(root.get<String>("discordId"), discordId))
+        }
+
+        if (twitchLink != null) {
+            predicates.add(
+                criteriaBuilder.equal(
+                    root.get<String>("twitchLink"),
+                    twitchLink
+                )
+            )
+        }
+
+        if (predicates.isEmpty()) {
+            return@withSession
+        }
+
+        query.where(criteriaBuilder.or(*predicates.toTypedArray()))
+
+        session.createQuery(query).executeUpdate()
+    }
 
     suspend fun findWhitelists(
         uuid: UUID? = null,

@@ -32,6 +32,7 @@ object DiscordCommandManager {
         register(WhitelistQueryCommand)
         register(WhitelistRoleRemoveCommand)
         register(WhitelistUnblockCommand)
+        register(WhitelistChangeCommand)
 
         register(TicketButtonCommand)
         register(TicketCloseCommand)

@@ -58,6 +58,9 @@ object CommandExceptions {
             )
         }
 
+    val WHITELIST_CHANGE_NOT_WHITELISTED =
+        CommandExceptionFactory { CommandException(translatable("error.whitelist.change.not-whitelisted")) }
+
     val WHITELIST_ROLE_NOT_REGISTERED =
         CommandExceptionFactory { CommandException(translatable("error.whitelist.role-not-registered")) }
 
