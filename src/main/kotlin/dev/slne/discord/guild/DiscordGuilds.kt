@@ -39,7 +39,8 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.TICKET_CLOSE,
                         CommandPermission.HOW_TO_JOIN,
                         CommandPermission.DONT_ASK_TO_ASK,
-                        CommandPermission.FAQ
+                        CommandPermission.FAQ,
+                        CommandPermission.MISSING_INFORMATION
                     ),
                 ),
                 // Discord Moderator
@@ -54,9 +55,11 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.TICKET_ADD_USER,
                         CommandPermission.TICKET_REMOVE_USER,
                         CommandPermission.TICKET_CLOSE,
+                        CommandPermission.TICKET_REPLY_DEADLINE,
                         CommandPermission.HOW_TO_JOIN,
                         CommandPermission.DONT_ASK_TO_ASK,
-                        CommandPermission.FAQ
+                        CommandPermission.FAQ,
+                        CommandPermission.MISSING_INFORMATION
                     ),
                 ),
                 // Server Admin
@@ -79,10 +82,12 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.WHITELIST_CHANGE,
                         CommandPermission.TICKET_ADD_USER,
                         CommandPermission.TICKET_REMOVE_USER,
+                        CommandPermission.TICKET_REPLY_DEADLINE,
                         CommandPermission.TICKET_CLOSE,
                         CommandPermission.HOW_TO_JOIN,
                         CommandPermission.DONT_ASK_TO_ASK,
-                        CommandPermission.FAQ
+                        CommandPermission.FAQ,
+                        CommandPermission.MISSING_INFORMATION
                     ),
                 ),
                 // Server Moderator
@@ -105,9 +110,11 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.TICKET_ADD_USER,
                         CommandPermission.TICKET_REMOVE_USER,
                         CommandPermission.TICKET_CLOSE,
+                        CommandPermission.TICKET_REPLY_DEADLINE,
                         CommandPermission.HOW_TO_JOIN,
                         CommandPermission.DONT_ASK_TO_ASK,
-                        CommandPermission.FAQ
+                        CommandPermission.FAQ,
+                        CommandPermission.MISSING_INFORMATION
                     ),
                 ),
                 // Server Supporter
@@ -127,9 +134,11 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.TICKET_ADD_USER,
                         CommandPermission.TICKET_REMOVE_USER,
                         CommandPermission.TICKET_CLOSE,
+                        CommandPermission.TICKET_REPLY_DEADLINE,
                         CommandPermission.HOW_TO_JOIN,
                         CommandPermission.DONT_ASK_TO_ASK,
-                        CommandPermission.FAQ
+                        CommandPermission.FAQ,
+                        CommandPermission.MISSING_INFORMATION
                     ),
                 ),
             )

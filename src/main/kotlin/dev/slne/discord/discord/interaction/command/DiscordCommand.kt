@@ -1,7 +1,8 @@
 package dev.slne.discord.discord.interaction.command
 
 import dev.minn.jda.ktx.coroutines.await
-import dev.minn.jda.ktx.interactions.commands.*
+import dev.minn.jda.ktx.interactions.commands.Option
+import dev.minn.jda.ktx.interactions.commands.Subcommand
 import dev.slne.discord.annotation.DiscordCommandMeta
 import dev.slne.discord.exception.DiscordException
 import dev.slne.discord.exception.command.CommandException
@@ -20,7 +21,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.intellij.lang.annotations.Language
-import java.util.*
+import kotlin.Throws
 import kotlin.reflect.full.findAnnotation
 
 abstract class DiscordCommand {
@@ -35,11 +36,15 @@ abstract class DiscordCommand {
     }
     protected val permission: CommandPermission by lazy { meta.permission }
     private val ephemeral: Boolean by lazy { meta.ephemeral }
+    private val sendTyping: Boolean by lazy { meta.sendTyping }
 
     suspend fun execute(interaction: SlashCommandInteractionEvent) {
         val user = interaction.user
         val guild = interaction.guild ?: error("Execute cannot be called in direct messages")
         val hook = interaction.deferReply(ephemeral).await()
+        if (sendTyping) {
+            interaction.messageChannel.sendTyping().queue()
+        }
 
         try {
             if (performDiscordCommandChecks(user, guild, interaction, hook)

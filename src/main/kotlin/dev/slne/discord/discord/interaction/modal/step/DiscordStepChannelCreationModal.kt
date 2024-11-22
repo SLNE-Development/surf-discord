@@ -23,7 +23,7 @@ import net.dv8tion.jda.api.interactions.components.selections.StringSelectIntera
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.jetbrains.annotations.ApiStatus
 import java.io.Serial
-import java.util.*
+import kotlin.Throws
 import kotlin.reflect.full.findAnnotation
 
 abstract class DiscordStepChannelCreationModal(
@@ -297,13 +297,9 @@ abstract class DiscordStepChannelCreationModal(
     }
 
     private suspend fun sendOpenMessage(messages: List<String>, thread: ThreadChannel) {
-        if (messages.isEmpty()) {
-            return
+        for (message in messages) {
+            thread.sendMessage(message).await()
         }
-
-        thread.sendMessage(messages.first()).await()
-
-        sendOpenMessage(messages.drop(1), thread)
     }
 
     @ApiStatus.OverrideOnly
