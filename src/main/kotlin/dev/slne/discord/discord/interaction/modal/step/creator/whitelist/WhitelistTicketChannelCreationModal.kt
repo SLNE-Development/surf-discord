@@ -25,9 +25,23 @@ class WhitelistTicketChannelCreationModal :
         interaction: StringSelectInteraction,
         guild: Guild
     ) {
-        if (WhitelistRepository.isWhitelisted(interaction.user)) {
+        val user = interaction.user
+        if (WhitelistRepository.isWhitelisted(user)) {
             throw PreThreadCreationException(translatable("error.ticket.whitelist.already-whitelisted"))
         }
+
+//        val connections = user.retrieveConnections().await()
+//        val twitchConnection = connections.find { it.type == "twitch" }
+//
+//        println("Twitch connection: $twitchConnection")
+//
+//        if (twitchConnection == null || !twitchConnection.verified) {
+//            throw PreThreadCreationException(translatable("error.ticket.whitelist.twitch-not-connected"))
+//        }
+//
+//        if (twitchConnection.visibility != UserConnection.Visibility.EVERYONE) {
+//            throw PreThreadCreationException(translatable("error.ticket.whitelist.twitch-not-public"))
+//        }
     }
 
     companion object {
