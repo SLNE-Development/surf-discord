@@ -2,10 +2,7 @@ package dev.slne.discord.discord.interaction.command
 
 import dev.minn.jda.ktx.coroutines.await
 import dev.slne.discord.annotation.DiscordCommandMeta
-import dev.slne.discord.discord.interaction.command.commands.misc.DontAskToAsk
-import dev.slne.discord.discord.interaction.command.commands.misc.FAQCommand
-import dev.slne.discord.discord.interaction.command.commands.misc.HowToJoin
-import dev.slne.discord.discord.interaction.command.commands.misc.MissingInformationCommand
+import dev.slne.discord.discord.interaction.command.commands.misc.*
 import dev.slne.discord.discord.interaction.command.commands.ticket.*
 import dev.slne.discord.discord.interaction.command.commands.ticket.members.TicketMemberAddCommand
 import dev.slne.discord.discord.interaction.command.commands.ticket.members.TicketMemberRemoveCommand
@@ -45,6 +42,8 @@ object DiscordCommandManager {
         register(HowToJoin)
         register(FAQCommand)
         register(MissingInformationCommand)
+
+        register(RequestRollbackCommand)
     }
 
     private fun register(command: DiscordCommand) {

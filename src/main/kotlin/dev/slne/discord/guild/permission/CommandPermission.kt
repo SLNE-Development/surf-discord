@@ -17,4 +17,5 @@ enum class CommandPermission(val permission: String) {
     HOW_TO_JOIN("HOW_TO_JOIN"),
     FAQ("FAQ"),
     MISSING_INFORMATION("MISSING_INFORMATION"),
+    REQUEST_ROLLBACK("REQUEST_ROLLBACK"),
 }
