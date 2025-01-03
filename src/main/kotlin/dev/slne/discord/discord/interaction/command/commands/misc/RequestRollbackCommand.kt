@@ -94,9 +94,6 @@ object RequestRollbackCommand : DiscordCommand() {
         val minecraftName = interaction.getOption<String>(MINECRAFT_OPTION)
         val servers = interaction.getOption<String>(SERVERS_OPTION)
         val subCommand = interaction.subcommandName
-        interaction.options.forEach {
-            println("Received option: ${it.name}: ${it.asString}")
-        }
 
         if (minecraftName == null) {
             throw CommandExceptions.TICKET_WLQUERY_NO_USER.create()
