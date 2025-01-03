@@ -8,7 +8,7 @@ import org.hibernate.type.SqlTypes
 import java.util.*
 
 @Entity
-@Table(name = "ticket_test_message_attachments")
+@Table(name = "ticket_message_attachments")
 open class TicketMessageAttachment protected constructor() {
 
     @Id
