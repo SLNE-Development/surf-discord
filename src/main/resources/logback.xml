@@ -1,34 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE configuration>
 <configuration scan="true">
-    <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder" />
-    <import class="ch.qos.logback.core.ConsoleAppender" />
-    <import class="ch.qos.logback.core.rolling.RollingFileAppender" />
-    <import class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy" />
+  <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"/>
+  <import class="ch.qos.logback.core.ConsoleAppender"/>
+  <import class="ch.qos.logback.core.rolling.RollingFileAppender"/>
+  <import class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy"/>
 
-    <appender name="STDOUT" class="ConsoleAppender">
-        <encoder class="PatternLayoutEncoder">
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
+  <appender name="STDOUT" class="ConsoleAppender">
+    <encoder class="PatternLayoutEncoder">
+      <pattern>%highlight([%d{HH:mm:ss}] [%t/%level/%logger{0}]:) %msg%n%xEx{full}</pattern>
+    </encoder>
+  </appender>
 
 
-    <appender name="FILE" class="RollingFileAppender">
-        <rollingPolicy class="TimeBasedRollingPolicy">
-            <!-- Daily rollover -->
-            <fileNamePattern>log/%d{yyyy-MM-dd}.log</fileNamePattern>
+  <appender name="FILE" class="RollingFileAppender">
+    <rollingPolicy class="TimeBasedRollingPolicy">
+      <!-- Daily rollover -->
+      <fileNamePattern>log/%d{yyyy-MM-dd}.log</fileNamePattern>
 
-            <!-- Keep 7 days' worth of history -->
-            <maxHistory>7</maxHistory>
-        </rollingPolicy>
+      <!-- Keep 7 days' worth of history -->
+      <maxHistory>7</maxHistory>
+    </rollingPolicy>
 
-        <encoder class="PatternLayoutEncoder">
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
+    <encoder class="PatternLayoutEncoder">
+      <pattern>[%d{HH:mm:ss}] [%t/%level/%logger{0}]: %msg%n%xEx{full}</pattern>
+    </encoder>
+  </appender>
 
-    <root level="INFO">
-        <appender-ref ref="FILE" />
-        <appender-ref ref="STDOUT" />
-    </root>
+  <root level="INFO">
+    <appender-ref ref="FILE"/>
+    <appender-ref ref="STDOUT"/>
+  </root>
+
+  <logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
+    <appender-ref ref="CONSOLE"/>
+  </logger>
+  <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE" additivity="false">
+    <appender-ref ref="CONSOLE"/>
+  </logger>
 </configuration>
