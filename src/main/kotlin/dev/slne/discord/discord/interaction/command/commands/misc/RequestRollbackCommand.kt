@@ -130,7 +130,8 @@ object RequestRollbackCommand : DiscordCommand() {
                     firstWhitelist.uuid!!,
                     firstWhitelist.discordId,
                     servers,
-                    interaction.user
+                    interaction.user,
+                    fullRollback = false
                 ) {
                     it.field {
                         name = "Timerange"
@@ -154,7 +155,8 @@ object RequestRollbackCommand : DiscordCommand() {
                     firstWhitelist.uuid!!,
                     firstWhitelist.discordId,
                     servers,
-                    interaction.user
+                    interaction.user,
+                    fullRollback = true
                 ) {
                     it.field {
                         name = "Grund"
@@ -174,10 +176,11 @@ object RequestRollbackCommand : DiscordCommand() {
         discordUserId: String?,
         servers: String,
         requestedBy: User,
+        fullRollback: Boolean,
         builder: (InlineEmbed) -> Unit
     ): MessageEmbed {
         return Embed {
-            title = "Rollback: $minecraftName"
+            title = "${if (fullRollback) "Voll" else "Teil"}-Rollback: $minecraftName"
             url = "https://admin.slne.dev/core/user/$minecraftUuid"
             thumbnail = "https://minotar.net/helm/${minecraftUuid}/128.png"
             timestamp = ZonedDateTime.now()
