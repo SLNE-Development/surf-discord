@@ -40,7 +40,8 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.HOW_TO_JOIN,
                         CommandPermission.DONT_ASK_TO_ASK,
                         CommandPermission.FAQ,
-                        CommandPermission.MISSING_INFORMATION
+                        CommandPermission.MISSING_INFORMATION,
+                        CommandPermission.REQUEST_ROLLBACK
                     ),
                 ),
                 // Discord Moderator
@@ -59,7 +60,8 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.HOW_TO_JOIN,
                         CommandPermission.DONT_ASK_TO_ASK,
                         CommandPermission.FAQ,
-                        CommandPermission.MISSING_INFORMATION
+                        CommandPermission.MISSING_INFORMATION,
+                        CommandPermission.REQUEST_ROLLBACK
                     ),
                 ),
                 // Server Admin
@@ -87,7 +89,8 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.HOW_TO_JOIN,
                         CommandPermission.DONT_ASK_TO_ASK,
                         CommandPermission.FAQ,
-                        CommandPermission.MISSING_INFORMATION
+                        CommandPermission.MISSING_INFORMATION,
+                        CommandPermission.REQUEST_ROLLBACK
                     ),
                 ),
                 // Server Moderator
@@ -114,7 +117,8 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.HOW_TO_JOIN,
                         CommandPermission.DONT_ASK_TO_ASK,
                         CommandPermission.FAQ,
-                        CommandPermission.MISSING_INFORMATION
+                        CommandPermission.MISSING_INFORMATION,
+                        CommandPermission.REQUEST_ROLLBACK
                     ),
                 ),
                 // Server Supporter
@@ -138,7 +142,8 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.HOW_TO_JOIN,
                         CommandPermission.DONT_ASK_TO_ASK,
                         CommandPermission.FAQ,
-                        CommandPermission.MISSING_INFORMATION
+                        CommandPermission.MISSING_INFORMATION,
+                        CommandPermission.REQUEST_ROLLBACK
                     ),
                 ),
             )
@@ -168,7 +173,8 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                     discordRoleIds = listOf("998912043862208532"),
                     commandPermissions = listOf(
                         CommandPermission.DONT_ASK_TO_ASK,
-                        CommandPermission.HOW_TO_JOIN
+                        CommandPermission.HOW_TO_JOIN,
+                        CommandPermission.REQUEST_ROLLBACK
                     )
                 )
             )
