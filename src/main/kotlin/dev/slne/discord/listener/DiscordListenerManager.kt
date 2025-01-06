@@ -10,8 +10,10 @@ import dev.slne.discord.listener.message.MessageDeletedListener
 import dev.slne.discord.listener.message.MessageUpdatedListener
 import dev.slne.discord.listener.whitelist.WhitelistJoinListener
 import dev.slne.discord.listener.whitelist.WhitelistQuitListener
+import org.springframework.stereotype.Component
 
-object DiscordListenerManager {
+@Component
+class DiscordListenerManager {
 
     init {
         DiscordModalListener

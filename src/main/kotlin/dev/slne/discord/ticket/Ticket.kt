@@ -1,131 +1,131 @@
 package dev.slne.discord.ticket
 
-import dev.slne.discord.jda
+import dev.slne.discord.getBean
 import dev.slne.discord.message.Messages
-import dev.slne.discord.persistence.service.ticket.TicketService
 import dev.slne.discord.ticket.message.TicketMessage
-import dev.slne.discord.ticket.result.TicketCreateResult
+import dev.slne.discord.util.freeze
+import dev.slne.discord.util.toObjectList
 import jakarta.persistence.*
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.TimeZoneStorage
 import org.hibernate.annotations.TimeZoneStorageType
+import org.hibernate.proxy.HibernateProxy
 import org.hibernate.type.SqlTypes
 import java.time.ZonedDateTime
 import java.util.*
 
 @Entity
 @Table(name = "ticket_tickets")
-open class Ticket protected constructor() {
-
+data class Ticket(
     @Id
     @JdbcTypeCode(SqlTypes.BIGINT)
     @Column(name = "id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    open var id: Long? = null
-        protected set
+    val id: Long? = null,
 
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "ticket_id", nullable = false, unique = true, length = 36)
-    open var ticketId: UUID? = null
-        protected set
-
-    @TimeZoneStorage(TimeZoneStorageType.NORMALIZE_UTC)
-    @Column(name = "opened_at", nullable = false)
-    open var openedAt: ZonedDateTime? = null
-        protected set
-
-    @JdbcTypeCode(SqlTypes.CHAR)
-    @Column(name = "guild_id", length = 20, nullable = false)
-    open var guildId: String? = null
-        protected set
-
-    @JdbcTypeCode(SqlTypes.CHAR)
-    @Column(name = "thread_id", length = 20)
-    open var threadId: String? = null
+    val ticketId: UUID,
 
     @JdbcTypeCode(SqlTypes.CHAR)
     @Enumerated(EnumType.STRING)
     @Column(name = "ticket_type")
-    open var ticketType: TicketType? = null
-        protected set
+    val ticketType: TicketType,
+
+    @Transient
+    val ticketAuthor: User,
+
+    @TimeZoneStorage(TimeZoneStorageType.NORMALIZE_UTC)
+    @Column(name = "opened_at", nullable = false)
+    val openedAt: ZonedDateTime,
+
+    @Transient
+    val internalGuild: Guild
+) {
+
+    constructor(
+        guild: Guild,
+        author: User,
+        ticketType: TicketType,
+    ) : this(
+        ticketId = UUID.randomUUID(),
+        ticketType = ticketType,
+        ticketAuthor = author,
+        openedAt = ZonedDateTime.now(),
+        internalGuild = guild
+    )
 
     @JdbcTypeCode(SqlTypes.CHAR)
-    @Column(name = "ticket_author_id", length = 20)
-    open var ticketAuthorId: String? = null
-        protected set
+    @Column(name = "guild_id", length = 20)
+    val guildId: String = internalGuild.id
 
     @JdbcTypeCode(SqlTypes.CHAR)
-    @Column(name = "ticket_author_name", length = 64)
-    open var ticketAuthorName: String? = null
-        protected set
+    @Column(name = "thread_id", length = 20)
+    var threadId: String? = null
+
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(name = "ticket_author_id", length = 20, nullable = false)
+    private val ticketAuthorId = ticketAuthor.id
+
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(name = "ticket_author_name", length = 64, nullable = false)
+    private val ticketAuthorName = ticketAuthor.name
 
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "ticket_author_avatar_url")
-    open var ticketAuthorAvatarUrl: String? = null
-        protected set
+    private val ticketAuthorAvatarUrl = ticketAuthor.avatarUrl
 
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "closed_by_id", length = 20)
-    open var closedById: String? = null
-        protected set
+    private var closedById: String? = null
 
     @Lob
     @Column(name = "closed_reason")
-    open var closedReason: String? = null
-        protected set
+    private var closedReason: String? = null
 
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "closed_by_avatar_url")
-    open var closedByAvatarUrl: String? = null
-        protected set
+    private var closedByAvatarUrl: String? = null
 
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "closed_by_name", length = 32)
-    open var closedByName: String? = null
-        protected set
+    private var closedByName: String? = null
 
     @TimeZoneStorage(TimeZoneStorageType.NORMALIZE_UTC)
     @Column(name = "closed_at")
-    open var closedAt: ZonedDateTime? = null
-        protected set
+    private var closedAt: ZonedDateTime? = null
 
     @Transient
-    open var isClosing = false
+    private var isClosing = false
 
     @OneToMany(
         mappedBy = "ticket",
         cascade = [CascadeType.ALL],
         fetch = FetchType.EAGER
     )
-    protected open var _messages: MutableList<TicketMessage> = mutableListOf()
+    private var _messages = mutableListOf<TicketMessage>()
+    val messages get() = _messages.toObjectList().freeze()
 
-    val messages get() = synchronized(this) { _messages.toList() }
-
-    val thread get() = threadId?.let { jda.getThreadChannelById(it) }
-    val closedBy get() = closedById?.let { jda.retrieveUserById(it) }
+    val thread get() = threadId?.let { getBean<JDA>().getThreadChannelById(it) }
+    val closedBy get() = closedById?.let { getBean<JDA>().retrieveUserById(it) }
     val closeReasonOrDefault: String get() = closedReason ?: Messages.DEFAULT_TICKET_CLOSED_REASON
-    val author get() = ticketAuthorId?.let { jda.retrieveUserById(it) }
-    val guild get() = guildId?.let { jda.getGuildById(it) }
+    val author get() = getBean<JDA>().retrieveUserById(ticketAuthorId)
+    val guild get() = getBean<JDA>().getGuildById(guildId)
 
     val isClosed
         get() = closedAt != null
 
     fun addMessage(message: TicketMessage) {
         message.ticket = this
-        synchronized(_messages) { _messages.add(message) }
+        _messages.add(message)
     }
 
-    fun getTicketMessage(message: Message) =
-        synchronized(_messages) { _messages.find { it.messageId.equals(message.id) } }
-
-    fun getTicketMessage(messageId: String) =
-        synchronized(_messages) { _messages.find { it.messageId == messageId } }
-
-    suspend fun openFromButton(): TicketCreateResult = TicketCreator.openTicket(this)
-    suspend fun save(): Ticket = TicketService.saveTicket(this)
+    fun getTicketMessage(message: Message) = getTicketMessage(message.id)
+    fun getTicketMessage(messageId: String) = _messages.firstOrNull { it.messageId == messageId }
 
     fun close(
         closedBy: User,
@@ -145,50 +145,26 @@ open class Ticket protected constructor() {
         this.closedByAvatarUrl = null
         this.closedReason = null
         this.closedAt = null
-
-        TicketService.addReopenedTicket(this)
     }
 
-    override fun toString(): String {
-        return "Ticket(id=$id, ticketId=$ticketId, openedAt=$openedAt, guildId=$guildId, threadId=$threadId, ticketType=$ticketType, ticketAuthorId=$ticketAuthorId, ticketAuthorName=$ticketAuthorName, ticketAuthorAvatarUrl=$ticketAuthorAvatarUrl, closedById=$closedById, closedReason=$closedReason, closedByAvatarUrl=$closedByAvatarUrl, closedByName=$closedByName, closedAt=$closedAt, messages=$_messages)"
-    }
-
-    override fun equals(other: Any?): Boolean {
+    final override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
+        if (other == null) return false
+        val oEffectiveClass =
+            if (other is HibernateProxy) other.hibernateLazyInitializer.persistentClass else other.javaClass
+        val thisEffectiveClass =
+            if (this is HibernateProxy) this.hibernateLazyInitializer.persistentClass else this.javaClass
+        if (thisEffectiveClass != oEffectiveClass) return false
         other as Ticket
 
-        if (id != other.id) return false
-        if (ticketId != other.ticketId) return false
-        if (threadId != other.threadId) return false
-
-        return true
+        return id != null && id == other.id
     }
 
-    override fun hashCode(): Int {
-        var result = id?.hashCode() ?: 0
-        result = 31 * result + (ticketId?.hashCode() ?: 0)
-        result = 31 * result + (threadId?.hashCode() ?: 0)
-        return result
-    }
+    final override fun hashCode(): Int =
+        if (this is HibernateProxy) this.hibernateLazyInitializer.persistentClass.hashCode() else javaClass.hashCode()
 
-    companion object {
-        fun open(
-            guild: Guild,
-            ticketAuthor: User,
-            ticketType: TicketType,
-            openedAt: ZonedDateTime = ZonedDateTime.now()
-        ) = Ticket().apply {
-            this.ticketId = UUID.randomUUID()
-            this.openedAt = openedAt
-            this.guildId = guild.id
-            this.ticketType = ticketType
-            this.ticketAuthorId = ticketAuthor.id
-            this.ticketAuthorName = ticketAuthor.name
-            this.ticketAuthorAvatarUrl = ticketAuthor.avatarUrl
-        }
+    override fun toString(): String {
+        return "Ticket(_messages=$_messages, isClosing=$isClosing, closedAt=$closedAt, closedByName=$closedByName, closedByAvatarUrl=$closedByAvatarUrl, closedReason=$closedReason, closedById=$closedById, ticketAuthorAvatarUrl=$ticketAuthorAvatarUrl, ticketAuthorName='$ticketAuthorName', ticketAuthorId='$ticketAuthorId', threadId=$threadId, guildId='$guildId', internalGuild=$internalGuild, openedAt=$openedAt, ticketAuthor=$ticketAuthor, ticketType=$ticketType, ticketId=$ticketId, id=$id)"
     }
-
 
 }

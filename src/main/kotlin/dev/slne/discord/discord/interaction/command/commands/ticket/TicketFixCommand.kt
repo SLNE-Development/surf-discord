@@ -21,7 +21,7 @@ import net.dv8tion.jda.api.interactions.InteractionHook
     guildOnly = true,
     nsfw = false
 )
-object TicketFixCommand : TicketCommand() {
+class TicketFixCommand : TicketCommand() {
 
     override suspend fun internalExecute(
         interaction: SlashCommandInteractionEvent,
@@ -36,7 +36,8 @@ object TicketFixCommand : TicketCommand() {
             return
         }
 
-        if (interaction.guild == null) {
+        val guild = interaction.guild
+        if (guild == null) {
             hook.editOriginal("Guild is null, cannot create ticket").await()
             return
         }
@@ -48,7 +49,7 @@ object TicketFixCommand : TicketCommand() {
         val ticketType = TicketType.fromChannelName(channelName)
 
         val split = channelName.split("-")
-        val members = interaction.guild!!.retrieveMembersByPrefix(split[1], 1).await()
+        val members = guild!!.retrieveMembersByPrefix(split[1], 1).await()
         val ticketAuthor = members.firstOrNull()?.user
 
         if (ticketAuthor == null) {
@@ -56,18 +57,17 @@ object TicketFixCommand : TicketCommand() {
             return
         }
 
-        val ticket =
-            Ticket.open(
-                guild = interaction.guild!!,
-                ticketAuthor = ticketAuthor,
-                ticketType = ticketType
-            )
+        val ticket = Ticket(
+            guild = guild,
+            author = ticketAuthor,
+            ticketType = ticketType
+        )
 
         ticket.threadId = channel.id
 
         val history = MessageHistory.getHistoryFromBeginning(channel).await()
         val messages = history.retrievedHistory
-        val ticketMessages = messages.map { TicketMessage.fromJda(it) }
+        val ticketMessages = messages.map { TicketMessage(it) }
         ticketMessages.forEach { ticket.addMessage(it) }
 
         TicketService.saveTicket(ticket)

@@ -1,8 +1,8 @@
 package dev.slne.discord.listener.interaction.button
 
 import dev.minn.jda.ktx.events.listener
+import dev.slne.discord.discord.interaction.button.DiscordButtonManager
 import dev.slne.discord.jda
-import dev.slne.discord.persistence.processor.DiscordButtonManager
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 
 object DiscordButtonListener {

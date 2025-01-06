@@ -2,104 +2,107 @@ package dev.slne.discord.ticket.message.attachment
 
 import dev.slne.discord.ticket.message.TicketMessage
 import jakarta.persistence.*
-import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.Message.Attachment
 import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.proxy.HibernateProxy
 import org.hibernate.type.SqlTypes
 import java.util.*
 
 @Entity
 @Table(name = "ticket_message_attachments")
-open class TicketMessageAttachment protected constructor() {
-
+data class TicketMessageAttachment(
     @Id
     @JdbcTypeCode(SqlTypes.BIGINT)
     @Column(name = "id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    open var id: Long? = null
-        protected set
+    val id: Long? = null,
 
     @Column(name = "attachment_id", length = 20)
-    open var attachmentId: String? = null
-        protected set
+    val attachmentId: String? = null,
 
     @Lob
     @Column(name = "filename")
-    open var filename: String? = null
-        protected set
+    val filename: String? = null,
 
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "description", length = 1024)
-    open var description: String? = null
-        protected set
+    val description: String? = null,
 
     @JdbcTypeCode(SqlTypes.INTEGER)
     @Column(name = "size")
-    open var size: Int? = null
-        protected set
+    val size: Int? = null,
 
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "content_type")
-    open var contentType: String? = null
-        protected set
+    val contentType: String? = null,
 
     @Lob
     @Column(name = "url")
-    open var url: String? = null
-        protected set
+    val url: String? = null,
 
     @Lob
     @Column(name = "proxy_url")
-    open var proxyUrl: String? = null
+    val proxyUrl: String? = null,
 
     @JdbcTypeCode(SqlTypes.INTEGER)
     @Column(name = "height")
-    open var height: Int? = null
-        protected set
+    val height: Int? = null,
 
     @JdbcTypeCode(SqlTypes.INTEGER)
     @Column(name = "width")
-    open var width: Int? = null
-        protected set
+    val width: Int? = null,
 
     @JdbcTypeCode(SqlTypes.BOOLEAN)
     @Column(name = "ephemeral")
-    open var ephemeral: Boolean? = null
-        protected set
+    val ephemeral: Boolean? = null,
 
     @JdbcTypeCode(SqlTypes.FLOAT)
     @Column(name = "duration_secs")
-    open var durationSecs: Float? = null
-        protected set
+    var durationSecs: Float? = null,
 
     @Lob
     @Column(name = "waveform")
-    open var waveform: String? = null
-        protected set
+    var waveform: String? = null,
+) {
+
+    constructor(attachment: Attachment) : this(
+        attachmentId = attachment.id,
+        filename = attachment.fileName,
+        description = attachment.description,
+        size = attachment.size,
+        contentType = attachment.contentType,
+        url = attachment.url,
+        proxyUrl = attachment.proxyUrl,
+        height = attachment.height,
+        width = attachment.width,
+        ephemeral = attachment.isEphemeral,
+        durationSecs = attachment.duration.toFloat(),
+        waveform = attachment.waveform?.let { Base64.getEncoder().encodeToString(it) }
+    )
 
     @ManyToOne
     @JoinColumn(name = "message_id")
-    open var ticketMessage: TicketMessage? = null
+    var ticketMessage: TicketMessage? = null
 
-    companion object {
-        fun fromJda(attachment: Message.Attachment) = TicketMessageAttachment().apply {
-            attachmentId = attachment.id
-            filename = attachment.fileName
-            description = attachment.description
-            size = attachment.size
-            contentType = attachment.contentType
-            url = attachment.url
-            proxyUrl = attachment.proxyUrl
-            height = attachment.height
-            width = attachment.width
-            ephemeral = attachment.isEphemeral
+    final override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null) return false
+        val oEffectiveClass =
+            if (other is HibernateProxy) other.hibernateLazyInitializer.persistentClass else other.javaClass
+        val thisEffectiveClass =
+            if (this is HibernateProxy) this.hibernateLazyInitializer.persistentClass else this.javaClass
+        if (thisEffectiveClass != oEffectiveClass) return false
+        other as TicketMessageAttachment
 
-            if (attachment.duration != 0.0) {
-                durationSecs = attachment.duration.toFloat()
-            }
-
-            waveform = attachment.waveform?.let { Base64.getEncoder().encodeToString(it) }
-        }
+        return id != null && id == other.id
     }
+
+    final override fun hashCode(): Int =
+        if (this is HibernateProxy) this.hibernateLazyInitializer.persistentClass.hashCode() else javaClass.hashCode()
+
+    override fun toString(): String {
+        return "TicketMessageAttachment(id=$id, attachmentId=$attachmentId, filename=$filename, description=$description, size=$size, contentType=$contentType, url=$url, proxyUrl=$proxyUrl, height=$height, width=$width, ephemeral=$ephemeral, durationSecs=$durationSecs, waveform=$waveform)"
+    }
+
 }
 
-fun Message.Attachment.toTicketMessageAttachment() = TicketMessageAttachment.fromJda(this)

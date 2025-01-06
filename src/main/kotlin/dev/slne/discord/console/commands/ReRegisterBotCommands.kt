@@ -5,12 +5,14 @@ import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.theme
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.validate
-import dev.slne.discord.discord.interaction.command.DiscordCommandManager
-import dev.slne.discord.jda
+import dev.slne.discord.discord.interaction.command.DiscordCommandProcessor
+import dev.slne.discord.getBean
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.utils.MiscUtil
 
 object ReRegisterBotCommands : SuspendingCliktCommand("reregister") {
+    
     private val guildId by option().validate {
         try {
             MiscUtil.parseSnowflake(it)
@@ -27,8 +29,9 @@ object ReRegisterBotCommands : SuspendingCliktCommand("reregister") {
         }
     }
 
-
     override suspend fun run() {
+        val jda = getBean<JDA>()
+
         echo(currentContext.theme.info("Reregistering bot commands..."))
         val guildId = guildId
 
@@ -48,7 +51,9 @@ object ReRegisterBotCommands : SuspendingCliktCommand("reregister") {
     }
 
     private suspend fun updateCommands(guild: Guild) {
+        val commandProcessor = getBean<DiscordCommandProcessor>()
         echo(currentContext.theme.info("Reregistering commands for guild: ${guild.name}"))
-        DiscordCommandManager.updateCommands(guild)
+
+        commandProcessor.updateCommands(guild)
     }
 }

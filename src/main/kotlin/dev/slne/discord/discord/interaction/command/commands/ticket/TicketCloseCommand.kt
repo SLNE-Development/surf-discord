@@ -21,7 +21,7 @@ private const val REASON_OPTION = "reason"
     description = "Closes a ticket.",
     permission = CommandPermission.TICKET_CLOSE
 )
-object TicketCloseCommand : TicketCommand() {
+class TicketCloseCommand : TicketCommand() {
 
     override val options = listOf(
         option<String>(

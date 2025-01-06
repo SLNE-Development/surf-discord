@@ -22,7 +22,7 @@ private const val USER_OPTION = "user"
     description = "Füge einen Nutzer zu einem Ticket hinzu.",
     permission = CommandPermission.TICKET_ADD_USER
 )
-object TicketMemberAddCommand : TicketCommand() {
+class TicketMemberAddCommand : TicketCommand() {
     override val options = listOf(
         option<Member>(
             USER_OPTION,

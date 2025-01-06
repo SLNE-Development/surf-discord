@@ -5,12 +5,12 @@ import dev.minn.jda.ktx.interactions.components.row
 import dev.minn.jda.ktx.messages.MessageCreate
 import dev.slne.discord.annotation.DiscordCommandMeta
 import dev.slne.discord.annotation.toJdaButton
-import dev.slne.discord.discord.interaction.button.buttons.OpenTicketButton
+import dev.slne.discord.discord.interaction.button.DiscordButtonProcessor
+import dev.slne.discord.discord.interaction.button.buttons.OpenTicketButtonId
 import dev.slne.discord.discord.interaction.command.DiscordCommand
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.EmbedColors
 import dev.slne.discord.message.translatable
-import dev.slne.discord.persistence.processor.DiscordButtonManager
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
@@ -23,7 +23,7 @@ private const val ID = "ticket-buttons"
     description = "Print the ticket button and embed.",
     permission = CommandPermission.TICKET_BUTTONS
 )
-object TicketButtonCommand : DiscordCommand() {
+class TicketButtonCommand(private val buttonProcessor: DiscordButtonProcessor) : DiscordCommand() {
     override suspend fun internalExecute(
         interaction: SlashCommandInteractionEvent,
         hook: InteractionHook
@@ -32,7 +32,7 @@ object TicketButtonCommand : DiscordCommand() {
 
         val channel = interaction.channel
         val openTicketInfo =
-            DiscordButtonManager[OpenTicketButton.ID]?.info ?: error("Button not found")
+            buttonProcessor[OpenTicketButtonId]?.first ?: error("Button not found")
 
         sendEmbed(openTicketInfo.toJdaButton(), channel)
     }

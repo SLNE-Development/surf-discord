@@ -21,7 +21,7 @@ private const val USER_OPTION = "user"
     description = "Entferne einen Nutzer aus einem Ticket.",
     permission = CommandPermission.TICKET_REMOVE_USER
 )
-object TicketMemberRemoveCommand : TicketCommand() {
+class TicketMemberRemoveCommand : TicketCommand() {
 
     override val options = listOf(
         option<User>(
@@ -29,7 +29,6 @@ object TicketMemberRemoveCommand : TicketCommand() {
             translatable("interaction.command.ticket.member.remove.arg.member"),
         )
     )
-
 
     override suspend fun internalExecute(
         interaction: SlashCommandInteractionEvent,

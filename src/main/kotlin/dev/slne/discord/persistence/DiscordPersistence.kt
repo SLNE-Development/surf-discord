@@ -5,9 +5,6 @@ import dev.slne.discord.persistence.external.Whitelist
 import dev.slne.discord.ticket.Ticket
 import dev.slne.discord.ticket.message.TicketMessage
 import dev.slne.discord.ticket.message.attachment.TicketMessageAttachment
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.hibernate.Session
 import org.hibernate.SessionFactory
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder
 import org.hibernate.cfg.Configuration
@@ -15,8 +12,6 @@ import org.hibernate.cfg.FetchSettings
 import org.hibernate.cfg.JdbcSettings
 import org.hibernate.cfg.SchemaToolingSettings
 import org.hibernate.tool.schema.Action
-
-val sessionFactory = DiscordPersistence.configureHibernate()
 
 object DiscordPersistence {
 
@@ -51,36 +46,4 @@ object DiscordPersistence {
 
         return configuration.buildSessionFactory(serviceRegistry)
     }
-}
-
-fun <T> Session.upsert(entity: T, persisted: T.() -> Boolean): T {
-    if (entity.persisted()) {
-        return merge(entity)
-    } else {
-        persist(entity)
-
-        return entity
-    }
-}
-
-suspend fun <T> SessionFactory.withSession(block: suspend (session: Session) -> T): T =
-    withContext(Dispatchers.IO) {
-        val session = openSession()
-        session.beginTransaction()
-        try {
-            val result = block(session)
-            session.transaction.commit()
-            result
-        } catch (e: Exception) {
-            session.transaction.rollback()
-            throw e
-        } finally {
-            session.close()
-        }
-    }
-
-suspend inline fun <reified T> Session.findAll(): List<T> = sessionFactory.withSession { session ->
-    val query = session.criteriaBuilder.createQuery(T::class.java)
-    val root = query.from(T::class.java)
-    session.createQuery(query.select(root)).resultList
 }

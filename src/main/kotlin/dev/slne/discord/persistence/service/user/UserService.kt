@@ -5,10 +5,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.coroutines.executeAsync
 import java.io.Serial
 import java.util.*
 import kotlin.coroutines.CoroutineContext
@@ -68,46 +65,50 @@ object UserService {
     ): String? = withContext(context) { uuidToNameCache.get(uuid).await() }
 
     private suspend fun getMinecraftApiUsername(uuid: UUID): String = withContext(Dispatchers.IO) {
-        val request = Request.Builder()
-            .url("https://api.mojang.com/user/profile/${uuid}")
-            .build()
-
-        val response = client.newCall(request).executeAsync()
-        if (response.code == RATE_LIMIT_CODE) throw RateLimitException("Rate limit reached for Minecraft API")
-        if (!response.isSuccessful) throw Exception("Failed to get username from Minecraft API")
-
-        val decoded = Json.decodeFromString<MinecraftApiUuidResponse>(response.body.string())
-        response.close()
-
-        decoded.name
+//        val request = Request.Builder()
+//            .url("https://api.mojang.com/user/profile/${uuid}")
+//            .build()
+//
+//        val response = client.newCall(request).executeAsync()
+//        if (response.code == RATE_LIMIT_CODE) throw RateLimitException("Rate limit reached for Minecraft API")
+//        if (!response.isSuccessful) throw Exception("Failed to get username from Minecraft API")
+//
+//        val decoded = Json.decodeFromString<MinecraftApiUuidResponse>(response.body.string())
+//        response.close()
+//
+//        decoded.name
+        "TODO"
     }
 
     private suspend fun getMinecraftApiUuid(username: String): UUID = withContext(Dispatchers.IO) {
-        val request = Request.Builder()
-            .url("https://api.mojang.com/users/profiles/minecraft/$username")
-            .build()
-
-        val response = client.newCall(request).executeAsync()
-        if (response.code == RATE_LIMIT_CODE) throw RateLimitException("Rate limit reached for Minecraft API")
-        if (!response.isSuccessful) throw Exception("Failed to get UUID from Minecraft API")
-
-        val decoded = Json.decodeFromString<MinecraftApiUuidResponse>(response.body.string())
-        response.close()
-
-        Uuid.parseHex(decoded.id).toJavaUuid()
+//        val request = Request.Builder()
+//            .url("https://api.mojang.com/users/profiles/minecraft/$username")
+//            .build()
+//
+//        val response = client.newCall(request).executeAsync()
+//        if (response.code == RATE_LIMIT_CODE) throw RateLimitException("Rate limit reached for Minecraft API")
+//        if (!response.isSuccessful) throw Exception("Failed to get UUID from Minecraft API")
+//
+//        val decoded = Json.decodeFromString<MinecraftApiUuidResponse>(response.body.string())
+//        response.close()
+//
+//        Uuid.parseHex(decoded.id).toJavaUuid()
+        UUID.randomUUID() // TODO
     }
 
     private suspend fun getFallbackApiUuid(usernameOrUuid: Any): MinecraftApiUuidResponse =
         withContext(Dispatchers.IO) {
-            val request = Request.Builder()
-                .url("https://api.minetools.eu/uuid/$usernameOrUuid")
-                .build()
+//            val request = Request.Builder()
+//                .url("https://api.minetools.eu/uuid/$usernameOrUuid")
+//                .build()
+//
+//            val response = client.newCall(request).executeAsync()
+//            if (!response.isSuccessful) throw Exception("Failed to get UUID from fallback API")
+//
+//            response.close()
+//            Json.decodeFromString<MinecraftApiUuidResponse>(response.body.string())
 
-            val response = client.newCall(request).executeAsync()
-            if (!response.isSuccessful) throw Exception("Failed to get UUID from fallback API")
-
-            response.close()
-            Json.decodeFromString<MinecraftApiUuidResponse>(response.body.string())
+            MinecraftApiUuidResponse("TODO", "TODO")
         }
 
     @Serializable

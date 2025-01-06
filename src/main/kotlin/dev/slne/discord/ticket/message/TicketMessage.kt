@@ -3,10 +3,8 @@ package dev.slne.discord.ticket.message
 import dev.minn.jda.ktx.coroutines.await
 import dev.slne.discord.jda
 import dev.slne.discord.persistence.service.ticket.TicketRepository
-import dev.slne.discord.persistence.service.ticket.TicketService
 import dev.slne.discord.ticket.Ticket
 import dev.slne.discord.ticket.message.attachment.TicketMessageAttachment
-import dev.slne.discord.ticket.message.attachment.toTicketMessageAttachment
 import jakarta.persistence.*
 import net.dv8tion.jda.api.entities.Message
 import org.hibernate.annotations.JdbcTypeCode
@@ -138,27 +136,4 @@ open class TicketMessage protected constructor() {
 
         return copy
     }
-
-    companion object {
-        fun fromJda(message: Message) = TicketMessage().apply {
-            this.messageId = message.id
-            this.jsonContent = message.contentDisplay
-            this.authorId = message.author.id
-            this.authorName = message.author.name
-            this.authorAvatarUrl = message.author.avatarUrl
-            this.messageCreatedAt = message.timeCreated.toZonedDateTime()
-            this.messageEditedAt = message.timeEdited?.toZonedDateTime()
-            this.referencesMessageId = message.messageReference?.messageId
-            this.botMessage = message.author.isBot
-
-            message.attachments.map { it.toTicketMessageAttachment() }
-                .forEach(::addAttachment)
-        }
-
-        fun getByMessageId(id: Long) = TicketService.tickets.asSequence()
-            .flatMap { it.messages }
-            .firstOrNull { it.id == id }
-    }
 }
-
-fun Message.toTicketMessage() = TicketMessage.fromJda(this)

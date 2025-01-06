@@ -1,112 +1,28 @@
 package dev.slne.discord.persistence.service.whitelist
 
 import dev.slne.discord.persistence.external.Whitelist
-import dev.slne.discord.persistence.sessionFactory
-import dev.slne.discord.persistence.upsert
-import dev.slne.discord.persistence.withSession
-import jakarta.persistence.criteria.Predicate
-import net.dv8tion.jda.api.entities.User
-import net.kyori.adventure.text.logger.slf4j.ComponentLogger
+import org.springframework.data.jpa.repository.Modifying
+import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.kotlin.CoroutineCrudRepository
+import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
-object WhitelistRepository {
+@Repository
+interface WhitelistRepository : CoroutineCrudRepository<Whitelist, Long> {
 
-    val logger = ComponentLogger.logger()
+    fun findByDiscordId(discordId: String): Whitelist?
 
-    suspend fun saveWhitelist(whitelist: Whitelist): Whitelist =
-        sessionFactory.withSession { session ->
-            session.upsert(whitelist) { id != null }
-        }
+    @Transactional
+    @Modifying
+    @Query("delete from Whitelist w where w.uuid = ?1 or w.discordId = ?2 or w.twitchLink = ?3")
+    fun deleteWhitelists(uuid: UUID?, discordId: String?, twitchLink: String?)
 
-    suspend fun getWhitelistByDiscordId(discordId: String): Whitelist? =
-        sessionFactory.withSession { session ->
-            val criteriaBuilder = session.criteriaBuilder
+    @Transactional
+    @Query("select w from Whitelist w where w.uuid = ?1 or w.discordId = ?2 or w.twitchLink = ?3")
+    fun findWhitelists(uuid: UUID?, discordId: String?, twitchLink: String?): List<Whitelist>
 
-            val query = criteriaBuilder.createQuery(Whitelist::class.java)
-            val root = query.from(Whitelist::class.java)
-            query.where(criteriaBuilder.equal(root.get<String>("discordId"), discordId))
+    fun findWhitelistByDiscordId(discordId: String): Whitelist?
 
-            session.createQuery(query.select(root)).resultList.firstOrNull()
-        }
-
-    suspend fun deleteWhitelists(
-        uuid: UUID? = null,
-        discordId: String? = null,
-        twitchLink: String? = null
-    ) = sessionFactory.withSession { session ->
-        val criteriaBuilder = session.criteriaBuilder
-        val query = criteriaBuilder.createCriteriaDelete(Whitelist::class.java)
-        val root = query.from(Whitelist::class.java)
-        val predicates = mutableListOf<Predicate>()
-
-        if (uuid != null) {
-            predicates.add(criteriaBuilder.equal(root.get<UUID>("uuid"), uuid))
-        }
-
-        if (discordId != null) {
-            predicates.add(criteriaBuilder.equal(root.get<String>("discordId"), discordId))
-        }
-
-        if (twitchLink != null) {
-            predicates.add(
-                criteriaBuilder.equal(
-                    root.get<String>("twitchLink"),
-                    twitchLink
-                )
-            )
-        }
-
-        if (predicates.isEmpty()) {
-            return@withSession
-        }
-
-        query.where(criteriaBuilder.or(*predicates.toTypedArray()))
-
-        session.createQuery(query).executeUpdate()
-    }
-
-    suspend fun findWhitelists(
-        uuid: UUID? = null,
-        discordId: String? = null,
-        twitchLink: String? = null
-    ): List<Whitelist> = sessionFactory.withSession { session ->
-        val criteriaBuilder = session.criteriaBuilder
-        val query = criteriaBuilder.createQuery(Whitelist::class.java)
-        val root = query.from(Whitelist::class.java)
-        val predicates = mutableListOf<Predicate>()
-
-        if (uuid != null) {
-            predicates.add(criteriaBuilder.equal(root.get<UUID>("uuid"), uuid))
-        }
-
-        if (discordId != null) {
-            predicates.add(criteriaBuilder.equal(root.get<String>("discordId"), discordId))
-        }
-
-        if (twitchLink != null) {
-            predicates.add(
-                criteriaBuilder.equal(
-                    root.get<String>("twitchLink"),
-                    twitchLink
-                )
-            )
-        }
-
-        if (predicates.isEmpty()) {
-            return@withSession emptyList()
-        }
-
-        query.where(criteriaBuilder.or(*predicates.toTypedArray()))
-
-        val createQuery = session.createQuery(query.select(root))
-        createQuery.resultList
-    }
-
-    suspend fun isWhitelisted(
-        uuid: UUID?,
-        discordId: String?,
-        twitchLink: String?
-    ): Boolean = findWhitelists(uuid, discordId, twitchLink).isNotEmpty()
-
-    suspend fun isWhitelisted(user: User): Boolean = isWhitelisted(null, user.id, null)
+    override suspend fun <S : Whitelist> save(entity: S): S
 }
