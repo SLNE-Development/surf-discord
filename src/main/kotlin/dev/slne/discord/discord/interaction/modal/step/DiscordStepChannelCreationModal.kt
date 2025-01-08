@@ -260,7 +260,7 @@ abstract class DiscordStepChannelCreationModal(
     private suspend fun reply(
         callback: IReplyCallback,
         message: String
-    ) { // TODO: is this even correct?
+    ) {
         if (callback.isAcknowledged) {
             callback.hook.sendMessage(message).setEphemeral(true).await()
         } else {

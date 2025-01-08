@@ -28,7 +28,10 @@ private const val TWITCH_OPTION: String = "twitch"
     description = "Füge einen Spieler zur Whitelist hinzu.",
     permission = CommandPermission.WHITELIST
 )
-class WhitelistCommand(private val whitelistService: WhitelistService) : DiscordCommand() {
+class WhitelistCommand(
+    private val whitelistService: WhitelistService,
+    private val userService: UserService
+) : DiscordCommand() {
 
     override val options = listOf(
         option<User>(
@@ -77,7 +80,7 @@ class WhitelistCommand(private val whitelistService: WhitelistService) : Discord
     ) {
         hook.editOriginal(translatable("interaction.command.ticket.whitelist.uuid-fetching"))
             .await()
-        val minecraftUuid = UserService.getUuidByUsername(minecraft)
+        val minecraftUuid = userService.getUuidByUsername(minecraft)
             ?: throw CommandExceptions.MINECRAFT_USER_NOT_FOUND.create()
 
         hook.editOriginal(translatable("interaction.command.ticket.whitelist.checking")).await()

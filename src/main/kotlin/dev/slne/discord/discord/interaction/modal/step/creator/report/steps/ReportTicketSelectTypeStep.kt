@@ -7,6 +7,7 @@ import dev.slne.discord.discord.interaction.modal.step.ModalSelectionStep
 import dev.slne.discord.discord.interaction.modal.step.StepBuilder
 import dev.slne.discord.discord.interaction.modal.step.creator.report.steps.griefing.ReportTicketGriefingStep
 import dev.slne.discord.discord.interaction.modal.step.creator.report.steps.player.ReportTicketPlayerStep
+import dev.slne.discord.getBean
 import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.user.UserService
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
@@ -62,7 +63,7 @@ class ReportTicketSelectTypeStep : ModalSelectionStep(
         val playerName = playerName
 
         if (playerName != null) {
-            val uuid = UserService.getUuidByUsername(playerName)
+            val uuid = getBean<UserService>().getUuidByUsername(playerName)
 //
 //            val whitelists = WhitelistService.checkWhitelists(uuid = uuid)
 //

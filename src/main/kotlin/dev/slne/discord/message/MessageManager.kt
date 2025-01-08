@@ -81,7 +81,7 @@ object MessageManager {
         color = WL_QUERY
         timestamp = ZonedDateTime.now()
 
-        val minecraftName = UserService.getUsernameByUuid(whitelist.uuid)
+        val minecraftName = getBean<UserService>().getUsernameByUuid(whitelist.uuid)
         val twitchLink = whitelist.twitchLink
         val uuid = whitelist.uuid
         val discordUser = whitelist.user?.await()

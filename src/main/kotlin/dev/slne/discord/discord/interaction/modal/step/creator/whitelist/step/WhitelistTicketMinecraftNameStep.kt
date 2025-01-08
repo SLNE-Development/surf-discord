@@ -29,7 +29,7 @@ class WhitelistTicketMinecraftNameStep(parent: ModalStep) : ModalStep() {
     override suspend fun verifyModalInput(event: ModalInteractionEvent) {
         minecraftName = getInput(event, MINECRAFT_NAME)
 
-        val uuid = UserService.getUuidByUsername(minecraftName!!)
+        val uuid = getBean<UserService>().getUuidByUsername(minecraftName!!)
             ?: throw ModalStepInputVerificationException(
                 translatable("modal.whitelist.step.minecraft.invalid")
             )

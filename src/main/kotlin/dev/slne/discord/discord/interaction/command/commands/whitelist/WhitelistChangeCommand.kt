@@ -22,7 +22,10 @@ private const val TWITCH_OPTION: String = "twitch"
     description = "Änder die Whitelist eines Benutzers",
     permission = CommandPermission.WHITELIST_CHANGE
 )
-class WhitelistChangeCommand(private val whitelistService: WhitelistService) : DiscordCommand() {
+class WhitelistChangeCommand(
+    private val whitelistService: WhitelistService,
+    private val userService: UserService
+) : DiscordCommand() {
 
     override val options = listOf(
         option<User>(
@@ -54,7 +57,7 @@ class WhitelistChangeCommand(private val whitelistService: WhitelistService) : D
             throw CommandExceptions.TICKET_WLQUERY_NO_USER.create()
         }
 
-        val minecraftUuid = minecraft?.let { UserService.getUuidByUsername(it) }
+        val minecraftUuid = minecraft?.let { userService.getUuidByUsername(it) }
 
         hook.editOriginal(translatable("interaction.command.ticket.wlquery.querying")).await()
 

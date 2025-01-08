@@ -62,6 +62,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -72,7 +73,7 @@ dependencies {
 extra["springShellVersion"] = "3.4.0"
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.shell:spring-shell-dependencies:${property("springShellVersion")}")
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:2024.0.0")
     }
 }
 

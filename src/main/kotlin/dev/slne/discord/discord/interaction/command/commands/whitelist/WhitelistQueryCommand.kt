@@ -23,7 +23,10 @@ private const val TWITCH_OPTION: String = "twitch"
     description = "Zeigt Whitelist Informationen über einen Benutzer an.",
     permission = CommandPermission.WHITELIST_QUERY
 )
-class WhitelistQueryCommand(private val whitelistService: WhitelistService) : DiscordCommand() {
+class WhitelistQueryCommand(
+    private val whitelistService: WhitelistService,
+    private val userService: UserService
+) : DiscordCommand() {
 
     override val options = listOf(
         option<User>(
@@ -77,7 +80,7 @@ class WhitelistQueryCommand(private val whitelistService: WhitelistService) : Di
     } else if (twitch != null) {
         whitelistService.findWhitelists(null, null, twitch)
     } else if (minecraft != null) {
-        UserService.getUuidByUsername(minecraft)?.let {
+        userService.getUuidByUsername(minecraft)?.let {
             whitelistService.findWhitelists(it, null, null)
         } ?: emptyList()
     } else {

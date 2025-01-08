@@ -34,7 +34,10 @@ private const val REASON_OPTION: String = "reason"
     permission = CommandPermission.REQUEST_ROLLBACK,
     ephemeral = true
 )
-class RequestRollbackCommand(private val whitelistService: WhitelistService) : DiscordCommand() {
+class RequestRollbackCommand(
+    private val whitelistService: WhitelistService,
+    private val userService: UserService
+) : DiscordCommand() {
 
     override val subCommands = listOf(
         subcommand(
@@ -100,7 +103,7 @@ class RequestRollbackCommand(private val whitelistService: WhitelistService) : D
         }
 
         hook.editOriginal(translatable("interaction.command.ticket.wlquery.querying")).await()
-        val whitelists = UserService.getUuidByUsername(minecraftName)?.let {
+        val whitelists = userService.getUuidByUsername(minecraftName)?.let {
             whitelistService.findWhitelists(it, null, null)
         } ?: emptyList()
 
