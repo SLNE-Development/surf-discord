@@ -140,6 +140,9 @@ class TicketCreator(
         }
 
         logger.debug("Ticket with id {} closed by {}.", ticket.ticketId, closer.name)
+
+        messageManager.sendTicketClosedUserPrivateMessage(ticket)
+
         return TicketCloseResult.SUCCESS
     }
 }

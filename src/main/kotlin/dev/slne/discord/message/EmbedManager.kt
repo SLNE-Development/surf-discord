@@ -8,6 +8,22 @@ import dev.slne.discord.ticket.Ticket
 
 object EmbedManager {
 
+    fun buildTicketClosedUserPrivateMessageEmbed(
+        ticket: Ticket,
+        threadName: String? = ticket.thread?.name
+    ) =
+        Embed { // TODO: 14.10.2024 23:18 - use messages
+            title = "Ticket \"${threadName ?: "Unbekannt"}\" geschlossen"
+
+            description = buildString {
+                append("Dein Ticket wurde geschlossen.\n\n")
+                append("Grund: ${ticket.closeReasonOrDefault}\n\n")
+                append("Weitere Informationen findest du im Ticket.\n${ticket.thread?.asMention}")
+            }
+
+            color = TICKET_CLOSED
+        }
+
     suspend fun buildTicketClosedEmbed(ticket: Ticket, threadName: String? = ticket.thread?.name) =
         Embed { // TODO: 14.10.2024 23:18 - use messages
             title = "Ticket \"${threadName ?: "Unbekannt"}\" geschlossen"

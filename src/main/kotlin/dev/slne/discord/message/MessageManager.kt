@@ -32,6 +32,13 @@ class MessageManager(
             embeds += EmbedManager.buildTicketClosedEmbed(ticket)
         })?.await()
 
+    suspend fun sendTicketClosedUserPrivateMessage(ticket: Ticket): Message? =
+        ticket.author.await().openPrivateChannel().flatMap {
+            it.sendMessage(MessageCreate {
+                embeds += EmbedManager.buildTicketClosedUserPrivateMessageEmbed(ticket)
+            })
+        }.await()
+
     suspend fun printUserWlQuery(user: User, channel: MessageChannel) {
         channel.sendTyping().await()
         val whitelists = whitelistService.findWhitelists(null, user.id, null)
