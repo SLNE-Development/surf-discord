@@ -24,6 +24,7 @@ object MessageManager {
 
     suspend fun sendTicketClosedMessages(ticket: Ticket): Message? =
         ticket.thread?.sendMessage(MessageCreate {
+            content = ticket.author.await().asMention
             embeds += EmbedManager.buildTicketClosedEmbed(ticket)
         })?.await()
 
