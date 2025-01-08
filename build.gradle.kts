@@ -1,9 +1,5 @@
 plugins {
-    java
     `maven-publish`
-
-    id("org.hibernate.build.maven-repo-auth") version "3.0.4"
-    id("com.gradleup.shadow") version "8.3.3"
 
     id("org.springframework.boot") version "3.4.1"
     id("io.spring.dependency-management") version "1.1.7"
@@ -12,8 +8,6 @@ plugins {
     kotlin("plugin.serialization") version "2.1.0"
     kotlin("plugin.jpa") version "1.9.25"
     kotlin("plugin.spring") version "1.9.25"
-
-    application
 }
 
 dependencyManagement {
@@ -24,11 +18,6 @@ dependencyManagement {
 
 repositories {
     mavenCentral()
-    gradlePluginPortal()
-
-    maven("https://repo.slne.dev/repository/maven-public/") { name = "maven-public" }
-    maven("https://repo.slne.dev/repository/maven-snapshots/") { name = "maven-snapshots" }
-    maven("https://repo.slne.dev/repository/maven-proxy/") { name = "maven-proxy" }
 }
 
 kotlin {
@@ -38,9 +27,6 @@ kotlin {
 }
 
 dependencies {
-//    implementation(platform("org.springframework.boot:spring-boot-dependencies:3.4.1"))
-//    implementation(platform("org.springframework.cloud:spring-cloud-dependencies:2024.0.0"))
-
     implementation("com.github.ajalt.clikt:clikt:5.0.1")
     implementation("org.apache.commons:commons-lang3:3.17.0")
     implementation("net.kyori:adventure-api:4.17.0")
@@ -54,9 +40,6 @@ dependencies {
     }
     implementation("club.minnced:jda-ktx:0.12.0")
     implementation("com.charleskorn.kaml:kaml-jvm:0.67.0")
-//    implementation("ch.qos.logback:logback-classic:1.5.6")
-//    implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.14")
-//    implementation("com.squareup.okhttp3:okhttp-coroutines:5.0.0-alpha.14")
 
     implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -69,12 +52,6 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
     implementation("org.mariadb.jdbc:mariadb-java-client")
 }
-
-//dependencyManagement {
-//    imports {
-//        mavenBom("org.springframework.cloud:spring-cloud-dependencies:2024.0.0")
-//    }
-//}
 
 allOpen {
     annotation("jakarta.persistence.Entity")
@@ -100,33 +77,13 @@ publishing {
     }
 }
 
-application {
-    mainClass = "dev.slne.discord.DiscordSpringApplicationKt"
-}
+//application {
+//    mainClass = "dev.slne.discord.DiscordSpringApplicationKt"
+//}
 
 tasks {
     compileJava {
         options.encoding = Charsets.UTF_8.name()
         options.compilerArgs.add("-parameters")
     }
-
-    javadoc {
-        options.encoding = Charsets.UTF_8.name()
-    }
-
-    shadowJar {
-        archiveFileName.set("bot.jar")
-        mergeServiceFiles {
-            setPath("META-INF")
-            exclude("META-INF/MANIFEST.MF")
-        }
-    }
-}
-
-tasks.named<Jar>("jar") {
-    archiveFileName.set("bot.jar")
-}
-
-tasks.withType<Zip> {
-    isZip64 = true
 }
