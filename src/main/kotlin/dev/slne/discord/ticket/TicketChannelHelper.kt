@@ -120,14 +120,12 @@ class TicketChannelHelper(private val ticketService: TicketService) {
                 .setLocked(true)
                 .setArchived(true)
                 .await()
-
-            ticketService.removeTicket(ticket)
         } catch (exception: Exception) {
             throw DeleteTicketChannelException("Failed to delete ticket channel", exception)
         }
     }
 
-    fun checkTicketExists(
+    suspend fun checkTicketExists(
         guild: Guild,
         expectedType: TicketType,
         expectedAuthor: User
@@ -165,7 +163,7 @@ class TicketChannelHelper(private val ticketService: TicketService) {
         return checkTicketExists(channel, expectedType, expectedAuthor)
     }
 
-    fun checkTicketExists(
+    suspend fun checkTicketExists(
         channel: TextChannel,
         expectedType: TicketType,
         expectedAuthor: User
@@ -178,7 +176,7 @@ class TicketChannelHelper(private val ticketService: TicketService) {
         )
     }
 
-    fun checkTicketExists(
+    suspend fun checkTicketExists(
         ticketChannelName: String?,
         channel: TextChannel,
         expectedType: TicketType,
@@ -188,7 +186,7 @@ class TicketChannelHelper(private val ticketService: TicketService) {
             return true
         }
 
-        return hasAuthorTicketOfType(expectedType, expectedAuthor)
+        return ticketService.hasAuthorTicketOfType(expectedType, expectedAuthor)
     }
 
     private fun containsActiveChannelName(channel: TextChannel, name: String?) =
@@ -196,10 +194,4 @@ class TicketChannelHelper(private val ticketService: TicketService) {
             .filter { !it.isArchived }
             .any { it.name.equals(name, ignoreCase = true) }
 
-
-    private fun hasAuthorTicketOfType(type: TicketType, user: User) =
-        ticketService.tickets.asSequence()
-            .filter { !it.isClosed }
-            .filter { it.ticketAuthorId == user.id }
-            .any { it.ticketType == type }
 }

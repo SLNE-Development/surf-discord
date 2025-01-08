@@ -9,6 +9,7 @@ import javax.sql.DataSource
 
 @Configuration
 class SpringDataConfig {
+
     @Bean
     @Primary
     fun dataSource(): DataSource {

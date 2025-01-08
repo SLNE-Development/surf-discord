@@ -38,7 +38,6 @@ class TicketCreator(
         }
 
         ticketService.saveTicket(ticket)
-        ticketService.queueOrAddTicket(ticket)
 
         return createTicketChannel(ticket, author, ticketName, ticketChannel, callback)
     }

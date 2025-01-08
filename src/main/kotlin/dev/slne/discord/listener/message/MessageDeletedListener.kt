@@ -25,7 +25,7 @@ class MessageDeletedListener(private val jda: JDA, private val ticketService: Ti
     }
 
     private suspend fun deleteMessage(channel: MessageChannel, messageIds: List<String>) {
-        val ticket = channel.ticket
+        val ticket = channel.ticket()
 
         messageIds
             .mapNotNull { ticket.getTicketMessage(it) }

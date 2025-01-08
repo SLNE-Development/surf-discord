@@ -141,7 +141,7 @@ abstract class DiscordStepChannelCreationModal(
         postThreadCreated(ticket, result, event, user)
     }
 
-    private fun checkTicketExists(guild: Guild, user: User): Boolean =
+    private suspend fun checkTicketExists(guild: Guild, user: User): Boolean =
         getBean<TicketChannelHelper>().checkTicketExists(guild, ticketType, user)
 
     private suspend fun executeSelectionSteps(

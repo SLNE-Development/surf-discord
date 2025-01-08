@@ -75,21 +75,24 @@ data class TicketMessage(
 
     @ManyToOne
     @JoinColumn(name = "ticket_id", nullable = false)
-    val ticket: Ticket
+    var ticket: Ticket
 ) {
 
-    constructor(message: Message) : this(
-        messageId = message.id,
-        jsonContent = message.contentDisplay,
-        authorId = message.author.id,
-        authorName = message.author.name,
-        authorAvatarUrl = message.author.avatarUrl,
-        messageCreatedAt = message.timeCreated.toZonedDateTime(),
-        messageEditedAt = message.timeEdited?.toZonedDateTime(),
-        referencesMessageId = message.messageReference?.messageId,
-        botMessage = message.author.isBot,
-        ticket = message.channel.ticket
-    )
+    companion object {
+        suspend fun fromMessage(message: Message) =
+            TicketMessage(
+                messageId = message.id,
+                jsonContent = message.contentDisplay,
+                authorId = message.author.id,
+                authorName = message.author.name,
+                authorAvatarUrl = message.author.avatarUrl,
+                messageCreatedAt = message.timeCreated.toZonedDateTime(),
+                messageEditedAt = message.timeEdited?.toZonedDateTime(),
+                referencesMessageId = message.messageReference?.messageId,
+                botMessage = message.author.isBot,
+                ticket = message.channel.ticket()
+            )
+    }
 
     val attachments: List<TicketMessageAttachment> get() = _attachments
     val message get() = messageId?.let { ticket.thread?.retrieveMessageById(it) }
@@ -104,17 +107,12 @@ data class TicketMessage(
     suspend fun content() =
         if (jsonContent != null) jsonContent else message?.await()?.contentDisplay
 
-    suspend fun copyAndDelete(): TicketMessage {
-        val copy = copy()
-
-        copy.messageDeletedAt = ZonedDateTime.now()
-
-        return copy
+    suspend fun copyAndDelete() = copy().apply {
+        messageDeletedAt = ZonedDateTime.now()
     }
 
     suspend fun copyAndUpdate(message: Message) = copy().apply {
         jsonContent = message.contentDisplay
-        messageCreatedAt = message.timeCreated.toZonedDateTime()
         messageEditedAt = message.timeEdited?.toZonedDateTime()
     }
 
@@ -142,6 +140,9 @@ data class TicketMessage(
             if (this is HibernateProxy) this.hibernateLazyInitializer.persistentClass else this.javaClass
         if (thisEffectiveClass != oEffectiveClass) return false
         other as TicketMessage
+
+        System.err.println("Checking equals for $this")
+        System.err.println("Checking equals for $other")
 
         return id != null && id == other.id
     }

@@ -105,7 +105,7 @@ data class Ticket(
     @OneToMany(
         mappedBy = "ticket",
         cascade = [CascadeType.ALL],
-        fetch = FetchType.EAGER
+        fetch = FetchType.EAGER,
     )
     private var _messages = mutableListOf<TicketMessage>()
     val messages get() = _messages.toObjectList().freeze()
@@ -121,6 +121,7 @@ data class Ticket(
 
     fun addMessage(message: TicketMessage) {
         _messages.add(message)
+        message.ticket = this
     }
 
     fun getTicketMessage(message: Message) = getTicketMessage(message.id)

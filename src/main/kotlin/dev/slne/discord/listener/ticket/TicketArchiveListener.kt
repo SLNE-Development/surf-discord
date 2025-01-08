@@ -6,19 +6,21 @@ import dev.slne.discord.extensions.ticket
 import dev.slne.discord.message.EmbedManager
 import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.ticket.TicketService
+import jakarta.annotation.PostConstruct
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.channel.update.ChannelUpdateArchivedEvent
 
 //@Component
-class TicketArchiveListener(jda: JDA, ticketService: TicketService) {
+class TicketArchiveListener(private val jda: JDA, private val ticketService: TicketService) {
 
-    init {
+    @PostConstruct
+    fun registerListener() {
         jda.listener<ChannelUpdateArchivedEvent> { event ->
             val oldValue = event.oldValue
             val newValue = event.newValue
             val thread = event.channel as? ThreadChannel ?: return@listener
-            val ticket = thread.ticket
+            val ticket = thread.ticket()
 
             if (oldValue == newValue) return@listener
 

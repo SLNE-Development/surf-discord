@@ -67,7 +67,7 @@ class TicketFixCommand(private val ticketService: TicketService) : TicketCommand
 
         val history = MessageHistory.getHistoryFromBeginning(channel).await()
         val messages = history.retrievedHistory
-        val ticketMessages = messages.map { TicketMessage(it) }
+        val ticketMessages = messages.map { TicketMessage.fromMessage(it) }
         ticketMessages.forEach { ticket.addMessage(it) }
 
         ticketService.saveTicket(ticket)
