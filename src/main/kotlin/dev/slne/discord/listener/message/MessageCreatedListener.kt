@@ -19,7 +19,7 @@ class MessageCreatedListener(private val jda: JDA, private val ticketService: Ti
                 return@listener
             }
 
-            val ticket = event.channel.ticket ?: return@listener
+            val ticket = event.channel.ticket
 
             val message = event.message.toTicketMessage()
             ticket.addMessage(message)

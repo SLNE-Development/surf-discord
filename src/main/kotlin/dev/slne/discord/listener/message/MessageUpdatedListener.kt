@@ -14,7 +14,7 @@ class MessageUpdatedListener(private val jda: JDA, private val ticketService: Ti
     @PostConstruct
     fun registerListener() {
         jda.listener<MessageUpdateEvent> { event ->
-            val ticket = event.channel.ticket ?: return@listener
+            val ticket = event.channel.ticket
 
             if (event.message.isWebhookMessage) {
                 return@listener
