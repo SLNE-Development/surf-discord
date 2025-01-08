@@ -99,9 +99,6 @@ data class Ticket(
     @Column(name = "closed_at")
     var closedAt: ZonedDateTime? = null
 
-    @Transient
-    var isClosing = false
-
     @OneToMany(
         mappedBy = "ticket",
         cascade = [CascadeType.ALL],
@@ -164,7 +161,7 @@ data class Ticket(
         if (this is HibernateProxy) this.hibernateLazyInitializer.persistentClass.hashCode() else javaClass.hashCode()
 
     override fun toString(): String {
-        return "Ticket(_messages=$_messages, isClosing=$isClosing, closedAt=$closedAt, closedByName=$closedByName, closedByAvatarUrl=$closedByAvatarUrl, closedReason=$closedReason, closedById=$closedById, ticketAuthorAvatarUrl=$ticketAuthorAvatarUrl, ticketAuthorName='$ticketAuthorName', ticketAuthorId='$ticketAuthorId', threadId=$threadId, guildId='$guildId', internalGuild=$internalGuild, openedAt=$openedAt, ticketAuthor=$ticketAuthor, ticketType=$ticketType, ticketId=$ticketId, id=$id)"
+        return "Ticket(_messages=$_messages, closedAt=$closedAt, closedByName=$closedByName, closedByAvatarUrl=$closedByAvatarUrl, closedReason=$closedReason, closedById=$closedById, ticketAuthorAvatarUrl=$ticketAuthorAvatarUrl, ticketAuthorName='$ticketAuthorName', ticketAuthorId='$ticketAuthorId', threadId=$threadId, guildId='$guildId', internalGuild=$internalGuild, openedAt=$openedAt, ticketAuthor=$ticketAuthor, ticketType=$ticketType, ticketId=$ticketId, id=$id)"
     }
 
 }

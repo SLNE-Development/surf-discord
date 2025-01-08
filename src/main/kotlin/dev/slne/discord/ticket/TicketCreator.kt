@@ -121,11 +121,9 @@ class TicketCreator(
         closer: User,
         reason: String?
     ): TicketCloseResult {
-        if (ticket.isClosing) return TicketCloseResult.TICKET_ALREADY_CLOSING
         if (ticket.isClosed) return TicketCloseResult.TICKET_ALREADY_CLOSED
         if (ticket.thread == null) return TicketCloseResult.TICKET_NOT_FOUND
 
-        ticket.isClosing = true
         ticket.close(closer, reason ?: Messages.DEFAULT_TICKET_CLOSED_REASON)
 
         try {
@@ -135,8 +133,6 @@ class TicketCreator(
         } catch (e: DeleteTicketChannelException) {
             logger.error("Failed to close ticket thread with id {}.", ticket.ticketId, e)
             return TicketCloseResult.TICKET_CHANNEL_NOT_CLOSABLE
-        } finally {
-            ticket.isClosing = false
         }
 
         logger.debug("Ticket with id {} closed by {}.", ticket.ticketId, closer.name)
