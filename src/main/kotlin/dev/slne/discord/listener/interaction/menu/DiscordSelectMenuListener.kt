@@ -2,10 +2,10 @@ package dev.slne.discord.listener.interaction.menu
 
 import dev.minn.jda.ktx.events.listener
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenuManager
-import dev.slne.discord.jda
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
 
-object DiscordSelectMenuListener {
+class DiscordSelectMenuListener(jda: JDA) {
 
     init {
         jda.listener<StringSelectInteractionEvent> { event ->

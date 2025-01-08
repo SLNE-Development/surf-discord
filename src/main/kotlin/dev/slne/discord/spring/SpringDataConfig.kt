@@ -12,7 +12,7 @@ class SpringDataConfig {
     @Bean
     @Primary
     fun dataSource(): DataSource {
-        val databaseConfig = botConfig.database!!
+        val databaseConfig = botConfig.database
         val dataSource = DriverManagerDataSource()
 
         with(dataSource) {

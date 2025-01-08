@@ -5,7 +5,6 @@ import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.ContextCliktError
 import dev.slne.discord.console.buildRootCommand
 import dev.slne.discord.message.RawMessages
-import dev.slne.discord.persistence.service.ticket.TicketService
 import jakarta.annotation.PostConstruct
 import jakarta.annotation.PreDestroy
 import kotlinx.coroutines.runBlocking
@@ -15,32 +14,20 @@ import kotlin.concurrent.thread
 
 private val logger = ComponentLogger.logger("Bootstrap")
 
-fun main(args: Array<String>) {
-    runBlocking {
-        val bootstrap = Bootstrap()
-
-        logger.info("Loading messages...")
-        RawMessages::class.java.getClassLoader()
-
-        bootstrap.onLoad()
-        bootstrap.onEnable()
-    }
-
-    listenForCommands()
-}
-
-
 @Component
-class Bootstrap(private val ticketService: TicketService) {
+class Bootstrap {
 
     private var startTimestamp: Long? = null
 
     @PostConstruct
     suspend fun onLoad() {
-        Runtime.getRuntime().addShutdownHook(thread(start = false) { onDisable() })
+        logger.info("Loading messages...")
+        RawMessages::class.java.getClassLoader()
+
+        listenForCommands()
+
         startTimestamp = System.currentTimeMillis()
 
-        DiscordBot.onLoad()
 
         logger.info(
             "Done ({}ms)! Type 'help' for a list of commands.",
@@ -50,7 +37,6 @@ class Bootstrap(private val ticketService: TicketService) {
 
     @PreDestroy
     fun onDisable() {
-        DiscordBot.onDisable()
     }
 }
 

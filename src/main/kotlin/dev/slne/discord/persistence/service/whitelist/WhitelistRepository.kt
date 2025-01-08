@@ -23,6 +23,4 @@ interface WhitelistRepository : CoroutineCrudRepository<Whitelist, Long> {
     fun findWhitelists(uuid: UUID?, discordId: String?, twitchLink: String?): List<Whitelist>
 
     fun findWhitelistByDiscordId(discordId: String): Whitelist?
-
-    override suspend fun <S : Whitelist> save(entity: S): S
 }

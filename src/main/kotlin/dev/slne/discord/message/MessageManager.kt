@@ -5,12 +5,14 @@ import dev.minn.jda.ktx.messages.Embed
 import dev.minn.jda.ktx.messages.MessageCreate
 import dev.slne.discord.exception.command.CommandException
 import dev.slne.discord.exception.command.CommandExceptions
-import dev.slne.discord.jda
+import dev.slne.discord.getBean
 import dev.slne.discord.message.EmbedColors.ERROR_COLOR
 import dev.slne.discord.message.EmbedColors.WL_QUERY
 import dev.slne.discord.persistence.external.Whitelist
-import dev.slne.discord.persistence.service.whitelist.WhitelistRepository
+import dev.slne.discord.persistence.service.user.UserService
+import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import dev.slne.discord.ticket.Ticket
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
@@ -27,7 +29,7 @@ object MessageManager {
 
     suspend fun printUserWlQuery(user: User, channel: MessageChannel) {
         channel.sendTyping().await()
-        val whitelists = WhitelistRepository.findWhitelists(null, user.id, null)
+        val whitelists = getBean<WhitelistService>().findWhitelists(null, user.id, null)
 
         try {
             printUserWlQuery(whitelists, user.name, channel, null)
@@ -48,7 +50,7 @@ object MessageManager {
         hook?.deleteOriginal()?.await()
     }
 
-    suspend fun printWlQuery(
+    private suspend fun printWlQuery(
         channel: MessageChannel,
         title: String,
         whitelists: List<Whitelist>
@@ -72,13 +74,13 @@ object MessageManager {
         title = translatable("whitelist.query.embed.title")
         footer {
             name = translatable("whitelist.query.embed.footer")
-            iconUrl = jda.selfUser.avatarUrl
+            iconUrl = getBean<JDA>().selfUser.avatarUrl
         }
         description = translatable("whitelist.query.embed.description")
         color = WL_QUERY
         timestamp = ZonedDateTime.now()
 
-        val minecraftName = whitelist.minecraftName()
+        val minecraftName = UserService.getUsernameByUuid(whitelist.uuid)
         val twitchLink = whitelist.twitchLink
         val uuid = whitelist.uuid
         val discordUser = whitelist.user?.await()
@@ -97,11 +99,9 @@ object MessageManager {
             }
         }
 
-        if (twitchLink != null) {
-            field {
-                name = translatable("whitelist.query.embed.field.twitch-name")
-                value = "[${twitchLink}](${whitelist.clickableTwitchLink})"
-            }
+        field {
+            name = translatable("whitelist.query.embed.field.twitch-name")
+            value = "[${twitchLink}](${whitelist.clickableTwitchLink})"
         }
 
         if (discordUser != null) {
@@ -120,12 +120,11 @@ object MessageManager {
 
         field {
             name = translatable("whitelist.query.embed.field.blocked")
-            value =
-                if (whitelist.blocked == true) translatable("common.yes") else translatable("common.no")
+            value = if (whitelist.blocked) translatable("common.yes") else translatable("common.no")
         }
     }
 
-    suspend fun buildMemberAddedMessage(
+    fun buildMemberAddedMessage(
         member: Member,
         executor: User
     ) = MessageCreate {

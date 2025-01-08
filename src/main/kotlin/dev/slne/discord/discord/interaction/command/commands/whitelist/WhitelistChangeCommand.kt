@@ -8,7 +8,7 @@ import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.user.UserService
-import dev.slne.discord.persistence.service.whitelist.WhitelistRepository
+import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
@@ -22,7 +22,7 @@ private const val TWITCH_OPTION: String = "twitch"
     description = "Änder die Whitelist eines Benutzers",
     permission = CommandPermission.WHITELIST_CHANGE
 )
-object WhitelistChangeCommand : DiscordCommand() {
+class WhitelistChangeCommand(private val whitelistService: WhitelistService) : DiscordCommand() {
 
     override val options = listOf(
         option<User>(
@@ -58,7 +58,7 @@ object WhitelistChangeCommand : DiscordCommand() {
 
         hook.editOriginal(translatable("interaction.command.ticket.wlquery.querying")).await()
 
-        val isWhitelisted = WhitelistRepository.isWhitelisted(
+        val isWhitelisted = whitelistService.isWhitelisted(
             uuid = minecraftUuid,
             discordId = user?.id,
             twitchLink = twitch
@@ -68,7 +68,7 @@ object WhitelistChangeCommand : DiscordCommand() {
             throw CommandExceptions.WHITELIST_CHANGE_NOT_WHITELISTED.create()
         }
 
-        WhitelistRepository.deleteWhitelists(
+        whitelistService.deleteWhitelists(
             uuid = minecraftUuid,
             discordId = user?.id,
             twitchLink = twitch

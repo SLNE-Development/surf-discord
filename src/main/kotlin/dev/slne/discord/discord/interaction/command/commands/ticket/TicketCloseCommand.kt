@@ -21,7 +21,7 @@ private const val REASON_OPTION = "reason"
     description = "Closes a ticket.",
     permission = CommandPermission.TICKET_CLOSE
 )
-class TicketCloseCommand : TicketCommand() {
+class TicketCloseCommand(private val ticketCreator: TicketCreator) : TicketCommand() {
 
     override val options = listOf(
         option<String>(
@@ -51,7 +51,7 @@ class TicketCloseCommand : TicketCommand() {
         closeReason: String,
         hook: InteractionHook
     ) {
-        val closeResult = TicketCreator.closeTicket(ticket, closer, closeReason)
+        val closeResult = ticketCreator.closeTicket(ticket, closer, closeReason)
 
         if (closeResult != TicketCloseResult.SUCCESS) {
             throw CommandExceptions.TICKET_CLOSE.create(closeResult)

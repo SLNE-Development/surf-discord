@@ -18,7 +18,7 @@ import net.dv8tion.jda.api.interactions.InteractionHook
     description = "Schließt ein Ticket mit der Begründung, dass der Nutzer whitelisted wurde.",
     permission = CommandPermission.WHITELISTED
 )
-object WhitelistedCommand : TicketCommand() {
+class WhitelistedCommand(private val ticketCreator: TicketCreator) : TicketCommand() {
 
     override suspend fun internalExecute(
         interaction: SlashCommandInteractionEvent,
@@ -30,7 +30,7 @@ object WhitelistedCommand : TicketCommand() {
     }
 
     private suspend fun closeTicket(closer: User, ticket: Ticket) {
-        val closeResult = TicketCreator.closeTicket(
+        val closeResult = ticketCreator.closeTicket(
             ticket,
             closer,
             translatable("interaction.command.ticket.whitelisted.close-reason")

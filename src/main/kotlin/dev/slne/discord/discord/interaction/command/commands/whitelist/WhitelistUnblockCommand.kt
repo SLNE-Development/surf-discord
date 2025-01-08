@@ -6,7 +6,7 @@ import dev.slne.discord.discord.interaction.command.DiscordCommand
 import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.translatable
-import dev.slne.discord.persistence.service.whitelist.WhitelistRepository
+import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
@@ -16,7 +16,7 @@ import net.dv8tion.jda.api.interactions.InteractionHook
     description = "Entblockt einen User von der Whitelist",
     permission = CommandPermission.WHITELIST_UNBLOCK
 )
-object WhitelistUnblockCommand : DiscordCommand() {
+class WhitelistUnblockCommand(private val whitelistService: WhitelistService) : DiscordCommand() {
 
     override val options = listOf(
         option<User>("user", translatable("interaction.command.whitelist-unblock.option.user"))
@@ -27,7 +27,7 @@ object WhitelistUnblockCommand : DiscordCommand() {
         hook: InteractionHook
     ) {
         val user = interaction.getOptionOrThrow<User>("user")
-        val whitelists = WhitelistRepository.findWhitelists(discordId = user.id)
+        val whitelists = whitelistService.findWhitelists(discordId = user.id)
 
         if (whitelists.isEmpty()) {
             throw CommandExceptions.WHITELIST_QUERY_NO_ENTRIES.create(user.asMention)
@@ -35,7 +35,8 @@ object WhitelistUnblockCommand : DiscordCommand() {
 
         whitelists.forEach {
             it.blocked = false
-            it.save()
+
+            whitelistService.saveWhitelist(it)
         }
 
         hook.sendMessage(

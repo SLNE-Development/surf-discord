@@ -2,10 +2,11 @@ package dev.slne.discord.listener.message
 
 import dev.minn.jda.ktx.events.listener
 import dev.slne.discord.extensions.ticket
-import dev.slne.discord.jda
+import dev.slne.discord.persistence.service.ticket.TicketService
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.message.MessageUpdateEvent
 
-object MessageUpdatedListener {
+class MessageUpdatedListener(jda: JDA, ticketService: TicketService) {
 
     init {
         jda.listener<MessageUpdateEvent> { event ->
@@ -16,7 +17,9 @@ object MessageUpdatedListener {
             }
 
             val ticketMessage = ticket.getTicketMessage(event.messageId) ?: return@listener
-            ticketMessage.update(event.message)
+            ticket.addMessage(ticketMessage.copyAndUpdate(event.message))
+
+            ticketService.saveTicket(ticket)
         }
     }
 }

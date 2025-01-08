@@ -5,8 +5,9 @@ import dev.slne.discord.discord.interaction.modal.step.DiscordStepChannelCreatio
 import dev.slne.discord.discord.interaction.modal.step.MessageQueue
 import dev.slne.discord.discord.interaction.modal.step.StepBuilder
 import dev.slne.discord.discord.interaction.modal.step.creator.support.SupportInputStep
+import dev.slne.discord.getBean
 import dev.slne.discord.message.translatable
-import dev.slne.discord.persistence.service.whitelist.WhitelistRepository
+import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import dev.slne.discord.ticket.TicketType
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
@@ -32,7 +33,7 @@ class SurvivalSupportTicketChannelCreationModal :
     ) {
         val user = interaction.user
 
-        if (!WhitelistRepository.isWhitelisted(user)) {
+        if (!getBean<WhitelistService>().isWhitelisted(user)) {
             throw PreThreadCreationException(translatable("error.ticket.whitelist.not-whitelisted"))
         }
     }

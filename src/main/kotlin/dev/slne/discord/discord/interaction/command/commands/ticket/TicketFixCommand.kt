@@ -21,7 +21,7 @@ import net.dv8tion.jda.api.interactions.InteractionHook
     guildOnly = true,
     nsfw = false
 )
-class TicketFixCommand : TicketCommand() {
+class TicketFixCommand(private val ticketService: TicketService) : TicketCommand() {
 
     override suspend fun internalExecute(
         interaction: SlashCommandInteractionEvent,
@@ -49,7 +49,7 @@ class TicketFixCommand : TicketCommand() {
         val ticketType = TicketType.fromChannelName(channelName)
 
         val split = channelName.split("-")
-        val members = guild!!.retrieveMembersByPrefix(split[1], 1).await()
+        val members = guild.retrieveMembersByPrefix(split[1], 1).await()
         val ticketAuthor = members.firstOrNull()?.user
 
         if (ticketAuthor == null) {
@@ -70,7 +70,7 @@ class TicketFixCommand : TicketCommand() {
         val ticketMessages = messages.map { TicketMessage(it) }
         ticketMessages.forEach { ticket.addMessage(it) }
 
-        TicketService.saveTicket(ticket)
+        ticketService.saveTicket(ticket)
 
         hook.editOriginal("Ticket created!").await()
     }

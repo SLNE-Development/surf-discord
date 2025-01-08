@@ -69,38 +69,38 @@ data class Ticket(
 
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "ticket_author_id", length = 20, nullable = false)
-    private val ticketAuthorId = ticketAuthor.id
+    val ticketAuthorId = ticketAuthor.id
 
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "ticket_author_name", length = 64, nullable = false)
-    private val ticketAuthorName = ticketAuthor.name
+    val ticketAuthorName = ticketAuthor.name
 
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "ticket_author_avatar_url")
-    private val ticketAuthorAvatarUrl = ticketAuthor.avatarUrl
+    val ticketAuthorAvatarUrl = ticketAuthor.avatarUrl
 
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "closed_by_id", length = 20)
-    private var closedById: String? = null
+    var closedById: String? = null
 
     @Lob
     @Column(name = "closed_reason")
-    private var closedReason: String? = null
+    var closedReason: String? = null
 
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "closed_by_avatar_url")
-    private var closedByAvatarUrl: String? = null
+    var closedByAvatarUrl: String? = null
 
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "closed_by_name", length = 32)
-    private var closedByName: String? = null
+    var closedByName: String? = null
 
     @TimeZoneStorage(TimeZoneStorageType.NORMALIZE_UTC)
     @Column(name = "closed_at")
-    private var closedAt: ZonedDateTime? = null
+    var closedAt: ZonedDateTime? = null
 
     @Transient
-    private var isClosing = false
+    var isClosing = false
 
     @OneToMany(
         mappedBy = "ticket",
@@ -120,7 +120,6 @@ data class Ticket(
         get() = closedAt != null
 
     fun addMessage(message: TicketMessage) {
-        message.ticket = this
         _messages.add(message)
     }
 

@@ -7,10 +7,10 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface TicketRepository : CoroutineCrudRepository<Ticket, Long> {
-    
+
     @Cacheable(value = ["tickets"])
     fun findByClosedAtNull(): List<Ticket>
 
-    @Cacheable(value = ["tickets"], key = "#threadId")
+    @Cacheable(value = ["tickets"])
     fun findByThreadId(threadId: String): Ticket?
 }

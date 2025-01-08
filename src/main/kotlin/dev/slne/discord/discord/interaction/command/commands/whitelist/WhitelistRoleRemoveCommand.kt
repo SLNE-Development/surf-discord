@@ -20,7 +20,7 @@ import net.kyori.adventure.text.logger.slf4j.ComponentLogger
     description = "Entfernt alle Benutzer aus der Whitelist Rolle.",
     permission = CommandPermission.WHITELIST_ROLE
 )
-object WhitelistRoleRemoveCommand : DiscordCommand() {
+class WhitelistRoleRemoveCommand : DiscordCommand() {
     private val logger = ComponentLogger.logger()
 
     override suspend fun internalExecute(
@@ -71,7 +71,8 @@ object WhitelistRoleRemoveCommand : DiscordCommand() {
 
         if (failed.isNotEmpty()) {
             hook.editOriginal(
-                translatable("interaction.command.ticket.whitelist.role.remove.failed",
+                translatable(
+                    "interaction.command.ticket.whitelist.role.remove.failed",
                     failed.size,
                     failed.joinToString(", ") { it.effectiveName }
                 )

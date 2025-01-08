@@ -9,7 +9,7 @@ import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.MessageManager
 import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.user.UserService
-import dev.slne.discord.persistence.service.whitelist.WhitelistRepository
+import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
@@ -23,7 +23,7 @@ private const val TWITCH_OPTION: String = "twitch"
     description = "Zeigt Whitelist Informationen über einen Benutzer an.",
     permission = CommandPermission.WHITELIST_QUERY
 )
-object WhitelistQueryCommand : DiscordCommand() {
+class WhitelistQueryCommand(private val whitelistService: WhitelistService) : DiscordCommand() {
 
     override val options = listOf(
         option<User>(
@@ -73,12 +73,12 @@ object WhitelistQueryCommand : DiscordCommand() {
         minecraft: String?,
         twitch: String?
     ) = if (user != null) {
-        WhitelistRepository.findWhitelists(null, user.id, null)
+        whitelistService.findWhitelists(null, user.id, null)
     } else if (twitch != null) {
-        WhitelistRepository.findWhitelists(null, null, twitch)
+        whitelistService.findWhitelists(null, null, twitch)
     } else if (minecraft != null) {
         UserService.getUuidByUsername(minecraft)?.let {
-            WhitelistRepository.findWhitelists(it, null, null)
+            whitelistService.findWhitelists(it, null, null)
         } ?: emptyList()
     } else {
         throw CommandExceptions.TICKET_WLQUERY_NO_USER.create()

@@ -11,17 +11,22 @@ import dev.slne.discord.ticket.result.TicketCreateResult
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
+import org.springframework.stereotype.Component
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 
 @OptIn(ExperimentalContracts::class)
-object TicketCreator {
+@Component
+class TicketCreator(
+    private val ticketService: TicketService,
+    private val channelHelper: TicketChannelHelper
+) {
 
     private val logger = ComponentLogger.logger()
 
-    private suspend fun createTicket(
+    private final suspend fun createTicket(
         ticket: Ticket,
         author: User,
         ticketName: String,
@@ -32,13 +37,13 @@ object TicketCreator {
             callsInPlace(callback, InvocationKind.AT_MOST_ONCE)
         }
 
-        val createdTicket = ticket.save()
-        TicketService.queueOrAddTicket(createdTicket)
+        ticketService.saveTicket(ticket)
+        ticketService.queueOrAddTicket(ticket)
 
         return createTicketChannel(ticket, author, ticketName, ticketChannel, callback)
     }
 
-    private suspend fun createTicketChannel(
+    private final suspend fun createTicketChannel(
         ticket: Ticket,
         author: User,
         ticketName: String,
@@ -49,7 +54,7 @@ object TicketCreator {
             callsInPlace(callback, InvocationKind.AT_MOST_ONCE)
         }
 
-        val result = TicketChannelHelper.createThread(ticket, ticketName, ticketChannel)
+        val result = channelHelper.createThread(ticket, ticketName, ticketChannel)
 
         if (result != TicketCreateResult.SUCCESS) {
             return result
@@ -60,7 +65,7 @@ object TicketCreator {
         return TicketCreateResult.SUCCESS
     }
 
-    private suspend fun runAfterOpen(
+    private final suspend fun runAfterOpen(
         ticket: Ticket,
         author: User,
         runnable: suspend () -> Unit
@@ -79,14 +84,17 @@ object TicketCreator {
         }
     }
 
-    suspend fun openTicket(ticket: Ticket, afterOpen: suspend () -> Unit = {}): TicketCreateResult {
+    final suspend fun openTicket(
+        ticket: Ticket,
+        afterOpen: suspend () -> Unit = {}
+    ): TicketCreateResult {
         contract {
             callsInPlace(afterOpen, InvocationKind.AT_MOST_ONCE)
         }
 
-        val author = ticket.author?.await() ?: return TicketCreateResult.AUTHOR_NOT_FOUND
-        val ticketType = ticket.ticketType!!
-        val ticketChannelName = TicketChannelHelper.generateTicketName(ticketType, author)
+        val author = ticket.author.await() ?: return TicketCreateResult.AUTHOR_NOT_FOUND
+        val ticketType = ticket.ticketType
+        val ticketChannelName = channelHelper.generateTicketName(ticketType, author)
         val guild = ticket.guild ?: return TicketCreateResult.GUILD_NOT_FOUND
 
         val guildConfig =
@@ -96,7 +104,7 @@ object TicketCreator {
 
         val channel =
             guild.getTextChannelById(categoryId) ?: return TicketCreateResult.CHANNEL_NOT_FOUND
-        val ticketExists = TicketChannelHelper.checkTicketExists(
+        val ticketExists = channelHelper.checkTicketExists(
             ticketChannelName,
             channel,
             ticketType,
@@ -123,8 +131,8 @@ object TicketCreator {
 
         try {
             MessageManager.sendTicketClosedMessages(ticket)
-            ticket.save()
-            TicketChannelHelper.closeThread(ticket)
+            ticketService.saveTicket(ticket)
+            channelHelper.closeThread(ticket)
         } catch (e: DeleteTicketChannelException) {
             logger.error("Failed to close ticket thread with id {}.", ticket.ticketId, e)
             return TicketCloseResult.TICKET_CHANNEL_NOT_CLOSABLE

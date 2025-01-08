@@ -34,19 +34,28 @@ data class Whitelist(
     @Column(name = "discord_id")
     val discordId: String,
 
-    @ColumnDefault("0")
-    @Column(name = "blocked", nullable = false)
-    val blocked: Boolean = false
-) {
-
     @Column(name = "added_by_id")
-    var addedById: String? = null
+    val addedById: String? = null,
 
     @Column(name = "added_by_name")
-    var addedByName: String? = null
+    val addedByName: String? = null,
 
     @Column(name = "added_by_avatar_url")
-    var addedByAvatarUrl: String? = null
+    val addedByAvatarUrl: String? = null,
+
+    @ColumnDefault("0")
+    @Column(name = "blocked", nullable = false)
+    var blocked: Boolean = false
+) {
+
+    constructor(uuid: UUID, twitchLink: String, discordId: String, addedBy: User?) : this(
+        uuid = uuid,
+        twitchLink = twitchLink,
+        discordId = discordId,
+        addedById = addedBy?.id,
+        addedByName = addedBy?.name,
+        addedByAvatarUrl = addedBy?.avatarUrl
+    )
 
     val addedBy: RestAction<User>?
         get() = addedById?.let { getBean<JDA>().retrieveUserById(it) }

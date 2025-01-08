@@ -1,8 +1,9 @@
 package dev.slne.discord.persistence.converter
 
-import dev.slne.discord.jda
+import dev.slne.discord.getBean
 import jakarta.persistence.AttributeConverter
 import jakarta.persistence.Converter
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 
 @Converter(autoApply = true)
@@ -12,6 +13,6 @@ class DiscordGuildConverter : AttributeConverter<Guild, String> {
     }
 
     override fun convertToEntityAttribute(id: String?): Guild? {
-        return id?.let { jda.getGuildById(id) }
+        return id?.let { getBean<JDA>().getGuildById(id) }
     }
 }

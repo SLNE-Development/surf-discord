@@ -7,9 +7,11 @@ import dev.minn.jda.ktx.messages.MessageCreate
 import dev.slne.discord.annotation.ChannelCreationModal
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager
 import dev.slne.discord.exception.DiscordException
+import dev.slne.discord.getBean
 import dev.slne.discord.message.translatable
 import dev.slne.discord.ticket.Ticket
 import dev.slne.discord.ticket.TicketChannelHelper
+import dev.slne.discord.ticket.TicketCreator
 import dev.slne.discord.ticket.result.TicketCreateResult
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
@@ -23,7 +25,6 @@ import net.dv8tion.jda.api.interactions.components.selections.StringSelectIntera
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.jetbrains.annotations.ApiStatus
 import java.io.Serial
-import kotlin.Throws
 import kotlin.reflect.full.findAnnotation
 
 abstract class DiscordStepChannelCreationModal(
@@ -134,14 +135,14 @@ abstract class DiscordStepChannelCreationModal(
             return
         }
 
-        val ticket = Ticket.open(guild = guild, ticketAuthor = user, ticketType = ticketType)
-        val result = ticket.openFromButton()
+        val ticket = Ticket(guild = guild, author = user, ticketType = ticketType)
+        val result = getBean<TicketCreator>().openTicket(ticket)
 
         postThreadCreated(ticket, result, event, user)
     }
 
     private fun checkTicketExists(guild: Guild, user: User): Boolean =
-        TicketChannelHelper.checkTicketExists(guild, ticketType, user)
+        getBean<TicketChannelHelper>().checkTicketExists(guild, ticketType, user)
 
     private suspend fun executeSelectionSteps(
         hook: InteractionHook

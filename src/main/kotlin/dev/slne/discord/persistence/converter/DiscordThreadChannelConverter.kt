@@ -1,8 +1,9 @@
 package dev.slne.discord.persistence.converter
 
-import dev.slne.discord.jda
+import dev.slne.discord.getBean
 import jakarta.persistence.AttributeConverter
 import jakarta.persistence.Converter
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 
 @Converter(autoApply = true)
@@ -12,6 +13,6 @@ class DiscordThreadChannelConverter : AttributeConverter<ThreadChannel, String> 
     }
 
     override fun convertToEntityAttribute(id: String?): ThreadChannel? {
-        return id?.let { jda.getThreadChannelById(id) }
+        return id?.let { getBean<JDA>().getThreadChannelById(id) }
     }
 }

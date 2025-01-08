@@ -8,7 +8,6 @@ import net.dv8tion.jda.api.utils.data.DataArray
 import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
 import net.dv8tion.jda.internal.requests.RestActionImpl
-import java.util.function.BiFunction
 
 fun User.retrieveConnections(): RestAction<List<UserConnection>> {
     val requester = (jda as JDAImpl).requester
@@ -19,12 +18,9 @@ fun User.retrieveConnections(): RestAction<List<UserConnection>> {
     println("Route: $route")
     println("Compiled: ${route.compiledRoute}")
 
-    return RestActionImpl<List<UserConnection>>(
-        jda,
-        route,
-        BiFunction { response, _ ->
-            response.array.stream(DataArray::getObject).map { UserConnection(it) }.toList()
-        })
+    return RestActionImpl(jda, route) { response, _ ->
+        response.array.stream(DataArray::getObject).map { UserConnection(it) }.toList()
+    }
 }
 
 data class UserConnection(

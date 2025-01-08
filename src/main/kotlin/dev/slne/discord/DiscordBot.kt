@@ -1,10 +1,7 @@
 package dev.slne.discord
 
-import dev.slne.discord.discord.interaction.button.DiscordButtonManager
-import dev.slne.discord.discord.interaction.command.DiscordCommandProcessor
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenuManager
-import dev.slne.discord.listener.DiscordListenerManager
 import jakarta.annotation.PostConstruct
 import jakarta.annotation.PreDestroy
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
@@ -27,10 +24,7 @@ class DiscordBot {
     }
 
     private fun initObjects() {
-        DiscordListenerManager
         DiscordModalManager
-        DiscordButtonManager
-        DiscordCommandProcessor
         DiscordSelectMenuManager
     }
 

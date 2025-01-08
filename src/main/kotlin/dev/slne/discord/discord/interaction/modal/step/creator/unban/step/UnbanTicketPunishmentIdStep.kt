@@ -3,6 +3,7 @@ package dev.slne.discord.discord.interaction.modal.step.creator.unban.step
 import dev.minn.jda.ktx.interactions.components.InlineModal
 import dev.slne.discord.discord.interaction.modal.step.MessageQueue
 import dev.slne.discord.discord.interaction.modal.step.ModalStep
+import dev.slne.discord.getBean
 import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.punishment.PunishmentService
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
@@ -28,7 +29,7 @@ class UnbanTicketPunishmentIdStep : ModalStep() {
     override suspend fun verifyModalInput(event: ModalInteractionEvent) {
         punishmentId = getInput(event, PUNISHMENT_ID)
 
-        if (!PunishmentService.isValidPunishmentId(punishmentId!!)) {
+        if (!getBean<PunishmentService>().isValidPunishmentId(punishmentId!!)) {
             throw ModalStepInputVerificationException(
                 translatable("modal.unban.step.punishment-id.error.invalid")
             )

@@ -3,11 +3,11 @@ package dev.slne.discord.listener.interaction.modal
 import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.events.listener
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager
-import dev.slne.discord.jda
 import dev.slne.discord.message.MessageManager
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 
-object DiscordModalListener {
+class DiscordModalListener(jda: JDA) {
 
     init {
         jda.listener<ModalInteractionEvent> { event ->

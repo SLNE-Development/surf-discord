@@ -7,10 +7,10 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.context.annotation.Bean
-import org.springframework.stereotype.Component
+import org.springframework.context.annotation.Configuration
 import java.util.*
 
-@Component
+@Configuration
 class SpringCommonConfig {
     @Bean
     fun objectMapper(modules: ObjectProvider<Module>): JsonMapper = JsonMapper.builder()

@@ -1,9 +1,12 @@
 package dev.slne.discord.persistence.service.user
 
 import com.github.benmanes.caffeine.cache.Caffeine
-import kotlinx.coroutines.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import okhttp3.OkHttpClient
 import java.io.Serial
@@ -16,7 +19,7 @@ import kotlin.uuid.Uuid
 import kotlin.uuid.toJavaUuid
 
 
-@OptIn(DelicateCoroutinesApi::class, ExperimentalUuidApi::class, ExperimentalCoroutinesApi::class)
+@OptIn(DelicateCoroutinesApi::class, ExperimentalUuidApi::class)
 object UserService {
     private const val RATE_LIMIT_CODE = 429
 
