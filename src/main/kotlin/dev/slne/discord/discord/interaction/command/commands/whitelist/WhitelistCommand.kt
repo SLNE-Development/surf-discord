@@ -44,7 +44,7 @@ class WhitelistCommand(private val whitelistService: WhitelistService) : Discord
             translatable("interaction.command.ticket.whitelist.arg.twitch-name")
         )
     )
-    
+
     override suspend fun internalExecute(
         interaction: SlashCommandInteractionEvent,
         hook: InteractionHook
@@ -89,11 +89,7 @@ class WhitelistCommand(private val whitelistService: WhitelistService) : Discord
         if (whitelists.isNotEmpty()) {
             hook.editOriginal(
                 translatable("interaction.command.ticket.whitelist.already-whitelisted")
-            ).await()
-
-            for (whitelist in whitelists) {
-                channel.sendMessageEmbeds(MessageManager.getWhitelistQueryEmbed(whitelist)).await()
-            }
+            ).setEmbeds(whitelists.map { MessageManager.getWhitelistQueryEmbed(it) }).await()
         } else {
             hook.editOriginal(
                 translatable("interaction.command.ticket.whitelist.adding")
