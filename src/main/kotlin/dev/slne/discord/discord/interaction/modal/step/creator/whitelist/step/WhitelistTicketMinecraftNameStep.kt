@@ -3,7 +3,6 @@ package dev.slne.discord.discord.interaction.modal.step.creator.whitelist.step
 import dev.minn.jda.ktx.interactions.components.InlineModal
 import dev.slne.discord.discord.interaction.modal.step.MessageQueue
 import dev.slne.discord.discord.interaction.modal.step.ModalStep
-import dev.slne.discord.getBean
 import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.user.UserService
 import dev.slne.discord.persistence.service.whitelist.WhitelistService
@@ -13,7 +12,11 @@ import net.dv8tion.jda.api.interactions.components.selections.StringSelectIntera
 
 private const val MINECRAFT_NAME = "minecraft-name"
 
-class WhitelistTicketMinecraftNameStep(parent: ModalStep) : ModalStep() {
+class WhitelistTicketMinecraftNameStep(
+    parent: ModalStep,
+    private val userService: UserService,
+    private val whitelistService: WhitelistService
+) : ModalStep() {
 
     private var minecraftName: String? = null
 
@@ -29,12 +32,12 @@ class WhitelistTicketMinecraftNameStep(parent: ModalStep) : ModalStep() {
     override suspend fun verifyModalInput(event: ModalInteractionEvent) {
         minecraftName = getInput(event, MINECRAFT_NAME)
 
-        val uuid = getBean<UserService>().getUuidByUsername(minecraftName!!)
+        val uuid = userService.getUuidByUsername(minecraftName!!)
             ?: throw ModalStepInputVerificationException(
                 translatable("modal.whitelist.step.minecraft.invalid")
             )
 
-        if (getBean<WhitelistService>().isWhitelisted(uuid, null, null)) {
+        if (whitelistService.isWhitelisted(uuid, null, null)) {
             throw ModalStepInputVerificationException(
                 translatable("interaction.command.ticket.whitelist.already-whitelisted")
             )

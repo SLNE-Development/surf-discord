@@ -30,7 +30,8 @@ private const val TWITCH_OPTION: String = "twitch"
 )
 class WhitelistCommand(
     private val whitelistService: WhitelistService,
-    private val userService: UserService
+    private val userService: UserService,
+    private val messageManager: MessageManager
 ) : DiscordCommand() {
 
     override val options = listOf(
@@ -92,7 +93,7 @@ class WhitelistCommand(
         if (whitelists.isNotEmpty()) {
             hook.editOriginal(
                 translatable("interaction.command.ticket.whitelist.already-whitelisted")
-            ).setEmbeds(whitelists.map { MessageManager.getWhitelistQueryEmbed(it) }).await()
+            ).setEmbeds(whitelists.map { messageManager.getWhitelistQueryEmbed(it) }).await()
         } else {
             hook.editOriginal(
                 translatable("interaction.command.ticket.whitelist.adding")
@@ -117,7 +118,7 @@ class WhitelistCommand(
                     "interaction.command.ticket.whitelist.added",
                     user.asMention
                 )
-                embeds += MessageManager.getWhitelistQueryEmbed(whitelist)
+                embeds += messageManager.getWhitelistQueryEmbed(whitelist)
             }).await()
 
             hook.deleteOriginal().await()

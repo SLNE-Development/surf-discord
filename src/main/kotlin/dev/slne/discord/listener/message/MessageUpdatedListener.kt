@@ -1,7 +1,7 @@
 package dev.slne.discord.listener.message
 
 import dev.minn.jda.ktx.events.listener
-import dev.slne.discord.extensions.ticket
+import dev.slne.discord.extensions.ticketOrNull
 import dev.slne.discord.persistence.service.ticket.TicketService
 import jakarta.annotation.PostConstruct
 import net.dv8tion.jda.api.JDA
@@ -14,7 +14,7 @@ class MessageUpdatedListener(private val jda: JDA, private val ticketService: Ti
     @PostConstruct
     fun registerListener() {
         jda.listener<MessageUpdateEvent> { event ->
-            val ticket = event.channel.ticket()
+            val ticket = event.channel.ticketOrNull() ?: return@listener
 
             if (event.message.isWebhookMessage) {
                 return@listener

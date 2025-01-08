@@ -5,6 +5,7 @@ import dev.minn.jda.ktx.messages.Embed
 import dev.slne.discord.annotation.DiscordButton
 import dev.slne.discord.annotation.DiscordEmoji
 import dev.slne.discord.discord.interaction.button.DiscordButtonHandler
+import dev.slne.discord.discord.interaction.modal.DiscordModalManager
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenuManager
 import dev.slne.discord.discord.interaction.select.menus.TicketsMenu
 import dev.slne.discord.message.EmbedColors
@@ -22,11 +23,15 @@ const val OpenTicketButtonId = "open-ticket"
     ButtonStyle.SUCCESS,
     DiscordEmoji(unicode = "🎫")
 )
-class OpenTicketButton : DiscordButtonHandler {
+class OpenTicketButton(
+    private val discordSelectMenuManager: DiscordSelectMenuManager,
+    private val discordModalManager: DiscordModalManager
+) :
+    DiscordButtonHandler {
 
     override suspend fun ButtonInteractionEvent.onClick() {
-        val menu = TicketsMenu(id)
-        DiscordSelectMenuManager.addMenu(menu)
+        val menu = TicketsMenu(id, discordModalManager)
+        discordSelectMenuManager.addMenu(menu)
 
         sendEmbed(menu.build(), interaction)
     }

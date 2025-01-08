@@ -11,7 +11,7 @@ interface TicketRepository : JpaRepository<Ticket, Long> {
 
     fun findByThreadId(threadId: String): Ticket?
 
-    @Query("select count(t) from Ticket t where t.ticketAuthorId = ?1 and t.ticketType = ?2")
+    @Query("select count(t) from Ticket t where t.ticketAuthorId = ?1 and t.ticketType = ?2 and t.closedAt is null")
     fun hasAuthorTicketWithType(ticketAuthorId: String, ticketType: TicketType): Long
 
 }

@@ -1,7 +1,7 @@
 package dev.slne.discord.listener.message
 
 import dev.minn.jda.ktx.events.listener
-import dev.slne.discord.extensions.ticket
+import dev.slne.discord.extensions.ticketOrNull
 import dev.slne.discord.persistence.service.ticket.TicketService
 import dev.slne.discord.util.toTicketMessage
 import jakarta.annotation.PostConstruct
@@ -19,7 +19,7 @@ class MessageCreatedListener(private val jda: JDA, private val ticketService: Ti
                 return@listener
             }
 
-            val ticket = event.channel.ticket()
+            val ticket = event.channel.ticketOrNull() ?: return@listener
 
             val message = event.message.toTicketMessage()
             ticket.addMessage(message)

@@ -7,7 +7,6 @@ import dev.minn.jda.ktx.messages.MessageCreate
 import dev.slne.discord.annotation.ChannelCreationModal
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager
 import dev.slne.discord.exception.DiscordException
-import dev.slne.discord.getBean
 import dev.slne.discord.message.translatable
 import dev.slne.discord.ticket.Ticket
 import dev.slne.discord.ticket.TicketChannelHelper
@@ -28,7 +27,10 @@ import java.io.Serial
 import kotlin.reflect.full.findAnnotation
 
 abstract class DiscordStepChannelCreationModal(
-    private val title: String
+    private val title: String,
+    private val ticketCreator: TicketCreator,
+    private val ticketChannelHelper: TicketChannelHelper,
+    private val discordModalManager: DiscordModalManager
 ) {
     private val logger = ComponentLogger.logger(javaClass)
     private val steps: List<ModalStep> by lazy { buildSteps().steps }
@@ -70,7 +72,7 @@ abstract class DiscordStepChannelCreationModal(
             return
         }
 
-        DiscordModalManager.setCurrentUserModal(
+        discordModalManager.setCurrentUserModal(
             interaction.user.id,
             this
         )
@@ -136,13 +138,13 @@ abstract class DiscordStepChannelCreationModal(
         }
 
         val ticket = Ticket(guild = guild, author = user, ticketType = ticketType)
-        val result = getBean<TicketCreator>().openTicket(ticket)
+        val result = ticketCreator.openTicket(ticket)
 
         postThreadCreated(ticket, result, event, user)
     }
 
-    private suspend fun checkTicketExists(guild: Guild, user: User): Boolean =
-        getBean<TicketChannelHelper>().checkTicketExists(guild, ticketType, user)
+    private suspend fun checkTicketExists(guild: Guild, user: User) =
+        ticketChannelHelper.checkTicketExists(guild, ticketType, user)
 
     private suspend fun executeSelectionSteps(
         hook: InteractionHook

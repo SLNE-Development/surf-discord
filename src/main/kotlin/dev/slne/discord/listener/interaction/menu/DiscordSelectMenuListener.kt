@@ -8,12 +8,15 @@ import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionE
 import org.springframework.stereotype.Component
 
 @Component
-class DiscordSelectMenuListener(private val jda: JDA) {
+class DiscordSelectMenuListener(
+    private val jda: JDA,
+    private val discordSelectMenuManager: DiscordSelectMenuManager
+) {
 
     @PostConstruct
     fun registerListener() {
         jda.listener<StringSelectInteractionEvent> { event ->
-            val menu = DiscordSelectMenuManager.getMenu(event.componentId)
+            val menu = discordSelectMenuManager.getMenu(event.componentId)
 
             if (menu == null) { // TODO: does not work - needed?
 //                event.reply("Die Interaktion ist abgelaufen, oder konnte nicht gefunden werden!")

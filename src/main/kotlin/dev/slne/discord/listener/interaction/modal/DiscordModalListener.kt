@@ -10,14 +10,18 @@ import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import org.springframework.stereotype.Component
 
 @Component
-class DiscordModalListener(private val jda: JDA) {
+class DiscordModalListener(
+    private val jda: JDA,
+    private val discordModalManager: DiscordModalManager,
+    private val messageManager: MessageManager
+) {
 
     @PostConstruct
     fun registerListener() {
         jda.listener<ModalInteractionEvent> { event ->
             val interaction = event.interaction
             val modalId = interaction.modalId
-            val advancedModal = DiscordModalManager.getModal(modalId, event.user.id)
+            val advancedModal = discordModalManager.getModal(modalId, event.user.id)
 
             if (advancedModal != null) {
                 event.deferReply(true).await()
@@ -27,7 +31,7 @@ class DiscordModalListener(private val jda: JDA) {
             }
 
             event.replyEmbeds(
-                MessageManager.getErrorEmbed(
+                messageManager.getErrorEmbed(
                     "Fehler",
                     "Deine Aktion konnte nicht durchgeführt werden oder ist abgelaufen."
                 )

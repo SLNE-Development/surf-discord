@@ -5,7 +5,6 @@ import dev.minn.jda.ktx.messages.Embed
 import dev.minn.jda.ktx.messages.MessageCreate
 import dev.slne.discord.exception.command.CommandException
 import dev.slne.discord.exception.command.CommandExceptions
-import dev.slne.discord.getBean
 import dev.slne.discord.message.EmbedColors.ERROR_COLOR
 import dev.slne.discord.message.EmbedColors.WL_QUERY
 import dev.slne.discord.persistence.external.Whitelist
@@ -18,19 +17,24 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import net.dv8tion.jda.api.interactions.InteractionHook
+import org.springframework.stereotype.Component
 import java.time.ZonedDateTime
 
-object MessageManager {
+@Component
+class MessageManager(
+    private val whitelistService: WhitelistService,
+    private val userService: UserService,
+    private val jda: JDA
+) {
 
     suspend fun sendTicketClosedMessages(ticket: Ticket): Message? =
         ticket.thread?.sendMessage(MessageCreate {
-            content = ticket.author.await().asMention
             embeds += EmbedManager.buildTicketClosedEmbed(ticket)
         })?.await()
 
     suspend fun printUserWlQuery(user: User, channel: MessageChannel) {
         channel.sendTyping().await()
-        val whitelists = getBean<WhitelistService>().findWhitelists(null, user.id, null)
+        val whitelists = whitelistService.findWhitelists(null, user.id, null)
 
         try {
             printUserWlQuery(whitelists, user.name, channel, null)
@@ -75,13 +79,13 @@ object MessageManager {
         title = translatable("whitelist.query.embed.title")
         footer {
             name = translatable("whitelist.query.embed.footer")
-            iconUrl = getBean<JDA>().selfUser.avatarUrl
+            iconUrl = jda.selfUser.avatarUrl
         }
         description = translatable("whitelist.query.embed.description")
         color = WL_QUERY
         timestamp = ZonedDateTime.now()
 
-        val minecraftName = getBean<UserService>().getUsernameByUuid(whitelist.uuid)
+        val minecraftName = userService.getUsernameByUuid(whitelist.uuid)
         val twitchLink = whitelist.twitchLink
         val uuid = whitelist.uuid
         val discordUser = whitelist.user?.await()

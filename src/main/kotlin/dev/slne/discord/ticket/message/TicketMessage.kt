@@ -141,9 +141,6 @@ data class TicketMessage(
         if (thisEffectiveClass != oEffectiveClass) return false
         other as TicketMessage
 
-        System.err.println("Checking equals for $this")
-        System.err.println("Checking equals for $other")
-
         return id != null && id == other.id
     }
 

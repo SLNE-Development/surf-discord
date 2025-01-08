@@ -21,7 +21,8 @@ import kotlin.contracts.contract
 @Component
 class TicketCreator(
     private val ticketService: TicketService,
-    private val channelHelper: TicketChannelHelper
+    private val channelHelper: TicketChannelHelper,
+    private val messageManager: MessageManager
 ) {
 
     private val logger = ComponentLogger.logger()
@@ -78,8 +79,8 @@ class TicketCreator(
 
         runnable()
 
-        if (ticket.ticketType?.shouldPrintWlQuery == true) {
-            runCatching { MessageManager.printUserWlQuery(author, channel) }
+        if (ticket.ticketType.shouldPrintWlQuery) {
+            runCatching { messageManager.printUserWlQuery(author, channel) }
         }
     }
 
@@ -115,7 +116,6 @@ class TicketCreator(
         return createTicket(ticket, author, ticketChannelName, channel, afterOpen)
     }
 
-
     suspend fun closeTicket(
         ticket: Ticket,
         closer: User,
@@ -129,8 +129,8 @@ class TicketCreator(
         ticket.close(closer, reason ?: Messages.DEFAULT_TICKET_CLOSED_REASON)
 
         try {
-            MessageManager.sendTicketClosedMessages(ticket)
             ticketService.saveTicket(ticket)
+            messageManager.sendTicketClosedMessages(ticket)
             channelHelper.closeThread(ticket)
         } catch (e: DeleteTicketChannelException) {
             logger.error("Failed to close ticket thread with id {}.", ticket.ticketId, e)

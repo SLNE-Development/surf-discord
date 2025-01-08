@@ -25,7 +25,8 @@ private const val TWITCH_OPTION: String = "twitch"
 )
 class WhitelistQueryCommand(
     private val whitelistService: WhitelistService,
-    private val userService: UserService
+    private val userService: UserService,
+    private val messageManager: MessageManager
 ) : DiscordCommand() {
 
     override val options = listOf(
@@ -63,11 +64,11 @@ class WhitelistQueryCommand(
         val whitelists = getWhitelists(user, minecraft, twitch)
 
         if (user != null) {
-            MessageManager.printUserWlQuery(whitelists, user.name, channel, hook)
+            messageManager.printUserWlQuery(whitelists, user.name, channel, hook)
         } else if (minecraft != null) {
-            MessageManager.printUserWlQuery(whitelists, minecraft, channel, hook)
+            messageManager.printUserWlQuery(whitelists, minecraft, channel, hook)
         } else if (twitch != null) {
-            MessageManager.printUserWlQuery(whitelists, twitch, channel, hook)
+            messageManager.printUserWlQuery(whitelists, twitch, channel, hook)
         }
     }
 

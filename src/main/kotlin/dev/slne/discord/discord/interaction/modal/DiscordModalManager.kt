@@ -8,26 +8,44 @@ import dev.slne.discord.discord.interaction.modal.step.creator.support.event.Eve
 import dev.slne.discord.discord.interaction.modal.step.creator.support.survival.SurvivalSupportTicketChannelCreationModal
 import dev.slne.discord.discord.interaction.modal.step.creator.unban.UnbanTicketChannelCreationModal
 import dev.slne.discord.discord.interaction.modal.step.creator.whitelist.WhitelistTicketChannelCreationModal
+import dev.slne.discord.message.MessageManager
+import dev.slne.discord.persistence.service.punishment.PunishmentService
+import dev.slne.discord.persistence.service.user.UserService
+import dev.slne.discord.persistence.service.whitelist.WhitelistService
+import dev.slne.discord.ticket.TicketChannelHelper
+import dev.slne.discord.ticket.TicketCreator
 import dev.slne.discord.ticket.TicketType
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
+import dev.slne.discord.util.mutableObject2ObjectMapOf
+import jakarta.annotation.PostConstruct
+import org.springframework.stereotype.Component
 
-object DiscordModalManager {
+@Component
+class DiscordModalManager(
+    private val whitelistService: WhitelistService,
+    private val userService: UserService,
+    private val ticketCreator: TicketCreator,
+    private val ticketChannelHelper: TicketChannelHelper,
+    private val punishmentService: PunishmentService,
+    private val messageManager: MessageManager
+) {
 
-    private val modals =
-        Object2ObjectOpenHashMap<String, () -> DiscordStepChannelCreationModal>()
-    private val currentUserModals =
-        Object2ObjectOpenHashMap<String, DiscordStepChannelCreationModal>()
-    private val byTicketType =
-        Object2ObjectOpenHashMap<TicketType, () -> DiscordStepChannelCreationModal>()
+    // @formatter:off
+    private val modals = mutableObject2ObjectMapOf<String, () -> DiscordStepChannelCreationModal>()
+    private val currentUserModals = mutableObject2ObjectMapOf<String, DiscordStepChannelCreationModal>()
+    private val byTicketType = mutableObject2ObjectMapOf<TicketType, () -> DiscordStepChannelCreationModal>()
+    // @formatter:on
 
-    init {
-        register(::WhitelistTicketChannelCreationModal)
-        register(::UnbanTicketChannelCreationModal)
-        register(::ReportTicketChannelCreationModal)
-        register(::BugReportTicketChannelCreationModal)
-        register(::SurvivalSupportTicketChannelCreationModal)
-        register(::EventSupportTicketChannelCreationModal)
-        register(::DiscordSupportTicketChannelCreationModal)
+    @PostConstruct
+    fun init() {
+        // @formatter:off
+        register { WhitelistTicketChannelCreationModal(whitelistService, userService, ticketCreator, ticketChannelHelper, this) }
+        register { UnbanTicketChannelCreationModal(punishmentService, ticketCreator, ticketChannelHelper, this) }
+        register { ReportTicketChannelCreationModal(ticketCreator, ticketChannelHelper, this, userService, whitelistService, messageManager) }
+        register { BugReportTicketChannelCreationModal(ticketCreator, ticketChannelHelper, this) }
+        register { SurvivalSupportTicketChannelCreationModal(whitelistService, ticketCreator, ticketChannelHelper, this) }
+        register { EventSupportTicketChannelCreationModal(ticketCreator, ticketChannelHelper, this) }
+        register { DiscordSupportTicketChannelCreationModal(ticketCreator, ticketChannelHelper, this) }
+        // @formatter:on
     }
 
     private fun register(supplier: () -> DiscordStepChannelCreationModal) {

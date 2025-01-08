@@ -1,12 +1,15 @@
 package dev.slne.discord.discord.interaction.modal.step.creator.bugreport
 
 import dev.slne.discord.annotation.ChannelCreationModal
+import dev.slne.discord.discord.interaction.modal.DiscordModalManager
 import dev.slne.discord.discord.interaction.modal.step.DiscordStepChannelCreationModal
 import dev.slne.discord.discord.interaction.modal.step.MessageQueue
 import dev.slne.discord.discord.interaction.modal.step.StepBuilder
 import dev.slne.discord.discord.interaction.modal.step.creator.bugreport.steps.BugReportMinecraftNameStep
 import dev.slne.discord.discord.interaction.modal.step.creator.bugreport.steps.BugReportReportStep
 import dev.slne.discord.message.translatable
+import dev.slne.discord.ticket.TicketChannelHelper
+import dev.slne.discord.ticket.TicketCreator
 import dev.slne.discord.ticket.TicketType
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
@@ -17,8 +20,15 @@ import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
     ticketType = TicketType.BUGREPORT,
     modalId = BugReportTicketChannelCreationModal.MODAL_ID
 )
-class BugReportTicketChannelCreationModal :
-    DiscordStepChannelCreationModal(translatable("modal.bug-report.title")) {
+class BugReportTicketChannelCreationModal(
+    ticketCreator: TicketCreator,
+    ticketChannelHelper: TicketChannelHelper, discordModalManager: DiscordModalManager
+) : DiscordStepChannelCreationModal(
+    translatable("modal.bug-report.title"),
+    ticketCreator,
+    ticketChannelHelper,
+    discordModalManager,
+) {
 
     override fun buildSteps(): StepBuilder = StepBuilder.startWith(BugReportMinecraftNameStep())
         .then(::BugReportReportStep)

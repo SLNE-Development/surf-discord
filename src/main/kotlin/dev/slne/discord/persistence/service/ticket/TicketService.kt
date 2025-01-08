@@ -15,10 +15,8 @@ class TicketService(private val ticketRepository: TicketRepository) {
             ticketRepository.hasAuthorTicketWithType(author.id, ticketType) > 0
         }
 
-    suspend fun saveTicket(ticket: Ticket): Ticket = withContext(Dispatchers.IO) {
+    suspend fun saveTicket(ticket: Ticket) = withContext(Dispatchers.IO) {
         ticketRepository.save(ticket)
-
-        return@withContext ticket
     }
 
     suspend fun getTicketByThreadId(threadId: String) = withContext(Dispatchers.IO) {

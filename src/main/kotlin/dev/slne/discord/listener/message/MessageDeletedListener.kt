@@ -1,7 +1,7 @@
 package dev.slne.discord.listener.message
 
 import dev.minn.jda.ktx.events.listener
-import dev.slne.discord.extensions.ticket
+import dev.slne.discord.extensions.ticketOrNull
 import dev.slne.discord.persistence.service.ticket.TicketService
 import jakarta.annotation.PostConstruct
 import net.dv8tion.jda.api.JDA
@@ -25,7 +25,7 @@ class MessageDeletedListener(private val jda: JDA, private val ticketService: Ti
     }
 
     private suspend fun deleteMessage(channel: MessageChannel, messageIds: List<String>) {
-        val ticket = channel.ticket()
+        val ticket = channel.ticketOrNull() ?: return
 
         messageIds
             .mapNotNull { ticket.getTicketMessage(it) }

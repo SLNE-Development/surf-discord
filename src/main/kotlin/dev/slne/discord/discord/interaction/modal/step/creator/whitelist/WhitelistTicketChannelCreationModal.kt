@@ -1,13 +1,16 @@
 package dev.slne.discord.discord.interaction.modal.step.creator.whitelist
 
 import dev.slne.discord.annotation.ChannelCreationModal
+import dev.slne.discord.discord.interaction.modal.DiscordModalManager
 import dev.slne.discord.discord.interaction.modal.step.DiscordStepChannelCreationModal
 import dev.slne.discord.discord.interaction.modal.step.StepBuilder
 import dev.slne.discord.discord.interaction.modal.step.creator.whitelist.step.WhitelistTicketConfirmTwitchConnected
 import dev.slne.discord.discord.interaction.modal.step.creator.whitelist.step.WhitelistTicketMinecraftNameStep
-import dev.slne.discord.getBean
 import dev.slne.discord.message.translatable
+import dev.slne.discord.persistence.service.user.UserService
 import dev.slne.discord.persistence.service.whitelist.WhitelistService
+import dev.slne.discord.ticket.TicketChannelHelper
+import dev.slne.discord.ticket.TicketCreator
 import dev.slne.discord.ticket.TicketType
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
@@ -16,18 +19,27 @@ import net.dv8tion.jda.api.interactions.components.selections.StringSelectIntera
     ticketType = TicketType.WHITELIST,
     modalId = WhitelistTicketChannelCreationModal.MODAL_ID
 )
-class WhitelistTicketChannelCreationModal :
-    DiscordStepChannelCreationModal(translatable("modal.whitelist.title")) {
+class WhitelistTicketChannelCreationModal(
+    private val whitelistService: WhitelistService,
+    private val userService: UserService,
+    ticketCreator: TicketCreator,
+    ticketChannelHelper: TicketChannelHelper, discordModalManager: DiscordModalManager
+) : DiscordStepChannelCreationModal(
+    translatable("modal.whitelist.title"),
+    ticketCreator,
+    ticketChannelHelper,
+    discordModalManager
+) {
 
     override fun buildSteps() = StepBuilder.startWith(WhitelistTicketConfirmTwitchConnected())
-        .then(::WhitelistTicketMinecraftNameStep)
+        .then { WhitelistTicketMinecraftNameStep(it, userService, whitelistService) }
 
     override suspend fun preStartCreationValidation(
         interaction: StringSelectInteraction,
         guild: Guild
     ) {
         val user = interaction.user
-        if (getBean<WhitelistService>().isWhitelisted(user)) {
+        if (whitelistService.isWhitelisted(user)) {
             throw PreThreadCreationException(translatable("error.ticket.whitelist.already-whitelisted"))
         }
 
