@@ -1,5 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-
 plugins {
     java
     `maven-publish`
@@ -38,10 +36,6 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.addAll("-Xjsr305=strict")
     }
-}
-
-tasks.withType<ShadowJar> {
-    minimize()
 }
 
 dependencies {
@@ -112,7 +106,7 @@ publishing {
 }
 
 application {
-    mainClass = "dev.slne.discord.DiscordSpringApplication"
+    mainClass = "dev.slne.discord.DiscordSpringApplicationKt"
 }
 
 tasks {
