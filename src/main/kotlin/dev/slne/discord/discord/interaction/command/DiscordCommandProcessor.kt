@@ -34,7 +34,7 @@ class DiscordCommandProcessor : BeanPostProcessor {
         val holder = DiscordCommandHolder(annotation, command)
         commands[annotation.name] = holder
 
-        logger.info("Found command ${command.javaClass.simpleName} with name ${annotation.name}")
+        logger.debug("Found command ${command.javaClass.simpleName} with name ${annotation.name}")
     }
 
     fun getCommand(name: String): DiscordCommandHolder? = commands[name]
