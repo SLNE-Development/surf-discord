@@ -3,8 +3,8 @@ package dev.slne.discord.discord.interaction.modal.step
 import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.interactions.components.StringSelectMenu
 import dev.slne.discord.exception.step.modal.selection.ValidateModalSelectionException
-import dev.slne.discord.getBean
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
+import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.suspendCancellableCoroutine
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
@@ -59,11 +59,11 @@ abstract class ModalSelectionStep(
         }
 
     @Component
-    class ModalSelectionStepListener {
+    class ModalSelectionStepListener(private val jda: JDA) {
 
-        //        @PostConstruct TODO: Fixme
+        @PostConstruct
         fun registerListener() {
-            getBean<JDA>().listener<StringSelectInteractionEvent> { event ->
+            jda.listener<StringSelectInteractionEvent> { event ->
                 val step = steps[event.componentId] ?: return@listener
                 val selected = event.values.first()
 
