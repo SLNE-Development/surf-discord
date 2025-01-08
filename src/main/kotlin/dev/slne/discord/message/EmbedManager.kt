@@ -10,13 +10,14 @@ object EmbedManager {
 
     fun buildTicketClosedUserPrivateMessageEmbed(
         ticket: Ticket,
-        threadName: String? = ticket.thread?.name
+        threadName: String? = ticket.thread?.name,
+        owner: Boolean = false
     ) =
         Embed { // TODO: 14.10.2024 23:18 - use messages
             title = "Ticket \"${threadName ?: "Unbekannt"}\" geschlossen"
 
             description = buildString {
-                append("Dein Ticket wurde geschlossen.\n\n")
+                append("${if (owner) "Dein" else "Ein"} Ticket wurde geschlossen.\n\n")
                 append("Grund: ${ticket.closeReasonOrDefault}\n\n")
                 append("Weitere Informationen findest du im Ticket.\n${ticket.thread?.asMention}")
             }

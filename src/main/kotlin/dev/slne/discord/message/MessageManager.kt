@@ -3,6 +3,7 @@ package dev.slne.discord.message
 import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.messages.Embed
 import dev.minn.jda.ktx.messages.MessageCreate
+import dev.slne.discord.discord.interaction.command.getGuildConfig
 import dev.slne.discord.exception.command.CommandException
 import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.message.EmbedColors.ERROR_COLOR
@@ -11,7 +12,9 @@ import dev.slne.discord.persistence.external.Whitelist
 import dev.slne.discord.persistence.service.user.UserService
 import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import dev.slne.discord.ticket.Ticket
+import dev.slne.discord.util.memberOrNull
 import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
@@ -32,12 +35,41 @@ class MessageManager(
             embeds += EmbedManager.buildTicketClosedEmbed(ticket)
         })?.await()
 
-    suspend fun sendTicketClosedUserPrivateMessage(ticket: Ticket): Message? =
-        ticket.author.await().openPrivateChannel().flatMap {
-            it.sendMessage(MessageCreate {
+    suspend fun sendTicketClosedUserPrivateMessage(ticket: Ticket) {
+        ticket.author.await()?.openPrivateChannel()?.await()?.sendMessage(MessageCreate {
+            embeds += EmbedManager.buildTicketClosedUserPrivateMessageEmbed(
+                ticket,
+                owner = true
+            )
+        })?.await()
+
+        val guild = ticket.guild ?: return
+        val thread = ticket.thread ?: return
+
+        for (ticketMember in thread.threadMembers) {
+            if (hasMemberReceiveClosePmNegatePermission(
+                    ticketMember.user,
+                    guild
+                ) || ticketMember.user.isBot
+            ) {
+                continue
+            }
+
+            ticketMember.user.openPrivateChannel().await()?.sendMessage(MessageCreate {
                 embeds += EmbedManager.buildTicketClosedUserPrivateMessageEmbed(ticket)
-            })
-        }.await()
+            })?.await()
+        }
+    }
+
+    private fun hasMemberReceiveClosePmNegatePermission(user: User, guild: Guild): Boolean {
+        val roles = user.memberOrNull(guild)?.roles ?: return false
+        val guildTeamRoles =
+            guild.getGuildConfig()?.discordGuild?.roles?.flatMap { it.discordRoleIds }
+                ?: return false
+
+        return roles.any { it.id in guildTeamRoles }
+    }
+
 
     suspend fun printUserWlQuery(user: User, channel: MessageChannel) {
         channel.sendTyping().await()

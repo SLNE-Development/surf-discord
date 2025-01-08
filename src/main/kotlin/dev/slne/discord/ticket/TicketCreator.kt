@@ -128,7 +128,10 @@ class TicketCreator(
 
         try {
             ticketService.saveTicket(ticket)
-            messageManager.sendTicketClosedMessages(ticket)
+            runCatching {
+                messageManager.sendTicketClosedMessages(ticket)
+                messageManager.sendTicketClosedUserPrivateMessage(ticket)
+            }
             channelHelper.closeThread(ticket)
         } catch (e: DeleteTicketChannelException) {
             logger.error("Failed to close ticket thread with id {}.", ticket.ticketId, e)
@@ -137,7 +140,6 @@ class TicketCreator(
 
         logger.debug("Ticket with id {} closed by {}.", ticket.ticketId, closer.name)
 
-        messageManager.sendTicketClosedUserPrivateMessage(ticket)
 
         return TicketCloseResult.SUCCESS
     }
