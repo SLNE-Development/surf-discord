@@ -26,8 +26,7 @@ const val OpenTicketButtonId = "open-ticket"
 class OpenTicketButton(
     private val discordSelectMenuManager: DiscordSelectMenuManager,
     private val discordModalManager: DiscordModalManager
-) :
-    DiscordButtonHandler {
+) : DiscordButtonHandler {
 
     override suspend fun ButtonInteractionEvent.onClick() {
         val menu = TicketsMenu(id, discordModalManager)

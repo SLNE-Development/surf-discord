@@ -20,10 +20,10 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import net.dv8tion.jda.api.interactions.InteractionHook
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
 
-@Component
+@Service
 class MessageManager(
     private val whitelistService: WhitelistService,
     private val userService: UserService,

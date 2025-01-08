@@ -11,14 +11,14 @@ import dev.slne.discord.ticket.result.TicketCreateResult
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 
 @OptIn(ExperimentalContracts::class)
-@Component
+@Service
 class TicketCreator(
     private val ticketService: TicketService,
     private val channelHelper: TicketChannelHelper,

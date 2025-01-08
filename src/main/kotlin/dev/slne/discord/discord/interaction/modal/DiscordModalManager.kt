@@ -17,9 +17,9 @@ import dev.slne.discord.ticket.TicketCreator
 import dev.slne.discord.ticket.TicketType
 import dev.slne.discord.util.mutableObject2ObjectMapOf
 import jakarta.annotation.PostConstruct
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 
-@Component
+@Service
 class DiscordModalManager(
     private val whitelistService: WhitelistService,
     private val userService: UserService,

@@ -17,7 +17,7 @@ class WhitelistQuitListener(private val jda: JDA, private val whitelistService: 
     fun registerListener() {
         jda.listener<GuildMemberRemoveEvent> { event ->
             val user = event.user
-            val whitelist = whitelistService.findWhitelistByDiscordId(user.id) ?: return@listener
+            val whitelist = whitelistService.findByDiscordId(user.id) ?: return@listener
 
             whitelist.blocked = true
             whitelistService.saveWhitelist(whitelist)

@@ -12,9 +12,9 @@ import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.springframework.context.annotation.Bean
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 
-@Component
+@Service
 class DiscordBot {
 
     private val logger = ComponentLogger.logger()

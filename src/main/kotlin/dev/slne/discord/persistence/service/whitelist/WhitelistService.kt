@@ -14,11 +14,9 @@ class WhitelistService(private val repository: WhitelistRepository) {
         uuid: UUID? = null,
         discordId: String? = null,
         twitchLink: String? = null
-    ) {
-        if (uuid == null && discordId == null && twitchLink == null) {
-            throw IllegalArgumentException("At least one parameter must be set")
-        }
-    }
+    ) =
+        require(uuid != null || discordId != null || twitchLink != null) { "At least one parameter must be set" }
+
 
     suspend fun isWhitelisted(user: User) = isWhitelisted(discordId = user.id)
 
@@ -26,11 +24,10 @@ class WhitelistService(private val repository: WhitelistRepository) {
         uuid: UUID? = null,
         discordId: String? = null,
         twitchLink: String? = null
-    ) =
-        withContext(Dispatchers.IO) {
-            checkAndThrow(uuid, discordId, twitchLink)
-            repository.findWhitelists(uuid, discordId, twitchLink).isNotEmpty()
-        }
+    ) = withContext(Dispatchers.IO) {
+        checkAndThrow(uuid, discordId, twitchLink)
+        repository.isWhitelisted(uuid, discordId, twitchLink)
+    }
 
     suspend fun findByDiscordId(discordId: String) = withContext(Dispatchers.IO) {
         repository.findByDiscordId(discordId)
@@ -40,24 +37,18 @@ class WhitelistService(private val repository: WhitelistRepository) {
         uuid: UUID? = null,
         discordId: String? = null,
         twitchLink: String? = null
-    ) =
-        withContext(Dispatchers.IO) {
-            checkAndThrow(uuid, discordId, twitchLink)
-            repository.deleteWhitelists(uuid, discordId, twitchLink)
-        }
+    ) = withContext(Dispatchers.IO) {
+        checkAndThrow(uuid, discordId, twitchLink)
+        repository.deleteWhitelists(uuid, discordId, twitchLink)
+    }
 
     suspend fun findWhitelists(
         uuid: UUID? = null,
         discordId: String? = null,
         twitchLink: String? = null
-    ) =
-        withContext(Dispatchers.IO) {
-            checkAndThrow(uuid, discordId, twitchLink)
-            repository.findWhitelists(uuid, discordId, twitchLink)
-        }
-
-    suspend fun findWhitelistByDiscordId(discordId: String) = withContext(Dispatchers.IO) {
-        repository.findWhitelistByDiscordId(discordId)
+    ) = withContext(Dispatchers.IO) {
+        checkAndThrow(uuid, discordId, twitchLink)
+        repository.findWhitelists(uuid, discordId, twitchLink)
     }
 
     suspend fun saveWhitelist(whitelist: Whitelist) = withContext(Dispatchers.IO) {

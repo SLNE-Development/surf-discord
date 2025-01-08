@@ -3,11 +3,11 @@ package dev.slne.discord.discord.interaction.select
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import jakarta.annotation.PostConstruct
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.toJavaDuration
 
-@Component
+@Service
 class DiscordSelectMenuManager {
 
     private val staticMenus: MutableList<DiscordSelectMenu> = mutableListOf()

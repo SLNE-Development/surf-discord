@@ -20,7 +20,7 @@ class WhitelistJoinListener(private val jda: JDA, private val whitelistService: 
         jda.listener<GuildMemberJoinEvent> { event ->
             val user = event.user
             val guild = event.guild
-            val whitelist = whitelistService.findWhitelistByDiscordId(user.id) ?: return@listener
+            val whitelist = whitelistService.findByDiscordId(user.id) ?: return@listener
 
             whitelist.blocked = false
             whitelistService.saveWhitelist(whitelist)

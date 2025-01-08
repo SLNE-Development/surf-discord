@@ -9,14 +9,14 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import kotlinx.coroutines.withContext
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.toJavaDuration
 
 @OptIn(DelicateCoroutinesApi::class)
-@Component
+@Service
 class UserService(
     private val minecraftApiClient: MinecraftApiClient,
     private val minetoolsApiClient: MinetoolsApiClient

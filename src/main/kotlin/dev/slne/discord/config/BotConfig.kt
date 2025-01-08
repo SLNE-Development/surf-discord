@@ -2,6 +2,7 @@ package dev.slne.discord.config
 
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.decodeFromStream
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.annotations.ApiStatus
 import kotlin.io.path.Path
@@ -10,7 +11,7 @@ import kotlin.io.path.inputStream
 @ApiStatus.Internal
 @Serializable
 data class BotConfig(
-    val botToken: String,
+    @SerialName("bot-token") val botToken: String,
     val database: DatabaseConfig
 )
 

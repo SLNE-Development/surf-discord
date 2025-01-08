@@ -17,10 +17,10 @@ import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.Channel
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 import kotlin.math.min
 
-@Component
+@Service
 class TicketChannelHelper(private val ticketService: TicketService) {
 
     private val logger = ComponentLogger.logger()

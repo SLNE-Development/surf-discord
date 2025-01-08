@@ -5,31 +5,30 @@ plugins {
     id("org.hibernate.build.maven-repo-auth") version "3.0.4"
     id("com.gradleup.shadow") version "8.3.3"
 
-    kotlin("jvm") version "2.1.0"
-    kotlin("plugin.serialization") version "2.1.0"
-    kotlin("plugin.noarg") version "2.1.0"
-    kotlin("plugin.jpa") version "2.1.0"
-    kotlin("plugin.spring") version "2.1.0"
-
     id("org.springframework.boot") version "3.4.1"
     id("io.spring.dependency-management") version "1.1.7"
+
+    kotlin("jvm") version "1.9.25"
+    kotlin("plugin.serialization") version "2.1.0"
+    kotlin("plugin.jpa") version "1.9.25"
+    kotlin("plugin.spring") version "1.9.25"
 
     application
 }
 
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:2024.0.0")
+    }
+}
+
 repositories {
-    gradlePluginPortal()
     mavenCentral()
+    gradlePluginPortal()
 
     maven("https://repo.slne.dev/repository/maven-public/") { name = "maven-public" }
     maven("https://repo.slne.dev/repository/maven-snapshots/") { name = "maven-snapshots" }
     maven("https://repo.slne.dev/repository/maven-proxy/") { name = "maven-proxy" }
-}
-
-configurations.all {
-    resolutionStrategy {
-        cacheChangingModulesFor(0, "seconds")
-    }
 }
 
 kotlin {
@@ -39,15 +38,17 @@ kotlin {
 }
 
 dependencies {
+//    implementation(platform("org.springframework.boot:spring-boot-dependencies:3.4.1"))
+//    implementation(platform("org.springframework.cloud:spring-cloud-dependencies:2024.0.0"))
+
     implementation("com.github.ajalt.clikt:clikt:5.0.1")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.apache.commons:commons-lang3:3.17.0")
     implementation("net.kyori:adventure-api:4.17.0")
     implementation("net.kyori:adventure-text-logger-slf4j:4.17.0")
     implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json")
     implementation("it.unimi.dsi:fastutil:8.5.13")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     implementation("net.dv8tion:JDA:5.1.2") {
         exclude(module = "opus-java")
     }
@@ -57,24 +58,23 @@ dependencies {
 //    implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.14")
 //    implementation("com.squareup.okhttp3:okhttp-coroutines:5.0.0-alpha.14")
 
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-data-redis")
-    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-cache")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
-    runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
+    implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
+    implementation("org.mariadb.jdbc:mariadb-java-client")
 }
 
-dependencyManagement {
-    imports {
-        mavenBom("org.springframework.cloud:spring-cloud-dependencies:2024.0.0")
-    }
-}
+//dependencyManagement {
+//    imports {
+//        mavenBom("org.springframework.cloud:spring-cloud-dependencies:2024.0.0")
+//    }
+//}
 
 allOpen {
     annotation("jakarta.persistence.Entity")
@@ -86,13 +86,8 @@ group = "dev.slne"
 version = "5.0.0-SNAPSHOT"
 description = "surf-discord"
 
-java {
-    withJavadocJar()
-    withSourcesJar()
-
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
+kotlin {
+    jvmToolchain(21)
 }
 
 publishing {
@@ -121,6 +116,10 @@ tasks {
 
     shadowJar {
         archiveFileName.set("bot.jar")
+        mergeServiceFiles {
+            setPath("META-INF")
+            exclude("META-INF/MANIFEST.MF")
+        }
     }
 }
 
