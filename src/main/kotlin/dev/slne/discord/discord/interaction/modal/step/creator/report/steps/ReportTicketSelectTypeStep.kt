@@ -63,7 +63,6 @@ class ReportTicketSelectTypeStep : ModalSelectionStep(
 
         if (playerName != null) {
             val uuid = UserService.getUuidByUsername(playerName)
-            println("UUID: $uuid")
 //
 //            val whitelists = WhitelistService.checkWhitelists(uuid = uuid)
 //
