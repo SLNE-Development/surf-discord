@@ -2,12 +2,16 @@ package dev.slne.discord.listener.interaction.menu
 
 import dev.minn.jda.ktx.events.listener
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenuManager
+import jakarta.annotation.PostConstruct
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
+import org.springframework.stereotype.Component
 
-class DiscordSelectMenuListener(jda: JDA) {
+@Component
+class DiscordSelectMenuListener(private val jda: JDA) {
 
-    init {
+    @PostConstruct
+    fun registerListener() {
         jda.listener<StringSelectInteractionEvent> { event ->
             val menu = DiscordSelectMenuManager.getMenu(event.componentId)
 

@@ -4,12 +4,14 @@ import dev.minn.jda.ktx.events.listener
 import dev.slne.discord.extensions.ticket
 import dev.slne.discord.persistence.service.ticket.TicketService
 import dev.slne.discord.util.toTicketMessage
+import jakarta.annotation.PostConstruct
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 
-class MessageCreatedListener(jda: JDA, ticketService: TicketService) {
+class MessageCreatedListener(private val jda: JDA, private val ticketService: TicketService) {
 
-    init {
+    @PostConstruct
+    fun registerListener() {
         jda.listener<MessageReceivedEvent> { event ->
             if (event.message.isWebhookMessage) {
                 return@listener
@@ -19,7 +21,7 @@ class MessageCreatedListener(jda: JDA, ticketService: TicketService) {
 
             val message = event.message.toTicketMessage()
             ticket.addMessage(message)
-            
+
             ticketService.saveTicket(ticket)
         }
     }

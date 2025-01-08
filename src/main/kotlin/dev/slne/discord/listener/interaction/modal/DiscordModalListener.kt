@@ -4,12 +4,16 @@ import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.events.listener
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager
 import dev.slne.discord.message.MessageManager
+import jakarta.annotation.PostConstruct
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
+import org.springframework.stereotype.Component
 
-class DiscordModalListener(jda: JDA) {
+@Component
+class DiscordModalListener(private val jda: JDA) {
 
-    init {
+    @PostConstruct
+    fun registerListener() {
         jda.listener<ModalInteractionEvent> { event ->
             val interaction = event.interaction
             val modalId = interaction.modalId

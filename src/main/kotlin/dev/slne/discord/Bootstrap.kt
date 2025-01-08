@@ -20,7 +20,7 @@ class Bootstrap {
     private var startTimestamp: Long? = null
 
     @PostConstruct
-    suspend fun onLoad() {
+    fun onLoad() {
         logger.info("Loading messages...")
         RawMessages::class.java.getClassLoader()
 

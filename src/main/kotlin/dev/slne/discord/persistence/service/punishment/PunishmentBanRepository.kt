@@ -1,12 +1,12 @@
 package dev.slne.discord.persistence.service.punishment
 
 import dev.slne.discord.persistence.external.PunishmentBan
-import org.springframework.data.repository.kotlin.CoroutineCrudRepository
+import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface PunishmentBanRepository : CoroutineCrudRepository<PunishmentBan, Long> {
+interface PunishmentBanRepository : JpaRepository<PunishmentBan, Long> {
 
-    suspend fun countByPunishmentId(punishmentId: String): Long
+    fun countByPunishmentId(punishmentId: String): Long
 
 }

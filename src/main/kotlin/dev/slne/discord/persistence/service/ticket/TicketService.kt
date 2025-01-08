@@ -6,6 +6,7 @@ import dev.slne.discord.util.mutableObjectSetOf
 import dev.slne.discord.util.synchronize
 import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.springframework.stereotype.Service
@@ -22,17 +23,19 @@ class TicketService(private val ticketRepository: TicketRepository) {
     val tickets = _tickets.freeze()
 
     @PostConstruct
-    suspend fun fetchActiveTickets() = withContext(Dispatchers.IO) {
-        fetched = false
-        _tickets.clear()
+    fun fetchActiveTickets() = runBlocking {
+        withContext(Dispatchers.IO) {
+            fetched = false
+            _tickets.clear()
 
-        val ms = measureTimeMillis {
-            _tickets.addAll(ticketRepository.findByClosedAtNull())
+            val ms = measureTimeMillis {
+                _tickets.addAll(ticketRepository.findByClosedAtNull())
+            }
+
+            logger.info("Fetched {} tickets in {}ms.", tickets.size, ms)
+            fetched = true
+            popQueue()
         }
-
-        logger.info("Fetched {} tickets in {}ms.", tickets.size, ms)
-        fetched = true
-        popQueue()
     }
 
     suspend fun saveTicket(ticket: Ticket): Ticket = withContext(Dispatchers.IO) {

@@ -2,15 +2,17 @@ package dev.slne.discord.listener.whitelist
 
 import dev.minn.jda.ktx.events.listener
 import dev.slne.discord.persistence.service.whitelist.WhitelistService
+import jakarta.annotation.PostConstruct
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 
-class WhitelistQuitListener(jda: JDA, whitelistService: WhitelistService) {
+class WhitelistQuitListener(private val jda: JDA, private val whitelistService: WhitelistService) {
 
     private val logger = ComponentLogger.logger()
 
-    init {
+    @PostConstruct
+    fun registerListener() {
         jda.listener<GuildMemberRemoveEvent> { event ->
             val user = event.user
             val whitelist = whitelistService.findWhitelistByDiscordId(user.id) ?: return@listener

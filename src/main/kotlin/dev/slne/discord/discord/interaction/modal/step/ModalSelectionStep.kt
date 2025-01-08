@@ -9,6 +9,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption
+import org.springframework.stereotype.Component
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.resume
 
@@ -57,9 +58,11 @@ abstract class ModalSelectionStep(
             }
         }
 
-    object ModalSelectionStepListener {
+    @Component
+    class ModalSelectionStepListener {
 
-        init {
+        //        @PostConstruct TODO: Fixme
+        fun registerListener() {
             getBean<JDA>().listener<StringSelectInteractionEvent> { event ->
                 val step = steps[event.componentId] ?: return@listener
                 val selected = event.values.first()

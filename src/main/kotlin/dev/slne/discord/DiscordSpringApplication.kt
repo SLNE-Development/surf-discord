@@ -4,7 +4,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+import org.springframework.transaction.annotation.EnableTransactionManagement
 
 private var _dataContext: ConfigurableApplicationContext? = null
 val dataContext: ConfigurableApplicationContext
@@ -19,4 +21,6 @@ fun main(args: Array<String>) {
 @SpringBootApplication
 @EnableCaching
 @EnableJpaRepositories
+@EnableJpaAuditing
+@EnableTransactionManagement
 class DiscordSpringApplication

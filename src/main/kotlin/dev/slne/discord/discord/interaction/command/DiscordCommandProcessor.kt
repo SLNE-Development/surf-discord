@@ -2,8 +2,8 @@ package dev.slne.discord.discord.interaction.command
 
 import dev.minn.jda.ktx.coroutines.await
 import dev.slne.discord.annotation.DiscordCommandMeta
+import dev.slne.discord.util.mutableObject2ObjectMapOf
 import dev.slne.discord.util.mutableObjectListOf
-import dev.slne.discord.util.object2ObjectMapOf
 import dev.slne.discord.util.ultimateTargetClass
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
@@ -16,7 +16,7 @@ import kotlin.reflect.full.findAnnotation
 @Component
 class DiscordCommandProcessor : BeanPostProcessor {
     private val logger = ComponentLogger.logger()
-    private val commands = object2ObjectMapOf<String, DiscordCommandHolder>()
+    private val commands = mutableObject2ObjectMapOf<String, DiscordCommandHolder>()
 
     override fun postProcessAfterInitialization(bean: Any, beanName: String): Any? {
         val annotation = bean.ultimateTargetClass().findAnnotation<DiscordCommandMeta>()

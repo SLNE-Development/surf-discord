@@ -1,15 +1,15 @@
 package dev.slne.discord.persistence.service.whitelist
 
 import dev.slne.discord.persistence.external.Whitelist
+import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
-import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Repository
-interface WhitelistRepository : CoroutineCrudRepository<Whitelist, Long> {
+interface WhitelistRepository : JpaRepository<Whitelist, Long> {
 
     fun findByDiscordId(discordId: String): Whitelist?
 

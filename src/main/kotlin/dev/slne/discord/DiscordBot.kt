@@ -13,7 +13,7 @@ class DiscordBot {
     private val logger = ComponentLogger.logger()
 
     @PostConstruct
-    suspend fun onLoad() {
+    fun onLoad() {
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             logger.error("Uncaught exception in thread ${thread.name}", throwable)
         }
