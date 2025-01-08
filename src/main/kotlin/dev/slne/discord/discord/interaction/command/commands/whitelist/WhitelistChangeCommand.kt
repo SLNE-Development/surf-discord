@@ -1,10 +1,9 @@
 package dev.slne.discord.discord.interaction.command.commands.whitelist
 
+import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.interactions.components.getOption
 import dev.slne.discord.annotation.DiscordCommandMeta
 import dev.slne.discord.discord.interaction.command.DiscordCommand
-import dev.slne.discord.discord.interaction.modal.DiscordModalManager
-import dev.slne.discord.discord.interaction.modal.whitelist.ChangeWhitelistModal
 import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.translatable
@@ -25,8 +24,7 @@ private const val TWITCH_OPTION: String = "twitch"
 )
 class WhitelistChangeCommand(
     private val whitelistService: WhitelistService,
-    private val userService: UserService,
-    private val discordModalManager: DiscordModalManager
+    private val userService: UserService
 ) : DiscordCommand() {
 
     override val options = listOf(
@@ -61,24 +59,24 @@ class WhitelistChangeCommand(
 
         val minecraftUuid = minecraft?.let { userService.getUuidByUsername(it) }
 
-        val whitelist = whitelistService.findWhitelists(
+        hook.editOriginal(translatable("interaction.command.ticket.wlquery.querying")).await()
+
+        val isWhitelisted = whitelistService.isWhitelisted(
             uuid = minecraftUuid,
             discordId = user?.id,
             twitchLink = twitch
-        ).firstOrNull()
+        )
 
-        if (whitelist == null) {
+        if (!isWhitelisted) {
             throw CommandExceptions.WHITELIST_CHANGE_NOT_WHITELISTED.create()
         }
 
-        val modal = ChangeWhitelistModal(
-            interaction.user,
-            userService,
-            whitelistService,
-            whitelist,
-            interaction.channel
+        whitelistService.deleteWhitelists(
+            uuid = minecraftUuid,
+            discordId = user?.id,
+            twitchLink = twitch
         )
-        discordModalManager.registerBasic(modal)
-        modal.replyModal(hook)
+
+        hook.editOriginal(translatable("interaction.command.wlchange.whitelists-removed")).await()
     }
 }

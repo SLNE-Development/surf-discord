@@ -30,7 +30,6 @@ class DiscordModalManager(
 ) {
 
     // @formatter:off
-    private val basicModals = mutableObject2ObjectMapOf<String, DiscordBasicModal>()
     private val modals = mutableObject2ObjectMapOf<String, () -> DiscordStepChannelCreationModal>()
     private val currentUserModals = mutableObject2ObjectMapOf<String, DiscordStepChannelCreationModal>()
     private val byTicketType = mutableObject2ObjectMapOf<TicketType, () -> DiscordStepChannelCreationModal>()
@@ -49,24 +48,14 @@ class DiscordModalManager(
         // @formatter:on
     }
 
-    fun registerBasic(modal: DiscordBasicModal) {
-        check(modal.id !in basicModals) { "Modal with id ${modal.id} is already registered" }
-        check(modal.id !in modals) { "Modal with id ${modal.id} is already registered in advanced" }
-
-        basicModals[modal.id] = modal
-    }
-
     private fun register(supplier: () -> DiscordStepChannelCreationModal) {
         val temp = supplier()
 
         check(temp.id !in modals) { "Modal with id ${temp.id} is already registered" }
-        check(temp.id !in basicModals) { "Modal with id ${temp.id} is already registered in basic" }
 
         modals[temp.id] = supplier
         byTicketType[temp.ticketType] = supplier
     }
-
-    fun getBasicModal(customId: String) = basicModals[customId]
 
     fun getModal(customId: String, userId: String): DiscordStepChannelCreationModal? {
         val modalCreator = modals[customId] ?: return null

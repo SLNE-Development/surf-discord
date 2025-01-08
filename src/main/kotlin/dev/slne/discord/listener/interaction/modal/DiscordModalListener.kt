@@ -30,14 +30,6 @@ class DiscordModalListener(
                 return@listener
             }
 
-            val basicModal = discordModalManager.getBasicModal(modalId)
-            
-            if (basicModal != null) {
-                basicModal.handleUserSubmitModal(event, interaction.deferReply(true).await())
-
-                return@listener
-            }
-
             event.replyEmbeds(
                 messageManager.getErrorEmbed(
                     "Fehler",

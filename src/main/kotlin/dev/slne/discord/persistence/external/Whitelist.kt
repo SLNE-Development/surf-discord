@@ -26,13 +26,13 @@ data class Whitelist(
 
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "uuid", nullable = false, length = 36, unique = true)
-    var uuid: UUID,
+    val uuid: UUID,
 
     @Column(name = "twitch_link")
-    var twitchLink: String,
+    val twitchLink: String,
 
     @Column(name = "discord_id")
-    var discordId: String,
+    val discordId: String,
 
     @Column(name = "added_by_id")
     val addedById: String? = null,
