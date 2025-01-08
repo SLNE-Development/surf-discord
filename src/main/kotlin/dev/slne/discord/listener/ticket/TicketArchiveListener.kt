@@ -32,9 +32,11 @@ class TicketArchiveListener(private val jda: JDA) {
         val ticket = thread.ticketOrNull() ?: return
 
         if (oldValue == newValue) return
-        if (!newValue) return
-        if (ticket.isClosed) return
 
-        thread.manager.setArchived(false).setLocked(false).await()
+        if (newValue && !ticket.isClosed) {
+            thread.manager.setArchived(false).setLocked(false).await()
+        } else if (!newValue && ticket.isClosed) {
+            runCatching { thread.manager.setArchived(true).setLocked(true).await() }
+        }
     }
 }
