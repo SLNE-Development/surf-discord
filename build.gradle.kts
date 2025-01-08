@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
     java
     `maven-publish`
@@ -38,6 +40,10 @@ kotlin {
     }
 }
 
+tasks.withType<ShadowJar> {
+    minimize()
+}
+
 dependencies {
     implementation("com.github.ajalt.clikt:clikt:5.0.1")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -70,7 +76,6 @@ dependencies {
     runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
 }
 
-extra["springShellVersion"] = "3.4.0"
 dependencyManagement {
     imports {
         mavenBom("org.springframework.cloud:spring-cloud-dependencies:2024.0.0")
@@ -106,9 +111,8 @@ publishing {
     }
 }
 
-
 application {
-    mainClass.set("dev.slne.discord.BootstrapKt")
+    mainClass = "dev.slne.discord.DiscordSpringApplication"
 }
 
 tasks {
