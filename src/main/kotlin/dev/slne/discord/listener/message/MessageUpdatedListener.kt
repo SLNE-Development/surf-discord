@@ -6,7 +6,9 @@ import dev.slne.discord.persistence.service.ticket.TicketService
 import jakarta.annotation.PostConstruct
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.message.MessageUpdateEvent
+import org.springframework.stereotype.Component
 
+@Component
 class MessageUpdatedListener(private val jda: JDA, private val ticketService: TicketService) {
 
     @PostConstruct

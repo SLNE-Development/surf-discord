@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.channel.update.ChannelUpdateArchivedEvent
 
+//@Component
 class TicketArchiveListener(jda: JDA, ticketService: TicketService) {
 
     init {

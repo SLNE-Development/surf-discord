@@ -8,7 +8,9 @@ import jakarta.annotation.PostConstruct
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
+import org.springframework.stereotype.Component
 
+@Component
 class WhitelistJoinListener(private val jda: JDA, private val whitelistService: WhitelistService) {
 
     private val logger = ComponentLogger.logger()

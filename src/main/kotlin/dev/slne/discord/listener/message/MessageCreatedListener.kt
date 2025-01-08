@@ -7,7 +7,9 @@ import dev.slne.discord.util.toTicketMessage
 import jakarta.annotation.PostConstruct
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import org.springframework.stereotype.Component
 
+@Component
 class MessageCreatedListener(private val jda: JDA, private val ticketService: TicketService) {
 
     @PostConstruct

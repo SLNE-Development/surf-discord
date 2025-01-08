@@ -8,7 +8,9 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent
+import org.springframework.stereotype.Component
 
+@Component
 class MessageDeletedListener(private val jda: JDA, private val ticketService: TicketService) {
 
     @PostConstruct
