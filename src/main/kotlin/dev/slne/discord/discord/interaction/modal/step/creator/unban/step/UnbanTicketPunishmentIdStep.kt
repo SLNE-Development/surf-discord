@@ -11,7 +11,9 @@ import net.dv8tion.jda.api.interactions.components.selections.StringSelectIntera
 
 private const val PUNISHMENT_ID = "punishment-id"
 
-class UnbanTicketPunishmentIdStep : ModalStep() {
+class UnbanTicketPunishmentIdStep(
+    private val punishmentService: PunishmentService
+) : ModalStep() {
 
     private var punishmentId: String? = null
 
@@ -28,7 +30,7 @@ class UnbanTicketPunishmentIdStep : ModalStep() {
     override suspend fun verifyModalInput(event: ModalInteractionEvent) {
         punishmentId = getInput(event, PUNISHMENT_ID)
 
-        if (!PunishmentService.isValidPunishmentId(punishmentId!!)) {
+        if (!punishmentService.isValidPunishmentId(punishmentId!!)) {
             throw ModalStepInputVerificationException(
                 translatable("modal.unban.step.punishment-id.error.invalid")
             )

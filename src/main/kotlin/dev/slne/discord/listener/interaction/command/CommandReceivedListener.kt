@@ -1,15 +1,22 @@
 package dev.slne.discord.listener.interaction.command
 
 import dev.minn.jda.ktx.events.listener
-import dev.slne.discord.discord.interaction.command.DiscordCommandManager
-import dev.slne.discord.jda
+import dev.slne.discord.discord.interaction.command.DiscordCommandProcessor
+import jakarta.annotation.PostConstruct
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import org.springframework.stereotype.Component
 
-object CommandReceivedListener {
+@Component
+class CommandReceivedListener(
+    private val jda: JDA,
+    private val processor: DiscordCommandProcessor
+) {
 
-    init {
+    @PostConstruct
+    fun registerListener() {
         jda.listener<SlashCommandInteractionEvent> { event ->
-            DiscordCommandManager.getCommand(event.name)?.command?.execute(event)
+            processor.getCommand(event.name)?.second?.execute(event)
                 ?: error("Command ${event.name} not found")
         }
     }

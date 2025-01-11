@@ -1,15 +1,11 @@
 package dev.slne.discord.persistence.service.punishment
 
-import dev.slne.discord.persistence.sessionFactory
-import dev.slne.discord.persistence.withSession
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.springframework.stereotype.Service
 
-object PunishmentService {
-    suspend fun isValidPunishmentId(punishmentId: String) = sessionFactory.withSession { session ->
-        val query = session.createNativeQuery(
-            "SELECT EXISTS(SELECT 1 FROM punish_bans WHERE punishment_id = :punishmentId)",
-            arrayOf<Any>()::class.java
-        )
-        query.setParameter("punishmentId", punishmentId)
-        query.singleResult as Int == 1
-    }
+@Service
+class PunishmentService(private val punishmentRepository: PunishmentBanRepository) {
+    suspend fun isValidPunishmentId(punishmentId: String) =
+        withContext(Dispatchers.IO) { punishmentRepository.existsByPunishmentId(punishmentId) }
 }

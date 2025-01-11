@@ -1,30 +1,29 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
-    java
     `maven-publish`
 
-    id("org.hibernate.build.maven-repo-auth") version "3.0.4"
-    id("com.gradleup.shadow") version "8.3.3"
+    id("org.springframework.boot") version "3.4.1"
+    id("io.spring.dependency-management") version "1.1.7"
 
-    kotlin("jvm") version "2.0.20"
-    kotlin("plugin.serialization") version "2.0.21"
-    kotlin("plugin.noarg") version "2.0.21"
+    kotlin("jvm") version "1.9.25"
+    kotlin("plugin.serialization") version "2.1.0"
+    kotlin("plugin.jpa") version "1.9.25"
+    kotlin("plugin.spring") version "1.9.25"
+}
 
-    application
+tasks.withType<BootJar> {
+    archiveFileName.set("bot.jar")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:2024.0.0")
+    }
 }
 
 repositories {
-    gradlePluginPortal()
     mavenCentral()
-
-    maven("https://repo.slne.dev/repository/maven-public/") { name = "maven-public" }
-    maven("https://repo.slne.dev/repository/maven-snapshots/") { name = "maven-snapshots" }
-    maven("https://repo.slne.dev/repository/maven-proxy/") { name = "maven-proxy" }
-}
-
-configurations.all {
-    resolutionStrategy {
-        cacheChangingModulesFor(0, "seconds")
-    }
 }
 
 kotlin {
@@ -35,40 +34,43 @@ kotlin {
 
 dependencies {
     implementation("com.github.ajalt.clikt:clikt:5.0.1")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.apache.commons:commons-lang3:3.17.0")
     implementation("net.kyori:adventure-api:4.17.0")
     implementation("net.kyori:adventure-text-logger-slf4j:4.17.0")
-    implementation("jakarta.annotation:jakarta.annotation-api:3.0.0")
     implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
-    implementation("ch.qos.logback:logback-classic:1.5.6")
-    implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.14")
-    implementation("com.squareup.okhttp3:okhttp-coroutines:5.0.0-alpha.14")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
-    implementation("org.hibernate.orm:hibernate-core:6.6.1.Final")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json")
     implementation("it.unimi.dsi:fastutil:8.5.13")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     implementation("net.dv8tion:JDA:5.1.2") {
         exclude(module = "opus-java")
     }
-    implementation("org.spongepowered:configurate-yaml:4.1.2")
-    implementation("org.spongepowered:configurate-jackson:4.1.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     implementation("club.minnced:jda-ktx:0.12.0")
+    implementation("com.charleskorn.kaml:kaml-jvm:0.67.0")
 
-    runtimeOnly("org.mariadb.jdbc:mariadb-java-client:3.4.1")
+    implementation("org.springframework.boot:spring-boot-starter-cache")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+    implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
+    implementation("org.mariadb.jdbc:mariadb-java-client")
+}
+
+allOpen {
+    annotation("jakarta.persistence.Entity")
+    annotation("jakarta.persistence.MappedSuperclass")
+    annotation("jakarta.persistence.Embeddable")
 }
 
 group = "dev.slne"
 version = "5.0.0-SNAPSHOT"
 description = "surf-discord"
 
-java {
-    withJavadocJar()
-    withSourcesJar()
-
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
+kotlin {
+    jvmToolchain(21)
 }
 
 publishing {
@@ -81,30 +83,13 @@ publishing {
     }
 }
 
-
-application {
-    mainClass.set("dev.slne.discord.BootstrapKt")
-}
+//application {
+//    mainClass = "dev.slne.discord.DiscordSpringApplicationKt"
+//}
 
 tasks {
     compileJava {
         options.encoding = Charsets.UTF_8.name()
         options.compilerArgs.add("-parameters")
     }
-
-    javadoc {
-        options.encoding = Charsets.UTF_8.name()
-    }
-
-    shadowJar {
-        archiveFileName.set("bot.jar")
-    }
-}
-
-tasks.named<Jar>("jar") {
-    archiveFileName.set("bot.jar")
-}
-
-tasks.withType<Zip> {
-    isZip64 = true
 }

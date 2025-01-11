@@ -1,13 +1,13 @@
 package dev.slne.discord.persistence.external
 
-import dev.slne.discord.jda
-import dev.slne.discord.persistence.service.user.UserService
-import dev.slne.discord.persistence.service.whitelist.WhitelistRepository
+import dev.slne.discord.getBean
 import jakarta.persistence.*
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.requests.RestAction
 import org.hibernate.annotations.ColumnDefault
 import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.proxy.HibernateProxy
 import org.hibernate.type.SqlTypes
 import java.util.*
 
@@ -17,46 +17,72 @@ import java.util.*
         UniqueConstraint(columnNames = ["uuid", "discord_id", "twitch_link"])
     ]
 )
-
-open class Whitelist {
+@Cacheable
+data class Whitelist(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
-    open var id: Long? = null
+    val id: Long? = null,
 
     @JdbcTypeCode(SqlTypes.CHAR)
-    @Column(name = "uuid", nullable = false, length = 36)
-    open var uuid: UUID? = null
+    @Column(name = "uuid", nullable = false, length = 36, unique = true)
+    val uuid: UUID,
 
     @Column(name = "twitch_link")
-    open var twitchLink: String? = null
+    val twitchLink: String,
 
     @Column(name = "discord_id")
-    open var discordId: String? = null
+    val discordId: String,
 
     @Column(name = "added_by_id")
-    open var addedById: String? = null
+    val addedById: String? = null,
 
     @Column(name = "added_by_name")
-    open var addedByName: String? = null
+    val addedByName: String? = null,
 
     @Column(name = "added_by_avatar_url")
-    open var addedByAvatarUrl: String? = null
+    val addedByAvatarUrl: String? = null,
 
     @ColumnDefault("0")
     @Column(name = "blocked", nullable = false)
-    open var blocked: Boolean? = false
+    var blocked: Boolean = false
+) {
+
+    constructor(uuid: UUID, twitchLink: String, discordId: String, addedBy: User?) : this(
+        uuid = uuid,
+        twitchLink = twitchLink,
+        discordId = discordId,
+        addedById = addedBy?.id,
+        addedByName = addedBy?.name,
+        addedByAvatarUrl = addedBy?.avatarUrl
+    )
 
     val addedBy: RestAction<User>?
-        get() = addedById?.let { jda.retrieveUserById(it) }
+        get() = addedById?.let { getBean<JDA>().retrieveUserById(it) }
 
     val user: RestAction<User>?
-        get() = discordId?.let { jda.retrieveUserById(it) }
+        get() = getBean<JDA>().retrieveUserById(discordId)
 
-    val clickableTwitchLink: String?
-        get() = twitchLink?.let { "https://twitch.tv/$it" }
+    val clickableTwitchLink: String
+        get() = "https://twitch.tv/$twitchLink"
 
-    suspend fun minecraftName(): String? = UserService.getUsernameByUuid(uuid!!)
+    final override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null) return false
+        val oEffectiveClass =
+            if (other is HibernateProxy) other.hibernateLazyInitializer.persistentClass else other.javaClass
+        val thisEffectiveClass =
+            if (this is HibernateProxy) this.hibernateLazyInitializer.persistentClass else this.javaClass
+        if (thisEffectiveClass != oEffectiveClass) return false
+        other as Whitelist
 
-    suspend fun save() = WhitelistRepository.saveWhitelist(this)
+        return id != null && id == other.id
+    }
+
+    final override fun hashCode(): Int =
+        if (this is HibernateProxy) this.hibernateLazyInitializer.persistentClass.hashCode() else javaClass.hashCode()
+
+    override fun toString(): String {
+        return "Whitelist(id=$id, uuid=$uuid, twitchLink='$twitchLink', discordId='$discordId', blocked=$blocked, addedById=$addedById, addedByName=$addedByName, addedByAvatarUrl=$addedByAvatarUrl)"
+    }
 }

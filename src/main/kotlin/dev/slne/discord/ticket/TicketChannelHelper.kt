@@ -17,10 +17,11 @@ import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.Channel
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
+import org.springframework.stereotype.Service
 import kotlin.math.min
 
-
-object TicketChannelHelper {
+@Service
+class TicketChannelHelper(private val ticketService: TicketService) {
 
     private val logger = ComponentLogger.logger()
 
@@ -82,16 +83,11 @@ object TicketChannelHelper {
         pingPartyMessage.editMessage(pingParty).await()
         pingPartyMessage.delete().await()
 
-//        for (member in guild.findMembersWithRoles(roleIds.mapNotNull { guild.getRoleById(it) })
-//            .await()) {
-//            thread.addThreadMember(member).await()
-//        }
-
         thread.addThreadMember(
-            ticket.author?.await() ?: return TicketCreateResult.AUTHOR_NOT_FOUND
+            ticket.author.await() ?: return TicketCreateResult.AUTHOR_NOT_FOUND
         ).await()
 
-        ticket.save()
+        ticketService.saveTicket(ticket)
 
         return TicketCreateResult.SUCCESS
     }
@@ -124,14 +120,12 @@ object TicketChannelHelper {
                 .setLocked(true)
                 .setArchived(true)
                 .await()
-
-            TicketService.removeTicket(ticket)
         } catch (exception: Exception) {
             throw DeleteTicketChannelException("Failed to delete ticket channel", exception)
         }
     }
 
-    fun checkTicketExists(
+    suspend fun checkTicketExists(
         guild: Guild,
         expectedType: TicketType,
         expectedAuthor: User
@@ -169,7 +163,7 @@ object TicketChannelHelper {
         return checkTicketExists(channel, expectedType, expectedAuthor)
     }
 
-    fun checkTicketExists(
+    suspend fun checkTicketExists(
         channel: TextChannel,
         expectedType: TicketType,
         expectedAuthor: User
@@ -182,7 +176,7 @@ object TicketChannelHelper {
         )
     }
 
-    fun checkTicketExists(
+    suspend fun checkTicketExists(
         ticketChannelName: String?,
         channel: TextChannel,
         expectedType: TicketType,
@@ -192,7 +186,7 @@ object TicketChannelHelper {
             return true
         }
 
-        return hasAuthorTicketOfType(expectedType, expectedAuthor)
+        return ticketService.hasAuthorTicketOfType(expectedType, expectedAuthor)
     }
 
     private fun containsActiveChannelName(channel: TextChannel, name: String?) =
@@ -200,10 +194,4 @@ object TicketChannelHelper {
             .filter { !it.isArchived }
             .any { it.name.equals(name, ignoreCase = true) }
 
-
-    private fun hasAuthorTicketOfType(type: TicketType, user: User) =
-        TicketService.tickets.asSequence()
-            .filter { !it.isClosed }
-            .filter { it.ticketAuthorId == user.id }
-            .any { it.ticketType == type }
 }

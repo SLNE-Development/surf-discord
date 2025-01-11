@@ -10,6 +10,7 @@ import dev.slne.discord.exception.DiscordException
 import dev.slne.discord.message.translatable
 import dev.slne.discord.ticket.Ticket
 import dev.slne.discord.ticket.TicketChannelHelper
+import dev.slne.discord.ticket.TicketCreator
 import dev.slne.discord.ticket.result.TicketCreateResult
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
@@ -23,11 +24,13 @@ import net.dv8tion.jda.api.interactions.components.selections.StringSelectIntera
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.jetbrains.annotations.ApiStatus
 import java.io.Serial
-import kotlin.Throws
 import kotlin.reflect.full.findAnnotation
 
 abstract class DiscordStepChannelCreationModal(
-    private val title: String
+    private val title: String,
+    private val ticketCreator: TicketCreator,
+    private val ticketChannelHelper: TicketChannelHelper,
+    private val discordModalManager: DiscordModalManager
 ) {
     private val logger = ComponentLogger.logger(javaClass)
     private val steps: List<ModalStep> by lazy { buildSteps().steps }
@@ -69,7 +72,7 @@ abstract class DiscordStepChannelCreationModal(
             return
         }
 
-        DiscordModalManager.setCurrentUserModal(
+        discordModalManager.setCurrentUserModal(
             interaction.user.id,
             this
         )
@@ -134,14 +137,14 @@ abstract class DiscordStepChannelCreationModal(
             return
         }
 
-        val ticket = Ticket.open(guild = guild, ticketAuthor = user, ticketType = ticketType)
-        val result = ticket.openFromButton()
+        val ticket = Ticket(guild = guild, author = user, ticketType = ticketType)
+        val result = ticketCreator.openTicket(ticket)
 
         postThreadCreated(ticket, result, event, user)
     }
 
-    private fun checkTicketExists(guild: Guild, user: User): Boolean =
-        TicketChannelHelper.checkTicketExists(guild, ticketType, user)
+    private suspend fun checkTicketExists(guild: Guild, user: User) =
+        ticketChannelHelper.checkTicketExists(guild, ticketType, user)
 
     private suspend fun executeSelectionSteps(
         hook: InteractionHook
@@ -259,7 +262,7 @@ abstract class DiscordStepChannelCreationModal(
     private suspend fun reply(
         callback: IReplyCallback,
         message: String
-    ) { // TODO: is this even correct?
+    ) {
         if (callback.isAcknowledged) {
             callback.hook.sendMessage(message).setEphemeral(true).await()
         } else {

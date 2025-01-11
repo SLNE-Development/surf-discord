@@ -10,7 +10,7 @@ import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.user.UserService
-import dev.slne.discord.persistence.service.whitelist.WhitelistRepository
+import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
@@ -34,7 +34,10 @@ private const val REASON_OPTION: String = "reason"
     permission = CommandPermission.REQUEST_ROLLBACK,
     ephemeral = true
 )
-object RequestRollbackCommand : DiscordCommand() {
+class RequestRollbackCommand(
+    private val whitelistService: WhitelistService,
+    private val userService: UserService
+) : DiscordCommand() {
 
     override val subCommands = listOf(
         subcommand(
@@ -100,8 +103,8 @@ object RequestRollbackCommand : DiscordCommand() {
         }
 
         hook.editOriginal(translatable("interaction.command.ticket.wlquery.querying")).await()
-        val whitelists = UserService.getUuidByUsername(minecraftName)?.let {
-            WhitelistRepository.findWhitelists(it, null, null)
+        val whitelists = userService.getUuidByUsername(minecraftName)?.let {
+            whitelistService.findWhitelists(it, null, null)
         } ?: emptyList()
 
         if (whitelists.isEmpty()) {
@@ -109,9 +112,6 @@ object RequestRollbackCommand : DiscordCommand() {
         }
 
         val firstWhitelist = whitelists.first()
-        if (firstWhitelist.uuid == null) {
-            throw CommandExceptions.WHITELIST_QUERY_NO_ENTRIES.create(minecraftName)
-        }
 
         if (servers == null) {
             throw CommandExceptions.GENERIC.create()
@@ -127,7 +127,7 @@ object RequestRollbackCommand : DiscordCommand() {
                 val channel = hook.interaction.channel as TextChannel
                 val embed = buildEmbed(
                     minecraftName,
-                    firstWhitelist.uuid!!,
+                    firstWhitelist.uuid,
                     firstWhitelist.discordId,
                     servers,
                     interaction.user,
@@ -152,7 +152,7 @@ object RequestRollbackCommand : DiscordCommand() {
                 val channel = hook.interaction.channel as TextChannel
                 val embed = buildEmbed(
                     minecraftName,
-                    firstWhitelist.uuid!!,
+                    firstWhitelist.uuid,
                     firstWhitelist.discordId,
                     servers,
                     interaction.user,

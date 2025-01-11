@@ -12,7 +12,7 @@ import dev.slne.discord.message.MessageManager
 import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.external.Whitelist
 import dev.slne.discord.persistence.service.user.UserService
-import dev.slne.discord.persistence.service.whitelist.WhitelistRepository
+import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
@@ -28,7 +28,11 @@ private const val TWITCH_OPTION: String = "twitch"
     description = "Füge einen Spieler zur Whitelist hinzu.",
     permission = CommandPermission.WHITELIST
 )
-object WhitelistCommand : DiscordCommand() {
+class WhitelistCommand(
+    private val whitelistService: WhitelistService,
+    private val userService: UserService,
+    private val messageManager: MessageManager
+) : DiscordCommand() {
 
     override val options = listOf(
         option<User>(
@@ -44,7 +48,6 @@ object WhitelistCommand : DiscordCommand() {
             translatable("interaction.command.ticket.whitelist.arg.twitch-name")
         )
     )
-
 
     override suspend fun internalExecute(
         interaction: SlashCommandInteractionEvent,
@@ -78,36 +81,32 @@ object WhitelistCommand : DiscordCommand() {
     ) {
         hook.editOriginal(translatable("interaction.command.ticket.whitelist.uuid-fetching"))
             .await()
-        val minecraftUuid = UserService.getUuidByUsername(minecraft)
+        val minecraftUuid = userService.getUuidByUsername(minecraft)
             ?: throw CommandExceptions.MINECRAFT_USER_NOT_FOUND.create()
 
         hook.editOriginal(translatable("interaction.command.ticket.whitelist.checking")).await()
 
-        val whitelists = WhitelistRepository.findWhitelists(
+        val whitelists = whitelistService.findWhitelists(
             minecraftUuid, discordId, twitch
         )
 
         if (whitelists.isNotEmpty()) {
             hook.editOriginal(
                 translatable("interaction.command.ticket.whitelist.already-whitelisted")
-            ).await()
-
-            for (whitelist in whitelists) {
-                channel.sendMessageEmbeds(MessageManager.getWhitelistQueryEmbed(whitelist)).await()
-            }
+            ).setEmbeds(whitelists.map { messageManager.getWhitelistQueryEmbed(it) }).await()
         } else {
             hook.editOriginal(
                 translatable("interaction.command.ticket.whitelist.adding")
             ).await()
 
-            val createdWhitelist = Whitelist().apply {
-                uuid = minecraftUuid
-                twitchLink = twitch
-                addedByAvatarUrl = executor?.avatarUrl
-                addedById = executor?.id
-                addedByName = executor?.name
-                this.discordId = discordId
-            }.save()
+            val whitelist = Whitelist(
+                uuid = minecraftUuid,
+                twitchLink = twitch,
+                discordId = discordId,
+                addedBy = executor,
+            )
+
+            whitelistService.saveWhitelist(whitelist)
 
             hook.editOriginal(
                 translatable("interaction.command.ticket.whitelist.adding-role")
@@ -119,7 +118,7 @@ object WhitelistCommand : DiscordCommand() {
                     "interaction.command.ticket.whitelist.added",
                     user.asMention
                 )
-                embeds += MessageManager.getWhitelistQueryEmbed(createdWhitelist)
+                embeds += messageManager.getWhitelistQueryEmbed(whitelist)
             }).await()
 
             hook.deleteOriginal().await()

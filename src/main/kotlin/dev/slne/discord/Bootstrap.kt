@@ -4,56 +4,46 @@ import com.github.ajalt.clikt.command.parse
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.ContextCliktError
 import dev.slne.discord.console.buildRootCommand
+import dev.slne.discord.discord.interaction.command.DiscordCommandProcessor
 import dev.slne.discord.message.RawMessages
-import dev.slne.discord.persistence.service.ticket.TicketService
+import jakarta.annotation.PostConstruct
+import jakarta.annotation.PreDestroy
 import kotlinx.coroutines.runBlocking
+import net.dv8tion.jda.api.JDA
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
+import org.springframework.stereotype.Component
 import kotlin.concurrent.thread
+import kotlin.system.measureTimeMillis
 
 private val logger = ComponentLogger.logger("Bootstrap")
 
-fun main(args: Array<String>) {
-    runBlocking {
-        val bootstrap = Bootstrap()
+@Component
+class Bootstrap(private val jda: JDA, private val commandProcessor: DiscordCommandProcessor) {
 
-        logger.info("Loading messages...")
-        RawMessages::class.java.getClassLoader()
 
-        bootstrap.onLoad()
-        bootstrap.onEnable()
+    @PostConstruct
+    fun onLoad() {
+        val ms = measureTimeMillis {
+            Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+                logger.error("Uncaught exception in thread ${thread.name}", throwable)
+            }
+
+            logger.info("Loading messages...")
+            RawMessages::class.java.getClassLoader()
+
+            listenForCommands(jda, commandProcessor)
+        }
+
+        logger.info("Done and ready ({}ms)! Type 'help' for a list of commands.", ms)
     }
 
-    listenForCommands()
-}
-
-
-class Bootstrap {
-
-    private var startTimestamp: Long? = null
-
-    suspend fun onLoad() {
-        Runtime.getRuntime().addShutdownHook(thread(start = false) { onDisable() })
-        startTimestamp = System.currentTimeMillis()
-
-        DiscordBot.onLoad()
-        TicketService.fetchActiveTickets()
-    }
-
-    fun onEnable() {
-        DiscordBot.onEnable()
-        logger.info(
-            "Done ({}ms)! Type 'help' for a list of commands.",
-            System.currentTimeMillis() - startTimestamp!!
-        )
-    }
-
+    @PreDestroy
     fun onDisable() {
-        DiscordBot.onDisable()
     }
 }
 
-private fun listenForCommands() = thread {
-    val root = buildRootCommand()
+private fun listenForCommands(jda: JDA, commandProcessor: DiscordCommandProcessor) = thread {
+    val root = buildRootCommand(jda, commandProcessor)
 
     print("> ")
     while (true) {

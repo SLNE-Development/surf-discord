@@ -3,31 +3,77 @@ package dev.slne.discord.message
 import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.messages.Embed
 import dev.minn.jda.ktx.messages.MessageCreate
+import dev.slne.discord.discord.interaction.command.getGuildConfig
 import dev.slne.discord.exception.command.CommandException
 import dev.slne.discord.exception.command.CommandExceptions
-import dev.slne.discord.jda
 import dev.slne.discord.message.EmbedColors.ERROR_COLOR
 import dev.slne.discord.message.EmbedColors.WL_QUERY
 import dev.slne.discord.persistence.external.Whitelist
-import dev.slne.discord.persistence.service.whitelist.WhitelistRepository
+import dev.slne.discord.persistence.service.user.UserService
+import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import dev.slne.discord.ticket.Ticket
+import dev.slne.discord.util.memberOrNull
+import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import net.dv8tion.jda.api.interactions.InteractionHook
+import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
 
-object MessageManager {
+@Service
+class MessageManager(
+    private val whitelistService: WhitelistService,
+    private val userService: UserService,
+    private val jda: JDA
+) {
 
     suspend fun sendTicketClosedMessages(ticket: Ticket): Message? =
         ticket.thread?.sendMessage(MessageCreate {
             embeds += EmbedManager.buildTicketClosedEmbed(ticket)
         })?.await()
 
+    suspend fun sendTicketClosedUserPrivateMessage(ticket: Ticket) {
+        ticket.author.await()?.openPrivateChannel()?.await()?.sendMessage(MessageCreate {
+            embeds += EmbedManager.buildTicketClosedUserPrivateMessageEmbed(
+                ticket,
+                owner = true
+            )
+        })?.await()
+
+        val guild = ticket.guild ?: return
+        val thread = ticket.thread ?: return
+
+        for (ticketMember in thread.threadMembers) {
+            if (hasMemberReceiveClosePmNegatePermission(
+                    ticketMember.user,
+                    guild
+                ) || ticketMember.user.isBot
+            ) {
+                continue
+            }
+
+            ticketMember.user.openPrivateChannel().await()?.sendMessage(MessageCreate {
+                embeds += EmbedManager.buildTicketClosedUserPrivateMessageEmbed(ticket)
+            })?.await()
+        }
+    }
+
+    private suspend fun hasMemberReceiveClosePmNegatePermission(user: User, guild: Guild): Boolean {
+        val roles = user.memberOrNull(guild).await().roles
+        val guildTeamRoles =
+            guild.getGuildConfig()?.discordGuild?.roles?.flatMap { it.discordRoleIds }
+                ?: return false
+
+        return roles.any { it.id in guildTeamRoles }
+    }
+
+
     suspend fun printUserWlQuery(user: User, channel: MessageChannel) {
         channel.sendTyping().await()
-        val whitelists = WhitelistRepository.findWhitelists(null, user.id, null)
+        val whitelists = whitelistService.findWhitelists(null, user.id, null)
 
         try {
             printUserWlQuery(whitelists, user.name, channel, null)
@@ -48,7 +94,7 @@ object MessageManager {
         hook?.deleteOriginal()?.await()
     }
 
-    suspend fun printWlQuery(
+    private suspend fun printWlQuery(
         channel: MessageChannel,
         title: String,
         whitelists: List<Whitelist>
@@ -78,7 +124,7 @@ object MessageManager {
         color = WL_QUERY
         timestamp = ZonedDateTime.now()
 
-        val minecraftName = whitelist.minecraftName()
+        val minecraftName = userService.getUsernameByUuid(whitelist.uuid)
         val twitchLink = whitelist.twitchLink
         val uuid = whitelist.uuid
         val discordUser = whitelist.user?.await()
@@ -97,11 +143,9 @@ object MessageManager {
             }
         }
 
-        if (twitchLink != null) {
-            field {
-                name = translatable("whitelist.query.embed.field.twitch-name")
-                value = "[${twitchLink}](${whitelist.clickableTwitchLink})"
-            }
+        field {
+            name = translatable("whitelist.query.embed.field.twitch-name")
+            value = "[${twitchLink}](${whitelist.clickableTwitchLink})"
         }
 
         if (discordUser != null) {
@@ -120,12 +164,11 @@ object MessageManager {
 
         field {
             name = translatable("whitelist.query.embed.field.blocked")
-            value =
-                if (whitelist.blocked == true) translatable("common.yes") else translatable("common.no")
+            value = if (whitelist.blocked) translatable("common.yes") else translatable("common.no")
         }
     }
 
-    suspend fun buildMemberAddedMessage(
+    fun buildMemberAddedMessage(
         member: Member,
         executor: User
     ) = MessageCreate {

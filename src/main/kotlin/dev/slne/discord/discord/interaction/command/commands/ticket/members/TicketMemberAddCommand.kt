@@ -22,7 +22,7 @@ private const val USER_OPTION = "user"
     description = "Füge einen Nutzer zu einem Ticket hinzu.",
     permission = CommandPermission.TICKET_ADD_USER
 )
-object TicketMemberAddCommand : TicketCommand() {
+class TicketMemberAddCommand(private val messageManager: MessageManager) : TicketCommand() {
     override val options = listOf(
         option<Member>(
             USER_OPTION,
@@ -63,7 +63,7 @@ object TicketMemberAddCommand : TicketCommand() {
         threadChannel.addThreadMember(member).await()
 
         hook.editOriginal(translatable("interaction.command.ticket.member.add.added")).await()
-        hook.sendMessage(MessageManager.buildMemberAddedMessage(member, executor)).await()
+        hook.sendMessage(messageManager.buildMemberAddedMessage(member, executor)).await()
         hook.deleteOriginal().await()
     }
 }
