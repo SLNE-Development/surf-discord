@@ -61,8 +61,8 @@ class MessageManager(
         }
     }
 
-    private fun hasMemberReceiveClosePmNegatePermission(user: User, guild: Guild): Boolean {
-        val roles = user.memberOrNull(guild)?.roles ?: return false
+    private suspend fun hasMemberReceiveClosePmNegatePermission(user: User, guild: Guild): Boolean {
+        val roles = user.memberOrNull(guild).await().roles
         val guildTeamRoles =
             guild.getGuildConfig()?.discordGuild?.roles?.flatMap { it.discordRoleIds }
                 ?: return false
