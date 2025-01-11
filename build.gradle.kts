@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
     `maven-publish`
 
@@ -8,6 +10,10 @@ plugins {
     kotlin("plugin.serialization") version "2.1.0"
     kotlin("plugin.jpa") version "1.9.25"
     kotlin("plugin.spring") version "1.9.25"
+}
+
+tasks.withType<BootJar> {
+    archiveFileName.set("bot.jar")
 }
 
 dependencyManagement {
