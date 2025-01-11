@@ -13,31 +13,28 @@ import net.dv8tion.jda.api.JDA
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.springframework.stereotype.Component
 import kotlin.concurrent.thread
+import kotlin.system.measureTimeMillis
 
 private val logger = ComponentLogger.logger("Bootstrap")
 
 @Component
 class Bootstrap(private val jda: JDA, private val commandProcessor: DiscordCommandProcessor) {
 
-    private var startTimestamp: Long? = null
 
     @PostConstruct
     fun onLoad() {
-        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-            logger.error("Uncaught exception in thread ${thread.name}", throwable)
+        val ms = measureTimeMillis {
+            Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+                logger.error("Uncaught exception in thread ${thread.name}", throwable)
+            }
+
+            logger.info("Loading messages...")
+            RawMessages::class.java.getClassLoader()
+
+            listenForCommands(jda, commandProcessor)
         }
 
-        logger.info("Loading messages...")
-        RawMessages::class.java.getClassLoader()
-
-        listenForCommands(jda, commandProcessor)
-
-        startTimestamp = System.currentTimeMillis()
-        
-        logger.info(
-            "Done ({}ms)! Type 'help' for a list of commands.",
-            System.currentTimeMillis() - startTimestamp!!
-        )
+        logger.info("Done and ready ({}ms)! Type 'help' for a list of commands.", ms)
     }
 
     @PreDestroy
