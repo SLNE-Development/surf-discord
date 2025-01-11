@@ -5,37 +5,25 @@ import dev.minn.jda.ktx.events.getDefaultScope
 import dev.minn.jda.ktx.jdabuilder.cache
 import dev.minn.jda.ktx.jdabuilder.default
 import dev.slne.discord.config.botConfig
-import dev.slne.discord.discord.interaction.command.DiscordCommandManager
-import dev.slne.discord.discord.interaction.modal.DiscordModalManager
-import dev.slne.discord.discord.interaction.select.DiscordSelectMenuManager
-import dev.slne.discord.listener.DiscordListenerManager
-import dev.slne.discord.persistence.processor.DiscordButtonManager
 import dev.slne.discord.settings.GatewayIntents
 import kotlinx.coroutines.Dispatchers
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
+import org.springframework.context.annotation.Bean
+import org.springframework.stereotype.Service
 
-lateinit var jda: JDA
-
-object DiscordBot {
+@Service
+class DiscordBot {
 
     private val logger = ComponentLogger.logger()
 
-    suspend fun onLoad() {
+    @Bean(destroyMethod = "shutdown")
+    fun jda(): JDA {
         val botToken = botConfig.botToken
 
-        if (botToken == null) {
-            logger.error("Bot token is null. Please check your bot-connection.json file.")
-            ExitCodes.BOT_TOKEN_NOT_SET.exit()
-        }
-
-        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-            logger.error("Uncaught exception in thread ${thread.name}", throwable)
-        }
-
-        jda = default(
+        val jda = default(
             token = botToken,
             intents = GatewayIntents.gatewayIntents,
             enableCoroutines = false
@@ -66,23 +54,6 @@ object DiscordBot {
             ExitCodes.FAILED_AWAIT_READY_JDA.exit()
         }
 
-        initObjects()
-        logger.info("Discord Bot is ready")
-    }
-
-    private fun initObjects() {
-        DiscordListenerManager
-        DiscordModalManager
-        DiscordButtonManager
-        DiscordCommandManager
-        DiscordSelectMenuManager
-    }
-
-    fun onEnable() {
-
-    }
-
-    fun onDisable() {
-        // Currently empty
+        return jda
     }
 }

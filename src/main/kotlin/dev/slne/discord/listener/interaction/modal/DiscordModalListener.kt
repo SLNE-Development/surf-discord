@@ -3,17 +3,25 @@ package dev.slne.discord.listener.interaction.modal
 import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.events.listener
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager
-import dev.slne.discord.jda
 import dev.slne.discord.message.MessageManager
+import jakarta.annotation.PostConstruct
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
+import org.springframework.stereotype.Component
 
-object DiscordModalListener {
+@Component
+class DiscordModalListener(
+    private val jda: JDA,
+    private val discordModalManager: DiscordModalManager,
+    private val messageManager: MessageManager
+) {
 
-    init {
+    @PostConstruct
+    fun registerListener() {
         jda.listener<ModalInteractionEvent> { event ->
             val interaction = event.interaction
             val modalId = interaction.modalId
-            val advancedModal = DiscordModalManager.getModal(modalId, event.user.id)
+            val advancedModal = discordModalManager.getModal(modalId, event.user.id)
 
             if (advancedModal != null) {
                 event.deferReply(true).await()
@@ -23,7 +31,7 @@ object DiscordModalListener {
             }
 
             event.replyEmbeds(
-                MessageManager.getErrorEmbed(
+                messageManager.getErrorEmbed(
                     "Fehler",
                     "Deine Aktion konnte nicht durchgeführt werden oder ist abgelaufen."
                 )

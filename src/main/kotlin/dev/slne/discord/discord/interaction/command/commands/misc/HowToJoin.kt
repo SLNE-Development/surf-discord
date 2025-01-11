@@ -20,7 +20,7 @@ private const val USER_OPTION = "user"
     permission = CommandPermission.HOW_TO_JOIN,
     ephemeral = false
 )
-object HowToJoin : DiscordCommand() {
+class HowToJoin : DiscordCommand() {
     override val options = listOf(
         option<User>(
             USER_OPTION,

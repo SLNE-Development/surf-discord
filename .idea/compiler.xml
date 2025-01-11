@@ -4,10 +4,6 @@
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true" />
     </annotationProcessing>
-    <bytecodeTargetLevel target="17">
-      <module name="surf-discord" target="21" />
-      <module name="Workspaces.surf-discord.main" target="21" />
-      <module name="Workspaces.surf-discord.test" target="21" />
-    </bytecodeTargetLevel>
+    <bytecodeTargetLevel target="17" />
   </component>
 </project>

@@ -128,7 +128,7 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         TicketViewPermission.VIEW_WHITELIST_TICKETS,
                         TicketViewPermission.VIEW_SURVIVAL_SUPPORT_TICKETS,
                         TicketViewPermission.VIEW_EVENT_SUPPORT_TICKETS,
-                        TicketViewPermission.VIEW_UNBAN_TICKETS
+                        TicketViewPermission.VIEW_REPORT_TICKETS
                     ),
                     commandPermissions = listOf(
                         CommandPermission.NO_INTEREST,

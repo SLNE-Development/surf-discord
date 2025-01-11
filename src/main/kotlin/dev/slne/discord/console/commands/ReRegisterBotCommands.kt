@@ -5,12 +5,16 @@ import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.theme
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.validate
-import dev.slne.discord.discord.interaction.command.DiscordCommandManager
-import dev.slne.discord.jda
+import dev.slne.discord.discord.interaction.command.DiscordCommandProcessor
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.utils.MiscUtil
 
-object ReRegisterBotCommands : SuspendingCliktCommand("reregister") {
+class ReRegisterBotCommands(
+    private val jda: JDA,
+    private val commandProcessor: DiscordCommandProcessor
+) : SuspendingCliktCommand("reregister") {
+
     private val guildId by option().validate {
         try {
             MiscUtil.parseSnowflake(it)
@@ -26,7 +30,6 @@ object ReRegisterBotCommands : SuspendingCliktCommand("reregister") {
             appendLine(info("If a guild ID is provided, only that guild will be updated."))
         }
     }
-
 
     override suspend fun run() {
         echo(currentContext.theme.info("Reregistering bot commands..."))
@@ -49,6 +52,7 @@ object ReRegisterBotCommands : SuspendingCliktCommand("reregister") {
 
     private suspend fun updateCommands(guild: Guild) {
         echo(currentContext.theme.info("Reregistering commands for guild: ${guild.name}"))
-        DiscordCommandManager.updateCommands(guild)
+
+        commandProcessor.updateCommands(guild)
     }
 }

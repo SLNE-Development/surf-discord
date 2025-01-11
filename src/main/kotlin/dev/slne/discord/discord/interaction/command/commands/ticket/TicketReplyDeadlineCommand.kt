@@ -5,7 +5,6 @@ import dev.slne.discord.annotation.DiscordCommandMeta
 import dev.slne.discord.discord.interaction.command.commands.TicketCommand
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.translatable
-import kotlinx.coroutines.DelicateCoroutinesApi
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
@@ -17,7 +16,7 @@ import java.time.ZonedDateTime
     CommandPermission.TICKET_REPLY_DEADLINE,
     sendTyping = true
 )
-object TicketReplyDeadlineCommand : TicketCommand() {
+class TicketReplyDeadlineCommand : TicketCommand() {
     override val options = listOf(
         option<User>(
             USER_IDENTIFIER,
@@ -25,7 +24,6 @@ object TicketReplyDeadlineCommand : TicketCommand() {
         )
     )
 
-    @OptIn(DelicateCoroutinesApi::class)
     override suspend fun internalExecute(
         interaction: SlashCommandInteractionEvent,
         hook: InteractionHook

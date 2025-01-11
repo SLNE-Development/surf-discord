@@ -1,33 +1,20 @@
 package dev.slne.discord.config
 
-import dev.slne.discord.ExitCodes
+import com.charleskorn.kaml.Yaml
+import com.charleskorn.kaml.decodeFromStream
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import org.jetbrains.annotations.ApiStatus
-import org.spongepowered.configurate.objectmapping.ConfigSerializable
-import org.spongepowered.configurate.yaml.YamlConfigurationLoader
-import java.nio.file.Path
+import kotlin.io.path.Path
+import kotlin.io.path.inputStream
 
 @ApiStatus.Internal
-@ConfigSerializable
+@Serializable
 data class BotConfig(
-    val botToken: String? = null,
-    val database: DatabaseConfig? = null
+    @SerialName("bot-token") val botToken: String,
+    val database: DatabaseConfig
 )
 
-val botConfig: BotConfig by lazy { loadConfig() }
-
-/**
- * Load config.
- */
-private fun loadConfig(): BotConfig {
-    val loader = YamlConfigurationLoader.builder().path(Path.of("data/config.yml")).build()
-
-    try {
-        return loader.load()?.get(BotConfig::class.java)
-            ?: ExitCodes.CONFIG_FAILED_TO_LOAD.exit()
-    } catch (exception: Exception) {
-        System.err.println("An error occurred while loading this configuration: " + exception.message)
-        exception.cause?.printStackTrace()
-
-        ExitCodes.CONFIG_FAILED_TO_LOAD.exit()
-    }
+val botConfig by lazy {
+    Path("data/config.yml").inputStream().use { Yaml.default.decodeFromStream<BotConfig>(it) }
 }

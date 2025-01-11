@@ -20,7 +20,7 @@ private const val USER_IDENTIFIER = "user"
     CommandPermission.MISSING_INFORMATION,
     sendTyping = true
 )
-object MissingInformationCommand : DiscordCommand() {
+class MissingInformationCommand : DiscordCommand() {
     override val options = listOf(
         option<User>(
             USER_IDENTIFIER,

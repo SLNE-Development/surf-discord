@@ -7,8 +7,10 @@ import dev.slne.discord.discord.interaction.modal.step.ModalSelectionStep
 import dev.slne.discord.discord.interaction.modal.step.StepBuilder
 import dev.slne.discord.discord.interaction.modal.step.creator.report.steps.griefing.ReportTicketGriefingStep
 import dev.slne.discord.discord.interaction.modal.step.creator.report.steps.player.ReportTicketPlayerStep
+import dev.slne.discord.message.MessageManager
 import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.user.UserService
+import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
@@ -18,7 +20,11 @@ private const val OPTION_PLAYER = "player"
 
 private const val REPORTING_PLAYER_NAME_INPUT = "player-name"
 
-class ReportTicketSelectTypeStep : ModalSelectionStep(
+class ReportTicketSelectTypeStep(
+    private val userService: UserService,
+    private val whitelistService: WhitelistService,
+    private val messageManager: MessageManager
+) : ModalSelectionStep(
     translatable("modal.report.step.type.selection.title"),
     SelectOption(
         translatable("modal.report.step.type.selection.griefing.label"),
@@ -62,15 +68,13 @@ class ReportTicketSelectTypeStep : ModalSelectionStep(
         val playerName = playerName
 
         if (playerName != null) {
-            val uuid = UserService.getUuidByUsername(playerName)
-            println("UUID: $uuid")
-//
-//            val whitelists = WhitelistService.checkWhitelists(uuid = uuid)
-//
-//            for (whitelist in whitelists) {
-//                val embed = MessageManager.getWhitelistQueryEmbed(whitelist)
-//                thread.sendMessageEmbeds(embed).queue()
-//            }
+            val uuid = userService.getUuidByUsername(playerName)
+            val whitelists = whitelistService.findWhitelists(uuid = uuid)
+
+            for (whitelist in whitelists) {
+                val embed = messageManager.getWhitelistQueryEmbed(whitelist)
+                thread.sendMessageEmbeds(embed).queue()
+            }
         }
     }
 

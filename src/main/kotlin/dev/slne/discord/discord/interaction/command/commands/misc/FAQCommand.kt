@@ -22,7 +22,7 @@ private const val USER_IDENTIFIER = "user"
     permission = CommandPermission.FAQ,
     ephemeral = false
 )
-object FAQCommand : DiscordCommand() {
+class FAQCommand : DiscordCommand() {
     private val questions = listOf(
         Question(
             "connect-twitch",

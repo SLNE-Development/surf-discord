@@ -14,9 +14,9 @@ abstract class TicketCommand : DiscordCommand() {
     fun SlashCommandInteractionEvent.getThreadChannelOrThrow() =
         channel as? ThreadChannel ?: throw CommandExceptions.NO_THREAD_CHANNEL.create()
 
-    fun SlashCommandInteractionEvent.getTicketOrThrow() =
+    suspend fun SlashCommandInteractionEvent.getTicketOrThrow() =
         getThreadChannelOrThrow().getTicketOrThrow()
 
-    fun SlashCommandInteractionEvent.getTicket(): Ticket? =
+    suspend fun SlashCommandInteractionEvent.getTicket(): Ticket? =
         getThreadChannelOrThrow().getTicket()
 }

@@ -16,7 +16,7 @@ import net.dv8tion.jda.api.interactions.InteractionHook
     permission = CommandPermission.DONT_ASK_TO_ASK,
     ephemeral = false
 )
-object DontAskToAsk : DiscordCommand() {
+class DontAskToAsk : DiscordCommand() {
     override suspend fun internalExecute(
         interaction: SlashCommandInteractionEvent,
         hook: InteractionHook

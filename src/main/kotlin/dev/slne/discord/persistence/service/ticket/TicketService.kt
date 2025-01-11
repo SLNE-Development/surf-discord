@@ -1,65 +1,26 @@
 package dev.slne.discord.persistence.service.ticket
 
 import dev.slne.discord.ticket.Ticket
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet
-import it.unimi.dsi.fastutil.objects.ObjectSet
-import it.unimi.dsi.fastutil.objects.ObjectSets
+import dev.slne.discord.ticket.TicketType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.kyori.adventure.text.logger.slf4j.ComponentLogger
-import kotlin.system.measureTimeMillis
+import net.dv8tion.jda.api.entities.User
+import org.springframework.stereotype.Service
 
-object TicketService {
+@Service
+class TicketService(private val ticketRepository: TicketRepository) {
 
-    private val logger = ComponentLogger.logger(TicketService::class.java)
-
-    private var fetched = false
-    private val pendingTickets = ObjectSets.synchronize(ObjectOpenHashSet<Ticket>())
-    var tickets: ObjectSet<Ticket> = ObjectSets.synchronize(ObjectOpenHashSet())
-
-    suspend fun fetchActiveTickets() = withContext(Dispatchers.IO) {
-        fetched = false
-
-        val ms = measureTimeMillis {
-            TicketRepository.findActive().forEach { tickets.add(it) }
+    suspend fun hasAuthorTicketOfType(ticketType: TicketType, author: User) =
+        withContext(Dispatchers.IO) {
+            ticketRepository.hasAuthorTicketWithType(author.id, ticketType) > 0
         }
 
-        logger.info("Fetched {} tickets in {}ms.", tickets.size, ms)
-        fetched = true
-        popQueue()
+    suspend fun saveTicket(ticket: Ticket) = withContext(Dispatchers.IO) {
+        ticketRepository.save(ticket)
     }
 
-    suspend fun saveTicket(ticket: Ticket): Ticket {
-        TicketRepository.save(ticket)
-        tickets.add(ticket)
-
-        return ticket
+    suspend fun getTicketByThreadId(threadId: String) = withContext(Dispatchers.IO) {
+        ticketRepository.findByThreadId(threadId)
     }
-
-    private fun popQueue() {
-        if (fetched) {
-            tickets.addAll(pendingTickets)
-            pendingTickets.clear()
-        }
-    }
-
-    fun queueOrAddTicket(ticket: Ticket) {
-        if (fetched) {
-            tickets.add(ticket)
-        } else {
-            pendingTickets.add(ticket)
-        }
-    }
-
-    fun removeTicket(ticket: Ticket) {
-        tickets.remove(ticket)
-        pendingTickets.remove(ticket)
-    }
-
-    fun addReopenedTicket(ticket: Ticket) {
-        tickets.add(ticket)
-    }
-
-    fun getTicketByThreadId(threadId: String) = tickets.firstOrNull { it.threadId == threadId }
 
 }

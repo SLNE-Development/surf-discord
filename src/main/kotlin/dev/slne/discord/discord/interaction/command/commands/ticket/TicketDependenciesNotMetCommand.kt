@@ -18,7 +18,7 @@ import net.dv8tion.jda.api.interactions.InteractionHook
     description = "Closes a ticket whilst telling the user that they do not have met the dependencies.",
     permission = CommandPermission.TICKET_CLOSE
 )
-object TicketDependenciesNotMetCommand : TicketCommand() {
+class TicketDependenciesNotMetCommand(private val ticketCreator: TicketCreator) : TicketCommand() {
 
     override suspend fun internalExecute(
         interaction: SlashCommandInteractionEvent,
@@ -27,7 +27,7 @@ object TicketDependenciesNotMetCommand : TicketCommand() {
         val closer = interaction.user
         val ticket = interaction.getTicketOrThrow()
 
-        val closeResult = TicketCreator.closeTicket(
+        val closeResult = ticketCreator.closeTicket(
             ticket,
             closer,
             translatable("interaction.command.ticket.dependencies-not-met.close-reason")

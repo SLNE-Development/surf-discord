@@ -11,7 +11,10 @@ import net.dv8tion.jda.api.interactions.components.selections.SelectOption
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
 import kotlin.math.min
 
-class TicketsMenu(idSuffix: String) : DiscordSelectMenu(
+class TicketsMenu(
+    idSuffix: String,
+    private val discordModalManager: DiscordModalManager
+) : DiscordSelectMenu(
     "menu:tickets-$idSuffix",
     translatable("menu.ticket.select.placeholder"),
     TicketType.entries.map { ticketType ->
@@ -42,7 +45,7 @@ class TicketsMenu(idSuffix: String) : DiscordSelectMenu(
             return
         }
 
-        DiscordModalManager.createByTicketType(ticketType)
+        discordModalManager.createByTicketType(ticketType)
             .startChannelCreation(interaction, guild)
     }
 }

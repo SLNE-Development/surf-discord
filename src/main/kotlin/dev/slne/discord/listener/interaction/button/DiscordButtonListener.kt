@@ -1,15 +1,20 @@
 package dev.slne.discord.listener.interaction.button
 
 import dev.minn.jda.ktx.events.listener
-import dev.slne.discord.jda
-import dev.slne.discord.persistence.processor.DiscordButtonManager
+import dev.slne.discord.discord.interaction.button.DiscordButtonProcessor
+import jakarta.annotation.PostConstruct
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
+import org.springframework.stereotype.Component
 
-object DiscordButtonListener {
-    init {
+@Component
+class DiscordButtonListener(private val jda: JDA, private val processor: DiscordButtonProcessor) {
+
+    @PostConstruct
+    fun registerListener() {
         jda.listener<ButtonInteractionEvent> { event ->
             val id = event.button.id ?: return@listener
-            DiscordButtonManager.getHandler(id)?.handler?.apply { event.onClick() }
+            processor.getHandler(id)?.second?.apply { event.onClick() }
         }
     }
 }

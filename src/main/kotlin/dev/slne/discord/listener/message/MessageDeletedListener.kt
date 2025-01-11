@@ -1,15 +1,20 @@
 package dev.slne.discord.listener.message
 
 import dev.minn.jda.ktx.events.listener
-import dev.slne.discord.extensions.ticket
-import dev.slne.discord.jda
+import dev.slne.discord.extensions.ticketOrNull
+import dev.slne.discord.persistence.service.ticket.TicketService
+import jakarta.annotation.PostConstruct
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent
+import org.springframework.stereotype.Component
 
-object MessageDeletedListener {
+@Component
+class MessageDeletedListener(private val jda: JDA, private val ticketService: TicketService) {
 
-    init {
+    @PostConstruct
+    fun registerListener() {
         jda.listener<MessageDeleteEvent> {
             deleteMessage(it.channel, listOf(it.messageId))
         }
@@ -20,11 +25,13 @@ object MessageDeletedListener {
     }
 
     private suspend fun deleteMessage(channel: MessageChannel, messageIds: List<String>) {
-        val ticket = channel.ticket ?: return
+        val ticket = channel.ticketOrNull() ?: return
 
         messageIds
             .mapNotNull { ticket.getTicketMessage(it) }
-            .mapNotNull { it.delete() }
+            .map { it.copyAndDelete() }
             .forEach { ticket.addMessage(it) }
+
+        ticketService.saveTicket(ticket)
     }
 }

@@ -1,6 +1,2 @@
-- [ ] Check Timezones
-- [ ] Check if reaction role is still working
 - [ ] Implement enable in discord bot ticket types
-- [ ] Implement console application including commands
-- [ ] Man bekommt close messages doppelt bei bspw. whitelist?
 - [ ] Ticket open requirements? Bspw. whitelisted, banned, etc.
