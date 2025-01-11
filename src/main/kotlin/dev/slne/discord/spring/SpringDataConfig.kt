@@ -31,14 +31,6 @@ class SpringDataConfig {
                 "jdbc:mariadb://${databaseConfig.hostname}:${databaseConfig.port}/${databaseConfig.database}"
         }
 
-        repeat(20) {
-            println("#".repeat(10))
-            println("Database URL: ${dataSource.url}")
-            println("Username: ${dataSource.username}")
-            println("Password set: ${dataSource.password != null}")
-            println("url: ${dataSource.url}")
-        }
-
         return dataSource
     }
 
