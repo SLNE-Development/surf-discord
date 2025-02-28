@@ -1,0 +1,59 @@
+name: Publish to Maven & Create GitHub Release
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+env:
+  MODULE_REGEX: "bot.jar$"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v2
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'graalvm'
+          java-version: '21'
+
+      - name: Build all modules with Gradle
+        uses: burrunan/gradle-cache-action@v1
+        with:
+          arguments: build shadowJar --parallel
+          concurrent: true
+
+      - name: Extract Project Version
+        id: get_version
+        run: echo "VERSION=$(./gradlew properties | grep "^version:" | awk '{print $2}')" >> $GITHUB_ENV
+
+      - name: Find and filter JAR files
+        id: find_jars
+        run: |
+          echo "JAR_FILES<<EOF" >> $GITHUB_ENV
+          find . -path "**/build/libs/*.jar" | grep -E "${{ env.MODULE_REGEX }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: Release ${{ env.VERSION }}
+          draft: false
+          prerelease: false
+          files: |
+            ${{ env.JAR_FILES }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
