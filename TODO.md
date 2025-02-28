@@ -1,0 +1,2 @@
+- [ ] Implement enable in discord bot ticket types
+- [ ] Ticket open requirements? Bspw. whitelisted, banned, etc.

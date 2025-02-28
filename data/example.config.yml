@@ -1,0 +1,8 @@
+bot-token: 'YOUR_BOT_TOKEN'
+
+database:
+  hostname: 'localhost'
+  port: 3306
+  username: 'root'
+  password: 'password'
+  database: 'discord_bot'
