@@ -66,7 +66,7 @@ allOpen {
 }
 
 group = "dev.slne"
-version = "5.0.0-SNAPSHOT"
+version = findProperty("version") as String
 description = "surf-discord"
 
 kotlin {
