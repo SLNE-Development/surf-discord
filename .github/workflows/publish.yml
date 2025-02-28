@@ -31,7 +31,7 @@ jobs:
       - name: Build all modules with Gradle
         uses: burrunan/gradle-cache-action@v1
         with:
-          arguments: build shadowJar --parallel
+          arguments: bootJar --parallel
           concurrent: true
 
       - name: Extract Project Version
