@@ -22,4 +22,5 @@ enum class CommandPermission(val permission: String) {
 
     // CONTEXT MENU
     SHOW_ADMIN_PANEL("SHOW_ADMIN_PANEL"),
+    SHOW_TICKET_ADMIN_PANEL("SHOW_TICKET_ADMIN_PANEL"),
 }
