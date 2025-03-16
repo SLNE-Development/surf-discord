@@ -7,6 +7,7 @@ import dev.slne.discord.discord.interaction.command.context.DiscordContextMenuCo
 import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.translatable
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.command.GenericContextInteractionEvent
@@ -17,7 +18,8 @@ import net.dv8tion.jda.api.interactions.InteractionHook
     type = DiscordContextMenuCommandType.USER,
     permission = CommandPermission.TICKET_REMOVE_USER,
 )
-class RemoveUserFromTicketContextMenuCommand : DiscordContextMenuCommand<User>() {
+class RemoveUserFromTicketContextMenuCommand(private val jda: JDA) :
+    DiscordContextMenuCommand<User>() {
 
     override suspend fun internalExecute(
         interaction: GenericContextInteractionEvent<User>,
@@ -30,6 +32,12 @@ class RemoveUserFromTicketContextMenuCommand : DiscordContextMenuCommand<User>()
         }
 
         val member = channel.guild.retrieveMember(interaction.target).await()
+
+        if (member.user == jda.selfUser) {
+            hook.editOriginal(translatable("error.ticket.bot.remove")).await()
+            return
+        }
+
         val ticketMembers = channel.retrieveThreadMembers().await()
 
         if (ticketMembers.none { it.id == member.id }) {
