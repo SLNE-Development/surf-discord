@@ -7,12 +7,15 @@ on:
   workflow_dispatch:
 
 env:
-  MODULE_REGEX: "bot.jar$"
+  SLNE_SNAPSHOTS_REPO_USERNAME: ${{ secrets.SLNE_SNAPSHOTS_REPO_USERNAME }}
+  SLNE_SNAPSHOTS_REPO_PASSWORD: ${{ secrets.SLNE_SNAPSHOTS_REPO_PASSWORD }}
+  SLNE_RELEASES_REPO_USERNAME: ${{ secrets.SLNE_RELEASES_REPO_USERNAME }}
+  SLNE_RELEASES_REPO_PASSWORD: ${{ secrets.SLNE_RELEASES_REPO_PASSWORD }}
+  MODULE_REGEX: "bot\\.jar$"
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: production
     steps:
       - name: Collect Workflow Telemetry
         uses: catchpoint/workflow-telemetry-action@v2
@@ -22,6 +25,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
+
       - name: Setup JDK
         uses: actions/setup-java@v4
         with:
@@ -29,10 +41,7 @@ jobs:
           java-version: '21'
 
       - name: Build all modules with Gradle
-        uses: burrunan/gradle-cache-action@v1
-        with:
-          arguments: bootJar --parallel
-          concurrent: true
+        run: ./gradlew bootJar --parallel --no-scan
 
       - name: Extract Project Version
         id: get_version
@@ -52,8 +61,6 @@ jobs:
           name: Release ${{ env.VERSION }}
           draft: false
           prerelease: false
-          files: |
-            ${{ env.JAR_FILES }}
+          files: ${{ env.JAR_FILES }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
