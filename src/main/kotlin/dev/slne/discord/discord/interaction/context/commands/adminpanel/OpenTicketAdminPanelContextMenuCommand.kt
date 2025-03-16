@@ -1,4 +1,4 @@
-package dev.slne.discord.discord.interaction.context.commands
+package dev.slne.discord.discord.interaction.context.commands.adminpanel
 
 import dev.minn.jda.ktx.coroutines.await
 import dev.slne.discord.annotation.DiscordContextMenuCommandMeta
@@ -18,7 +18,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button
     type = DiscordContextMenuCommandType.MESSAGE,
     permission = CommandPermission.SHOW_TICKET_ADMIN_PANEL,
 )
-class OpenTicketadminPanelContextMenuCommand(
+class OpenTicketAdminPanelContextMenuCommand(
     private val ticketService: TicketService
 ) : DiscordContextMenuCommand<Message>() {
 

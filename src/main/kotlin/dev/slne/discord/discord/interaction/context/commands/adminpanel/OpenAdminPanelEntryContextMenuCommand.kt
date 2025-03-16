@@ -1,4 +1,4 @@
-package dev.slne.discord.discord.interaction.context.commands
+package dev.slne.discord.discord.interaction.context.commands.adminpanel
 
 import dev.minn.jda.ktx.coroutines.await
 import dev.slne.discord.annotation.DiscordContextMenuCommandMeta
