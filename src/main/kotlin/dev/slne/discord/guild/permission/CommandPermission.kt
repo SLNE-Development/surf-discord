@@ -1,6 +1,7 @@
 package dev.slne.discord.guild.permission
 
 enum class CommandPermission(val permission: String) {
+    // COMMANDS
     NO_INTEREST("NO_INTEREST"),
     WHITELIST("WHITELIST"),
     WHITELISTED("WHITELISTED"),
@@ -18,4 +19,7 @@ enum class CommandPermission(val permission: String) {
     FAQ("FAQ"),
     MISSING_INFORMATION("MISSING_INFORMATION"),
     REQUEST_ROLLBACK("REQUEST_ROLLBACK"),
+
+    // CONTEXT MENU
+    SHOW_ADMIN_PANEL("SHOW_ADMIN_PANEL"),
 }
