@@ -32,18 +32,7 @@ class WlQueryContextMenuCommand(
             null, interaction.target.id, null
         )
 
-        val privateChannel = interaction.user.openPrivateChannel().await()
-
-        try {
-            messageManager.printUserWlQuery(
-                whitelists,
-                interaction.target.name,
-                privateChannel,
-                hook
-            )
-        } catch (e: Exception) {
-            hook.editOriginal(translatable("interaction.context.menu.admin-panel.no-private-message-allowed"))
-                .await()
-        }
+        val embeds = whitelists.map { messageManager.getWhitelistQueryEmbed(it) }
+        hook.editOriginal("\"" + interaction.target.asMention + "\"").setEmbeds(embeds).await()
     }
 }

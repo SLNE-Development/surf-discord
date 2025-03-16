@@ -38,29 +38,16 @@ class OpenTicketAdminPanelContextMenuCommand(
             return
         }
 
-        val privateChannel = interaction.user.openPrivateChannel().await()
+        val button = Button.link(
+            "https://admin.slne.dev/ticket/${ticket.ticketId}",
+            translatable("interaction.context.menu.admin-panel.button")
+        )
 
-        try {
-            val button = Button.link(
-                "https://admin.slne.dev/ticket/${ticket.ticketId}",
-                translatable("interaction.context.menu.admin-panel.button")
+        hook.editOriginal(
+            translatable(
+                "interaction.context.menu.ticket-admin-panel.private-message",
+                channel.asMention
             )
-
-            privateChannel
-                .sendMessage(
-                    translatable(
-                        "interaction.context.menu.ticket-admin-panel.private-message",
-                        channel.asMention
-                    )
-                )
-                .addActionRow(button)
-                .await()
-
-
-            hook.deleteOriginal().await()
-        } catch (e: Exception) {
-            hook.editOriginal(translatable("interaction.context.menu.admin-panel.no-private-message-allowed"))
-                .await()
-        }
+        ).setActionRow(button).await()
     }
 }

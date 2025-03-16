@@ -29,36 +29,22 @@ class OpenAdminPanelEntryContextMenuCommand(
             null, interaction.target.id, null
         )
 
-        val privateChannel = interaction.user.openPrivateChannel().await()
-
-        try {
-            if (whitelists.isEmpty()) {
-                privateChannel.sendMessage(translatable("interaction.context.menu.admin-panel.no-whitelist-entry"))
-                    .await()
-
-                return
-            }
-
-            val button = Button.link(
-                "https://admin.slne.dev/core/user/${whitelists.first().uuid}",
-                translatable("interaction.context.menu.admin-panel.button")
-            )
-
-            privateChannel
-                .sendMessage(
-                    translatable(
-                        "interaction.context.menu.admin-panel.private-message",
-                        interaction.target.asMention
-                    )
-                )
-                .addActionRow(button)
+        if (whitelists.isEmpty()) {
+            hook.editOriginal(translatable("interaction.context.menu.admin-panel.no-whitelist-entry"))
                 .await()
-
-
-            hook.deleteOriginal().await()
-        } catch (e: Exception) {
-            hook.editOriginal(translatable("interaction.context.menu.admin-panel.no-private-message-allowed"))
-                .await()
+            return
         }
+
+        val button = Button.link(
+            "https://admin.slne.dev/core/user/${whitelists.first().uuid}",
+            translatable("interaction.context.menu.admin-panel.button")
+        )
+
+        hook.editOriginal(
+            translatable(
+                "interaction.context.menu.admin-panel.private-message",
+                interaction.target.asMention
+            )
+        ).setActionRow(button).await()
     }
 }
