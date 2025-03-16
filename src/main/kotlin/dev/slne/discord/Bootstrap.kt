@@ -5,7 +5,6 @@ import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.ContextCliktError
 import dev.slne.discord.console.buildRootCommand
 import dev.slne.discord.discord.interaction.command.DiscordCommandProcessor
-import dev.slne.discord.discord.interaction.context.DiscordContextMenuCommandProcessor
 import dev.slne.discord.message.RawMessages
 import jakarta.annotation.PostConstruct
 import jakarta.annotation.PreDestroy
@@ -22,9 +21,8 @@ private val logger = ComponentLogger.logger("Bootstrap")
 class Bootstrap(
     private val jda: JDA,
     private val commandProcessor: DiscordCommandProcessor,
-    private val contextMenuCommandProcessor: DiscordContextMenuCommandProcessor
 ) {
-    
+
     @PostConstruct
     fun onLoad() {
         val ms = measureTimeMillis {
@@ -35,7 +33,7 @@ class Bootstrap(
             logger.info("Loading messages...")
             RawMessages::class.java.getClassLoader()
 
-            listenForCommands(jda, commandProcessor, contextMenuCommandProcessor)
+            listenForCommands(jda, commandProcessor)
         }
 
         logger.info("Done and ready ({}ms)! Type 'help' for a list of commands.", ms)
@@ -49,9 +47,8 @@ class Bootstrap(
 private fun listenForCommands(
     jda: JDA,
     commandProcessor: DiscordCommandProcessor,
-    contextMenuCommandProcessor: DiscordContextMenuCommandProcessor
 ) = thread {
-    val root = buildRootCommand(jda, commandProcessor, contextMenuCommandProcessor)
+    val root = buildRootCommand(jda, commandProcessor)
 
     print("> ")
     while (true) {

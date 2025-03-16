@@ -1,6 +1,6 @@
 package dev.slne.discord.annotation
 
-import dev.slne.discord.discord.interaction.context.DiscordContextMenuCommandType
+import dev.slne.discord.discord.interaction.command.context.DiscordContextMenuCommandType
 import dev.slne.discord.guild.permission.CommandPermission
 import org.springframework.stereotype.Component
 

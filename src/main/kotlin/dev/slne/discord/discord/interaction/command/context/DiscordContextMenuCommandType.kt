@@ -1,4 +1,4 @@
-package dev.slne.discord.discord.interaction.context
+package dev.slne.discord.discord.interaction.command.context
 
 import net.dv8tion.jda.api.interactions.commands.Command
 

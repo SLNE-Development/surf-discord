@@ -1,9 +1,9 @@
-package dev.slne.discord.discord.interaction.context.commands.adminpanel
+package dev.slne.discord.discord.interaction.command.context.commands.adminpanel
 
 import dev.minn.jda.ktx.coroutines.await
 import dev.slne.discord.annotation.DiscordContextMenuCommandMeta
-import dev.slne.discord.discord.interaction.context.DiscordContextMenuCommand
-import dev.slne.discord.discord.interaction.context.DiscordContextMenuCommandType
+import dev.slne.discord.discord.interaction.command.context.DiscordContextMenuCommand
+import dev.slne.discord.discord.interaction.command.context.DiscordContextMenuCommandType
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.whitelist.WhitelistService

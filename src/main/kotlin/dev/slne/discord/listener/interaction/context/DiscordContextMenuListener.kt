@@ -1,7 +1,7 @@
 package dev.slne.discord.listener.interaction.context
 
 import dev.minn.jda.ktx.events.listener
-import dev.slne.discord.discord.interaction.context.DiscordContextMenuCommandProcessor
+import dev.slne.discord.discord.interaction.command.DiscordCommandProcessor
 import jakarta.annotation.PostConstruct
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.command.MessageContextInteractionEvent
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component
 @Component
 class DiscordContextMenuListener(
     private val jda: JDA,
-    private val processor: DiscordContextMenuCommandProcessor
+    private val processor: DiscordCommandProcessor
 ) {
 
     @PostConstruct
