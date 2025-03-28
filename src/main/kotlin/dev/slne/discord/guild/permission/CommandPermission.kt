@@ -18,4 +18,5 @@ enum class CommandPermission(val permission: String) {
     FAQ("FAQ"),
     MISSING_INFORMATION("MISSING_INFORMATION"),
     REQUEST_ROLLBACK("REQUEST_ROLLBACK"),
+    NOTIFY_BUTTONS("NOTIFY_BUTTONS")
 }
