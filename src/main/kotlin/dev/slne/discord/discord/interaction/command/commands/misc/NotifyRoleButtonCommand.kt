@@ -17,7 +17,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.InteractionHook
 import net.dv8tion.jda.api.interactions.components.buttons.Button
 
-private const val ID = "ticket-buttons"
+private const val ID = "notify-buttons"
 
 @DiscordCommandMeta(
     name = ID,
