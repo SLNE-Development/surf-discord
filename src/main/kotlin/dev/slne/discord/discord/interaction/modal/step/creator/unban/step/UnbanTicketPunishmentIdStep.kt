@@ -64,7 +64,7 @@ class UnbanTicketPunishmentIdStep(
                 noteId = noteIde,
                 notableId = punishmentDbId,
                 notableType = "App\\Models\\Punishment\\BanPunishment",
-                note = "https://admin.slne.dev/ticket/${ticket.ticketId}",
+                note = "UNBAN: https://admin.slne.dev/ticket/${ticket.ticketId}",
                 generated = true
             )
         )
