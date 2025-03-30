@@ -9,7 +9,9 @@ import dev.slne.discord.discord.interaction.modal.step.creator.support.survival.
 import dev.slne.discord.discord.interaction.modal.step.creator.unban.UnbanTicketChannelCreationModal
 import dev.slne.discord.discord.interaction.modal.step.creator.whitelist.WhitelistTicketChannelCreationModal
 import dev.slne.discord.message.MessageManager
+import dev.slne.discord.persistence.service.punishment.PunishmentNoteService
 import dev.slne.discord.persistence.service.punishment.PunishmentService
+import dev.slne.discord.persistence.service.ticket.TicketService
 import dev.slne.discord.persistence.service.user.UserService
 import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import dev.slne.discord.ticket.TicketChannelHelper
@@ -23,10 +25,12 @@ import org.springframework.stereotype.Service
 class DiscordModalManager(
     private val whitelistService: WhitelistService,
     private val userService: UserService,
+    private val ticketService: TicketService,
     private val ticketCreator: TicketCreator,
     private val ticketChannelHelper: TicketChannelHelper,
     private val punishmentService: PunishmentService,
-    private val messageManager: MessageManager
+    private val messageManager: MessageManager,
+    private val punishmentNoteService: PunishmentNoteService,
 ) {
 
     // @formatter:off
@@ -39,7 +43,7 @@ class DiscordModalManager(
     fun init() {
         // @formatter:off
         register { WhitelistTicketChannelCreationModal(whitelistService, userService, ticketCreator, ticketChannelHelper, this) }
-        register { UnbanTicketChannelCreationModal(punishmentService, ticketCreator, ticketChannelHelper, this) }
+        register { UnbanTicketChannelCreationModal(punishmentService, ticketCreator, ticketChannelHelper, this,punishmentNoteService, ticketService) }
         register { ReportTicketChannelCreationModal(ticketCreator, ticketChannelHelper, this, userService, whitelistService, messageManager) }
         register { BugReportTicketChannelCreationModal(ticketCreator, ticketChannelHelper, this) }
         register { SurvivalSupportTicketChannelCreationModal(whitelistService, ticketCreator, ticketChannelHelper, this) }

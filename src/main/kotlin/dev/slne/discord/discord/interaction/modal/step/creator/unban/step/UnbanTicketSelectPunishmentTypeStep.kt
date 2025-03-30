@@ -7,13 +7,19 @@ import dev.slne.discord.discord.interaction.modal.step.ModalSelectionStep
 import dev.slne.discord.discord.interaction.modal.step.StepBuilder
 import dev.slne.discord.discord.interaction.modal.step.creator.unban.step.acban.UnbanTicketUploadModlistStep
 import dev.slne.discord.message.translatable
+import dev.slne.discord.persistence.service.punishment.PunishmentNoteService
 import dev.slne.discord.persistence.service.punishment.PunishmentService
+import dev.slne.discord.persistence.service.ticket.TicketService
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
 
 private const val OPTION_YES = "yes"
 private const val OPTION_NO = "no"
 
-class UnbanTicketSelectPunishmentTypeStep(private val punishmentService: PunishmentService) :
+class UnbanTicketSelectPunishmentTypeStep(
+    private val punishmentService: PunishmentService,
+    private val ticketService: TicketService,
+    private val punishmentNoteService: PunishmentNoteService
+) :
     ModalSelectionStep(
         translatable("modal.unban.step.type.selection.title"),
         SelectOption(
@@ -38,7 +44,13 @@ class UnbanTicketSelectPunishmentTypeStep(private val punishmentService: Punishm
     }
 
     override fun buildChildSteps(): StepBuilder {
-        val builder = StepBuilder.startWith(UnbanTicketPunishmentIdStep(punishmentService))
+        val builder = StepBuilder.startWith(
+            UnbanTicketPunishmentIdStep(
+                punishmentService,
+                ticketService,
+                punishmentNoteService
+            )
+        )
             .then(::UnbanTicketUnbanAppealStep)
 
         if (yes) {

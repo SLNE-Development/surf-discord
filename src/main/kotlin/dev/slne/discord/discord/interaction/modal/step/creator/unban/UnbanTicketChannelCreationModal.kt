@@ -7,7 +7,9 @@ import dev.slne.discord.discord.interaction.modal.step.MessageQueue
 import dev.slne.discord.discord.interaction.modal.step.StepBuilder
 import dev.slne.discord.discord.interaction.modal.step.creator.unban.step.UnbanTicketSelectPunishmentTypeStep
 import dev.slne.discord.message.translatable
+import dev.slne.discord.persistence.service.punishment.PunishmentNoteService
 import dev.slne.discord.persistence.service.punishment.PunishmentService
+import dev.slne.discord.persistence.service.ticket.TicketService
 import dev.slne.discord.ticket.TicketChannelHelper
 import dev.slne.discord.ticket.TicketCreator
 import dev.slne.discord.ticket.TicketType
@@ -22,7 +24,9 @@ class UnbanTicketChannelCreationModal(
     private val punishmentService: PunishmentService,
     ticketCreator: TicketCreator,
     ticketChannelHelper: TicketChannelHelper,
-    discordModalManager: DiscordModalManager
+    discordModalManager: DiscordModalManager,
+    private val punishmentNoteService: PunishmentNoteService,
+    private val ticketService: TicketService
 ) : DiscordStepChannelCreationModal(
     translatable("modal.unban.title"),
     ticketCreator,
@@ -31,7 +35,13 @@ class UnbanTicketChannelCreationModal(
 ) {
 
     override fun buildSteps(): StepBuilder {
-        return StepBuilder.startWith(UnbanTicketSelectPunishmentTypeStep(punishmentService))
+        return StepBuilder.startWith(
+            UnbanTicketSelectPunishmentTypeStep(
+                punishmentService,
+                ticketService,
+                punishmentNoteService
+            )
+        )
     }
 
     override suspend fun MessageQueue.getOpenMessages(thread: ThreadChannel, user: User) {

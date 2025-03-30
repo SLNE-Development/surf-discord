@@ -8,4 +8,8 @@ import org.springframework.stereotype.Service
 class PunishmentService(private val punishmentRepository: PunishmentBanRepository) {
     suspend fun isValidPunishmentId(punishmentId: String) =
         withContext(Dispatchers.IO) { punishmentRepository.existsByPunishmentId(punishmentId) }
+
+    suspend fun getPunishmentBanByPunishmentId(punishmentId: String) = withContext(Dispatchers.IO) {
+        punishmentRepository.getPunishmentBanByPunishmentId(punishmentId)
+    }
 }

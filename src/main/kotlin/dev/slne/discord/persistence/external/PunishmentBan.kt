@@ -15,7 +15,7 @@ data class PunishmentBan(
 
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "punishment_id", nullable = false, length = 36, unique = true)
-    val punishmentId: String
+    val punishmentId: String,
 ) {
     final override fun equals(other: Any?): Boolean {
         if (this === other) return true

@@ -11,4 +11,6 @@ interface PunishmentBanRepository : JpaRepository<PunishmentBan, Long> {
 
     @Query("select (count(p) > 0) from PunishmentBan p where p.punishmentId = :punishmentId")
     fun existsByPunishmentId(@Param("punishmentId") punishmentId: String): Boolean
+
+    fun getPunishmentBanByPunishmentId(punishmentId: String): PunishmentBan?
 }
