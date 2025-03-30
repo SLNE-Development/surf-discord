@@ -18,8 +18,10 @@ import kotlin.system.measureTimeMillis
 private val logger = ComponentLogger.logger("Bootstrap")
 
 @Component
-class Bootstrap(private val jda: JDA, private val commandProcessor: DiscordCommandProcessor) {
-
+class Bootstrap(
+    private val jda: JDA,
+    private val commandProcessor: DiscordCommandProcessor,
+) {
 
     @PostConstruct
     fun onLoad() {
@@ -42,7 +44,10 @@ class Bootstrap(private val jda: JDA, private val commandProcessor: DiscordComma
     }
 }
 
-private fun listenForCommands(jda: JDA, commandProcessor: DiscordCommandProcessor) = thread {
+private fun listenForCommands(
+    jda: JDA,
+    commandProcessor: DiscordCommandProcessor,
+) = thread {
     val root = buildRootCommand(jda, commandProcessor)
 
     print("> ")

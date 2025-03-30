@@ -41,7 +41,8 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.DONT_ASK_TO_ASK,
                         CommandPermission.FAQ,
                         CommandPermission.MISSING_INFORMATION,
-                        CommandPermission.REQUEST_ROLLBACK
+                        CommandPermission.REQUEST_ROLLBACK,
+                        CommandPermission.SHOW_ADMIN_PANEL
                     ),
                 ),
                 // Discord Moderator
@@ -61,7 +62,8 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.DONT_ASK_TO_ASK,
                         CommandPermission.FAQ,
                         CommandPermission.MISSING_INFORMATION,
-                        CommandPermission.REQUEST_ROLLBACK
+                        CommandPermission.REQUEST_ROLLBACK,
+                        CommandPermission.SHOW_ADMIN_PANEL
                     ),
                 ),
                 // Server Admin
@@ -118,7 +120,9 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.DONT_ASK_TO_ASK,
                         CommandPermission.FAQ,
                         CommandPermission.MISSING_INFORMATION,
-                        CommandPermission.REQUEST_ROLLBACK
+                        CommandPermission.REQUEST_ROLLBACK,
+                        CommandPermission.SHOW_ADMIN_PANEL,
+                        CommandPermission.SHOW_TICKET_ADMIN_PANEL,
                     ),
                 ),
                 // Server Supporter

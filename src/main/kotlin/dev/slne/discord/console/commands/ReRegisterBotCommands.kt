@@ -12,7 +12,7 @@ import net.dv8tion.jda.api.utils.MiscUtil
 
 class ReRegisterBotCommands(
     private val jda: JDA,
-    private val commandProcessor: DiscordCommandProcessor
+    private val commandProcessor: DiscordCommandProcessor,
 ) : SuspendingCliktCommand("reregister") {
 
     private val guildId by option().validate {

@@ -7,6 +7,7 @@ import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.translatable
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.interactions.Interaction
 import net.dv8tion.jda.api.interactions.InteractionHook
 import java.time.ZonedDateTime
 
@@ -31,21 +32,30 @@ class TicketReplyDeadlineCommand : TicketCommand() {
         interaction.getTicketOrThrow()
 
         val target = interaction.getOptionOrThrow<User>(USER_IDENTIFIER)
-        val deadline = ZonedDateTime.now().plusHours(36)
-        val deadlineUnix = deadline.toEpochSecond()
-        val untilString = "<t:${deadlineUnix}:F>"
-        val relativeString = "<t:${deadlineUnix}:R>"
-
-        interaction.messageChannel.sendMessage(
-            translatable(
-                "interaction.command.ticket.reply-deadline.message",
-                target.asMention,
-                untilString,
-                relativeString
-            )
-        ).await()
-        hook.deleteOriginal().await()
+        sendReplyDeadlineToChannel(interaction, target, hook)
     }
+}
+
+suspend fun sendReplyDeadlineToChannel(
+    interaction: Interaction,
+    target: User,
+    hook: InteractionHook
+) {
+    val deadline = ZonedDateTime.now().plusHours(36)
+    val deadlineUnix = deadline.toEpochSecond()
+    val untilString = "<t:${deadlineUnix}:F>"
+    val relativeString = "<t:${deadlineUnix}:R>"
+
+    interaction.messageChannel.sendMessage(
+        translatable(
+            "interaction.command.ticket.reply-deadline.message",
+            target.asMention,
+            untilString,
+            relativeString
+        )
+    ).await()
+
+    hook.deleteOriginal().await()
 }
 
 private const val USER_IDENTIFIER = "user"

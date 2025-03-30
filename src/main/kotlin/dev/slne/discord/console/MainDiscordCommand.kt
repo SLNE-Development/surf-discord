@@ -11,8 +11,10 @@ object MainDiscordCommand : SuspendingCliktCommand(">") {
     override suspend fun run() = Unit
 }
 
-fun buildRootCommand(jda: JDA, commandProcessor: DiscordCommandProcessor) =
-    MainDiscordCommand.subcommands(
-        ExitCommand,
-        ReRegisterBotCommands(jda, commandProcessor)
-    )
+fun buildRootCommand(
+    jda: JDA,
+    commandProcessor: DiscordCommandProcessor,
+) = MainDiscordCommand.subcommands(
+    ExitCommand,
+    ReRegisterBotCommands(jda, commandProcessor),
+)

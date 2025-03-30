@@ -2,6 +2,8 @@ package dev.slne.discord.discord.interaction.command
 
 import dev.minn.jda.ktx.coroutines.await
 import dev.slne.discord.annotation.DiscordCommandMeta
+import dev.slne.discord.annotation.DiscordContextMenuCommandMeta
+import dev.slne.discord.discord.interaction.command.context.DiscordContextMenuCommand
 import dev.slne.discord.util.mutableObject2ObjectMapOf
 import dev.slne.discord.util.mutableObjectListOf
 import dev.slne.discord.util.ultimateTargetClass
@@ -16,13 +18,22 @@ import kotlin.reflect.full.findAnnotation
 @Component
 class DiscordCommandProcessor : BeanPostProcessor {
     private val logger = ComponentLogger.logger()
+
     private val commands = mutableObject2ObjectMapOf<String, DiscordCommandHolder>()
+    private val contextMenuCommands =
+        mutableObject2ObjectMapOf<String, DiscordContextMenuCommandHolder>()
 
     override fun postProcessAfterInitialization(bean: Any, beanName: String): Any? {
-        val annotation = bean.ultimateTargetClass().findAnnotation<DiscordCommandMeta>()
+        val commandMetaAnnotation = bean.ultimateTargetClass().findAnnotation<DiscordCommandMeta>()
+        val contextMenuCommandMetaAnnotation = bean.ultimateTargetClass()
+            .findAnnotation<DiscordContextMenuCommandMeta>()
 
-        if (bean is DiscordCommand && annotation != null) {
-            register(bean, annotation)
+        if (bean is DiscordCommand && commandMetaAnnotation != null) {
+            register(bean, commandMetaAnnotation)
+        }
+
+        if (bean is DiscordContextMenuCommand<*> && contextMenuCommandMetaAnnotation != null) {
+            register(bean, contextMenuCommandMetaAnnotation)
         }
 
         return bean
@@ -37,8 +48,21 @@ class DiscordCommandProcessor : BeanPostProcessor {
         logger.debug("Found command ${command.javaClass.simpleName} with name ${annotation.name}")
     }
 
+    private fun register(
+        command: DiscordContextMenuCommand<*>,
+        annotation: DiscordContextMenuCommandMeta
+    ) {
+        check(annotation.name !in contextMenuCommands) { "Duplicate command handler id ${annotation.name}" }
+
+        val holder = DiscordContextMenuCommandHolder(annotation, command)
+        contextMenuCommands[annotation.name] = holder
+
+        logger.debug("Found context menu command ${command.javaClass.simpleName} with name ${annotation.name}")
+    }
+
     fun getCommand(name: String): DiscordCommandHolder? = commands[name]
-    operator fun get(name: String): DiscordCommandHolder? = getCommand(name)
+    fun getContextMenuCommand(name: String): DiscordContextMenuCommandHolder? =
+        contextMenuCommands[name]
 
     suspend fun updateCommands(guild: Guild) {
         logger.info("Starting to update commands for guild ${guild.name} (${guild.id})")
@@ -54,6 +78,14 @@ class DiscordCommandProcessor : BeanPostProcessor {
             )
         }
 
+        for ((meta, command) in contextMenuCommands.values) {
+            commandData.add(
+                Commands.context(command.type.jdaMap, meta.name)
+                    .setGuildOnly(meta.guildOnly)
+                    .setNSFW(meta.nsfw)
+            )
+        }
+
         guild.updateCommands().await()
 
         val updatedCommandNames =
@@ -64,3 +96,4 @@ class DiscordCommandProcessor : BeanPostProcessor {
 }
 
 typealias DiscordCommandHolder = Pair<DiscordCommandMeta, DiscordCommand>
+typealias DiscordContextMenuCommandHolder = Pair<DiscordContextMenuCommandMeta, DiscordContextMenuCommand<*>>
