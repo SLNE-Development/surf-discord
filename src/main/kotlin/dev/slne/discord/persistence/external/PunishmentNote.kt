@@ -2,7 +2,10 @@ package dev.slne.discord.persistence.external
 
 import jakarta.persistence.*
 import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.annotations.TimeZoneStorage
+import org.hibernate.annotations.TimeZoneStorageType
 import org.hibernate.type.SqlTypes
+import java.time.ZonedDateTime
 import java.util.*
 
 @Table(name = "punish_notes")
@@ -32,6 +35,10 @@ data class PunishmentNote(
 
     @Column(name = "generated", nullable = false)
     val generated: Boolean = true,
+
+    @TimeZoneStorage(TimeZoneStorageType.NORMALIZE_UTC)
+    @Column(name = "unban_ticket_opened", nullable = false)
+    var unbanTicketOpened: ZonedDateTime,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
