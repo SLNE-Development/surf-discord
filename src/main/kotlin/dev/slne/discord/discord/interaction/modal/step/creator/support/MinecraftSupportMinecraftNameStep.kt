@@ -17,7 +17,6 @@ class MinecraftSupportMinecraftNameStep : ModalStep() {
         short(
             MINECRAFT_NAME,
             translatable("modal.minecraft-support.minecraft-name.label"),
-            placeholder = translatable("modal.minecraft-support.minecraft-name.placeholder"),
             required = true,
             requiredLength = 3..16
         )
