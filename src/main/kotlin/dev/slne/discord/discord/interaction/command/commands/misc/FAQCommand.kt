@@ -68,6 +68,11 @@ class FAQCommand : DiscordCommand() {
             "read-the-docs",
             translatable("command.faq.questions.read-the-docs"),
             translatable("command.faq.questions.read-the-docs.answer")
+        ),
+        Question(
+            "punish-id",
+            translatable("command.faq.questions.punish-id"),
+            translatable("command.faq.questions.punish-id.answer")
         )
     ).associateBy { it.identifier }
 
