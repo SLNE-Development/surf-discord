@@ -6,6 +6,8 @@ import org.jetbrains.annotations.NonNls
 import org.jetbrains.annotations.PropertyKey
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.io.InputStreamReader
+import java.nio.charset.StandardCharsets
 import java.text.MessageFormat
 import java.util.*
 
@@ -21,7 +23,7 @@ object RawMessages {
             javaClass.classLoader
                 .getResourceAsStream(BUNDLE_PATH).use { defaultStream ->
                     if (defaultStream != null) {
-                        properties.load(defaultStream)
+                        properties.load(InputStreamReader(defaultStream, StandardCharsets.UTF_8))
                     } else {
                         throw FileNotFoundException("Default properties file not found")
                     }
