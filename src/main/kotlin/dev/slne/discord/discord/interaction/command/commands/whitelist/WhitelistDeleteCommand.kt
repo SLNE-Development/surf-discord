@@ -41,7 +41,7 @@ class WhitelistDeleteCommand(
             .await()
 
         val minecraftUuid = userService.getUuidByUsername(minecraftUsername)
-        hook.editOriginal(translatable("interaction.command.whitelist.delete.delete.querying"))
+        hook.editOriginal(translatable("interaction.command.whitelist.delete.querying"))
             .await()
 
         val isWhitelisted = whitelistService.isWhitelisted(
@@ -52,7 +52,7 @@ class WhitelistDeleteCommand(
             throw CommandExceptions.WHITELIST_DELETE_NOT_WHITELISTED.create()
         }
 
-        hook.editOriginal(translatable("interaction.command.whitelist.delete.querying")).await()
+        hook.editOriginal(translatable("interaction.command.whitelist.delete.delete")).await()
 
         whitelistService.deleteWhitelists(minecraftUuid)
 
