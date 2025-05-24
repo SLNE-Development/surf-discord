@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Run" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
-    <module name="IdeaProjects.surf-discord.main" />
+    <module name="surf-discord.main" />
     <option name="PROGRAM_PARAMETERS" value="--spring.profiles.active=prod" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="dev.slne.discord.DiscordSpringApplication" />
     <extension name="coverage">

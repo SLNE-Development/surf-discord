@@ -43,7 +43,7 @@ class ReportTicketPlayerStep : ModalStep() {
         )
         addEmptyLine()
         addMessage(
-            "# " + translatable("modal.report.step.player.input.reason.placeholder")
+            "# " + translatable("modal.report.step.player.messages.reported-player.reason")
         )
         addMessage("> %s", reportReason)
     }
