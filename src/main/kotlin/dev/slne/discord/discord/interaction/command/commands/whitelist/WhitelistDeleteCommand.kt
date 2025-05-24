@@ -9,8 +9,10 @@ import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.user.UserService
 import dev.slne.discord.persistence.service.whitelist.WhitelistService
+import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
+import net.dv8tion.jda.api.interactions.commands.build.OptionData
 
 private const val MINECRAFT_USER_OPTION: String = "minecraft"
 
@@ -19,35 +21,33 @@ private const val MINECRAFT_USER_OPTION: String = "minecraft"
     description = "Löscht die Whitelist des angegebenen Spielers",
     permission = CommandPermission.WHITELIST_DELETE
 )
-
 class WhitelistDeleteCommand(
     private val whitelistService: WhitelistService,
     private val userService: UserService
 ) : DiscordCommand() {
 
-    val option = option<String>(
-        MINECRAFT_USER_OPTION,
-        translatable("interaction.command.whitelist.delete.arg.user"),
-        required = true
-    ) { length(3..16) }
-
+    override val options = listOf(
+        option<String>(
+            MINECRAFT_USER_OPTION,
+            translatable("interaction.command.whitelist.delete.arg.user"),
+            required = true
+        ){ length(3..16) }
+    )
 
     override suspend fun internalExecute(
         interaction: SlashCommandInteractionEvent,
         hook: InteractionHook
     ) {
-        val minecraftUsername = interaction.getOption<String>(MINECRAFT_USER_OPTION)
+        val minecraftUsername = interaction.getOptionOrThrow<String>(MINECRAFT_USER_OPTION)
 
         hook.editOriginal(translatable("interaction.command.ticket.whitelist.uuid-fetching"))
             .await()
 
-        val minecraftUuid =
-            minecraftUsername.let { userService.getUuidByUsername(username = minecraftUsername.toString()) }
-
+        val minecraftUuid = userService.getUuidByUsername(minecraftUsername)
         hook.editOriginal(translatable("interaction.command.ticket.wlquery.querying")).await()
 
         val isWhitelisted = whitelistService.isWhitelisted(
-            uuid = minecraftUuid
+            minecraftUuid
         )
 
         if (!isWhitelisted) {
@@ -56,7 +56,7 @@ class WhitelistDeleteCommand(
 
         hook.editOriginal(translatable("interaction.command.wldelete.querying")).await()
 
-        whitelistService.deleteWhitelists(uuid = minecraftUuid)
+        whitelistService.deleteWhitelists(minecraftUuid)
 
         hook.editOriginal(translatable("interaction.command.wldelete.success", minecraftUsername))
             .await()
