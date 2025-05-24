@@ -1,7 +1,6 @@
 package dev.slne.discord.discord.interaction.command.commands.whitelist
 
 import dev.minn.jda.ktx.coroutines.await
-import dev.minn.jda.ktx.interactions.components.getOption
 import dev.slne.discord.annotation.DiscordCommandMeta
 import dev.slne.discord.discord.interaction.command.DiscordCommand
 import dev.slne.discord.exception.command.CommandExceptions
@@ -9,10 +8,8 @@ import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.user.UserService
 import dev.slne.discord.persistence.service.whitelist.WhitelistService
-import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
-import net.dv8tion.jda.api.interactions.commands.build.OptionData
 
 private const val MINECRAFT_USER_OPTION: String = "minecraft"
 
@@ -31,7 +28,7 @@ class WhitelistDeleteCommand(
             MINECRAFT_USER_OPTION,
             translatable("interaction.command.whitelist.delete.arg.user"),
             required = true
-        ){ length(3..16) }
+        ) { length(3..16) }
     )
 
     override suspend fun internalExecute(
@@ -40,11 +37,12 @@ class WhitelistDeleteCommand(
     ) {
         val minecraftUsername = interaction.getOptionOrThrow<String>(MINECRAFT_USER_OPTION)
 
-        hook.editOriginal(translatable("interaction.command.ticket.whitelist.uuid-fetching"))
+        hook.editOriginal(translatable("interaction.command.whitelist.delete.uuid-fetching"))
             .await()
 
         val minecraftUuid = userService.getUuidByUsername(minecraftUsername)
-        hook.editOriginal(translatable("interaction.command.ticket.wlquery.querying")).await()
+        hook.editOriginal(translatable("interaction.command.whitelist.delete.delete.querying"))
+            .await()
 
         val isWhitelisted = whitelistService.isWhitelisted(
             minecraftUuid
@@ -54,11 +52,15 @@ class WhitelistDeleteCommand(
             throw CommandExceptions.WHITELIST_DELETE_NOT_WHITELISTED.create()
         }
 
-        hook.editOriginal(translatable("interaction.command.wldelete.querying")).await()
+        hook.editOriginal(translatable("interaction.command.whitelist.delete.querying")).await()
 
         whitelistService.deleteWhitelists(minecraftUuid)
 
-        hook.editOriginal(translatable("interaction.command.wldelete.success", minecraftUsername))
-            .await()
+        hook.editOriginal(
+            translatable(
+                "interaction.command.whitelist.delete.success",
+                minecraftUsername
+            )
+        ).await()
     }
 }
