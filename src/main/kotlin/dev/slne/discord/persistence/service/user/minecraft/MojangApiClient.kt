@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import java.util.*
 
 @FeignClient(value = "minecraft-api-client", url = "https://api.mojang.com")
-interface MinecraftApiClient {
+interface MojangApiClient {
 
     @GetMapping("/user/profile/{uuid}")
     fun getUsername(@PathVariable uuid: UUID): MinecraftApiResponse
