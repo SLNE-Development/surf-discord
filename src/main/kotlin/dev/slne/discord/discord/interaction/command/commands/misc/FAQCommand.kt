@@ -83,6 +83,11 @@ class FAQCommand : DiscordCommand() {
             "clan-info",
             translatable("command.faq.questions.clan-info"),
             translatable("command.faq.questions.clan-info.answer")
+        ),
+        Question(
+            "take-part-in-event",
+            translatable("command.faq.questions.take-part-in-event"),
+            translatable("command.faq.questions.take-part-in-event.answer")
         )
     ).associateBy { it.identifier }
 
