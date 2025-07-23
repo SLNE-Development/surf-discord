@@ -78,6 +78,16 @@ class FAQCommand : DiscordCommand() {
             "how-to-share-log",
             translatable("command.faq.questions.how-to-share-log"),
             translatable("command.faq.questions.how-to-share-log.answer")
+        ),
+        Question(
+            "clan-info",
+            translatable("command.faq.questions.clan-info"),
+            translatable("command.faq.questions.clan-info.answer")
+        ),
+        Question(
+            "take-part-in-event",
+            translatable("command.faq.questions.take-part-in-event"),
+            translatable("command.faq.questions.take-part-in-event.answer")
         )
     ).associateBy { it.identifier }
 
