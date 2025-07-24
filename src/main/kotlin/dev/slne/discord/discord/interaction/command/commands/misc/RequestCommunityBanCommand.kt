@@ -18,8 +18,13 @@ import net.dv8tion.jda.api.interactions.InteractionHook
 import java.time.ZonedDateTime
 import java.util.*
 
+private const val NORMAL_SUBCOMMAND: String = "normal"
+private const val CUSTOM_SUBCOMMAND: String = "custom"
 
 private const val MINECRAFT_OPTION: String = "minecraft-name"
+private const val DISCORD_OPTION: String = "discord-user"
+private const val TWITCH_OPTION: String = "twitch-name"
+
 private const val REASON_OPTION: String = "reason"
 private const val BAN_LINK_OPTION: String = "ban-link"
 
@@ -34,22 +39,65 @@ class RequestCommunityBanCommand(
     private val userService: UserService
 ) : DiscordCommand() {
 
-    override val options = listOf(
-        option<String>(
-            MINECRAFT_OPTION,
-            translatable("interaction.command.community-ban.arg.player_name"),
-            required = true
-        ),
-        option<String>(
-            BAN_LINK_OPTION,
-            translatable("interaction.command.community-ban.arg.ban-link"),
-            required = true
-        ),
-        option<String>(
-            REASON_OPTION,
-            translatable("interaction.command.community-ban.full.arg.reason"),
-            required = true
-        ),
+
+    override val subCommands = listOf(
+        subcommand(
+            NORMAL_SUBCOMMAND,
+            translatable("interaction.command.community-ban.normal.description")
+        ) {
+            this@subcommand.addOptions(
+                listOf(
+                    option<String>(
+                        MINECRAFT_OPTION,
+                        translatable("interaction.command.community-ban.arg.player_name"),
+                        required = true
+                    ),
+                    option<String>(
+                        BAN_LINK_OPTION,
+                        translatable("interaction.command.community-ban.arg.ban-link"),
+                        required = true
+                    ),
+                    option<String>(
+                        REASON_OPTION,
+                        translatable("interaction.command.community-ban.full.arg.reason"),
+                        required = true
+                    ),
+                )
+            )
+        }, subcommand(
+            CUSTOM_SUBCOMMAND,
+            translatable("interaction.command.community-ban.custom.description")
+        ) {
+            this@subcommand.addOptions(
+                listOf(
+                    option<String>(
+                        MINECRAFT_OPTION,
+                        translatable("interaction.command.community-ban.arg.player_name"),
+                        required = true
+                    ),
+                    option<String>(
+                        DISCORD_OPTION,
+                        translatable("interaction.command.community-ban.arg.discord_name"),
+                        required = false
+                    ),
+                    option<String>(
+                        TWITCH_OPTION,
+                        translatable("interaction.command.community-ban.arg.twitch_name"),
+                        required = false
+                    ),
+                    option<String>(
+                        BAN_LINK_OPTION,
+                        translatable("interaction.command.community-ban.arg.ban-link"),
+                        required = true
+                    ),
+                    option<String>(
+                        REASON_OPTION,
+                        translatable("interaction.command.community-ban.full.arg.reason"),
+                        required = true
+                    )
+                )
+            )
+        }
     )
 
     override suspend fun internalExecute(
@@ -57,16 +105,13 @@ class RequestCommunityBanCommand(
         hook: InteractionHook
     ) {
         val minecraftName = interaction.getOption<String>(MINECRAFT_OPTION)
-            ?: throw CommandExceptions.TICKET_WLQUERY_NO_USER.create()
+            ?: throw CommandExceptions.GENERIC.create()
 
-        hook.editOriginal(translatable("interaction.command.ticket.wlquery.querying")).await()
+
         val minecraftUuid = userService.getUuidByUsername(minecraftName)
             ?: throw CommandExceptions.MINECRAFT_USER_NOT_FOUND.create()
 
-        val whitelists = whitelistService.findWhitelists(minecraftUuid, null, null)
-
-
-        hook.deleteOriginal().await()
+        val subCommand = interaction.subcommandName
 
         val channel = interaction.getThreadChannelOrThrow()
 
@@ -76,45 +121,71 @@ class RequestCommunityBanCommand(
         val banLink = interaction.getOption<String>(BAN_LINK_OPTION)
             ?: throw CommandExceptions.GENERIC.create()
 
+        when (subCommand) {
+            NORMAL_SUBCOMMAND -> {
+                hook.editOriginal(translatable("interaction.command.ticket.wlquery.querying"))
+                    .await()
 
-        if (whitelists.isEmpty()) {
+                val whitelists = whitelistService.findWhitelists(minecraftUuid, null, null)
 
-            val embed = buildEmbed(
-                minecraftName,
-                minecraftUuid,
-                false,
-                null,
-                null,
-                reason,
-                banLink,
-                interaction.user
-            )
+                hook.deleteOriginal().await()
+                if (whitelists.isEmpty()) {
 
-            channel.sendMessageEmbeds(embed).await()
-            return@internalExecute
+                    val embed = buildEmbed(
+                        minecraftName,
+                        minecraftUuid,
+                        null,
+                        null,
+                        reason,
+                        banLink,
+                        interaction.user
+                    )
+
+                    channel.sendMessageEmbeds(embed).await()
+                    return@internalExecute
+                }
+
+                val firstWhitelist = whitelists.first()
+
+                val whitelistEmbed = buildEmbed(
+                    minecraftName,
+                    minecraftUuid,
+                    firstWhitelist.discordId,
+                    firstWhitelist.twitchLink,
+                    reason,
+                    banLink,
+                    interaction.user
+                )
+
+                channel.sendMessageEmbeds(whitelistEmbed).await()
+            }
+
+            CUSTOM_SUBCOMMAND -> {
+
+                val twitchName = interaction.getOption<String>(TWITCH_OPTION)
+                val discordUserId = interaction.getOption<String>(DISCORD_OPTION)
+
+                hook.deleteOriginal().await()
+                val embed = buildEmbed(
+                    minecraftName,
+                    minecraftUuid,
+                    discordUserId,
+                    twitchName,
+                    reason,
+                    banLink,
+                    interaction.user
+                )
+
+                channel.sendMessageEmbeds(embed).await()
+            }
         }
-
-        val firstWhitelist = whitelists.first()
-
-        val whitelistEmbed = buildEmbed(
-            minecraftName,
-            minecraftUuid,
-            true,
-            firstWhitelist.discordId,
-            firstWhitelist.twitchLink,
-            reason,
-            banLink,
-            interaction.user
-        )
-        channel.sendMessageEmbeds(whitelistEmbed).await()
     }
 
     private fun buildEmbed(
         minecraftName: String,
-        minecraftUuid: UUID,
-        isWhitelist: Boolean,
+        minecraftUuid: UUID?,
         discordUserId: String?,
-        twitchLink: String?,
+        twitchName: String?,
         reason: String,
         banLink: String,
         requestedBy: User,
@@ -143,18 +214,16 @@ class RequestCommunityBanCommand(
                 inline = false
             }
 
-            if (isWhitelist) {
-                field {
-                    name = "Discord User"
-                    value = if (discordUserId == null) "Kein Benutzer" else "<@$discordUserId>"
-                    inline = false
-                }
+            field {
+                name = "Discord User"
+                value = if (discordUserId == null) "Kein Benutzer" else "<@$discordUserId>"
+                inline = false
+            }
 
-                field {
-                    name = "Twitch Link"
-                    value = "https://twitch/$twitchLink"
-                    inline = false
-                }
+            field {
+                name = "Twitch Link"
+                value = if (twitchName == null) "Kein Benutzer" else "https://twitch/$twitchName"
+                inline = false
             }
 
             field {
