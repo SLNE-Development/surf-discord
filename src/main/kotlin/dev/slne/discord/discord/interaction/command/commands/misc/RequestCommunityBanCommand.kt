@@ -30,7 +30,7 @@ private const val BAN_LINK_OPTION: String = "ban-link"
 
 @DiscordCommandMeta(
     name = "request-community-ban",
-    description = "Fordere einen Community-Ban für einen User an",
+    description = "Fordere einen Community-Ban für einen Spieler an",
     permission = CommandPermission.REQUEST_COMMUNITY_BAN,
     ephemeral = true
 )
