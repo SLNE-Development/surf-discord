@@ -18,11 +18,11 @@ import net.dv8tion.jda.api.interactions.InteractionHook
 import java.time.ZonedDateTime
 import java.util.*
 
-private const val NORMAL_SUBCOMMAND: String = "normal"
-private const val CUSTOM_SUBCOMMAND: String = "custom"
+private const val QUERY_SUBCOMMAND: String = "query"
+private const val MANUAL_SUBCOMMAND: String = "manual"
 
 private const val MINECRAFT_OPTION: String = "minecraft-name"
-private const val DISCORD_OPTION: String = "discord-user"
+private const val DISCORD_OPTION: String = "discord-id"
 private const val TWITCH_OPTION: String = "twitch-name"
 
 private const val REASON_OPTION: String = "reason"
@@ -42,7 +42,7 @@ class RequestCommunityBanCommand(
 
     override val subCommands = listOf(
         subcommand(
-            NORMAL_SUBCOMMAND,
+            QUERY_SUBCOMMAND,
             translatable("interaction.command.community-ban.normal.description")
         ) {
             this@subcommand.addOptions(
@@ -65,7 +65,7 @@ class RequestCommunityBanCommand(
                 )
             )
         }, subcommand(
-            CUSTOM_SUBCOMMAND,
+            MANUAL_SUBCOMMAND,
             translatable("interaction.command.community-ban.custom.description")
         ) {
             this@subcommand.addOptions(
@@ -105,10 +105,8 @@ class RequestCommunityBanCommand(
         hook: InteractionHook
     ) {
         val minecraftName = interaction.getOption<String>(MINECRAFT_OPTION)
-            ?: throw CommandExceptions.GENERIC.create()
 
-
-        val minecraftUuid = userService.getUuidByUsername(minecraftName)
+        val minecraftUuid = userService.getUuidByUsername(minecraftName!!)
             ?: throw CommandExceptions.MINECRAFT_USER_NOT_FOUND.create()
 
         val subCommand = interaction.subcommandName
@@ -122,7 +120,7 @@ class RequestCommunityBanCommand(
             ?: throw CommandExceptions.GENERIC.create()
 
         when (subCommand) {
-            NORMAL_SUBCOMMAND -> {
+            QUERY_SUBCOMMAND -> {
                 hook.editOriginal(translatable("interaction.command.ticket.wlquery.querying"))
                     .await()
 
@@ -160,7 +158,7 @@ class RequestCommunityBanCommand(
                 channel.sendMessageEmbeds(whitelistEmbed).await()
             }
 
-            CUSTOM_SUBCOMMAND -> {
+            MANUAL_SUBCOMMAND -> {
 
                 val twitchName = interaction.getOption<String>(TWITCH_OPTION)
                 val discordUserId = interaction.getOption<String>(DISCORD_OPTION)
