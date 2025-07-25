@@ -9,6 +9,8 @@ import dev.slne.discord.discord.interaction.command.DiscordCommand
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.EmbedColors
 import dev.slne.discord.message.translatable
+import dev.slne.discord.util.CooldownManager
+import dev.slne.discord.util.CooldownScope
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
@@ -110,6 +112,12 @@ class FAQCommand : DiscordCommand() {
         val identifier = interaction.getOptionOrThrow<String>(QUESTION_IDENTIFIER)
         val user = interaction.getOption<User>(USER_IDENTIFIER)
         val question = questions[identifier] ?: return
+        val channelId = interaction.channel.id
+
+        CooldownManager.isOnCooldown(question.question, channelId)?.let { message ->
+            hook.editOriginal(message).await()
+            return@internalExecute
+        }
 
         hook.editOriginal(MessageEdit {
             if (user != null) {
@@ -122,6 +130,7 @@ class FAQCommand : DiscordCommand() {
                 color = EmbedColors.FAQ
             }
         }).await()
+        CooldownManager.setCooldown(question.question, channelId, CooldownScope.FAQ.cooldown)
     }
 
     private data class Question(val identifier: String, val question: String, val answer: String)
