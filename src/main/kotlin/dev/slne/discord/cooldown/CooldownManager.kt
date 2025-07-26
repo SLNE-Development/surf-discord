@@ -21,7 +21,7 @@ object CooldownManager {
 
         return if (now < expiresAt) {
             val remaining = (expiresAt - now) / 1000
-            translatable("interaction.context.cooldown.active", remaining.toString())
+            translatable("interaction.command.cooldown.active", remaining.toString())
         } else {
             cooldownManager.remove(key)
             null
