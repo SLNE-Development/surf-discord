@@ -42,6 +42,7 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.FAQ,
                         CommandPermission.MISSING_INFORMATION,
                         CommandPermission.REQUEST_ROLLBACK,
+                        CommandPermission.REQUEST_COMMUNITY_BAN,
                         CommandPermission.SHOW_ADMIN_PANEL
                     ),
                 ),
@@ -63,6 +64,7 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.FAQ,
                         CommandPermission.MISSING_INFORMATION,
                         CommandPermission.REQUEST_ROLLBACK,
+                        CommandPermission.REQUEST_COMMUNITY_BAN,
                         CommandPermission.SHOW_ADMIN_PANEL
                     ),
                 ),
@@ -121,6 +123,7 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.FAQ,
                         CommandPermission.MISSING_INFORMATION,
                         CommandPermission.REQUEST_ROLLBACK,
+                        CommandPermission.REQUEST_COMMUNITY_BAN,
                         CommandPermission.SHOW_ADMIN_PANEL,
                         CommandPermission.SHOW_TICKET_ADMIN_PANEL,
                     ),
