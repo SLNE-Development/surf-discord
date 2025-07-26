@@ -8,6 +8,8 @@ import dev.slne.discord.discord.interaction.command.DiscordCommand
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.EmbedColors
 import dev.slne.discord.message.translatable
+import dev.slne.discord.cooldown.CooldownManager
+import dev.slne.discord.cooldown.CooldownDuration
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
@@ -34,6 +36,13 @@ class HowToJoin : DiscordCommand() {
         hook: InteractionHook
     ) {
         val user = interaction.getOption<User>(USER_OPTION)
+        val commandName = interaction.name
+        val channelId = interaction.channel.id
+
+        CooldownManager.isOnCooldown(commandName, channelId)?.let { message ->
+            hook.editOriginal(message).await()
+            return@internalExecute
+        }
 
         hook.editOriginal(MessageEdit {
             if (user != null) {
@@ -46,5 +55,10 @@ class HowToJoin : DiscordCommand() {
                 color = EmbedColors.HOW_TO_JOIN
             }
         }).await()
+
+        CooldownManager.setCooldown(
+            commandName, channelId,
+            CooldownDuration.HOW_TO_JOIN.cooldown
+        )
     }
 }
