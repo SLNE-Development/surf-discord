@@ -25,4 +25,19 @@ class CooldownManager {
 
         return true
     }
+
+    fun getRemainingMillis(cooldownKey: CooldownKey): Long {
+        val activeCooldown = cooldown[cooldownKey] ?: return 0L
+        val now = System.currentTimeMillis()
+
+        return if (now < activeCooldown) {
+            activeCooldown - now
+        } else {
+            cooldown.remove(cooldownKey)
+            0L
+        }
+    }
+
 }
+
+data class CooldownKey(val channelId: Long, val command: String)
