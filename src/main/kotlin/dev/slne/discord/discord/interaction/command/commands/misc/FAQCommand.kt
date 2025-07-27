@@ -11,6 +11,7 @@ import dev.slne.discord.message.EmbedColors
 import dev.slne.discord.message.translatable
 import dev.slne.discord.cooldown.CooldownManager
 import dev.slne.discord.cooldown.CooldownDuration
+import dev.slne.discord.cooldown.CooldownKey
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
@@ -28,66 +29,79 @@ class FAQCommand : DiscordCommand() {
     private val questions = listOf(
         Question(
             "connect-twitch",
+            CooldownDuration.CONNECT_TWITCH,
             translatable("command.faq.questions.connect-twitch-with-discord"),
             translatable("command.faq.questions.connect-twitch-with-discord.answer")
         ),
         Question(
             "banned",
+            CooldownDuration.BANNED,
             translatable("command.faq.questions.banned"),
             translatable("command.faq.questions.banned.answer")
         ),
         Question(
             "next-event",
+            CooldownDuration.NEXT_EVENT,
             translatable("command.faq.questions.event"),
             translatable("command.faq.questions.event.answer")
         ),
         Question(
             "how-to-open-ticket",
+            CooldownDuration.HOW_TO_OPEN_TICKET,
             translatable("command.faq.questions.open-ticket"),
             translatable("command.faq.questions.open-ticket.answer")
         ),
         Question(
             "rulebook",
+            CooldownDuration.RULEBOOK,
             translatable("command.faq.questions.rulebook"),
             translatable("command.faq.questions.rulebook.answer")
         ),
         Question(
             "server-modpack",
+            CooldownDuration.SERVER_MODPACK,
             translatable("command.faq.questions.server-modpack"),
             translatable("command.faq.questions.server-modpack.answer")
         ),
         Question(
             "problem-ressourcepack",
+            CooldownDuration.PROBLEM_RESSOURCEPACK,
             translatable("command.faq.questions.problem-ressourcepack"),
             translatable("command.faq.questions.problem-ressourcepack.answer")
         ),
         Question(
             "problem-connection",
+            CooldownDuration.PROBLEM_CONNECTION,
             translatable("command.faq.questions.problem-connection"),
             translatable("command.faq.questions.problem-connection.answer")
         ),
         Question(
             "read-the-docs",
+            CooldownDuration.READ_THE_DOCS,
             translatable("command.faq.questions.read-the-docs"),
             translatable("command.faq.questions.read-the-docs.answer")
         ),
         Question(
             "maintenance",
+            CooldownDuration.MAINTENANCE,
             translatable("command.faq.questions.maintenance"),
             translatable("command.faq.questions.maintenance.answer")
         ),
         Question(
             "how-to-share-log",
+            CooldownDuration.HOW_TO_SHARE_LOG,
             translatable("command.faq.questions.how-to-share-log"),
             translatable("command.faq.questions.how-to-share-log.answer")
         ),
         Question(
             "clan-info",
+            CooldownDuration.CLAN_INFO,
             translatable("command.faq.questions.clan-info"),
             translatable("command.faq.questions.clan-info.answer")
         ),
         Question(
             "take-part-in-event",
+            CooldownDuration.TAKE_PART_IN_EVENT,
             translatable("command.faq.questions.take-part-in-event"),
             translatable("command.faq.questions.take-part-in-event.answer")
         )
@@ -112,11 +126,18 @@ class FAQCommand : DiscordCommand() {
         val identifier = interaction.getOptionOrThrow<String>(QUESTION_IDENTIFIER)
         val user = interaction.getOption<User>(USER_IDENTIFIER)
         val question = questions[identifier] ?: return
-        val channelId = interaction.channel.id
 
-        CooldownManager.isOnCooldown(question.question, channelId)?.let { message ->
+        val cooldownManager = CooldownManager()
+        val commandName = interaction.name
+        val channelId = interaction.channel.id.toLong()
+
+        val key = CooldownKey(channelId, commandName)
+
+        if (cooldownManager.isOnCooldown(channelId, commandName)) {
+            val remainingSeconds = cooldownManager.getRemainingMillis(key) / 1000
+            val message = translatable("interaction.command.cooldown.active", remainingSeconds.toString())
             hook.editOriginal(message).await()
-            return@internalExecute
+            return
         }
 
         hook.editOriginal(MessageEdit {
@@ -130,8 +151,9 @@ class FAQCommand : DiscordCommand() {
                 color = EmbedColors.FAQ
             }
         }).await()
-        CooldownManager.setCooldown(question.question, channelId, CooldownDuration.FAQ.cooldown)
+
+        cooldownManager.setCooldown(channelId, question.cooldownDuration)
     }
 
-    private data class Question(val identifier: String, val question: String, val answer: String)
+    private data class Question(val identifier: String, val cooldownDuration: CooldownDuration, val question: String, val answer: String)
 }

@@ -3,12 +3,13 @@ package dev.slne.discord.discord.interaction.command.commands.misc
 import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.messages.Embed
 import dev.slne.discord.annotation.DiscordCommandMeta
+import dev.slne.discord.cooldown.CooldownDuration
+import dev.slne.discord.cooldown.CooldownKey
+import dev.slne.discord.cooldown.CooldownManager
 import dev.slne.discord.discord.interaction.command.DiscordCommand
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.EmbedColors
 import dev.slne.discord.message.translatable
-import dev.slne.discord.cooldown.CooldownManager
-import dev.slne.discord.cooldown.CooldownDuration
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
 
@@ -23,12 +24,17 @@ class DontAskToAsk : DiscordCommand() {
         interaction: SlashCommandInteractionEvent,
         hook: InteractionHook
     ) {
+        val cooldownManager = CooldownManager()
         val commandName = interaction.name
-        val channelId = interaction.channel.id
+        val channelId = interaction.channel.id.toLong()
 
-        CooldownManager.isOnCooldown(commandName, channelId)?.let { message ->
+        val key = CooldownKey(channelId, commandName)
+
+        if (cooldownManager.isOnCooldown(channelId, commandName)) {
+            val remainingSeconds = cooldownManager.getRemainingMillis(key) / 1000
+            val message = translatable("interaction.command.cooldown.active", remainingSeconds.toString())
             hook.editOriginal(message).await()
-            return@internalExecute
+            return
         }
 
         hook.editOriginalEmbeds(Embed {
@@ -37,9 +43,6 @@ class DontAskToAsk : DiscordCommand() {
             color = EmbedColors.DO_NOT_ASK
         }).await()
 
-        CooldownManager.setCooldown(
-            commandName, channelId,
-            CooldownDuration.DONT_ASK_TO_ASK.cooldown
-        )
+        cooldownManager.setCooldown(channelId, CooldownDuration.DONT_ASK_TO_ASK)
     }
 }

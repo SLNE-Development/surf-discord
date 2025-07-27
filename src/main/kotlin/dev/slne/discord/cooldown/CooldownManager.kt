@@ -1,30 +1,28 @@
 package dev.slne.discord.cooldown
 
-import dev.slne.discord.message.translatable
-import java.util.concurrent.ConcurrentHashMap
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 
-object CooldownManager {
-    private val cooldownManager: ConcurrentHashMap<String, Long> = ConcurrentHashMap()
+class CooldownManager {
+    private val cooldown: Object2ObjectMap<CooldownKey, Long> = Object2ObjectOpenHashMap()
 
     fun setCooldown(
-        command: String,
-        channelId: String,
-        cooldown: Long
+        channelId: Long,
+        cooldownDuration: CooldownDuration
     ) {
-        cooldownManager["$command:$channelId"] = System.currentTimeMillis() + cooldown
+        cooldown[CooldownKey(channelId, cooldownDuration.name)] = System.currentTimeMillis() + cooldownDuration.cooldown
     }
 
-    fun isOnCooldown(command: String, channelId: String): String? {
-        val key = "$command:$channelId"
+    fun isOnCooldown(channelId: Long, command: String): Boolean {
+        val key = CooldownKey(channelId, command)
+        val activeCooldown = cooldown[key] ?: return false
         val now = System.currentTimeMillis()
-        val expiresAt = cooldownManager[key] ?: return null
 
-        return if (now < expiresAt) {
-            val remaining = (expiresAt - now) / 1000
-            translatable("interaction.command.cooldown.active", remaining.toString())
-        } else {
-            cooldownManager.remove(key)
-            null
+        if (now >= activeCooldown) {
+            cooldown.remove(key)
+            return false
         }
+
+        return true
     }
 }

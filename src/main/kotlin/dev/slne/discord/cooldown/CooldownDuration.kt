@@ -1,15 +1,21 @@
 package dev.slne.discord.cooldown
 
-enum class CooldownDuration {
+
+enum class CooldownDuration(val cooldown: Long) {
 
     DONT_ASK_TO_ASK(60000),
     HOW_TO_JOIN(600000),
-    FAQ(600000);
-
-    val cooldown: Long
-
-    constructor(cooldown: Long) {
-        this.cooldown = cooldown
-    }
-
+    CONNECT_TWITCH(600000),
+    BANNED(600000),
+    NEXT_EVENT(600000),
+    HOW_TO_OPEN_TICKET(600000),
+    RULEBOOK(600000),
+    SERVER_MODPACK(600000),
+    PROBLEM_RESSOURCEPACK(600000),
+    PROBLEM_CONNECTION(600000),
+    READ_THE_DOCS(600000),
+    MAINTENANCE(600000),
+    HOW_TO_SHARE_LOG(600000),
+    CLAN_INFO(600000),
+    TAKE_PART_IN_EVENT(600000),
 }
