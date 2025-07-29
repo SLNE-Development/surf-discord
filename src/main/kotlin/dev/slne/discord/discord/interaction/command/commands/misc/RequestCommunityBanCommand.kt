@@ -76,16 +76,6 @@ class RequestCommunityBanCommand(
                         required = true
                     ),
                     option<String>(
-                        DISCORD_OPTION,
-                        translatable("interaction.command.community-ban.arg.discord_name"),
-                        required = false
-                    ),
-                    option<String>(
-                        TWITCH_OPTION,
-                        translatable("interaction.command.community-ban.arg.twitch_name"),
-                        required = false
-                    ),
-                    option<String>(
                         BAN_LINK_OPTION,
                         translatable("interaction.command.community-ban.arg.ban-link"),
                         required = true
@@ -94,6 +84,16 @@ class RequestCommunityBanCommand(
                         REASON_OPTION,
                         translatable("interaction.command.community-ban.full.arg.reason"),
                         required = true
+                    ),
+                    option<String>(
+                        DISCORD_OPTION,
+                        translatable("interaction.command.community-ban.arg.discord_name"),
+                        required = false
+                    ),
+                    option<String>(
+                        TWITCH_OPTION,
+                        translatable("interaction.command.community-ban.arg.twitch_name"),
+                        required = false
                     )
                 )
             )
