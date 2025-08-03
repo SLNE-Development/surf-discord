@@ -28,6 +28,9 @@ private const val SERVERS_OPTION: String = "servers"
 private const val TIMERANGE_OPTION: String = "timerange"
 private const val REASON_OPTION: String = "reason"
 
+private const val DIMENSION_OPTION: String = "dimension"
+private const val COORDINATES_OPTION: String = "coordinates"
+
 @DiscordCommandMeta(
     name = "requestrollback",
     description = "Fordere einen Rollback für einen User an",
@@ -60,6 +63,16 @@ class RequestRollbackCommand(
                         TIMERANGE_OPTION,
                         translatable("interaction.command.rollback.sub.timed.arg.timerange"),
                         required = true
+                    ),
+                    option<String>(
+                        DIMENSION_OPTION,
+                        translatable("interaction.command.rollback.sub.arg.dimension"),
+                        required = true
+                    ),
+                    option<String>(
+                        COORDINATES_OPTION,
+                        translatable("interaction.command.rollback.sub.arg.coordinates"),
+                        required = true
                     )
                 )
             )
@@ -84,6 +97,16 @@ class RequestRollbackCommand(
                         REASON_OPTION,
                         translatable("interaction.command.rollback.sub.full.arg.reason"),
                         required = true
+                    ),
+                    option<String>(
+                        DIMENSION_OPTION,
+                        translatable("interaction.command.rollback.sub.arg.dimension"),
+                        required = true
+                    ),
+                    option<String>(
+                        COORDINATES_OPTION,
+                        translatable("interaction.command.rollback.sub.arg.coordinates"),
+                        required = true
                     )
                 )
             )
@@ -96,6 +119,9 @@ class RequestRollbackCommand(
     ) {
         val minecraftName = interaction.getOption<String>(MINECRAFT_OPTION)
         val servers = interaction.getOption<String>(SERVERS_OPTION)
+        val dimension = interaction.getOption<String>(DIMENSION_OPTION)
+        val coordinates = interaction.getOption<String>(COORDINATES_OPTION)
+
         val subCommand = interaction.subcommandName
 
         if (minecraftName == null) {
@@ -112,6 +138,14 @@ class RequestRollbackCommand(
         }
 
         val firstWhitelist = whitelists.first()
+
+        if (dimension == null) {
+            throw CommandExceptions.GENERIC.create()
+        }
+
+        if (coordinates == null) {
+            throw CommandExceptions.GENERIC.create()
+        }
 
         if (servers == null) {
             throw CommandExceptions.GENERIC.create()
@@ -131,7 +165,9 @@ class RequestRollbackCommand(
                     firstWhitelist.discordId,
                     servers,
                     interaction.user,
-                    fullRollback = false
+                    fullRollback = false,
+                    dimension,
+                    coordinates
                 ) {
                     it.field {
                         name = "Timerange"
@@ -156,7 +192,9 @@ class RequestRollbackCommand(
                     firstWhitelist.discordId,
                     servers,
                     interaction.user,
-                    fullRollback = true
+                    fullRollback = true,
+                    dimension,
+                    coordinates
                 ) {
                     it.field {
                         name = "Grund"
@@ -177,6 +215,8 @@ class RequestRollbackCommand(
         servers: String,
         requestedBy: User,
         fullRollback: Boolean,
+        dimension: String,
+        coordinates: String,
         builder: (InlineEmbed) -> Unit
     ): MessageEmbed {
         return Embed {
@@ -211,6 +251,18 @@ class RequestRollbackCommand(
             field {
                 name = "Servers"
                 value = servers
+                inline = false
+            }
+
+            field {
+                name = "Dimension"
+                value = dimension
+                inline = false
+            }
+
+            field {
+                name = "Koordinaten"
+                value = coordinates
                 inline = false
             }
 
