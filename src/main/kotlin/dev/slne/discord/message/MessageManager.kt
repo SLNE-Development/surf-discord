@@ -19,6 +19,7 @@ import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
+import net.dv8tion.jda.api.events.interaction.command.GenericCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
@@ -76,31 +77,40 @@ class MessageManager(
         val whitelists = whitelistService.findWhitelists(null, user.id, null)
 
         try {
-            printUserWlQuery(whitelists, user.name, channel, null, null)
+            printUserWlQuery(whitelists, user.name, channel, null, null, null)
         } catch (exception: CommandException) {
             channel.sendMessage("${exception.message}").await()
         }
     }
 
     suspend fun printUserWlQuery(
-        whitelists: List<Whitelist>, name: String, channel: MessageChannel, hook: InteractionHook?, requester: String?
+        whitelists: List<Whitelist>,
+        name: String,
+        channel: MessageChannel,
+        hook: InteractionHook?,
+        interaction: GenericCommandInteractionEvent?,
+        requester: String?
     ) {
         if (whitelists.isEmpty()) {
             throw CommandExceptions.WHITELIST_QUERY_NO_ENTRIES.create(name)
         }
 
-        printWlQuery(channel, whitelists, requester)
-
+        printWlQuery(channel, whitelists, interaction, requester)
         hook?.deleteOriginal()?.await()
     }
 
     private suspend fun printWlQuery(
         channel: MessageChannel,
         whitelists: List<Whitelist>,
+        interaction: GenericCommandInteractionEvent?,
         requester: String?
     ) {
-        for (whitelist in whitelists) {
-            channel.sendMessageEmbeds(getWhitelistQueryEmbed(whitelist, requester)).await()
+        if (interaction != null) {
+            interaction.replyEmbeds(whitelists.map { getWhitelistQueryEmbed(it, requester) })
+                .setEphemeral(true).await()
+        } else {
+            channel.sendMessageEmbeds(whitelists.map { getWhitelistQueryEmbed(it, requester) })
+                .await()
         }
     }
 

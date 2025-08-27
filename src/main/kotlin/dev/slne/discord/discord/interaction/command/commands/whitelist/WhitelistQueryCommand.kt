@@ -64,11 +64,32 @@ class WhitelistQueryCommand(
         val whitelists = getWhitelists(user, minecraft, twitch)
 
         if (user != null) {
-            messageManager.printUserWlQuery(whitelists, user.name, channel, hook, interaction.user.name)
+            messageManager.printUserWlQuery(
+                whitelists,
+                user.name,
+                channel,
+                hook,
+                interaction,
+                interaction.user.name
+            )
         } else if (minecraft != null) {
-            messageManager.printUserWlQuery(whitelists, minecraft, channel, hook, interaction.user.name)
+            messageManager.printUserWlQuery(
+                whitelists,
+                minecraft,
+                channel,
+                hook,
+                interaction,
+                interaction.user.name
+            )
         } else if (twitch != null) {
-            messageManager.printUserWlQuery(whitelists, twitch, channel, hook, interaction.user.name)
+            messageManager.printUserWlQuery(
+                whitelists,
+                twitch,
+                channel,
+                hook,
+                interaction,
+                interaction.user.name
+            )
         }
     }
 
