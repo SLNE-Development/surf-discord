@@ -93,7 +93,7 @@ class WhitelistCommand(
         if (whitelists.isNotEmpty()) {
             hook.editOriginal(
                 translatable("interaction.command.ticket.whitelist.already-whitelisted")
-            ).setEmbeds(whitelists.map { messageManager.getWhitelistQueryEmbed(it) }).await()
+            ).setEmbeds(whitelists.map { messageManager.getWhitelistQueryEmbed(it, executor?.name) }).await()
         } else {
             hook.editOriginal(
                 translatable("interaction.command.ticket.whitelist.adding")
@@ -118,7 +118,7 @@ class WhitelistCommand(
                     "interaction.command.ticket.whitelist.added",
                     user.asMention
                 )
-                embeds += messageManager.getWhitelistQueryEmbed(whitelist)
+                embeds += messageManager.getWhitelistQueryEmbed(whitelist, executor?.name)
             }).await()
 
             hook.deleteOriginal().await()
