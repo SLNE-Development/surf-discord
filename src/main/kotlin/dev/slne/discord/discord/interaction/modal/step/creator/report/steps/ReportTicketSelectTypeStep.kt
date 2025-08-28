@@ -72,7 +72,7 @@ class ReportTicketSelectTypeStep(
             val whitelists = whitelistService.findWhitelists(uuid = uuid)
 
             for (whitelist in whitelists) {
-                val embed = messageManager.getWhitelistQueryEmbed(whitelist, null)
+                val embed = messageManager.getWhitelistQueryEmbed(whitelist)
                 thread.sendMessageEmbeds(embed).queue()
             }
         }
