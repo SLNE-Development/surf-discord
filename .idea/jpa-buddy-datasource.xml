@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="JpbDataSourceConfig">
-    <data-source-infos>
-      <data-source-info id="eccde7bf-dd24-4f87-ae67-235c68c9f76d" persistence-unit-name="Workspaces.surf-discord.main:Workspaces.surf-discord.main" />
-    </data-source-infos>
-  </component>
-</project>
