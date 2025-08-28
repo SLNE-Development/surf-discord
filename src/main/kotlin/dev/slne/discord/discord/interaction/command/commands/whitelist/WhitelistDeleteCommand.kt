@@ -5,6 +5,7 @@ import dev.slne.discord.annotation.DiscordCommandMeta
 import dev.slne.discord.discord.interaction.command.DiscordCommand
 import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.guild.permission.CommandPermission
+import dev.slne.discord.message.MessageManager
 import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.user.UserService
 import dev.slne.discord.persistence.service.whitelist.WhitelistService
@@ -20,7 +21,8 @@ private const val MINECRAFT_USER_OPTION: String = "minecraft"
 )
 class WhitelistDeleteCommand(
     private val whitelistService: WhitelistService,
-    private val userService: UserService
+    private val userService: UserService,
+    private val messageManager: MessageManager
 ) : DiscordCommand() {
 
     override val options = listOf(
@@ -62,5 +64,7 @@ class WhitelistDeleteCommand(
                 minecraftUsername
             )
         ).await()
+
+        hook.sendMessage(messageManager.buildWhitelistDeletedEmbed(interaction.user, minecraftUsername, minecraftUuid.toString())).await()
     }
 }

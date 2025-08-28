@@ -22,6 +22,7 @@ import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import net.dv8tion.jda.api.interactions.InteractionHook
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
+import java.util.UUID
 
 @Service
 class MessageManager(
@@ -168,6 +169,27 @@ class MessageManager(
         }
     }
 
+    fun buildWhitelistDeletedEmbed(
+        executor: User,
+        deletedUser: String,
+        deletedUserUuid: String
+    ) = MessageCreate {
+        embed {
+            title = translatable("interaction.command.whitelist.delete.embed.title")
+            description =
+                translatable("interaction.command.whitelist.delete.embed.description", deletedUser, deletedUserUuid)
+            timestamp = ZonedDateTime.now()
+            color = EmbedColors.WHITELIST_DELETE
+            footer {
+                name = translatable(
+                    "interaction.command.whitelist.delete.embed.footer",
+                    executor.name
+                )
+                iconUrl = executor.avatarUrl
+            }
+        }
+    }
+
     fun buildMemberAddedMessage(
         member: Member,
         executor: User
@@ -183,7 +205,7 @@ class MessageManager(
                     "interaction.command.ticket.member.embed.footer",
                     executor.name
                 )
-                iconUrl = executor.getAvatarUrl()
+                iconUrl = executor.avatarUrl
             }
         }
     }
