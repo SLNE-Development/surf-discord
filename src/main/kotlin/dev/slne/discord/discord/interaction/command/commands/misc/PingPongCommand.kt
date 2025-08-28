@@ -12,7 +12,7 @@ import net.dv8tion.jda.api.interactions.InteractionHook
 
 @DiscordCommandMeta(
     name = "ping-pong",
-    description = "Informiert Nutzer darüber, dass das Serverteam ehrenamtlich arbeitet, Pings nicht notwendig sind und Anliegen mit Geduld zu stellen sind.",
+    description = "Ping mich nicht!",
     permission = CommandPermission.PING_PONG,
     ephemeral = false
 )
