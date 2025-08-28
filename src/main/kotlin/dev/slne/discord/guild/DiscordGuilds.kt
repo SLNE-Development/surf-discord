@@ -43,7 +43,8 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.MISSING_INFORMATION,
                         CommandPermission.REQUEST_ROLLBACK,
                         CommandPermission.REQUEST_COMMUNITY_BAN,
-                        CommandPermission.SHOW_ADMIN_PANEL
+                        CommandPermission.SHOW_ADMIN_PANEL,
+                        CommandPermission.PING_PONG
                     ),
                 ),
                 // Discord Moderator
@@ -65,7 +66,8 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.MISSING_INFORMATION,
                         CommandPermission.REQUEST_ROLLBACK,
                         CommandPermission.REQUEST_COMMUNITY_BAN,
-                        CommandPermission.SHOW_ADMIN_PANEL
+                        CommandPermission.SHOW_ADMIN_PANEL,
+                        CommandPermission.PING_PONG
                     ),
                 ),
                 // Server Admin
@@ -94,7 +96,8 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.DONT_ASK_TO_ASK,
                         CommandPermission.FAQ,
                         CommandPermission.MISSING_INFORMATION,
-                        CommandPermission.REQUEST_ROLLBACK
+                        CommandPermission.REQUEST_ROLLBACK,
+                        CommandPermission.PING_PONG
                     ),
                 ),
                 // Server Moderator
@@ -126,6 +129,7 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.REQUEST_COMMUNITY_BAN,
                         CommandPermission.SHOW_ADMIN_PANEL,
                         CommandPermission.SHOW_TICKET_ADMIN_PANEL,
+                        CommandPermission.PING_PONG
                     ),
                 ),
                 // Server Supporter
@@ -150,7 +154,8 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                         CommandPermission.DONT_ASK_TO_ASK,
                         CommandPermission.FAQ,
                         CommandPermission.MISSING_INFORMATION,
-                        CommandPermission.REQUEST_ROLLBACK
+                        CommandPermission.REQUEST_ROLLBACK,
+                        CommandPermission.PING_PONG
                     ),
                 ),
             )
