@@ -32,7 +32,7 @@ class WlQueryContextMenuCommand(
             null, interaction.target.id, null
         )
 
-        val embeds = whitelists.map { messageManager.getWhitelistQueryEmbed(it, interaction.user.name) }
+        val embeds = whitelists.map { messageManager.getWhitelistQueryEmbed(it) }
         hook.editOriginal("\"" + interaction.target.asMention + "\"").setEmbeds(embeds).await()
     }
 }
