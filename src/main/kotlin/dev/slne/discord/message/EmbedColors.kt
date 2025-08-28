@@ -9,6 +9,7 @@ object EmbedColors {
     const val ADD_TICKET_MEMBER = 0xC7D0D7
     const val ERROR_COLOR = 0xff0000
     const val DO_NOT_ASK = 0x3498db
+    const val PING_PONG = 0x9b59b6
     const val HOW_TO_JOIN = 0xf39c12
     const val FAQ = 0x7f8c8d
     const val MISSING_INFORMATION = 0xFFA500
