@@ -2,17 +2,22 @@ package dev.slne.discord.discord.interaction.command.commands.whitelist
 
 import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.interactions.components.getOption
+import dev.minn.jda.ktx.messages.Embed
 import dev.slne.discord.annotation.DiscordCommandMeta
 import dev.slne.discord.discord.interaction.command.DiscordCommand
 import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.guild.permission.CommandPermission
+import dev.slne.discord.jda
+import dev.slne.discord.message.EmbedColors.WL_QUERY
 import dev.slne.discord.message.MessageManager
 import dev.slne.discord.message.translatable
+import dev.slne.discord.persistence.external.Whitelist
 import dev.slne.discord.persistence.service.user.UserService
 import dev.slne.discord.persistence.service.whitelist.WhitelistService
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
+import java.time.ZonedDateTime
 
 private const val USER_OPTION: String = "user"
 private const val MINECRAFT_OPTION: String = "minecraft"
@@ -51,7 +56,6 @@ class WhitelistQueryCommand(
         interaction: SlashCommandInteractionEvent,
         hook: InteractionHook
     ) {
-        val channel = interaction.channel
         val user = interaction.getOption<User>(USER_OPTION)
         val minecraft = interaction.getOption<String>(MINECRAFT_OPTION)
         val twitch = interaction.getOption<String>(TWITCH_OPTION)
@@ -61,36 +65,12 @@ class WhitelistQueryCommand(
         }
 
         hook.editOriginal(translatable("interaction.command.ticket.wlquery.querying")).await()
-        val whitelists = getWhitelists(user, minecraft, twitch)
-
-        if (user != null) {
-            messageManager.printUserWlQuery(
-                whitelists,
-                user.name,
-                channel,
-                hook,
-                interaction,
+        hook.editOriginalEmbeds(getWhitelists(user, minecraft, twitch).map {
+            getEmbed(
+                it,
                 interaction.user.name
             )
-        } else if (minecraft != null) {
-            messageManager.printUserWlQuery(
-                whitelists,
-                minecraft,
-                channel,
-                hook,
-                interaction,
-                interaction.user.name
-            )
-        } else if (twitch != null) {
-            messageManager.printUserWlQuery(
-                whitelists,
-                twitch,
-                channel,
-                hook,
-                interaction,
-                interaction.user.name
-            )
-        }
+        }).await()
     }
 
     private suspend fun getWhitelists(
@@ -107,5 +87,63 @@ class WhitelistQueryCommand(
         } ?: emptyList()
     } else {
         throw CommandExceptions.TICKET_WLQUERY_NO_USER.create()
+    }
+
+    suspend fun getEmbed(whitelist: Whitelist, requester: String?) = Embed {
+        title = translatable("whitelist.query.embed.title")
+        footer {
+            name = if (requester != null) {
+                translatable("whitelist.query.embed.footer", requester)
+            } else {
+                translatable("whitelist.query.embed.footer.no-requester")
+            }
+            iconUrl = jda.selfUser.avatarUrl
+        }
+        description = null
+        color = WL_QUERY
+        timestamp = ZonedDateTime.now()
+
+        val minecraftName = userService.getUsernameByUuid(whitelist.uuid)
+        val twitchLink = whitelist.twitchLink
+        val uuid = whitelist.uuid
+        val discordUser = whitelist.user?.await()
+        val addedBy = whitelist.addedBy?.await()
+
+        field {
+            name = translatable("whitelist.query.embed.field.uuid")
+            value = uuid.toString()
+            inline = false
+        }
+
+        if (minecraftName != null) {
+            field {
+                name = translatable("whitelist.query.embed.field.minecraft-name")
+                value = "`${minecraftName}`"
+            }
+        }
+
+        field {
+            name = translatable("whitelist.query.embed.field.twitch-name")
+            value = "[${twitchLink}](${whitelist.clickableTwitchLink})"
+        }
+
+        if (discordUser != null) {
+            field {
+                name = translatable("whitelist.query.embed.field.discord-user")
+                value = discordUser.asMention
+            }
+        }
+
+        if (addedBy != null) {
+            field {
+                name = translatable("whitelist.query.embed.field.added-by")
+                value = addedBy.asMention
+            }
+        }
+
+        field {
+            name = translatable("whitelist.query.embed.field.blocked")
+            value = if (whitelist.blocked) translatable("common.yes") else translatable("common.no")
+        }
     }
 }

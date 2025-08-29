@@ -34,6 +34,7 @@ class Bootstrap(
             RawMessages::class.java.getClassLoader()
 
             listenForCommands(jda, commandProcessor)
+            Bootstrap.jda = jda
         }
 
         logger.info("Done and ready ({}ms)! Type 'help' for a list of commands.", ms)
@@ -42,7 +43,13 @@ class Bootstrap(
     @PreDestroy
     fun onDisable() {
     }
+
+    companion object {
+        lateinit var jda: JDA
+    }
 }
+
+val jda get() = Bootstrap.jda
 
 private fun listenForCommands(
     jda: JDA,
