@@ -89,7 +89,7 @@ class WhitelistQueryCommand(
         throw CommandExceptions.TICKET_WLQUERY_NO_USER.create()
     }
 
-    suspend fun getEmbed(whitelist: Whitelist, requester: String?) = Embed {
+    private suspend fun getEmbed(whitelist: Whitelist, requester: String?) = Embed {
         title = translatable("whitelist.query.embed.title")
         footer {
             name = if (requester != null) {
