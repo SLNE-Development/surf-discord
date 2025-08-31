@@ -88,6 +88,11 @@ class FAQCommand : DiscordCommand() {
             "take-part-in-event",
             translatable("command.faq.questions.take-part-in-event"),
             translatable("command.faq.questions.take-part-in-event.answer")
+        ),
+        Question(
+            "survival-downtime",
+            translatable("command.faq.questions.survival-downtime"),
+            translatable("command.faq.questions.survival-downtime.answer")
         )
     ).associateBy { it.identifier }
 
