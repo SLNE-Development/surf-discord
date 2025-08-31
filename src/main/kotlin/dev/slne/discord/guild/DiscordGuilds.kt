@@ -80,7 +80,10 @@ enum class DiscordGuilds(val discordGuild: DiscordGuild) {
                 DiscordRolePermissions(
                     discordRoleIds = listOf("1242929429747994664"),
                     ticketViewPermissions = listOf(
-                        TicketViewPermission.VIEW_BUGREPORT_TICKETS
+                        TicketViewPermission.VIEW_BUGREPORT_TICKETS,
+                        TicketViewPermission.VIEW_EVENT_SUPPORT_TICKETS,
+                        TicketViewPermission.VIEW_SURVIVAL_SUPPORT_TICKETS,
+                        TicketViewPermission.VIEW_WHITELIST_TICKETS
                     ),
                     commandPermissions = listOf(
                         CommandPermission.NO_INTEREST,

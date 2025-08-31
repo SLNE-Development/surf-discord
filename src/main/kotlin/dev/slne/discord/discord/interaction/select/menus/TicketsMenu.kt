@@ -17,14 +17,15 @@ class TicketsMenu(
 ) : DiscordSelectMenu(
     "menu:tickets-$idSuffix",
     translatable("menu.ticket.select.placeholder"),
-    TicketType.entries.map { ticketType ->
-        SelectOption(
-            ticketType.displayName,
-            ticketType.configName,
-            ticketType.description.run { substring(0, min(length, 100)) },
-            ticketType.emoji
-        )
-    },
+    TicketType.entries.filter { it != TicketType.WHITELIST && it != TicketType.SURVIVAL_SUPPORT }
+        .map { ticketType ->
+            SelectOption(
+                ticketType.displayName,
+                ticketType.configName,
+                ticketType.description.run { substring(0, min(length, 100)) },
+                ticketType.emoji
+            )
+        },
     1..1
 ) {
     override suspend fun onSelect(
