@@ -64,8 +64,15 @@ class WhitelistQueryCommand(
             throw CommandExceptions.TICKET_WLQUERY_NO_USER.create()
         }
 
+        val name = user?.name ?: minecraft ?: twitch ?: "Error"
+        val whitelists = getWhitelists(user, minecraft, twitch)
+
+        if (whitelists.isEmpty()) {
+            throw CommandExceptions.WHITELIST_QUERY_NO_ENTRIES.create(name)
+        }
+
         hook.editOriginal(translatable("interaction.command.ticket.wlquery.querying")).await()
-        hook.editOriginalEmbeds(getWhitelists(user, minecraft, twitch).map {
+        hook.editOriginalEmbeds(whitelists.map {
             getEmbed(
                 it,
                 interaction.user.name
