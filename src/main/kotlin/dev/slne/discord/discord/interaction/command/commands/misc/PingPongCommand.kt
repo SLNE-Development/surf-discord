@@ -14,7 +14,8 @@ import net.dv8tion.jda.api.interactions.InteractionHook
     name = "ping-pong",
     description = "Ping mich nicht!",
     permission = CommandPermission.PING_PONG,
-    ephemeral = false
+    ephemeral = false,
+    executionLock = true
 )
 class PingPongCommand : DiscordCommand() {
     override suspend fun internalExecute(

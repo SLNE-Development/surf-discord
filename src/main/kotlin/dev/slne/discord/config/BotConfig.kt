@@ -12,7 +12,7 @@ import kotlin.io.path.inputStream
 @Serializable
 data class BotConfig(
     @SerialName("bot-token") val botToken: String,
-    val database: DatabaseConfig
+    val database: DatabaseConfig,
 )
 
 val botConfig by lazy {
