@@ -22,7 +22,6 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.intellij.lang.annotations.Language
-import java.lang.AutoCloseable
 import kotlin.reflect.full.findAnnotation
 
 abstract class DiscordCommand : AutoCloseable {
