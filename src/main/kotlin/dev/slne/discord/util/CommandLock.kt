@@ -1,7 +1,6 @@
 package dev.slne.discord.util
 
 import kotlinx.coroutines.*
-import java.lang.AutoCloseable
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.CoroutineContext
@@ -31,7 +30,7 @@ class CommandLock(
                 val job = scope.launch {
                     delay(emergencyReleaseAfter)
                     locks.compute(channelId) { _, cur ->
-                        if (cur?.token == token && cur.deadlineNanos == deadline) null else cur
+                        if (cur?.token == token) null else cur
                     }
                 }
 
