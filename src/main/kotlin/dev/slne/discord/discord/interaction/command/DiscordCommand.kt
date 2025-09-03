@@ -56,7 +56,7 @@ abstract class DiscordCommand : AutoCloseable {
                 return
             }
 
-            if (executionLock && !commandLock.acquire(interaction.channel.idLong)) {
+            if (executionLock && !commandLock.acquire(channelId)) {
                 hook.editOriginal(translatable("error.command.on-cooldown")).await()
                 return
             }
