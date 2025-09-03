@@ -1,12 +1,9 @@
 package dev.slne.discord.exception.command
 
-import dev.slne.discord.exception.command.pre.PreCommandCheckException
 import dev.slne.discord.message.translatable
 import dev.slne.discord.ticket.result.TicketCloseResult
 import dev.slne.discord.util.ExceptionFactory.CommandExceptionFactory
 import dev.slne.discord.util.ExceptionFactory.ExceptionFactory1.CommandExceptionFactory1
-import dev.slne.discord.util.ExceptionFactory.ExceptionFactory1.PreCommandCheckExceptionFactory1
-import kotlin.time.Duration
 
 object CommandExceptions {
 
@@ -84,8 +81,4 @@ object CommandExceptions {
 
     val ARG_MISSING_ATTACHMENT =
         CommandExceptionFactory { CommandException(translatable("error.command.arg.missing.attachment")) }
-
-    val ON_COOLDOWN = PreCommandCheckExceptionFactory1<Duration> {
-        PreCommandCheckException(translatable("error.command.on-cooldown", it.toString()))
-    }
 }

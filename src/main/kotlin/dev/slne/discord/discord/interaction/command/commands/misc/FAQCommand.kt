@@ -5,14 +5,10 @@ import dev.minn.jda.ktx.interactions.commands.choice
 import dev.minn.jda.ktx.interactions.components.getOption
 import dev.minn.jda.ktx.messages.MessageEdit
 import dev.slne.discord.annotation.DiscordCommandMeta
-import dev.slne.discord.config.botConfig
 import dev.slne.discord.discord.interaction.command.DiscordCommand
-import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.EmbedColors
 import dev.slne.discord.message.translatable
-import dev.slne.discord.util.CooldownLock
-import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
@@ -24,10 +20,10 @@ private const val USER_IDENTIFIER = "user"
     name = "faq",
     description = "Frequently asked questions",
     permission = CommandPermission.FAQ,
-    ephemeral = false
+    ephemeral = false,
+    executionLock = true
 )
 class FAQCommand : DiscordCommand() {
-    private val cooldownLock = CooldownLock(botConfig.cooldown.faqCooldown)
 
     private val questions = listOf(
         Question(
@@ -113,23 +109,6 @@ class FAQCommand : DiscordCommand() {
         },
         option<User>(USER_IDENTIFIER, translatable("command.faq.arg.user"), required = false)
     )
-
-    override fun performFirstChecksWithNoPermissionValidationOnlyUseIfYouKnowWhatYouAreDoing(
-        user: User,
-        guild: Guild,
-        interaction: SlashCommandInteractionEvent,
-        hook: InteractionHook
-    ): Boolean {
-        val qIdentifier =
-            interaction.getOption<String>(QUESTION_IDENTIFIER) ?: return true // handled in internalExecute
-        val identifier = "${interaction.channel.id}-$qIdentifier"
-
-        if (!cooldownLock.acquire(qIdentifier)) {
-            throw CommandExceptions.ON_COOLDOWN.create(cooldownLock.cooldown(identifier))
-        }
-        
-        return true
-    }
 
     override suspend fun internalExecute(
         interaction: SlashCommandInteractionEvent,

@@ -18,7 +18,8 @@ private const val USER_OPTION = "user"
     name = "howtojoin",
     description = "Erklärt, wie man dem CastCrafter-Server beitreten kann, inklusive Infos zur Whitelist.",
     permission = CommandPermission.HOW_TO_JOIN,
-    ephemeral = false
+    ephemeral = false,
+    executionLock = true
 )
 class HowToJoinCommand : DiscordCommand() {
     override val options = listOf(

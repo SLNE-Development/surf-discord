@@ -13,5 +13,6 @@ annotation class DiscordCommandMeta(
     val guildOnly: Boolean = true,
     val nsfw: Boolean = false,
     val ephemeral: Boolean = true,
-    val sendTyping: Boolean = false
+    val sendTyping: Boolean = false,
+    val executionLock: Boolean = false,
 )

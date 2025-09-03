@@ -14,7 +14,8 @@ import net.dv8tion.jda.api.interactions.InteractionHook
     name = "ask",
     description = "Fordert Nutzer auf, ihre Fragen direkt im Kanal zu stellen, ohne vorher um Erlaubnis zu fragen",
     permission = CommandPermission.DONT_ASK_TO_ASK,
-    ephemeral = false
+    ephemeral = false,
+    executionLock = true
 )
 class DontAskToAskCommand : DiscordCommand() {
     override suspend fun internalExecute(
