@@ -64,7 +64,7 @@ class WhitelistQueryCommand(
             throw CommandExceptions.TICKET_WLQUERY_NO_USER.create()
         }
 
-        val name = user?.name ?: minecraft ?: twitch ?: "Error"
+        val name = user?.name ?: minecraft ?: twitch ?: "Unknown User"
         val whitelists = getWhitelists(user, minecraft, twitch)
 
         if (whitelists.isEmpty()) {
