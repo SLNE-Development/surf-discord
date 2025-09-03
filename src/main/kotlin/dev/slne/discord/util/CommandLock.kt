@@ -28,7 +28,10 @@ class CommandLock(
                 val token = UUID.randomUUID()
                 val deadline = now + durationNanos
 
-                        if (cur?.token == token && cur?.deadlineNanos == deadline) null else cur
+                val job = scope.launch {
+                    delay(emergencyReleaseAfter)
+                    locks.compute(channelId) { _, cur ->
+                        if (cur?.token == token && cur.deadlineNanos == deadline) null else cur
                     }
                 }
 
