@@ -26,7 +26,7 @@ class UserService(
 
     private val nameToUuidCache = Caffeine.newBuilder()
         .expireAfterWrite(1.hours.toJavaDuration())
-        .buildAsync<String, UUID> { key, _ ->
+        .buildAsync<String, UUID?> { key, _ ->
             GlobalScope.future {
                 try {
                     mojangApiClient.getUuid(key).uuid
@@ -46,7 +46,7 @@ class UserService(
 
     private val uuidToNameCache = Caffeine.newBuilder()
         .expireAfterWrite(1.hours.toJavaDuration())
-        .buildAsync<UUID, String> { key, _ ->
+        .buildAsync<UUID, String?> { key, _ ->
             GlobalScope.future {
                 try {
                     mojangApiClient.getUsername(key).name
