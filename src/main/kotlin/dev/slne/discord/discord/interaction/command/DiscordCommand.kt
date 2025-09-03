@@ -21,7 +21,6 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.intellij.lang.annotations.Language
-import kotlin.Throws
 import kotlin.reflect.full.findAnnotation
 
 abstract class DiscordCommand {
@@ -41,6 +40,22 @@ abstract class DiscordCommand {
     suspend fun execute(interaction: SlashCommandInteractionEvent) {
         val user = interaction.user
         val guild = interaction.guild ?: error("Execute cannot be called in direct messages")
+
+        try {
+            if (!performFirstChecksWithNoPermissionValidationOnlyUseIfYouKnowWhatYouAreDoing(
+                    user,
+                    guild,
+                    interaction,
+                    interaction.hook
+                )
+            ) {
+                return
+            }
+        } catch (e: PreCommandCheckException) {
+            interaction.reply("${e.message}").setEphemeral(true).await()
+            return
+        }
+
         val hook = interaction.deferReply(ephemeral).await()
         if (sendTyping) {
             interaction.messageChannel.sendTyping().queue()
@@ -59,6 +74,14 @@ abstract class DiscordCommand {
             hook.editOriginal(translatable("error.generic")).await()
         }
     }
+
+    @Throws(PreCommandCheckException::class)
+    protected open fun performFirstChecksWithNoPermissionValidationOnlyUseIfYouKnowWhatYouAreDoing(
+        user: User,
+        guild: Guild,
+        interaction: SlashCommandInteractionEvent,
+        hook: InteractionHook
+    ) = true
 
     @Throws(PreCommandCheckException::class)
     protected open suspend fun performAdditionalChecks(
