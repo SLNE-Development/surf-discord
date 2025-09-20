@@ -93,6 +93,11 @@ class FAQCommand : DiscordCommand() {
             "survival-downtime",
             translatable("command.faq.questions.survival-downtime"),
             translatable("command.faq.questions.survival-downtime.answer")
+        ),
+        Question(
+            "one-block-event",
+            translatable("command.faq.questions.one-block-event"),
+            translatable("command.faq.questions.one-block-event.answer")
         )
     ).associateBy { it.identifier }
 
