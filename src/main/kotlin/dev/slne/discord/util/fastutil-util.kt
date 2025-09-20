@@ -155,6 +155,6 @@ fun <K> Object2IntOpenHashMap<K>.freeze(): @UnmodifiableView Object2IntMap<K> =
 // endregion
 
 // region LoadingCache
-fun <K, V> LoadingCache<K, V>.asObjectMap(): @Unmodifiable Object2ObjectMap<K, V> =
+fun <K : Any, V> LoadingCache<K, V>.asObjectMap(): @Unmodifiable Object2ObjectMap<K, V> =
     Object2ObjectOpenHashMap(this.asMap()).freeze()
 // endregion

@@ -22,7 +22,6 @@ import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import net.dv8tion.jda.api.interactions.InteractionHook
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
-import java.util.UUID
 
 @Service
 class MessageManager(
@@ -72,25 +71,25 @@ class MessageManager(
     }
 
 
-    suspend fun printUserWlQuery(user: User, channel: MessageChannel) {
+    suspend fun printUserWlQuery(user: User, channel: MessageChannel, requester: String?) {
         channel.sendTyping().await()
         val whitelists = whitelistService.findWhitelists(null, user.id, null)
 
         try {
-            printUserWlQuery(whitelists, user.name, channel, null)
+            printUserWlQuery(whitelists, user.name, channel, null, requester)
         } catch (exception: CommandException) {
             channel.sendMessage("${exception.message}").await()
         }
     }
 
     suspend fun printUserWlQuery(
-        whitelists: List<Whitelist>, name: String, channel: MessageChannel, hook: InteractionHook?
+        whitelists: List<Whitelist>, name: String, channel: MessageChannel, hook: InteractionHook?, requester: String?
     ) {
         if (whitelists.isEmpty()) {
             throw CommandExceptions.WHITELIST_QUERY_NO_ENTRIES.create(name)
         }
 
-        printWlQuery(channel, "\"" + name + "\"", whitelists)
+        printWlQuery(channel, "\"" + name + "\"", whitelists, requester)
 
         hook?.deleteOriginal()?.await()
     }
@@ -98,13 +97,14 @@ class MessageManager(
     private suspend fun printWlQuery(
         channel: MessageChannel,
         title: String,
-        whitelists: List<Whitelist>
+        whitelists: List<Whitelist>,
+        requester: String?
     ) {
         channel.sendMessage(translatable("whitelist.query.start", title.replace("\"", "")))
             .await()
 
         for (whitelist in whitelists) {
-            channel.sendMessageEmbeds(getWhitelistQueryEmbed(whitelist)).await()
+            channel.sendMessageEmbeds(getWhitelistQueryEmbed(whitelist, requester)).await()
         }
     }
 
@@ -115,13 +115,17 @@ class MessageManager(
         timestamp = ZonedDateTime.now()
     }
 
-    suspend fun getWhitelistQueryEmbed(whitelist: Whitelist) = Embed {
+    suspend fun getWhitelistQueryEmbed(whitelist: Whitelist, requester: String?) = Embed {
         title = translatable("whitelist.query.embed.title")
         footer {
-            name = translatable("whitelist.query.embed.footer")
+            name = if (requester != null) {
+                translatable("whitelist.query.embed.footer", requester)
+            } else {
+                translatable("whitelist.query.embed.footer.no-requester")
+            }
             iconUrl = jda.selfUser.avatarUrl
         }
-        description = translatable("whitelist.query.embed.description")
+        description = null
         color = WL_QUERY
         timestamp = ZonedDateTime.now()
 
