@@ -10,6 +10,7 @@ import dev.slne.discord.exception.command.CommandExceptions
 import dev.slne.discord.exception.command.pre.PreCommandCheckException
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.translatable
+import dev.slne.discord.util.CommandLock
 import dev.slne.discord.util.ExceptionFactory
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel
@@ -21,10 +22,9 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.intellij.lang.annotations.Language
-import kotlin.Throws
 import kotlin.reflect.full.findAnnotation
 
-abstract class DiscordCommand {
+abstract class DiscordCommand : AutoCloseable {
 
     private val logger = ComponentLogger.logger()
     open val subCommands: List<SubcommandData> = listOf()
@@ -37,20 +37,38 @@ abstract class DiscordCommand {
     protected val permission: CommandPermission by lazy { meta.permission }
     private val ephemeral: Boolean by lazy { meta.ephemeral }
     private val sendTyping: Boolean by lazy { meta.sendTyping }
+    private val executionLock: Boolean by lazy { meta.executionLock }
+    private val commandLockLazy = lazy { CommandLock() }
+    private val commandLock by commandLockLazy
 
     suspend fun execute(interaction: SlashCommandInteractionEvent) {
         val user = interaction.user
         val guild = interaction.guild ?: error("Execute cannot be called in direct messages")
+        val channelId = interaction.channel.idLong
+
         val hook = interaction.deferReply(ephemeral).await()
         if (sendTyping) {
             interaction.messageChannel.sendTyping().queue()
         }
 
         try {
-            if (performDiscordCommandChecks(user, guild, interaction, hook)
-                && performAdditionalChecks(user, guild, interaction, hook)
-            ) {
-                internalExecute(interaction, hook)
+            if (!performDiscordCommandChecks(user, guild, interaction, hook)) {
+                return
+            }
+
+            if (executionLock && !commandLock.acquire(channelId)) {
+                hook.editOriginal(translatable("error.command.on-cooldown")).await()
+                return
+            }
+
+            try {
+                if (performAdditionalChecks(user, guild, interaction, hook)) {
+                    internalExecute(interaction, hook)
+                }
+            } finally {
+                if (executionLock) {
+                    commandLock.release(channelId)
+                }
             }
         } catch (exception: DiscordException) {
             hook.editOriginal("${exception.message}").await()
@@ -103,6 +121,12 @@ abstract class DiscordCommand {
         interaction: SlashCommandInteractionEvent,
         hook: InteractionHook
     )
+
+    override fun close() {
+        if (commandLockLazy.isInitialized()) {
+            commandLock.close()
+        }
+    }
 
     protected fun <R> getOption(
         interaction: CommandInteractionPayload,

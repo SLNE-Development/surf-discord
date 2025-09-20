@@ -20,9 +20,11 @@ private const val USER_IDENTIFIER = "user"
     name = "faq",
     description = "Frequently asked questions",
     permission = CommandPermission.FAQ,
-    ephemeral = false
+    ephemeral = false,
+    executionLock = true
 )
 class FAQCommand : DiscordCommand() {
+
     private val questions = listOf(
         Question(
             "connect-twitch",
