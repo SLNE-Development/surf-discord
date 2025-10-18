@@ -4,6 +4,7 @@ import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.interactions.components.SelectOption
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenu
+import dev.slne.discord.message.MessageManager
 import dev.slne.discord.message.translatable
 import dev.slne.discord.ticket.TicketType
 import dev.slne.discord.ticket.getTicketTypeByConfigName
@@ -13,11 +14,12 @@ import kotlin.math.min
 
 class TicketsMenu(
     idSuffix: String,
-    private val discordModalManager: DiscordModalManager
+    private val discordModalManager: DiscordModalManager,
+    private val messageManager: MessageManager
 ) : DiscordSelectMenu(
     "menu:tickets-$idSuffix",
     translatable("menu.ticket.select.placeholder"),
-    TicketType.entries.filter { it != TicketType.WHITELIST && it != TicketType.SURVIVAL_SUPPORT }
+    TicketType.entries
         .map { ticketType ->
             SelectOption(
                 ticketType.displayName,
@@ -39,13 +41,20 @@ class TicketsMenu(
             return
         }
 
+
+        // This is a temporary measure until the survival server is back online
+        // Make sure to remove this check, once the server is available again
+        if(ticketType == TicketType.WHITELIST || ticketType == TicketType.SURVIVAL_SUPPORT){
+            interaction.reply(messageManager.buildSurvivalServerDowntimeEmbed()).setEphemeral(true).await()
+            return
+        }
+
         val guild = interaction.guild
 
         if (guild == null) { // Should generally never happen
             interaction.reply(translatable("error.generic")).setEphemeral(true).await()
             return
         }
-
         discordModalManager.createByTicketType(ticketType)
             .startChannelCreation(interaction, guild)
     }
