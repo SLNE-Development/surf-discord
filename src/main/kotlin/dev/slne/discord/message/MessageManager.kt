@@ -213,4 +213,13 @@ class MessageManager(
             }
         }
     }
+
+    fun buildSurvivalServerDowntimeEmbed() = MessageCreate {
+        embed {
+            title = translatable("command.faq.questions.survival-downtime")
+            description = translatable("command.faq.questions.survival-downtime.answer")
+            timestamp = ZonedDateTime.now()
+            color = EmbedColors.FAQ
+        }
+    }
 }
