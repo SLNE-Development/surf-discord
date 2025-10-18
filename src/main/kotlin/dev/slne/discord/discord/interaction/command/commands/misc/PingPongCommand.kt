@@ -12,7 +12,7 @@ import net.dv8tion.jda.api.interactions.InteractionHook
 
 @DiscordCommandMeta(
     name = "ping-pong",
-    description = "Ping mich nicht!",
+    description = "Informiert die Nutzer über Antwortzeiten und Erwähnungen",
     permission = CommandPermission.PING_PONG,
     ephemeral = false
 )
