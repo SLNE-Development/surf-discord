@@ -23,4 +23,4 @@ fun main(args: Array<String>) {
 @EntityScan
 class DiscordSpringApplication
 
-val logger = ComponentLogger.logger()
+val logger = ComponentLogger.logger("surf-discord")

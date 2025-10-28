@@ -15,5 +15,5 @@ data class BotConfig(
 )
 
 val botConfig by lazy {
-    Path("data/config.yml").inputStream().use { Yaml.default.decodeFromStream<BotConfig>(it) }
+    Path("config.yml").inputStream().use { Yaml.default.decodeFromStream<BotConfig>(it) }
 }

@@ -4,6 +4,7 @@ import dev.slne.surf.discord.config.botConfig
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
+import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Service
@@ -19,6 +20,7 @@ class DiscordBot {
 
         builder.enableIntents(gatewayIntents)
         builder.setStatus(OnlineStatus.DO_NOT_DISTURB)
+        builder.setActivity(Activity.playing("castcrafter.de"))
 
         val jda = builder.build()
 

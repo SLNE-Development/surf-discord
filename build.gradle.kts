@@ -27,6 +27,8 @@ dependencies {
     implementation("net.kyori:adventure-text-logger-slf4j:4.24.0")
     implementation("com.charleskorn.kaml:kaml-jvm:0.72.0")
     implementation("net.dv8tion:JDA:5.6.1")
+
+    runtimeOnly("org.mariadb.jdbc:mariadb-java-client:3.2.0")
 }
 
 kotlin { jvmToolchain(21) }
