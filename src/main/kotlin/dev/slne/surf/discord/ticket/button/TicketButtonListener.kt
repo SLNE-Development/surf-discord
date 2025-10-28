@@ -31,7 +31,7 @@ class TicketButtonListener(private val jda: JDA) : ListenerAdapter() {
         builder.setRequiredRange(1, 1)
 
         event.deferReply(true).queue {
-            event.hook.sendMessageEmbeds(
+            it.sendMessageEmbeds(
                 embed {
                     title = "Ticket Typ wählen"
                     description = """
@@ -41,7 +41,7 @@ class TicketButtonListener(private val jda: JDA) : ListenerAdapter() {
                     """.trimIndent()
                     color = Color(31, 189, 210)
                 }
-            ).addActionRow(builder.build()).queue()
+            ).addActionRow(builder.build()).setEphemeral(true).queue()
         }
     }
 }
