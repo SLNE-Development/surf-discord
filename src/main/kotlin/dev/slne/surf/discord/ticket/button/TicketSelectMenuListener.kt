@@ -20,21 +20,22 @@ class TicketSelectMenuListener(private val jda: JDA) : ListenerAdapter() {
 
         val selected = event.selectedOptions.firstOrNull()
         if (selected == null) {
-            event.deferReply(true).queue {
-                it.editOriginal("Ein Fehler ist aufgetreten. Bitte versuche es erneut.").queue()
-            }
+            event.hook.editOriginal("Ein Fehler ist aufgetreten. Bitte versuche es erneut.").queue()
             return
         }
 
-        event.deferReply(true).queue {
-            val ticketType = getTicketType(selected.label) ?: return@queue
-            val modal = ticketType.modal
+        val ticketType = getTicketType(selected.label) ?: run {
+            event.hook.editOriginal("Ein Fehler ist aufgetreten.")
+            return
+        }
 
-            if (modal != null) {
-                event.replyModal(modal)
-            } else {
-                it.editOriginal("TODO: Ticket Modal: ${selected.label}").queue()
-            }
+        val modal = ticketType.modal
+
+        if (modal != null) {
+            event.hook.deleteOriginal()
+            event.replyModal(modal)
+        } else {
+            event.hook.editOriginal("TODO: Ticket Modal: ${selected.label}").queue()
         }
     }
 
