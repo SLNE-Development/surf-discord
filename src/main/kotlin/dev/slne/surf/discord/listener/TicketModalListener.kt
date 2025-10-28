@@ -3,12 +3,15 @@ package dev.slne.surf.discord.listener
 import dev.slne.surf.discord.command.dsl.embed
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
+import dev.slne.surf.discord.util.absoluteDiscordTimeStamp
+import dev.slne.surf.discord.util.relativeDiscordTimeStamp
 import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import net.dv8tion.jda.api.interactions.components.buttons.Button
 import org.springframework.stereotype.Component
 import java.awt.Color
 
@@ -27,6 +30,16 @@ class TicketModalListener(
     override fun onModalInteraction(event: ModalInteractionEvent) {
         when (event.modalId) {
             "modal-whitelist" -> handleWhitelistTicketCreation(event)
+            "custom-close-reason" -> handleTicketCustomReasonClose(event)
+        }
+    }
+
+    private fun handleTicketCustomReasonClose(interaction: ModalInteractionEvent) {
+        val customReason = interaction.getValue("custom-close-reason-content")?.asString ?: return
+
+        ticketScope.launch {
+            ticketService.closeTicket(interaction.hook, customReason)
+            interaction.reply("Das Ticket wird geschlossen...").setEphemeral(true).queue()
         }
     }
 
@@ -34,41 +47,47 @@ class TicketModalListener(
         val whitelistName = interaction.getValue("whitelist-name")?.asString ?: return
         val whitelistTwitch = interaction.getValue("whitelist-twitch")?.asString ?: return
 
-        interaction.hook.editOriginal("Das Ticket wird erstellt...").queue()
+        interaction.reply("Das Ticket wird erstellt...").setEphemeral(true).queue()
 
         ticketScope.launch {
+            val user = interaction.user
             val ticket =
                 ticketService.createTicket(interaction.hook, TicketType.WHITELIST) ?: run {
                     val activeTicket =
-                        ticketService.getTicket(interaction.idLong, TicketType.WHITELIST)
+                        ticketService.getTicketByUserAndType(
+                            interaction.idLong,
+                            TicketType.WHITELIST
+                        )
 
                     if (activeTicket != null) {
-                        interaction.hook.editOriginalEmbeds(
-                            embed {
-                                title = "Ticket Erstellung Fehlgeschlagen"
-                                description =
-                                    "Du hast bereits ein offenes Whitelist Ticket: "
-                                color = Color.RED
-                            }
-                        ).queue()
+                        interaction.reply("Du hast bereits ein offenes Whitelist Ticket.")
+                            .setEphemeral(true).queue()
                     } else {
-                        interaction.hook.editOriginalEmbeds(
-                            embed {
-                                title = "Ticket Erstellung Fehlgeschlagen"
-                                description =
-                                    "Es ist ein unbekannter Fehler aufgetreten. Bitte versuche es später erneut. Sollte dieses Problem weiterhin bestehen, kontaktiere ein Teammitglied."
-                                color = Color.RED
-                            }
-                        ).queue()
+                        interaction.reply("Dein Ticket konnte nicht erstellt werden. Bitte versuche es später erneut.")
+                            .setEphemeral(true).queue()
                     }
                     return@launch
                 }
 
-            ticket.getThreadChannel()?.sendMessageEmbeds(
+            ticketService.updateData(ticket, "whitelist:$whitelistName:$whitelistTwitch")
+
+            val thread = ticket.getThreadChannel() ?: run {
+                interaction
+                    .reply("Dein Ticket konnte nicht erstellt werden.")
+                    .setEphemeral(true)
+                    .queue()
+                return@launch
+            }
+
+            interaction.hook.editOriginal("Dein Whitelist Ticket wurde erstellt: ${thread.asMention}")
+                .queue()
+
+            thread.sendMessage(user.asMention).queue()
+            thread.sendMessageEmbeds(
                 embed {
-                    title = "Whitelist Ticket"
+                    title = "Willkommen im Whitelist Ticket!"
                     description =
-                        "Dein Whitelist Ticket wurde erstellt. Bitte habe etwas Geduld, bis sich ein Teammitglied um deinen Antrag kümmert."
+                        "Dein Whitelist Ticket wurde erstellt und wir haben deine Informationen erhalten. Bitte habe ein wenig Geduld, während das Team deine Anfrage bearbeitet."
                     color = Color.YELLOW
 
                     field {
@@ -94,8 +113,15 @@ class TicketModalListener(
                         value = interaction.user.id
                         inline = true
                     }
+
+                    footer =
+                        "Erstellt von ${interaction.user.name} ${ticket.createdAt.relativeDiscordTimeStamp()} (${ticket.createdAt.absoluteDiscordTimeStamp()})"
                 }
-            )?.queue()
+            ).addActionRow(
+                Button.success("whitelist-complete", "Whitelist Annehmen"),
+                Button.danger("close-ticket", "Ticket Schließen")
+            )
+                .queue()
         }
     }
 }

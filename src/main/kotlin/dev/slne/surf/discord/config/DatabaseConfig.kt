@@ -1,9 +1,12 @@
 package dev.slne.surf.discord.config
 
 import dev.slne.surf.discord.logger
+import dev.slne.surf.discord.ticket.database.ticket.TicketTable
 import kotlinx.serialization.Serializable
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Service
 
@@ -26,6 +29,9 @@ class DatabaseConfiguration {
         user = botConfig.database.username,
         password = botConfig.database.password,
     ).also {
+        transaction {
+            SchemaUtils.create(TicketTable)
+        }
         logger.info("Connected to database ${botConfig.database.database} at ${botConfig.database.hostname}:${botConfig.database.port}")
     }
 }
