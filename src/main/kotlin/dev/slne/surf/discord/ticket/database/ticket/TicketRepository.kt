@@ -4,6 +4,7 @@ import dev.slne.surf.discord.ticket.Ticket
 import dev.slne.surf.discord.ticket.TicketType
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
@@ -29,6 +30,18 @@ class TicketRepository {
             it[closedById] = ticket.closedById
         }
     }
+
+    suspend fun hasOpenTicket(authorId: Long, type: TicketType): Boolean =
+        newSuspendedTransaction(Dispatchers.IO) {
+            println("Checking for open tickets for author ID $authorId and type $type")
+            TicketTable.selectAll()
+                .where(
+                    (TicketTable.authorId eq authorId) and
+                            (TicketTable.ticketType eq type) and
+                            (TicketTable.closedAt.isNull())
+                )
+                .count() > 0
+        }
 
     suspend fun updateData(ticket: Ticket, data: String) = newSuspendedTransaction(Dispatchers.IO) {
         println("Updating ticket data for ticket ID ${ticket.ticketId}")

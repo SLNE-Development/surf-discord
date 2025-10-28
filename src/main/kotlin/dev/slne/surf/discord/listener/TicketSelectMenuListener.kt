@@ -43,7 +43,7 @@ class TicketSelectMenuListener(
             return@launch
         }
 
-        if (selected.description == "custom") {
+        if (selected.value == "custom") {
             event.replyModal(
                 modal("custom-close-reason", "Ticket mit benutzerdefiniertem Grund schließen") {
                     field {
@@ -57,7 +57,7 @@ class TicketSelectMenuListener(
         } else {
             ticketService.closeTicket(
                 ticket,
-                selected.description ?: "Kein Grund angegeben.",
+                selected.value,
                 event.user
             )
 
@@ -73,12 +73,12 @@ class TicketSelectMenuListener(
         }
 
         val ticketType = getTicketType(selected.label) ?: run {
-            event.hook.editOriginal("Ein Fehler ist aufgetreten.")
+            event.hook.editOriginal("Ein Fehler ist aufgetreten.").queue()
             return@launch
         }
 
-        if (ticketService.hasTicket(event.user.idLong, ticketType)) {
-            event.hook.editOriginal("Du hast bereits ein offenes Ticket dieses Typs.").queue()
+        if (ticketService.hasOpenTicket(event.user.idLong, ticketType)) {
+            event.reply("Du hast bereits ein offenes Ticket dieses Typs.").queue()
             return@launch
         }
 

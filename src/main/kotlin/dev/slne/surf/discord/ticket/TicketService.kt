@@ -18,7 +18,7 @@ class TicketService(
         val userId = hook.interaction.user.idLong
         val user = hook.interaction.user
 
-        if (hasTicket(userId, type)) {
+        if (hasOpenTicket(userId, type)) {
             return null
         }
 
@@ -65,8 +65,8 @@ class TicketService(
     suspend fun getTicketByThreadId(threadId: Long) =
         ticketRepository.getTicketByThreadId(threadId)
 
-    suspend fun hasTicket(userId: Long, ticketType: TicketType) =
-        ticketRepository.getTicket(userId, ticketType) != null
+    suspend fun hasOpenTicket(userId: Long, ticketType: TicketType) =
+        ticketRepository.hasOpenTicket(userId, ticketType)
 
     suspend fun getTicketByUserAndType(userId: Long, ticketType: TicketType) =
         ticketRepository.getTicket(userId, ticketType)
@@ -84,27 +84,32 @@ class TicketService(
                 field {
                     name = "Ticket Typ"
                     value = ticket.ticketType.displayName
+                    inline = true
                 }
 
                 field {
                     name = "Ticket Id"
                     value = ticket.ticketId.toString()
+                    inline = true
                 }
 
                 field {
                     name = "Ticket Author"
                     value = "<@${ticket.authorId}>"
+                    inline = true
 
                 }
 
                 field {
                     name = "Ticket Erstellungsdatum"
                     value = "<t:${ticket.createdAt / 1000}:F>"
+                    inline = true
                 }
 
                 field {
                     name = "Ticket Schließungsdatum"
                     value = "<t:${System.currentTimeMillis() / 1000}:F>"
+                    inline = true
                 }
 
                 field {
