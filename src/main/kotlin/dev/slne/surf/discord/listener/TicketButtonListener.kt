@@ -1,4 +1,4 @@
-package dev.slne.surf.discord.ticket.button
+package dev.slne.surf.discord.listener
 
 import dev.slne.surf.discord.command.dsl.embed
 import dev.slne.surf.discord.ticket.TicketType

@@ -9,8 +9,5 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class CoroutineConfiguration {
     @Bean
-    fun commandScope() = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-
-    @Bean
-    fun databaseScope() = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    fun discordScope() = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 }

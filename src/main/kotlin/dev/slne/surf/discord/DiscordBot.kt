@@ -12,6 +12,7 @@ import kotlin.system.exitProcess
 
 @Service
 class DiscordBot {
+
     @Bean
     fun jda(): JDA {
         val botToken = botConfig.botToken

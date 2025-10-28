@@ -1,5 +1,6 @@
-package dev.slne.surf.discord.ticket.button
+package dev.slne.surf.discord.listener
 
+import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
 import jakarta.annotation.PostConstruct
 import net.dv8tion.jda.api.JDA
@@ -8,7 +9,10 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.springframework.stereotype.Component
 
 @Component
-class TicketSelectMenuListener(private val jda: JDA) : ListenerAdapter() {
+class TicketSelectMenuListener(
+    private val jda: JDA,
+    private val ticketService: TicketService
+) : ListenerAdapter() {
 
     @PostConstruct
     fun init() {
@@ -34,8 +38,8 @@ class TicketSelectMenuListener(private val jda: JDA) : ListenerAdapter() {
         val modal = ticketType.modal
 
         if (modal != null) {
-            event.hook.deleteOriginal()
-            event.replyModal(modal)
+            event.hook.deleteOriginal().queue()
+            event.replyModal(modal).queue()
         } else {
             event.hook.editOriginal("TODO: Ticket Modal: ${selected.label}").queue()
         }

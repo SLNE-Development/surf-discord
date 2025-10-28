@@ -5,9 +5,10 @@ import org.jetbrains.exposed.dao.id.LongIdTable
 
 object TicketTable : LongIdTable("discord_tickets") {
     val tickedId = long("ticket_id").uniqueIndex()
+    val ticketData = varchar("ticket_data", 255).nullable()
     val authorId = long("author_id")
     val authorName = varchar("author_name", 100)
-    val authorAvatarUrl = varchar("author_avatar_url", 255)
+    val authorAvatarUrl = varchar("author_avatar_url", 255).nullable()
     val guildId = long("guild_id")
     val threadId = long("thread_id").uniqueIndex()
     val ticketType = enumeration<TicketType>("ticket_type")
