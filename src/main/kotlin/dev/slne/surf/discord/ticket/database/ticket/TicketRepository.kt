@@ -1,18 +1,20 @@
 package dev.slne.surf.discord.ticket.database.ticket
 
-import dev.slne.surf.discord.logger
 import dev.slne.surf.discord.ticket.Ticket
 import dev.slne.surf.discord.ticket.TicketType
 import kotlinx.coroutines.Dispatchers
-import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import org.jetbrains.exposed.sql.update
 import org.springframework.stereotype.Repository
 
 @Repository
 class TicketRepository {
     suspend fun createTicket(ticket: Ticket) = newSuspendedTransaction(Dispatchers.IO) {
-        logger.debug("Creating ticket with ID ${ticket.ticketId} for author ${ticket.authorId}")
+        println("Creating ticket with ID ${ticket.ticketId} for author ${ticket.authorId}")
         TicketTable.insert {
             it[tickedId] = ticket.ticketId
             it[ticketData] = ticket.ticketData
@@ -29,7 +31,7 @@ class TicketRepository {
     }
 
     suspend fun updateData(ticket: Ticket, data: String) = newSuspendedTransaction(Dispatchers.IO) {
-        logger.debug("Updating ticket data for ticket ID ${ticket.ticketId}")
+        println("Updating ticket data for ticket ID ${ticket.ticketId}")
         TicketTable.update({ TicketTable.tickedId eq ticket.ticketId }) {
             it[ticketData] = data
         }
@@ -37,7 +39,7 @@ class TicketRepository {
 
     suspend fun getTicketByThreadId(threadId: Long): Ticket? =
         newSuspendedTransaction(Dispatchers.IO) {
-            logger.debug("Fetching ticket by thread ID $threadId")
+            println("Fetching ticket by thread ID $threadId")
             TicketTable.selectAll().where(TicketTable.threadId eq threadId)
                 .firstNotNullOfOrNull { row ->
                     Ticket(
@@ -59,13 +61,21 @@ class TicketRepository {
                 }
         }
 
-    suspend fun deleteTicket(ticketId: Long) = newSuspendedTransaction(Dispatchers.IO) {
-        logger.debug("Deleting ticket with ID $ticketId")
-        TicketTable.deleteWhere { tickedId eq ticketId }
+    suspend fun markAsClosed(
+        ticket: Ticket
+    ) = newSuspendedTransaction(Dispatchers.IO) {
+        println("Marking ticket ID ${ticket.ticketId} as closed")
+        TicketTable.update({ TicketTable.tickedId eq ticket.ticketId }) {
+            it[TicketTable.closedAt] = ticket.closedAt
+            it[TicketTable.closedById] = ticket.closedById
+            it[TicketTable.closedByName] = ticket.closedByName
+            it[TicketTable.closedByAvatarUrl] = ticket.closedByAvatar
+            it[TicketTable.closedReason] = ticket.closedReason
+        }
     }
 
     suspend fun getTicketById(ticketId: Long): Ticket? = newSuspendedTransaction(Dispatchers.IO) {
-        logger.debug("Fetching ticket by ID $ticketId")
+        println("Fetching ticket by ID $ticketId")
         TicketTable.selectAll().where(TicketTable.tickedId eq ticketId)
             .firstNotNullOfOrNull { row ->
                 Ticket(
@@ -89,7 +99,7 @@ class TicketRepository {
 
     suspend fun getTicket(authorId: Long, type: TicketType) =
         newSuspendedTransaction(Dispatchers.IO) {
-            logger.debug("Fetching ticket for author ID $authorId and type $type")
+            println("Fetching ticket for author ID $authorId and type $type")
             TicketTable.selectAll()
                 .where((TicketTable.authorId eq authorId) and (TicketTable.ticketType eq type))
                 .firstNotNullOfOrNull { row ->

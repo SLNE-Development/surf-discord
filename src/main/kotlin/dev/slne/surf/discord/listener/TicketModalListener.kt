@@ -60,11 +60,11 @@ class TicketModalListener(
                         )
 
                     if (activeTicket != null) {
-                        interaction.reply("Du hast bereits ein offenes Whitelist Ticket.")
-                            .setEphemeral(true).queue()
+                        interaction.hook.editOriginal("Du hast bereits ein offenes Whitelist Ticket.")
+                            .queue()
                     } else {
-                        interaction.reply("Dein Ticket konnte nicht erstellt werden. Bitte versuche es später erneut.")
-                            .setEphemeral(true).queue()
+                        interaction.hook.editOriginal("Dein Ticket konnte nicht erstellt werden. Bitte versuche es später erneut.")
+                            .queue()
                     }
                     return@launch
                 }
@@ -72,9 +72,8 @@ class TicketModalListener(
             ticketService.updateData(ticket, "whitelist:$whitelistName:$whitelistTwitch")
 
             val thread = ticket.getThreadChannel() ?: run {
-                interaction
-                    .reply("Dein Ticket konnte nicht erstellt werden.")
-                    .setEphemeral(true)
+                interaction.hook
+                    .editOriginal("Dein Ticket konnte nicht erstellt werden.")
                     .queue()
                 return@launch
             }
@@ -120,8 +119,7 @@ class TicketModalListener(
             ).addActionRow(
                 Button.success("whitelist-complete", "Whitelist Annehmen"),
                 Button.danger("close-ticket", "Ticket Schließen")
-            )
-                .queue()
+            ).queue()
         }
     }
 }

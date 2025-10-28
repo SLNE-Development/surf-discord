@@ -34,7 +34,7 @@ class TicketService(
             }).queue()
             return null
         }
-        
+
         threadChannel.addThreadMember(user)
 
         val ticket = Ticket(
@@ -77,12 +77,41 @@ class TicketService(
         thread.sendMessageEmbeds(
             embed {
                 title = "Ticket Geschlossen"
-                description = """
-                    Das Ticket wurde von ${closer.asMention} geschlossen.
-                    
-                    **Grund:** $reason
-                """.trimIndent()
+                description =
+                    "Das Ticket wurde von ${closer.asMention} geschlossen. \n \nGrund: $reason"
                 color = Color.RED
+
+                field {
+                    name = "Ticket Typ"
+                    value = ticket.ticketType.displayName
+                }
+
+                field {
+                    name = "Ticket Id"
+                    value = ticket.ticketId.toString()
+                }
+
+                field {
+                    name = "Ticket Author"
+                    value = "<@${ticket.authorId}>"
+
+                }
+
+                field {
+                    name = "Ticket Erstellungsdatum"
+                    value = "<t:${ticket.createdAt / 1000}:F>"
+                }
+
+                field {
+                    name = "Ticket Schließungsdatum"
+                    value = "<t:${System.currentTimeMillis() / 1000}:F>"
+                }
+
+                field {
+                    name = "Ticket Dauer"
+                    value =
+                        "<t:${ticket.createdAt / 1000}:R> bis <t:${System.currentTimeMillis() / 1000}:R>"
+                }
             }
         ).queue()
 
@@ -94,15 +123,19 @@ class TicketService(
         ticket.closedByAvatar = closer.avatarUrl
         ticket.closedReason = reason
 
-        deleteTicket(ticket)
+        markAsClosed(ticket)
     }
 
     suspend fun closeTicket(hook: InteractionHook, reason: String) {
         val ticket = getTicketByThreadId(hook.interaction.channel?.idLong ?: 0L) ?: return
 
         closeTicket(ticket, reason, hook.interaction.user)
-        deleteTicket(ticket)
     }
 
-    suspend fun deleteTicket(ticket: Ticket) = ticketRepository.deleteTicket(ticket.ticketId)
+    suspend fun markAsClosed(
+        ticket: Ticket
+    ) =
+        ticketRepository.markAsClosed(
+            ticket
+        )
 }

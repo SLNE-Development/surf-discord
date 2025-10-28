@@ -65,16 +65,21 @@ class TicketSelectMenuListener(
         }
     }
 
-    private fun handleTicketReasonSelection(event: StringSelectInteractionEvent) {
+    private fun handleTicketReasonSelection(event: StringSelectInteractionEvent) = scope.launch {
         val selected = event.selectedOptions.firstOrNull()
         if (selected == null) {
             event.hook.editOriginal("Ein Fehler ist aufgetreten. Bitte versuche es erneut.").queue()
-            return
+            return@launch
         }
 
         val ticketType = getTicketType(selected.label) ?: run {
             event.hook.editOriginal("Ein Fehler ist aufgetreten.")
-            return
+            return@launch
+        }
+
+        if (ticketService.hasTicket(event.user.idLong, ticketType)) {
+            event.hook.editOriginal("Du hast bereits ein offenes Ticket dieses Typs.").queue()
+            return@launch
         }
 
         val modal = ticketType.modal
