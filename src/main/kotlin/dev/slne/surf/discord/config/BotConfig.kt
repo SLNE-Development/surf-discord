@@ -11,6 +11,7 @@ import kotlin.io.path.inputStream
 @Serializable
 data class BotConfig(
     val botToken: String,
+    val ticketChannel: Long,
     val database: DatabaseConfig
 )
 

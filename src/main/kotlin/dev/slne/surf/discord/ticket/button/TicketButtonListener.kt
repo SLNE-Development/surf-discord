@@ -19,9 +19,11 @@ class TicketButtonListener(private val jda: JDA) : ListenerAdapter() {
     }
 
     override fun onButtonInteraction(event: ButtonInteractionEvent) {
-        if (event.componentId != "surf-discord-open-ticket") return
+        if (event.componentId != "open-ticket") {
+            return
+        }
 
-        val builder = StringSelectMenu.create("surf-discord-ticket-reason")
+        val builder = StringSelectMenu.create("ticket-reason")
 
         TicketType.entries.forEach {
             builder.addOption(it.displayName, it.description)

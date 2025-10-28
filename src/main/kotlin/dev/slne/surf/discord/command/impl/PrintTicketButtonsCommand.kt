@@ -28,7 +28,7 @@ class PrintTicketButtonsCommand : SlashCommand {
                 color = Color(197, 239, 72)
             }
         ).addActionRow(
-            Button.success("surf-discord-open-ticket", "🎫 Ticket öffnen")
+            Button.success("open-ticket", "🎫 Ticket öffnen")
         ).queue {
             event.reply("Die Ticket Buttons wurden erfolgreich gesendet.").setEphemeral(true)
                 .queue()

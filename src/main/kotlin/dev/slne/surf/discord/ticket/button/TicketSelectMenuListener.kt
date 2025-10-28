@@ -16,7 +16,9 @@ class TicketSelectMenuListener(private val jda: JDA) : ListenerAdapter() {
     }
 
     override fun onStringSelectInteraction(event: StringSelectInteractionEvent) {
-        if (event.componentId != "surf-discord-ticket-reason") return
+        if (event.componentId != "ticket-reason") {
+            return
+        }
 
         val selected = event.selectedOptions.firstOrNull()
         if (selected == null) {

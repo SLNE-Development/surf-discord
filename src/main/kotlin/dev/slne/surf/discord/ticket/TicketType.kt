@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
 import net.dv8tion.jda.api.interactions.modals.Modal
 
 enum class TicketType(
+    val id: String,
     val displayName: String,
     val description: String,
     val emoji: String,
@@ -13,6 +14,7 @@ enum class TicketType(
     val modal: Modal? = null
 ) {
     WHITELIST(
+        "whitelist",
         "Whitelist Ticket",
         "Erstelle ein Ticket, um auf dem Survival Server gewhitelisted zu werden.",
         "📜",

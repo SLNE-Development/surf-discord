@@ -1,4 +1,6 @@
 package dev.slne.surf.discord.ticket
 
-class Ticket {
+data class Ticket(
+    
+) {
 }

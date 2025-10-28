@@ -1,4 +1,4 @@
-package dev.slne.surf.discord.ticket.database
+package dev.slne.surf.discord.ticket.database.ticket
 
 import org.springframework.stereotype.Repository
 
