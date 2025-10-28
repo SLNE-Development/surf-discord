@@ -1,8 +1,7 @@
 package dev.slne.surf.discord.command
 
 import dev.slne.surf.discord.logger
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
+import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.JDA
@@ -18,6 +17,19 @@ class CommandRegistrar(
     private val commandScope: CoroutineScope
 ) {
     private val registeredCommands = mutableMapOf<String, SlashCommand>()
+
+    @PostConstruct
+    fun init() {
+        registerAllCommands()
+
+        jda.addEventListener(object : ListenerAdapter() {
+            override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
+                registeredCommands[event.name]?.let { command ->
+                    commandScope.launch { command.execute(event) }
+                }
+            }
+        })
+    }
 
     fun registerAllCommands() {
         val commands = context.getBeansWithAnnotation(DiscordCommand::class.java)
@@ -37,20 +49,12 @@ class CommandRegistrar(
     }
 
     fun registerCommand(name: String, description: String, command: SlashCommand) {
-        jda.upsertCommand(name, description).queue()
-        jda.addEventListener(object : ListenerAdapter() {
-            override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
-                if (event.name == name) {
-                    commandScope.launch {
-                        command.execute(event)
-                    }
-                }
-            }
-        })
+        jda.guilds.forEach {
+            it.upsertCommand(name, description).queue()
+        }
+
+        logger.info("Successfully registered command '$name' for ${jda.guilds.size} guilds.")
 
         registeredCommands[name] = command
     }
-
-    fun getRegisteredCommands(): Object2ObjectMap<String, SlashCommand> =
-        Object2ObjectOpenHashMap(registeredCommands)
 }
