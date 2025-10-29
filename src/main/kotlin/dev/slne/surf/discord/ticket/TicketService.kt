@@ -1,13 +1,15 @@
 package dev.slne.surf.discord.ticket
 
 import dev.slne.surf.discord.dsl.embed
+import dev.slne.surf.discord.permission.getRolesWithPermission
 import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
+import dev.slne.surf.discord.util.Colors
+import dev.slne.surf.discord.util.members
 import dev.slne.surf.discord.util.random
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.interactions.InteractionHook
 import org.springframework.stereotype.Service
-import java.awt.Color
 
 @Service
 class TicketService(
@@ -23,16 +25,28 @@ class TicketService(
         }
 
         val threadChannel = ticketChannel
-            ?.createThreadChannel("${type.id}-${hook.interaction.user.name}", true)
+            ?.createThreadChannel("${type.id}-${hook.interaction.user.name}", false)
             ?.setInvitable(false)
             ?.complete(true) ?: run {
             hook.editOriginalEmbeds(embed {
                 title = "Ticket Erstellung Fehlgeschlagen"
                 description =
                     "Es ist ein unbekannter Fehler aufgetreten. Bitte versuche es später erneut. Sollte dieses Problem weiterhin bestehen, kontaktiere ein Teammitglied."
-                color = Color.RED
+                color = Colors.ERROR
             }).queue()
             return null
+        }
+
+        hook.interaction.guild?.let { guild ->
+            println("Adding roles with view permission to ticket thread ${threadChannel.name}")
+            type.viewPermission.getRolesWithPermission(guild.idLong).map {
+                println("Adding role $it to ticket thread ${threadChannel.name}")
+                guild.getRoleById(it)?.members?.forEach { mbr ->
+                    threadChannel.members.add(mbr)
+
+                    println("Added ${mbr.user.name} to ticket thread ${threadChannel.name}")
+                }
+            }
         }
 
         threadChannel.addThreadMember(user).queue()
@@ -79,7 +93,7 @@ class TicketService(
                 title = "Ticket Geschlossen"
                 description =
                     "Das Ticket wurde von ${closer.asMention} geschlossen. \n \nGrund: $reason"
-                color = Color.RED
+                color = Colors.ERROR
 
                 field {
                     name = "Ticket Typ"
@@ -110,12 +124,6 @@ class TicketService(
                     name = "Ticket Schließungsdatum"
                     value = "<t:${System.currentTimeMillis() / 1000}:F>"
                     inline = true
-                }
-
-                field {
-                    name = "Ticket Dauer"
-                    value =
-                        "<t:${ticket.createdAt / 1000}:R> bis <t:${System.currentTimeMillis() / 1000}:R>"
                 }
             }
         ).queue()

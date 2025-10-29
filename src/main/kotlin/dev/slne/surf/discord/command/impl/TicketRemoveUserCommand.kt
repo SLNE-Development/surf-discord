@@ -4,6 +4,8 @@ import dev.slne.surf.discord.command.CommandOption
 import dev.slne.surf.discord.command.CommandOptionType
 import dev.slne.surf.discord.command.DiscordCommand
 import dev.slne.surf.discord.command.SlashCommand
+import dev.slne.surf.discord.permission.DiscordPermission
+import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.ticket.TicketMemberService
 import dev.slne.surf.discord.util.asTicketOrNull
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
@@ -19,6 +21,11 @@ class TicketRemoveUserCommand(
     private val ticketMemberService: TicketMemberService
 ) : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
+        if (!event.member.hasPermission(DiscordPermission.COMMAND_TICKET_REMOVE)) {
+            event.reply("Dazu hast du keine Berechtigung.").setEphemeral(true).queue()
+            return
+        }
+
         val user = event.getOption("user")?.asUser ?: error("User option is missing")
         val ticket = event.hook.asTicketOrNull()
 

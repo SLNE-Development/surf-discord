@@ -7,21 +7,20 @@ import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
+import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.replyError
-import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
+import net.dv8tion.jda.api.interactions.InteractionHook
 import net.dv8tion.jda.api.interactions.components.buttons.Button
-import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
 import org.springframework.stereotype.Component
-import java.awt.Color
 
 @Component
 class WhitelistTicketModal(
     private val ticketService: TicketService
 ) : DiscordModal {
     override val id = "ticket:whitelist"
-    override val modal = modal(id, "Whitelist Anfrage") {
+    override fun create() = modal(id, "Whitelist Anfrage") {
         field {
             id = "whitelist-name"
             label = "Minecraft Name"
@@ -39,6 +38,8 @@ class WhitelistTicketModal(
             required = true
         }
     }
+
+    override suspend fun create(hook: InteractionHook) = error("Unsupported")
 
     override suspend fun onSubmit(event: ModalInteractionEvent) {
         val interaction = event.interaction
@@ -75,7 +76,7 @@ class WhitelistTicketModal(
                 title = "Willkommen im Ticket!"
                 description =
                     "Dein Whitelist Ticket wurde erstellt und wir haben deine Informationen erhalten. Bitte habe ein wenig Geduld, während das Team deine Anfrage bearbeitet."
-                color = Color.YELLOW
+                color = Colors.SUCCESS
 
                 field {
                     name = "Whitelist Name"
@@ -102,12 +103,7 @@ class WhitelistTicketModal(
                 }
             }
         ).addActionRow(
-            Button.of(
-                ButtonStyle.SECONDARY,
-                "whitelist:complete",
-                "Whitelist annehmen",
-                Emoji.fromCustom("checkmark", 1433072075446423754, false)
-            ),
+            getBean<ButtonRegistry>().get("ticket:whitelist:complete").button,
             getBean<ButtonRegistry>().get("ticket:close").button,
             Button.link("https://twitch.tv/$whitelistTwitch", "Twitch"),
             Button.link("https://www.laby.net/$whitelistName", "Minecraft"),

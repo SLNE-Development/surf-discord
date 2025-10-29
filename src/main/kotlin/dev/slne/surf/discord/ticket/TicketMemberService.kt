@@ -2,9 +2,9 @@ package dev.slne.surf.discord.ticket
 
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.ticket.database.members.TicketMemberRepository
+import dev.slne.surf.discord.util.Colors
 import net.dv8tion.jda.api.entities.User
 import org.springframework.stereotype.Service
-import java.awt.Color
 
 @Service
 class TicketMemberService(
@@ -33,7 +33,7 @@ class TicketMemberService(
             title = "Willkommen im Ticket"
             description =
                 "Du wurdest zu diesem Ticket hinzugefügt. Bitte sieh dir den Verlauf des Tickets an und warte auf eine Nachricht eines Teammitglieds."
-            color = Color.YELLOW
+            color = Colors.WARNING
             footer = "Hinzugefügt von ${addedBy.name}"
         }).queue()
         return true

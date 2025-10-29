@@ -30,6 +30,7 @@ class TextInputBuilder {
     var placeholder: String? = null
     var required: Boolean = true
     var lengthRange: IntRange? = null
+    var value: String? = null
 
     fun build(): TextInput {
         val builder = TextInput.create(id, label, style)
@@ -37,6 +38,9 @@ class TextInputBuilder {
         lengthRange?.let {
             builder.minLength = it.first
             builder.maxLength = it.last
+        }
+        value?.let {
+            builder.value = it
         }
         builder.setRequired(required)
         return builder.build()
