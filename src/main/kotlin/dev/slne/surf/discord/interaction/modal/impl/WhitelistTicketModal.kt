@@ -72,7 +72,7 @@ class WhitelistTicketModal(
         thread.sendMessage(user.asMention).queue()
         thread.sendMessageEmbeds(
             embed {
-                title = "Willkommen im Whitelist Ticket!"
+                title = "Willkommen im Ticket!"
                 description =
                     "Dein Whitelist Ticket wurde erstellt und wir haben deine Informationen erhalten. Bitte habe ein wenig Geduld, während das Team deine Anfrage bearbeitet."
                 color = Color.YELLOW
