@@ -1,6 +1,6 @@
 package dev.slne.surf.discord.ticket
 
-import dev.slne.surf.discord.command.dsl.embed
+import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
 import dev.slne.surf.discord.util.random
 import net.dv8tion.jda.api.entities.User

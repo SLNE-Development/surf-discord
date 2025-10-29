@@ -1,8 +1,8 @@
 package dev.slne.surf.discord.ticket
 
-import dev.slne.surf.discord.command.dsl.modal
+import dev.slne.surf.discord.getBean
+import dev.slne.surf.discord.interaction.modal.ModalRegistry
 import it.unimi.dsi.fastutil.objects.ObjectList
-import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
 import net.dv8tion.jda.api.interactions.modals.Modal
 
 enum class TicketType(
@@ -28,23 +28,6 @@ enum class TicketType(
                 "Du befindest dich nun auf der Whitelist."
             )
         ),
-        modal("modal-whitelist", "Whitelist Anfrage") {
-            field {
-                id = "whitelist-name"
-                label = "Minecraft Name"
-                style = TextInputStyle.SHORT
-                placeholder = "CastCrafter"
-                required = true
-                lengthRange = 3..16
-            }
-
-            field {
-                id = "whitelist-twitch"
-                label = "Twitch Name"
-                style = TextInputStyle.SHORT
-                placeholder = "CastCrafter"
-                required = true
-            }
-        }
+        getBean<ModalRegistry>().get("ticket:whitelist").modal
     )
 }

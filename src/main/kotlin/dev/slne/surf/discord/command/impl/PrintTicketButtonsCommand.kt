@@ -2,15 +2,15 @@ package dev.slne.surf.discord.command.impl
 
 import dev.slne.surf.discord.command.DiscordCommand
 import dev.slne.surf.discord.command.SlashCommand
-import dev.slne.surf.discord.command.dsl.embed
+import dev.slne.surf.discord.dsl.embed
+import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import net.dv8tion.jda.api.interactions.components.buttons.Button
 import org.springframework.stereotype.Component
 import java.awt.Color
 
 @Component
 @DiscordCommand("ticketbuttons", "Sendet die Ticket Buttons in den aktuellen Kanal.")
-class PrintTicketButtonsCommand : SlashCommand {
+class PrintTicketButtonsCommand(private val buttonRegistry: ButtonRegistry) : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         event.messageChannel.sendMessageEmbeds(
             embed {
@@ -28,7 +28,7 @@ class PrintTicketButtonsCommand : SlashCommand {
                 color = Color(197, 239, 72)
             }
         ).addActionRow(
-            Button.success("open-ticket", "🎫 Ticket öffnen")
+            buttonRegistry.get("ticket:open").button
         ).queue {
             event.reply("Die Ticket Buttons wurden erfolgreich gesendet.").setEphemeral(true)
                 .queue()

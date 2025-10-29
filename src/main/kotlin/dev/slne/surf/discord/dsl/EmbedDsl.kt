@@ -1,4 +1,4 @@
-package dev.slne.surf.discord.command.dsl
+package dev.slne.surf.discord.dsl
 
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
