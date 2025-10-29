@@ -4,11 +4,10 @@ import dev.slne.surf.discord.command.CommandOption
 import dev.slne.surf.discord.command.CommandOptionType
 import dev.slne.surf.discord.command.DiscordCommand
 import dev.slne.surf.discord.command.SlashCommand
-import dev.slne.surf.discord.dsl.embed
+import dev.slne.surf.discord.ticket.TicketMemberService
 import dev.slne.surf.discord.util.asTicketOrNull
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
-import java.awt.Color
 
 @DiscordCommand(
     "add", "Füge einen Nutzer zum Ticket hinzu", options = [
@@ -16,7 +15,9 @@ import java.awt.Color
     ]
 )
 @Component
-class TicketAddUserCommand : SlashCommand {
+class TicketAddUserCommand(
+    private val ticketMemberService: TicketMemberService
+) : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         val user = event.getOption("user")?.asUser ?: error("User option is missing")
         val ticket = event.hook.asTicketOrNull()
@@ -27,19 +28,20 @@ class TicketAddUserCommand : SlashCommand {
             return
         }
 
-        val thread = ticket.getThreadChannel()
-            ?: error("Failed to get ticket thread of ticket ${ticket.ticketId}")
+        if (ticketMemberService.isMember(ticket, user.idLong)) {
+            event.reply("${user.asMention} ist bereits Mitglied dieses Tickets.").setEphemeral(true)
+                .queue()
+            return
+        }
 
-        thread.addThreadMember(user).queue()
+        val success = ticketMemberService.addMember(ticket, user, event.user)
 
-        event.reply("${user.asMention} wurde zum Ticket hinzugefügt.").setEphemeral(true).queue()
-        thread.sendMessage(user.asMention).queue()
-        thread.sendMessageEmbeds(embed {
-            title = "Willkommen im Ticket"
-            description =
-                "Du wurdest zu diesem Ticket hinzugefügt. Bitte sieh dir den Verlauf des Tickets an und warte auf eine Nachricht eines Teammitglieds."
-            color = Color.YELLOW
-            footer = "Hinzugefügt von ${event.user.name}"
-        }).queue()
+        if (success) {
+            event.reply("${user.asMention} wurde zum Ticket hinzugefügt.").setEphemeral(true)
+                .queue()
+        } else {
+            event.reply("${user.asMention} ist bereits in diesem Ticket.").setEphemeral(true)
+                .queue()
+        }
     }
 }

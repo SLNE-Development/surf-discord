@@ -1,6 +1,7 @@
 package dev.slne.surf.discord.config
 
 import dev.slne.surf.discord.logger
+import dev.slne.surf.discord.ticket.database.members.TicketMemberTable
 import dev.slne.surf.discord.ticket.database.ticket.TicketTable
 import kotlinx.serialization.Serializable
 import org.jetbrains.annotations.ApiStatus
@@ -30,7 +31,7 @@ class DatabaseConfiguration {
         password = botConfig.database.password,
     ).also {
         transaction {
-            SchemaUtils.create(TicketTable)
+            SchemaUtils.create(TicketTable, TicketMemberTable)
         }
         logger.info("Connected to database ${botConfig.database.database} at ${botConfig.database.hostname}:${botConfig.database.port}")
     }

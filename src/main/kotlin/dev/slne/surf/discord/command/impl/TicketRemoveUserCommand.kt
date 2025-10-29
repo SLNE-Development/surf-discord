@@ -4,6 +4,7 @@ import dev.slne.surf.discord.command.CommandOption
 import dev.slne.surf.discord.command.CommandOptionType
 import dev.slne.surf.discord.command.DiscordCommand
 import dev.slne.surf.discord.command.SlashCommand
+import dev.slne.surf.discord.ticket.TicketMemberService
 import dev.slne.surf.discord.util.asTicketOrNull
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
@@ -14,7 +15,9 @@ import org.springframework.stereotype.Component
     ]
 )
 @Component
-class TicketRemoveUserCommand : SlashCommand {
+class TicketRemoveUserCommand(
+    private val ticketMemberService: TicketMemberService
+) : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         val user = event.getOption("user")?.asUser ?: error("User option is missing")
         val ticket = event.hook.asTicketOrNull()
@@ -25,11 +28,13 @@ class TicketRemoveUserCommand : SlashCommand {
             return
         }
 
-        val thread = ticket.getThreadChannel()
-            ?: error("Failed to get ticket thread of ticket ${ticket.ticketId}")
+        val success = ticketMemberService.removeMember(ticket, user, event.user)
 
-        thread.removeThreadMember(user).queue()
-
-        event.reply("${user.asMention} wurde aus dem Ticket entfernt.").setEphemeral(true).queue()
+        if (success) {
+            event.reply("${user.asMention} wurde aus dem Ticket entfernt.").setEphemeral(true)
+                .queue()
+        } else {
+            event.reply("${user.asMention} ist nicht in diesem Ticket.").setEphemeral(true).queue()
+        }
     }
 }
