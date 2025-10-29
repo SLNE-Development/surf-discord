@@ -40,16 +40,19 @@ class TicketCloseReasonSelectMenu(
         }
 
         if (selected.value == "custom") {
-            event.replyModal(getBean<ModalRegistry>().get("ticket:close:reason:custom").modal)
-                .queue()
+            event.replyModal(
+                getBean<ModalRegistry>().get("ticket:close:reason:custom").create()
+            ).queue()
         } else {
+            event.reply("Das Ticket wird geschlossen...").setEphemeral(true).queue()
+
             ticketService.closeTicket(
                 ticket,
                 selected.value,
                 event.user
             )
 
-            event.reply("Das Ticket wird geschlossen...").setEphemeral(true).queue()
+            event.hook.deleteOriginal().queue()
         }
     }
 }
