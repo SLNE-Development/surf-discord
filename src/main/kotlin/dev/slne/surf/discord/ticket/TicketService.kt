@@ -1,10 +1,8 @@
 package dev.slne.surf.discord.ticket
 
 import dev.slne.surf.discord.dsl.embed
-import dev.slne.surf.discord.permission.getRolesWithPermission
 import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
 import dev.slne.surf.discord.util.Colors
-import dev.slne.surf.discord.util.members
 import dev.slne.surf.discord.util.random
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
@@ -25,7 +23,7 @@ class TicketService(
         }
 
         val threadChannel = ticketChannel
-            ?.createThreadChannel("${type.id}-${hook.interaction.user.name}", false)
+            ?.createThreadChannel("${type.id}-${hook.interaction.user.name}", true)
             ?.setInvitable(false)
             ?.complete(true) ?: run {
             hook.editOriginalEmbeds(embed {
@@ -35,18 +33,6 @@ class TicketService(
                 color = Colors.ERROR
             }).queue()
             return null
-        }
-
-        hook.interaction.guild?.let { guild ->
-            println("Adding roles with view permission to ticket thread ${threadChannel.name}")
-            type.viewPermission.getRolesWithPermission(guild.idLong).map {
-                println("Adding role $it to ticket thread ${threadChannel.name}")
-                guild.getRoleById(it)?.members?.forEach { mbr ->
-                    threadChannel.members.add(mbr)
-
-                    println("Added ${mbr.user.name} to ticket thread ${threadChannel.name}")
-                }
-            }
         }
 
         threadChannel.addThreadMember(user).queue()

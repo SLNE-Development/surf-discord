@@ -30,6 +30,7 @@ class CustomCloseReasonModal(
         val customReason = interaction.getValue("custom-close-reason-content")?.asString ?: return
 
         ticketService.closeTicket(interaction.hook, customReason)
+        interaction.hook.deleteOriginal()
         interaction.reply("Das Ticket wird geschlossen...").setEphemeral(true).queue()
     }
 }

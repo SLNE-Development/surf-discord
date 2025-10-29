@@ -21,7 +21,7 @@ class ModalListener(
     }
 
     override fun onModalInteraction(event: ModalInteractionEvent) {
-        val modal = registry.get(event.modalId) ?: return
+        val modal = registry.get(event.modalId)
         discordScope.launch {
             modal.onSubmit(event)
         }
