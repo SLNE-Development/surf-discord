@@ -4,5 +4,6 @@ package dev.slne.surf.discord.command
 @Retention(AnnotationRetention.RUNTIME)
 annotation class DiscordCommand(
     val name: String,
-    val description: String
+    val description: String,
+    val options: Array<CommandOption> = []
 )

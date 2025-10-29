@@ -1,5 +1,6 @@
 package dev.slne.surf.discord.interaction.selectmenu.impl
 
+import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.modal.ModalRegistry
 import dev.slne.surf.discord.interaction.selectmenu.DiscordSelectMenu
 import dev.slne.surf.discord.ticket.TicketService
@@ -11,8 +12,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class TicketCloseReasonSelectMenu(
-    private val ticketService: TicketService,
-    private val modalRegistry: ModalRegistry
+    private val ticketService: TicketService
 ) : DiscordSelectMenu {
     override val id = "ticket:close:reason"
     override suspend fun create(hook: InteractionHook): StringSelectMenu {
@@ -40,7 +40,8 @@ class TicketCloseReasonSelectMenu(
         }
 
         if (selected.value == "custom") {
-            event.replyModal(modalRegistry.get("ticket:close:reason:custom").modal)
+            event.replyModal(getBean<ModalRegistry>().get("ticket:close:reason:custom").modal)
+                .queue()
         } else {
             ticketService.closeTicket(
                 ticket,

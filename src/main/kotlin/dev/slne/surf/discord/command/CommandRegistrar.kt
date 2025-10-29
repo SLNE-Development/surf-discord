@@ -7,8 +7,10 @@ import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
+import net.dv8tion.jda.api.interactions.commands.OptionType as DiscordOptionType
 
 @Component
 class CommandRegistrar(
@@ -37,7 +39,7 @@ class CommandRegistrar(
         commands.forEach { (_, bean) ->
             val annotation = bean::class.java.getAnnotation(DiscordCommand::class.java)
             if (bean is SlashCommand) {
-                registerCommand(annotation.name, annotation.description, bean)
+                registerCommand(annotation.name, annotation.description, bean, annotation.options)
             }
         }
 
@@ -48,13 +50,82 @@ class CommandRegistrar(
         }
     }
 
-    fun registerCommand(name: String, description: String, command: SlashCommand) {
-        jda.guilds.forEach {
-            it.upsertCommand(name, description).queue()
+    fun registerCommand(
+        name: String,
+        description: String,
+        command: SlashCommand,
+        options: Array<CommandOption> = emptyArray()
+    ) {
+        jda.guilds.forEach { guild ->
+            val commandData =
+                net.dv8tion.jda.api.interactions.commands.build.Commands.slash(name, description)
+
+            options.forEach { opt ->
+                val optData = when (opt.type) {
+                    CommandOptionType.STRING -> OptionData(
+                        DiscordOptionType.STRING,
+                        opt.name,
+                        opt.description,
+                        opt.required
+                    )
+
+                    CommandOptionType.INTEGER -> OptionData(
+                        DiscordOptionType.INTEGER,
+                        opt.name,
+                        opt.description,
+                        opt.required
+                    )
+
+                    CommandOptionType.BOOLEAN -> OptionData(
+                        DiscordOptionType.BOOLEAN,
+                        opt.name,
+                        opt.description,
+                        opt.required
+                    )
+
+                    CommandOptionType.USER -> OptionData(
+                        DiscordOptionType.USER,
+                        opt.name,
+                        opt.description,
+                        opt.required
+                    )
+
+                    CommandOptionType.CHANNEL -> OptionData(
+                        DiscordOptionType.CHANNEL,
+                        opt.name,
+                        opt.description,
+                        opt.required
+                    )
+
+                    CommandOptionType.ROLE -> OptionData(
+                        DiscordOptionType.ROLE,
+                        opt.name,
+                        opt.description,
+                        opt.required
+                    )
+
+                    CommandOptionType.MENTIONABLE -> OptionData(
+                        DiscordOptionType.MENTIONABLE,
+                        opt.name,
+                        opt.description,
+                        opt.required
+                    )
+
+                    CommandOptionType.NUMBER -> OptionData(
+                        DiscordOptionType.NUMBER,
+                        opt.name,
+                        opt.description,
+                        opt.required
+                    )
+                }
+                commandData.addOptions(optData)
+            }
+
+            guild.upsertCommand(commandData).queue()
         }
 
-        logger.info("Successfully registered command '$name' for ${jda.guilds.size} guilds.")
-
         registeredCommands[name] = command
+        logger.info("Successfully registered command '$name' for ${jda.guilds.size} guilds.")
     }
+
 }

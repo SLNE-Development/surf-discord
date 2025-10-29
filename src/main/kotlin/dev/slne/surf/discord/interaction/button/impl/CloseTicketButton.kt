@@ -14,7 +14,12 @@ class CloseTicketButton(
 ) : DiscordButton {
     override val id = "ticket:close"
     override val button =
-        Button.of(ButtonStyle.SECONDARY, id, "Ticket schließen", Emoji.fromFormatted("❌"))
+        Button.of(
+            ButtonStyle.SECONDARY,
+            id,
+            "Ticket schließen",
+            Emoji.fromCustom("cross", 1433072192274305135, false)
+        )
 
     override suspend fun onClick(event: ButtonInteractionEvent) {
         val selectMenu = selectMenuRegistry.get("ticket:close:reason").create(event.hook)

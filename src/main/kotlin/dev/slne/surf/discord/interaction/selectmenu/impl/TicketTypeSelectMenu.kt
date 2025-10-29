@@ -35,7 +35,8 @@ class TicketTypeSelectMenu(
         }
 
         if (ticketService.hasOpenTicket(event.user.idLong, ticketType)) {
-            event.reply("Du hast bereits ein offenes Ticket dieses Typs.").queue()
+            event.reply("Du hast bereits ein offenes Ticket dieses Typs.").setEphemeral(true)
+                .queue()
             return
         }
 

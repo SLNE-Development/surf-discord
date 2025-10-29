@@ -2,14 +2,16 @@ package dev.slne.surf.discord.interaction.modal.impl
 
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.dsl.modal
+import dev.slne.surf.discord.getBean
+import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
-import dev.slne.surf.discord.util.absoluteDiscordTimeStamp
-import dev.slne.surf.discord.util.relativeDiscordTimeStamp
 import dev.slne.surf.discord.util.replyError
+import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.components.buttons.Button
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
 import org.springframework.stereotype.Component
 import java.awt.Color
@@ -98,13 +100,17 @@ class WhitelistTicketModal(
                     value = interaction.user.id
                     inline = true
                 }
-
-                footer =
-                    "Erstellt von ${interaction.user.name} ${ticket.createdAt.relativeDiscordTimeStamp()} (${ticket.createdAt.absoluteDiscordTimeStamp()})"
             }
         ).addActionRow(
-            Button.success("whitelist-complete", "Whitelist Annehmen"),
-            Button.danger("close-ticket", "Ticket Schließen")
+            Button.of(
+                ButtonStyle.SECONDARY,
+                "whitelist:complete",
+                "Whitelist annehmen",
+                Emoji.fromCustom("checkmark", 1433072075446423754, false)
+            ),
+            getBean<ButtonRegistry>().get("ticket:close").button,
+            Button.link("https://twitch.tv/$whitelistTwitch", "Twitch"),
+            Button.link("https://www.laby.net/$whitelistName", "Minecraft"),
         ).queue()
     }
 }

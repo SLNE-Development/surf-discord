@@ -35,7 +35,7 @@ class TicketService(
             return null
         }
 
-        threadChannel.addThreadMember(user)
+        threadChannel.addThreadMember(user).queue()
 
         val ticket = Ticket(
             random.nextLong(),
