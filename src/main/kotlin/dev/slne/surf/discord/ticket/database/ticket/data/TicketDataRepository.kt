@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository
 class TicketDataRepository {
     suspend fun setData(ticketId: Long, data: TicketData) =
         newSuspendedTransaction(Dispatchers.IO) {
+            println("Setting data for ticket ID $ticketId")
             TicketDataTable.deleteWhere {
                 TicketDataTable.ticketId eq ticketId
             }
@@ -29,6 +30,7 @@ class TicketDataRepository {
 
     suspend fun getData(ticketId: Long): TicketData =
         newSuspendedTransaction(Dispatchers.IO) {
+            println("Getting data for ticket ID $ticketId")
             ObjectArraySet(
                 TicketDataTable.selectAll().where(TicketDataTable.ticketId eq ticketId)
                     .map { it[TicketDataTable.dataKey] to it[TicketDataTable.dataValue] })

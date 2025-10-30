@@ -54,7 +54,8 @@ enum class TicketType(
                 "Erledigt",
                 "Dein Anliegen wurde bearbeitet."
             )
-        )
+        ),
+        getBean<ModalRegistry>().get("ticket:support:survival").create()
     ),
     SUPPORT_EVENT(
         "event",
@@ -67,7 +68,8 @@ enum class TicketType(
                 "Erledigt",
                 "Dein Anliegen wurde bearbeitet."
             )
-        )
+        ),
+        getBean<ModalRegistry>().get("ticket:support:event").create()
     ),
     REPORT(
         "report",
@@ -80,7 +82,8 @@ enum class TicketType(
                 "Fall abgeschlossen",
                 "Der gemeldete Fall wurde abgeschlossen."
             )
-        )
+        ),
+        getBean<ModalRegistry>().get("ticket:report").create()
     ),
     UNBAN(
         "unban",
@@ -101,7 +104,8 @@ enum class TicketType(
                 "Ban verkürzt",
                 "Dein Ban wurde verkürzt."
             )
-        )
+        ),
+        getBean<ModalRegistry>().get("ticket:unban").create()
     ),
     BUGREPORT(
         "bugreport",
@@ -122,6 +126,7 @@ enum class TicketType(
                 "Bug behoben",
                 "Der gemeldete Fehler wurde behoben. Danke für deinen Bugreport!"
             )
-        )
+        ),
+        getBean<ModalRegistry>().get("ticket:bugreport").create()
     )
 }

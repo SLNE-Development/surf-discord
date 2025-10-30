@@ -4,7 +4,7 @@ import dev.slne.surf.discord.ticket.database.ticket.TicketTable
 import org.jetbrains.exposed.dao.id.LongIdTable
 
 object TicketDataTable : LongIdTable("discord_ticket_data") {
-    val ticketId = reference("ticket_id", TicketTable)
+    val ticketId = long("ticket_id").references(TicketTable.tickedId)
     val dataKey = varchar("data_key", 100)
     val dataValue = largeText("data_value")
 }
