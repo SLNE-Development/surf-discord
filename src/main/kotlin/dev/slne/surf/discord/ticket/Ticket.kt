@@ -1,10 +1,13 @@
 package dev.slne.surf.discord.ticket
 
 import dev.slne.surf.discord.jda
+import it.unimi.dsi.fastutil.objects.ObjectSet
+
+typealias TicketData = ObjectSet<Pair<String, String>>
 
 data class Ticket(
     val ticketId: Long,
-    var ticketData: String?,
+    var ticketData: TicketData,
     val authorId: Long,
     val authorName: String,
     val authorAvatar: String?,

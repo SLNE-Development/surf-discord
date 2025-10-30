@@ -2,6 +2,7 @@ package dev.slne.surf.discord.ticket.database.ticket
 
 import dev.slne.surf.discord.ticket.Ticket
 import dev.slne.surf.discord.ticket.TicketType
+import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataRepository
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
@@ -13,12 +14,13 @@ import org.jetbrains.exposed.sql.update
 import org.springframework.stereotype.Repository
 
 @Repository
-class TicketRepository {
+class TicketRepository(
+    private val ticketDataRepository: TicketDataRepository
+) {
     suspend fun createTicket(ticket: Ticket) = newSuspendedTransaction(Dispatchers.IO) {
         println("Creating ticket with ID ${ticket.ticketId} for author ${ticket.authorId}")
         TicketTable.insert {
             it[tickedId] = ticket.ticketId
-            it[ticketData] = ticket.ticketData
             it[authorId] = ticket.authorId
             it[authorName] = ticket.authorName
             it[authorAvatarUrl] = ticket.authorAvatar
@@ -43,21 +45,17 @@ class TicketRepository {
                 .count() > 0
         }
 
-    suspend fun updateData(ticket: Ticket, data: String) = newSuspendedTransaction(Dispatchers.IO) {
-        println("Updating ticket data for ticket ID ${ticket.ticketId}")
-        TicketTable.update({ TicketTable.tickedId eq ticket.ticketId }) {
-            it[ticketData] = data
-        }
-    }
 
     suspend fun getTicketByThreadId(threadId: Long): Ticket? =
         newSuspendedTransaction(Dispatchers.IO) {
             println("Fetching ticket by thread ID $threadId")
             TicketTable.selectAll().where(TicketTable.threadId eq threadId)
                 .firstNotNullOfOrNull { row ->
+                    val id = row[TicketTable.tickedId]
+                    val data = ticketDataRepository.getData(id)
                     Ticket(
-                        ticketId = row[TicketTable.tickedId],
-                        ticketData = row[TicketTable.ticketData],
+                        ticketId = id,
+                        ticketData = data,
                         authorId = row[TicketTable.authorId],
                         authorName = row[TicketTable.authorName],
                         authorAvatar = row[TicketTable.authorAvatarUrl],
@@ -91,9 +89,11 @@ class TicketRepository {
         println("Fetching ticket by ID $ticketId")
         TicketTable.selectAll().where(TicketTable.tickedId eq ticketId)
             .firstNotNullOfOrNull { row ->
+                val id = row[TicketTable.tickedId]
+                val data = ticketDataRepository.getData(id)
                 Ticket(
-                    ticketId = row[TicketTable.tickedId],
-                    ticketData = row[TicketTable.ticketData],
+                    ticketId = id,
+                    ticketData = data,
                     authorId = row[TicketTable.authorId],
                     authorName = row[TicketTable.authorName],
                     authorAvatar = row[TicketTable.authorAvatarUrl],
@@ -116,9 +116,11 @@ class TicketRepository {
             TicketTable.selectAll()
                 .where((TicketTable.authorId eq authorId) and (TicketTable.ticketType eq type))
                 .firstNotNullOfOrNull { row ->
+                    val id = row[TicketTable.tickedId]
+                    val data = ticketDataRepository.getData(id)
                     Ticket(
-                        ticketId = row[TicketTable.tickedId],
-                        ticketData = row[TicketTable.ticketData],
+                        ticketId = id,
+                        ticketData = data,
                         authorId = row[TicketTable.authorId],
                         authorName = row[TicketTable.authorName],
                         authorAvatar = row[TicketTable.authorAvatarUrl],

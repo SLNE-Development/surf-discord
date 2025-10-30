@@ -5,6 +5,7 @@ import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
+import dev.slne.surf.discord.ticket.TicketData
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
 import dev.slne.surf.discord.util.Colors
@@ -52,7 +53,7 @@ class ReportTicketModal(
             ticketService.createTicket(
                 interaction.hook,
                 TicketType.REPORT,
-                "report:$target:$issue"
+                TicketData.of("target" to target, "issue" to issue)
             ) ?: run {
                 if (ticketService.hasOpenTicket(user.idLong, TicketType.REPORT)) {
                     interaction.hook.editOriginal("Du hast bereits ein offenes Report Ticket.")

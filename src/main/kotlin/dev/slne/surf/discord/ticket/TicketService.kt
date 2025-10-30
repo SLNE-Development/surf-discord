@@ -2,8 +2,10 @@ package dev.slne.surf.discord.ticket
 
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
+import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataRepository
 import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.random
+import it.unimi.dsi.fastutil.objects.ObjectArraySet
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.interactions.InteractionHook
@@ -12,9 +14,10 @@ import org.springframework.stereotype.Service
 @Service
 class TicketService(
     private val ticketRepository: TicketRepository,
+    private val ticketDataRepository: TicketDataRepository,
     private val ticketChannel: TextChannel?
 ) {
-    suspend fun createTicket(hook: InteractionHook, type: TicketType, data: String): Ticket? {
+    suspend fun createTicket(hook: InteractionHook, type: TicketType, data: TicketData): Ticket? {
         val userId = hook.interaction.user.idLong
         val user = hook.interaction.user
 
@@ -39,7 +42,7 @@ class TicketService(
 
         val ticket = Ticket(
             random.nextLong(),
-            null,
+            ObjectArraySet(),
             userId,
             user.name,
             user.avatarUrl,
@@ -55,13 +58,13 @@ class TicketService(
         )
 
         ticketRepository.createTicket(ticket)
-        ticketRepository.updateData(ticket, data)
+        ticketDataRepository.setData(ticket.ticketId, data)
 
         return ticket
     }
 
-    suspend fun updateData(ticket: Ticket, ticketData: String) =
-        ticketRepository.updateData(ticket, ticketData)
+    suspend fun updateData(ticket: Ticket, ticketData: TicketData) =
+        ticketDataRepository.setData(ticket.ticketId, ticketData)
 
     suspend fun getTicketByThreadId(threadId: Long) =
         ticketRepository.getTicketByThreadId(threadId)

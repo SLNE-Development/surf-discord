@@ -5,6 +5,7 @@ import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
+import dev.slne.surf.discord.ticket.TicketData
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
 import dev.slne.surf.discord.util.Colors
@@ -62,7 +63,7 @@ class UnbanTicketModal(
             ticketService.createTicket(
                 interaction.hook,
                 TicketType.UNBAN,
-                "unban:$issue"
+                TicketData.of("punish-id" to punishId, "reason" to reason, "issue" to issue)
             ) ?: run {
                 if (ticketService.hasOpenTicket(user.idLong, TicketType.UNBAN)) {
                     interaction.hook.editOriginal("Du hast bereits einen offenen Entbannungsantrag.")

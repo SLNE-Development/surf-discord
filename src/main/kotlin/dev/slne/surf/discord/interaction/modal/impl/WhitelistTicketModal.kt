@@ -5,6 +5,7 @@ import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
+import dev.slne.surf.discord.ticket.TicketData
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
 import dev.slne.surf.discord.util.Colors
@@ -50,7 +51,7 @@ class WhitelistTicketModal(
         val ticket = ticketService.createTicket(
             interaction.hook,
             TicketType.WHITELIST,
-            "whitelist:$whitelistName:$whitelistTwitch"
+            TicketData.of("minecraft" to whitelistName, "twitch" to whitelistTwitch)
         ) ?: run {
             if (ticketService.hasOpenTicket(user.idLong, TicketType.WHITELIST)) {
                 interaction.hook.editOriginal("Du hast bereits ein offenes Whitelist Ticket.")

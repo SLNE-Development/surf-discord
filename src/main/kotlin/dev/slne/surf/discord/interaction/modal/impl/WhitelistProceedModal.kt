@@ -19,13 +19,10 @@ class WhitelistProceedModal(
     override suspend fun create(hook: InteractionHook): Modal {
         val ticket = hook.asTicketOrThrow()
 
-        val minecraft = ticket.ticketData?.let {
-            it.split(":")[1]
-        }
-
-        val twitch = ticket.ticketData?.let {
-            it.split(":")[2]
-        }
+        val minecraft = ticket.ticketData.find { it.first == "minecraft" }?.second
+            ?: error("Minecraft username missing for ticket: ${ticket.ticketId}")
+        val twitch = ticket.ticketData.find { it.first == "twitch" }?.second
+            ?: error("Twitch username missing for ticket: ${ticket.ticketId}")
 
         return modal(id, "Spieler whitelisten") {
             field {
