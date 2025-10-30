@@ -1,6 +1,8 @@
 package dev.slne.surf.discord.ticket
 
 import dev.slne.surf.discord.dsl.embed
+import dev.slne.surf.discord.jda
+import dev.slne.surf.discord.logging.TicketLogger
 import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataRepository
 import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffRepository
@@ -17,7 +19,8 @@ class TicketService(
     private val ticketRepository: TicketRepository,
     private val ticketDataRepository: TicketDataRepository,
     private val ticketStaffRepository: TicketStaffRepository,
-    private val ticketChannel: TextChannel?
+    private val ticketChannel: TextChannel?,
+    private val ticketLogger: TicketLogger
 ) {
     suspend fun createTicket(hook: InteractionHook, type: TicketType, data: TicketData): Ticket? {
         val userId = hook.interaction.user.idLong
@@ -62,18 +65,23 @@ class TicketService(
         ticketRepository.createTicket(ticket)
         ticketDataRepository.setData(ticket.ticketId, data)
 
+        ticketLogger.logCreation(ticket)
+
         return ticket
     }
 
     suspend fun claim(ticket: Ticket, user: User) {
         ticketStaffRepository.claim(ticket, user)
 
+        ticketLogger.logNewClaimant(ticket, user.name)
+
         ticket.getThreadChannel()?.sendMessage("${user.asMention} bearbeitet das Ticket nun.")
             ?.queue()
     }
 
-    suspend fun unclaim(ticket: Ticket) {
+    suspend fun unclaim(ticket: Ticket, user: User) {
         ticketStaffRepository.unclaim(ticket)
+        ticketLogger.logNewUnClaimant(ticket, user.name)
     }
 
     suspend fun isClaimed(ticket: Ticket) =
@@ -84,10 +92,13 @@ class TicketService(
 
     suspend fun watch(ticket: Ticket, user: User) {
         ticketStaffRepository.watch(ticket, user)
+        ticketLogger.logNewWatcher(ticket, user.name)
     }
 
-    suspend fun unwatch(ticket: Ticket) {
+    suspend fun unwatch(ticket: Ticket, user: User) {
         ticketStaffRepository.unclaim(ticket)
+
+        ticketLogger.logNewUnWatcher(ticket, user.name)
     }
 
     suspend fun isWatchedByUser(ticket: Ticket, user: User) =
@@ -158,6 +169,53 @@ class TicketService(
         ticket.closedByName = closer.name
         ticket.closedByAvatar = closer.avatarUrl
         ticket.closedReason = reason
+
+        ticketLogger.logClosure(ticket)
+
+        jda.openPrivateChannelById(ticket.authorId).submit(true).thenAccept {
+            it.sendMessageEmbeds(embed {
+                title = "Dein Ticket wurde geschlossen"
+                description =
+                    "Dein ${ticket.ticketType.displayName} wurde geschlossen.\n\nGrund: $reason"
+                color = Colors.INFO
+
+                field {
+                    name = "Ticket Typ"
+                    value = ticket.ticketType.displayName
+                    inline = true
+                }
+
+                field {
+                    name = "Ticket Id"
+                    value = ticket.ticketId.toString()
+                    inline = true
+                }
+
+                field {
+                    name = "Geschlossen von"
+                    value = closer.asMention
+                    inline = true
+                }
+
+                field {
+                    name = "Schließungsgrund"
+                    value = reason
+                    inline = true
+                }
+
+                field {
+                    name = "Erstellungsdatum"
+                    value = "<t:${ticket.createdAt / 1000}:F>"
+                    inline = true
+                }
+
+                field {
+                    name = "Schließungsdatum"
+                    value = "<t:${System.currentTimeMillis() / 1000}:F>"
+                    inline = true
+                }
+            }).queue()
+        }
 
         markAsClosed(ticket)
     }

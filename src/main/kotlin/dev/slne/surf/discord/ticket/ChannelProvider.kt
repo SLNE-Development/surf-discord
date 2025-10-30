@@ -7,12 +7,12 @@ import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
 
 @Component
-class TicketChannelProvider(
+class ChannelProvider(
     private val jda: JDA
 ) {
     @Bean
-    fun ticketChannel() = jda.getTextChannelById(botConfig.ticketChannel) ?: run {
-        logger.error("Ticket channel with ID ${botConfig.ticketChannel} not found!")
+    fun ticketChannel() = jda.getTextChannelById(botConfig.channels.ticketChannel) ?: run {
+        logger.error("Ticket channel with ID ${botConfig.channels.ticketChannel} not found!")
         null
     }
 }

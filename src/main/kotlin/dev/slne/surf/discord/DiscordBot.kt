@@ -20,7 +20,7 @@ class DiscordBot {
         val builder = JDABuilder.createDefault(botToken)
 
         builder.enableIntents(gatewayIntents)
-        builder.setStatus(OnlineStatus.DO_NOT_DISTURB)
+        builder.setStatus(OnlineStatus.ONLINE)
         builder.setActivity(Activity.playing("castcrafter.de"))
 
         val jda = builder.build()

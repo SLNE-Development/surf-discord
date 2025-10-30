@@ -33,6 +33,7 @@ class PrintTicketButtonsCommand(private val buttonRegistry: ButtonRegistry) : Sl
                             "Wir bemühen uns die Tickets schnellstmöglich zu bearbeiten, jedoch arbeitet das gesamte Team freiwillig, und gerade unter der Woche kann die Bearbeitung der Tickets länger dauern."
 
                 color = Colors.INFO
+                footer = "Arty Support | 2025"
             }
         ).addActionRow(
             buttonRegistry.get("ticket:open").button
