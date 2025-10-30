@@ -4,7 +4,7 @@ import dev.slne.surf.discord.ticket.database.ticket.TicketTable
 import org.jetbrains.exposed.dao.id.LongIdTable
 
 object TicketStaffTable : LongIdTable("discord_ticket_staff") {
-    val ticketId = long("ticket_id").references(TicketTable.tickedId)
+    val ticketId = long("ticket_id").references(TicketTable.tickedId).uniqueIndex()
     val claimedAt = long("claimed_at").nullable()
     val claimedBy = long("claimed_by").nullable()
     val claimedByName = varchar("claimed_by_name", 100).nullable()
