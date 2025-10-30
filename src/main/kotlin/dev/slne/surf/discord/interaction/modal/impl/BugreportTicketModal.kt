@@ -78,7 +78,8 @@ class BugreportTicketModal(
                 }//TODO: Add Whitelist Information
             }
         ).addActionRow(
-            getBean<ButtonRegistry>().get("ticket:close").button//TODO: Add Laby.Net Profile Button
+            getBean<ButtonRegistry>().get("ticket:close").button, //TODO: Add Laby.Net Profile Button
+            getBean<ButtonRegistry>().get("ticket:claim").button
         ).queue()
     }
 }

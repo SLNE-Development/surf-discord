@@ -78,7 +78,8 @@ class DiscordSupportTicketModal(
                 }
             }
         ).addActionRow(
-            getBean<ButtonRegistry>().get("ticket:close").button
+            getBean<ButtonRegistry>().get("ticket:close").button,
+            getBean<ButtonRegistry>().get("ticket:claim").button
         ).queue()
     }
 }

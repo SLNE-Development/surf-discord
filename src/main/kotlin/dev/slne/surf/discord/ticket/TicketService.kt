@@ -3,6 +3,7 @@ package dev.slne.surf.discord.ticket
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataRepository
+import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffRepository
 import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.random
 import it.unimi.dsi.fastutil.objects.ObjectArraySet
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service
 class TicketService(
     private val ticketRepository: TicketRepository,
     private val ticketDataRepository: TicketDataRepository,
+    private val ticketStaffRepository: TicketStaffRepository,
     private val ticketChannel: TextChannel?
 ) {
     suspend fun createTicket(hook: InteractionHook, type: TicketType, data: TicketData): Ticket? {
@@ -62,6 +64,31 @@ class TicketService(
 
         return ticket
     }
+
+    suspend fun claim(ticket: Ticket, user: User) {
+        ticketStaffRepository.claim(ticket, user)
+
+        ticket.getThreadChannel()?.sendMessage("${user.asMention} bearbeitet das Ticket nun.")
+            ?.queue()
+    }
+
+    suspend fun unclaim(ticket: Ticket) {
+        ticketStaffRepository.unclaim(ticket)
+    }
+
+    suspend fun isClaimed(ticket: Ticket) =
+        ticketStaffRepository.isClaimed(ticket)
+
+    suspend fun watch(ticket: Ticket, user: User) {
+        ticketStaffRepository.watch(ticket, user)
+    }
+
+    suspend fun unwatch(ticket: Ticket) {
+        ticketStaffRepository.unclaim(ticket)
+    }
+
+    suspend fun isWatched(ticket: Ticket) =
+        ticketStaffRepository.isWatched(ticket)
 
     suspend fun updateData(ticket: Ticket, ticketData: TicketData) =
         ticketDataRepository.setData(ticket.ticketId, ticketData)
