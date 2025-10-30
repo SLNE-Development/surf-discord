@@ -4,10 +4,10 @@ import dev.slne.surf.discord.ticket.Ticket
 import kotlinx.coroutines.Dispatchers
 import net.dv8tion.jda.api.entities.User
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.update
-import org.jetbrains.exposed.sql.upsert
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -16,14 +16,29 @@ class TicketStaffRepository {
         ticket: Ticket,
         claimer: User
     ) = newSuspendedTransaction(Dispatchers.IO) {
-        TicketStaffTable.upsert {
-            it[ticketId] = ticket.ticketId
-            it[claimedAt] = System.currentTimeMillis()
-            it[claimedBy] = claimer.idLong
-            it[claimedByName] = claimer.name
-            it[claimedByAvatar] = claimer.avatarUrl
+        val existing = TicketStaffTable.selectAll()
+            .where(TicketStaffTable.ticketId eq ticket.ticketId)
+            .firstOrNull()
+
+        if (existing == null) {
+            TicketStaffTable.insert {
+                it[ticketId] = ticket.ticketId
+                it[claimedAt] = System.currentTimeMillis()
+                it[claimedBy] = claimer.idLong
+                it[claimedByName] = claimer.name
+                it[claimedByAvatar] = claimer.avatarUrl
+            }
+        } else {
+            // Nur Claim-Felder updaten
+            TicketStaffTable.update({ TicketStaffTable.ticketId eq ticket.ticketId }) {
+                it[claimedAt] = System.currentTimeMillis()
+                it[claimedBy] = claimer.idLong
+                it[claimedByName] = claimer.name
+                it[claimedByAvatar] = claimer.avatarUrl
+            }
         }
     }
+
 
     suspend fun isClaimedByUser(
         ticket: Ticket,
@@ -67,14 +82,28 @@ class TicketStaffRepository {
         ticket: Ticket,
         watcher: User
     ) = newSuspendedTransaction(Dispatchers.IO) {
-        TicketStaffTable.upsert {
-            it[ticketId] = ticket.ticketId
-            it[watchedAt] = System.currentTimeMillis()
-            it[watchedBy] = watcher.idLong
-            it[watchedByName] = watcher.name
-            it[watchedByAvatar] = watcher.avatarUrl
+        val existing = TicketStaffTable.selectAll()
+            .where(TicketStaffTable.ticketId eq ticket.ticketId)
+            .firstOrNull()
+
+        if (existing == null) {
+            TicketStaffTable.insert {
+                it[ticketId] = ticket.ticketId
+                it[watchedAt] = System.currentTimeMillis()
+                it[watchedBy] = watcher.idLong
+                it[watchedByName] = watcher.name
+                it[watchedByAvatar] = watcher.avatarUrl
+            }
+        } else {
+            TicketStaffTable.update({ TicketStaffTable.ticketId eq ticket.ticketId }) {
+                it[watchedAt] = System.currentTimeMillis()
+                it[watchedBy] = watcher.idLong
+                it[watchedByName] = watcher.name
+                it[watchedByAvatar] = watcher.avatarUrl
+            }
         }
     }
+
 
     suspend fun unwatch(
         ticket: Ticket
