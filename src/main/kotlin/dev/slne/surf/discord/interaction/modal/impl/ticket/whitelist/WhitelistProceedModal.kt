@@ -1,4 +1,4 @@
-package dev.slne.surf.discord.interaction.modal.impl
+package dev.slne.surf.discord.interaction.modal.impl.ticket.whitelist
 
 import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.interaction.modal.DiscordModal
@@ -16,7 +16,7 @@ class WhitelistProceedModal(
 ) : DiscordModal {
     override val id = "ticket:whitelist:proceed"
 
-    override suspend fun create(hook: InteractionHook): Modal {
+    override suspend fun create(hook: InteractionHook, vararg data: String): Modal {
         val ticket = hook.asTicketOrThrow()
 
         val minecraft = ticket.ticketData.find { it.first == "minecraft" }?.second

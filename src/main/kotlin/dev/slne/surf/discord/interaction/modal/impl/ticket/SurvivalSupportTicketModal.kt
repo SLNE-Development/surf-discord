@@ -1,4 +1,4 @@
-package dev.slne.surf.discord.interaction.modal.impl
+package dev.slne.surf.discord.interaction.modal.impl.ticket
 
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.dsl.modal
@@ -15,36 +15,19 @@ import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
 import org.springframework.stereotype.Component
 
 @Component
-class UnbanTicketModal(
+class SurvivalSupportTicketModal(
     private val ticketService: TicketService
 ) : DiscordModal {
-    override val id = "ticket:unban"
+    override val id = "ticket:support:survival"
 
-    override fun create() = modal(id, "Entbannungsantrag") {
-        field {
-            id = "punish-id"
-            label = "Punishment ID"
-            style = TextInputStyle.SHORT
-            placeholder = "Gib hier die Punishment ID deines Banns ein."
-            required = true
-        }
+    override fun create() = modal(id, "Survival Support Ticket") {
         field {
             id = "issue"
-            label = "Warum wurdest du gebannt?"
+            label = "Beschreibe dein Anliegen"
             style = TextInputStyle.PARAGRAPH
-            lengthRange = 50..4000
+            lengthRange = 10..4000
             placeholder =
-                "Ich habe garnichts gemacht!"
-            required = true
-        }
-
-        field {
-            id = "reason"
-            label = "Warum sollten wir dich entbannen?"
-            style = TextInputStyle.PARAGRAPH
-            lengthRange = 100..4000
-            placeholder =
-                "Ich möchte bitte wieder spielen bitte bitte"
+                "Bitte gib so viele Informationen wie möglich an, damit wir dir bestmöglich helfen können."
             required = true
         }
     }
@@ -53,20 +36,18 @@ class UnbanTicketModal(
         val interaction = event.interaction
         val user = interaction.user
 
-        val punishId = interaction.getValue("punish-id")?.asString ?: return
         val issue = interaction.getValue("issue")?.asString ?: return
-        val reason = interaction.getValue("reason")?.asString ?: return
 
         interaction.reply("Das Ticket wird erstellt...").setEphemeral(true).queue()
 
         val ticket =
             ticketService.createTicket(
                 interaction.hook,
-                TicketType.UNBAN,
-                TicketData.of("punish-id" to punishId, "reason" to reason, "issue" to issue)
+                TicketType.SUPPORT_SURVIVAL,
+                TicketData.of("issue" to issue)
             ) ?: run {
-                if (ticketService.hasOpenTicket(user.idLong, TicketType.UNBAN)) {
-                    interaction.hook.editOriginal("Du hast bereits einen offenen Entbannungsantrag.")
+                if (ticketService.hasOpenTicket(user.idLong, TicketType.SUPPORT_SURVIVAL)) {
+                    interaction.hook.editOriginal("Du hast bereits ein offenes Survival Support Ticket.")
                         .queue()
                 } else {
                     interaction.hook.replyError()
@@ -87,24 +68,12 @@ class UnbanTicketModal(
             embed {
                 title = "Willkommen im Ticket!"
                 description =
-                    "Dein Entbannungsantrag wurde erstellt und wir haben deine Informationen erhalten. Bitte habe ein wenig Geduld, während das Team dein Anliegen bearbeitet."
+                    "Dein Survival Support Ticket wurde erstellt und wir haben deine Informationen erhalten. Bitte habe ein wenig Geduld, während das Team dein Anliegen bearbeitet."
                 color = Colors.SUCCESS
 
                 field {
-                    name = "Punishment ID"
-                    value = punishId
-                    inline = true
-                }
-
-                field {
-                    name = "Banngrund"
+                    name = "Anliegen"
                     value = issue
-                    inline = true
-                }
-
-                field {
-                    name = "Entbannungsgrund"
-                    value = reason
                     inline = true
                 }//TODO: Add Whitelist Information
             }

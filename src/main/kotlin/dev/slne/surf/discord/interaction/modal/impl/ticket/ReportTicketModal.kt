@@ -1,4 +1,4 @@
-package dev.slne.surf.discord.interaction.modal.impl
+package dev.slne.surf.discord.interaction.modal.impl.ticket
 
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.dsl.modal

@@ -30,7 +30,7 @@ class TicketWatchCommand(
         val claimed = ticketService.isWatchedByUser(ticket, event.user)
 
         if (claimed) {
-            ticketService.unwatch(ticket)
+            ticketService.unwatch(ticket, event.user)
             event.reply("Du beobachtest das Ticket nun nicht mehr.").setEphemeral(true).queue()
         } else {
             if (ticketService.isWatched(ticket)) {

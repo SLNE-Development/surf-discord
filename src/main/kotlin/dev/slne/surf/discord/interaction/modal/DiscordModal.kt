@@ -10,7 +10,7 @@ interface DiscordModal {
         error("Unsupported")
     }
 
-    suspend fun create(hook: InteractionHook): Modal {
+    suspend fun create(hook: InteractionHook, vararg data: String): Modal {
         error("Unsupported")
     }
 

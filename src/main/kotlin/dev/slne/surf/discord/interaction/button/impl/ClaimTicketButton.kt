@@ -32,7 +32,7 @@ class ClaimTicketButton(
         val ticket = event.hook.asTicketOrThrow()
 
         if (ticketService.isClaimedByUser(ticket, event.user)) {
-            ticketService.unclaim(ticket)
+            ticketService.unclaim(ticket, event.user)
             event.reply("Du hast das Ticket freigegeben.").setEphemeral(true).queue()
         } else {
             if (ticketService.isClaimed(ticket)) {
