@@ -16,6 +16,7 @@ class AnnouncementRepository {
         authorName: String,
         authorId: Long,
         messageId: Long,
+        channelId: Long,
         title: String,
         content: String
     ) = newSuspendedTransaction(Dispatchers.IO) {
@@ -23,6 +24,7 @@ class AnnouncementRepository {
             it[this.authorName] = authorName
             it[this.authorId] = authorId
             it[this.messageId] = messageId
+            it[this.channelId] = channelId
             it[this.title] = title
             it[this.content] = content
         }
@@ -46,6 +48,7 @@ class AnnouncementRepository {
                     row[AnnouncementTable.authorName],
                     row[AnnouncementTable.authorId],
                     row[AnnouncementTable.messageId],
+                    row[AnnouncementTable.channelId],
                     row[AnnouncementTable.title],
                     row[AnnouncementTable.content]
                 )

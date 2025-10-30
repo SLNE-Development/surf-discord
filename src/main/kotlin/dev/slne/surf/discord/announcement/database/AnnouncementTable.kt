@@ -6,6 +6,7 @@ object AnnouncementTable : LongIdTable("discord_announcements") {
     val authorName = varchar("author_name", 100)
     val authorId = long("author_id")
     val messageId = long("message_id").uniqueIndex()
+    val channelId = long("channel_id")
     val title = varchar("title", 200)
     val content = largeText("content")
 }

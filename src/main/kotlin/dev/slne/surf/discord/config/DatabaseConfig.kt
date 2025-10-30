@@ -1,5 +1,6 @@
 package dev.slne.surf.discord.config
 
+import dev.slne.surf.discord.announcement.database.AnnouncementTable
 import dev.slne.surf.discord.logger
 import dev.slne.surf.discord.ticket.database.members.TicketMemberTable
 import dev.slne.surf.discord.ticket.database.ticket.TicketTable
@@ -37,7 +38,8 @@ class DatabaseConfiguration {
                 TicketTable,
                 TicketMemberTable,
                 TicketDataTable,
-                TicketStaffTable
+                TicketStaffTable,
+                AnnouncementTable
             )// TODO: Remove for production
         }
         logger.info("Connected to database ${botConfig.database.database} at ${botConfig.database.hostname}:${botConfig.database.port}")

@@ -1,7 +1,6 @@
 package dev.slne.surf.discord.announcement
 
 import dev.slne.surf.discord.announcement.database.AnnouncementRepository
-import dev.slne.surf.discord.config.botConfig
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.jda
 import dev.slne.surf.discord.util.Colors
@@ -27,11 +26,13 @@ class AnnouncementService(
             this.color = Colors.INFO
         }).submit(true).await()
         val messageId = message.idLong
+        val channelId = message.channelIdLong
 
         announcementRepository.createAnnouncement(
             author.name,
             author.idLong,
             messageId,
+            channelId,
             title,
             content
         )
@@ -49,9 +50,7 @@ class AnnouncementService(
         newContent: String
     ) {
         val channel =
-            jda.getGuildChannelById(botConfig.channels.ticketChannel) as? GuildMessageChannel
-                ?: return
-
+            jda.getGuildChannelById(announcement.channelId) as? GuildMessageChannel ?: return
         channel.editMessageEmbedsById(
             announcement.messageId,
             embed {
@@ -70,8 +69,7 @@ class AnnouncementService(
 
     suspend fun deleteAnnouncement(announcement: DiscordAnnouncement) {
         val channel =
-            jda.getGuildChannelById(botConfig.channels.ticketChannel) as? GuildMessageChannel
-                ?: return
+            jda.getGuildChannelById(announcement.channelId) as? GuildMessageChannel ?: return
 
         channel.deleteMessageById(announcement.messageId).queue()
         announcementRepository.deleteAnnouncement(announcement.messageId)
