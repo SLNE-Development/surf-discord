@@ -3,6 +3,7 @@ package dev.slne.surf.discord.interaction.selectmenu.impl
 import dev.slne.surf.discord.interaction.selectmenu.DiscordSelectMenu
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
+import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu
@@ -15,7 +16,7 @@ class TicketTypeSelectMenu(
     override val id = "ticket:type"
     override suspend fun create(hook: InteractionHook) = StringSelectMenu.create(id).apply {
         TicketType.entries.forEach {
-            addOption(it.displayName, it.description)
+            addOption(it.displayName, it.description, Emoji.fromUnicode(it.emoji))
         }
 
         setPlaceholder("Ticket Typ wählen...")

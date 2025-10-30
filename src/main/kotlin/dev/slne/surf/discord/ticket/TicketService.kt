@@ -14,7 +14,7 @@ class TicketService(
     private val ticketRepository: TicketRepository,
     private val ticketChannel: TextChannel?
 ) {
-    suspend fun createTicket(hook: InteractionHook, type: TicketType): Ticket? {
+    suspend fun createTicket(hook: InteractionHook, type: TicketType, data: String): Ticket? {
         val userId = hook.interaction.user.idLong
         val user = hook.interaction.user
 
@@ -55,6 +55,7 @@ class TicketService(
         )
 
         ticketRepository.createTicket(ticket)
+        ticketRepository.updateData(ticket, data)
 
         return ticket
     }

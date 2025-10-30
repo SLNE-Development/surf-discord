@@ -5,10 +5,16 @@ import net.dv8tion.jda.api.entities.User
 
 private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> = mapOf(
     1410944184231137332 to mapOf(// Guild ID
-        1432660473916035133 to setOf(
-            DiscordPermission.COMMAND_TICKET_BUTTONS
-        ),// Admin
-        1432660626643222528 to setOf(DiscordPermission.TICKET_WHITELIST_VIEW) // Supporter
+        1432660473916035133 to setOf(*DiscordPermission.entries.toTypedArray()), // Admin
+        1432660626643222528 to setOf(
+            DiscordPermission.TICKET_WHITELIST_VIEW,
+            DiscordPermission.TICKET_WHITELIST_CONFIRM,
+            DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
+            DiscordPermission.TICKET_SUPPORT_SURVIVAL_VIEW,
+            DiscordPermission.TICKET_CLOSE,
+            DiscordPermission.COMMAND_TICKET_ADD,
+            DiscordPermission.COMMAND_TICKET_REMOVE,
+        ) // Supporter
     )
 )
 

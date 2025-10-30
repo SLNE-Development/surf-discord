@@ -10,7 +10,6 @@ import dev.slne.surf.discord.ticket.TicketType
 import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.replyError
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
-import net.dv8tion.jda.api.interactions.InteractionHook
 import net.dv8tion.jda.api.interactions.components.buttons.Button
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
 import org.springframework.stereotype.Component
@@ -39,8 +38,6 @@ class WhitelistTicketModal(
         }
     }
 
-    override suspend fun create(hook: InteractionHook) = error("Unsupported")
-
     override suspend fun onSubmit(event: ModalInteractionEvent) {
         val interaction = event.interaction
         val user = interaction.user
@@ -50,7 +47,11 @@ class WhitelistTicketModal(
 
         interaction.reply("Das Ticket wird erstellt...").setEphemeral(true).queue()
 
-        val ticket = ticketService.createTicket(interaction.hook, TicketType.WHITELIST) ?: run {
+        val ticket = ticketService.createTicket(
+            interaction.hook,
+            TicketType.WHITELIST,
+            "whitelist:$whitelistName:$whitelistTwitch"
+        ) ?: run {
             if (ticketService.hasOpenTicket(user.idLong, TicketType.WHITELIST)) {
                 interaction.hook.editOriginal("Du hast bereits ein offenes Whitelist Ticket.")
                     .queue()
@@ -59,8 +60,6 @@ class WhitelistTicketModal(
             }
             return
         }
-
-        ticketService.updateData(ticket, "whitelist:$whitelistName:$whitelistTwitch")
 
         val thread = ticket.getThreadChannel() ?: run {
             interaction.hook.replyError()
@@ -85,7 +84,7 @@ class WhitelistTicketModal(
                 }
 
                 field {
-                    name = "Twitch Name"
+                    name = "Öffentlich verknüpfter Twitch Account"
                     value = whitelistTwitch
                     inline = true
                 }

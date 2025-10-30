@@ -15,7 +15,6 @@ class WhitelistProceedModal(
     private val ticketService: TicketService
 ) : DiscordModal {
     override val id = "ticket:whitelist:proceed"
-    override fun create() = error("Unsupported")
 
     override suspend fun create(hook: InteractionHook): Modal {
         val ticket = hook.asTicketOrThrow()

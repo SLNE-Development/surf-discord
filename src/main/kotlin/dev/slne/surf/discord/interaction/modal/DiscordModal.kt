@@ -6,7 +6,13 @@ import net.dv8tion.jda.api.interactions.modals.Modal
 
 interface DiscordModal {
     val id: String
-    fun create(): Modal
-    suspend fun create(hook: InteractionHook): Modal
+    fun create(): Modal {
+        error("Unsupported")
+    }
+
+    suspend fun create(hook: InteractionHook): Modal {
+        error("Unsupported")
+    }
+
     suspend fun onSubmit(event: ModalInteractionEvent) {}
 }
