@@ -120,7 +120,7 @@ enum class TicketType(
             ),
             TicketCloseReason.of(
                 "Bug nicht reproduzierbar",
-                "Der Fehler konnte nicht reproduziert werden. Bitte stelle sicher, dass du alle notwendigen Informationen bereitgestellt hast. Sollte dieser erneut auftreten, öffne bitte ein neues Ticket."
+                "Der Fehler konnte nicht reproduziert werden."
             ),
             TicketCloseReason.of(
                 "Bug behoben",

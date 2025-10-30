@@ -25,7 +25,7 @@ class DiscordSupportTicketModal(
             id = "issue"
             label = "Beschreibe dein Anliegen"
             style = TextInputStyle.PARAGRAPH
-            lengthRange = 100..4000
+            lengthRange = 10..4000
             placeholder =
                 "Bitte gib so viele Informationen wie möglich an, damit wir dir bestmöglich helfen können."
             required = true
