@@ -24,17 +24,24 @@ class ClaimTicketButton(
     )
 
     override suspend fun onClick(event: ButtonInteractionEvent) {
-        if (!event.member.hasPermission(DiscordPermission.TICKET_CLOSE)) {
+        if (!event.member.hasPermission(DiscordPermission.TICKET_CLAIM)) {
             event.reply("Dazu hast du keine Berechtigung.").setEphemeral(true).queue()
             return
         }
 
         val ticket = event.hook.asTicketOrThrow()
 
-        if (ticketService.isClaimed(ticket)) {
+        if (ticketService.isClaimedByUser(ticket, event.user)) {
             ticketService.unclaim(ticket)
+            event.reply("Du hast das Ticket freigegeben.").setEphemeral(true).queue()
         } else {
-            ticketService.claim(ticket, event.user)
+            if (ticketService.isClaimed(ticket)) {
+                event.reply("Das Ticket wurde bereits von einer anderen Person geclaimt.")
+                    .setEphemeral(true).queue()
+            } else {
+                ticketService.claim(ticket, event.user)
+                event.reply("Du hast das Ticket geclaimt.").setEphemeral(true).queue()
+            }
         }
     }
 }

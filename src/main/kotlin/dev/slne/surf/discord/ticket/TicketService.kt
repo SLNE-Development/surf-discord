@@ -79,6 +79,9 @@ class TicketService(
     suspend fun isClaimed(ticket: Ticket) =
         ticketStaffRepository.isClaimed(ticket)
 
+    suspend fun isClaimedByUser(ticket: Ticket, user: User) =
+        ticketStaffRepository.isClaimedByUser(ticket, user)
+
     suspend fun watch(ticket: Ticket, user: User) {
         ticketStaffRepository.watch(ticket, user)
     }
@@ -86,6 +89,9 @@ class TicketService(
     suspend fun unwatch(ticket: Ticket) {
         ticketStaffRepository.unclaim(ticket)
     }
+
+    suspend fun isWatchedByUser(ticket: Ticket, user: User) =
+        ticketStaffRepository.isWatchedByUser(ticket, user)
 
     suspend fun isWatched(ticket: Ticket) =
         ticketStaffRepository.isWatched(ticket)

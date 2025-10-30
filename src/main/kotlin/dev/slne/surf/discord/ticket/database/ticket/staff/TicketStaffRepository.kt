@@ -25,6 +25,16 @@ class TicketStaffRepository {
         }
     }
 
+    suspend fun isClaimedByUser(
+        ticket: Ticket,
+        user: User
+    ) = newSuspendedTransaction(Dispatchers.IO) {
+        val staffEntry =
+            TicketStaffTable.selectAll().where(TicketStaffTable.ticketId eq ticket.ticketId)
+                .firstOrNull()
+        staffEntry?.get(TicketStaffTable.claimedBy) == user.idLong
+    }
+
     suspend fun isClaimed(
         ticket: Ticket
     ) = newSuspendedTransaction(Dispatchers.IO) {
@@ -41,6 +51,16 @@ class TicketStaffRepository {
             TicketStaffTable.selectAll().where(TicketStaffTable.ticketId eq ticket.ticketId)
                 .firstOrNull()
         staffEntry?.get(TicketStaffTable.watchedAt) != null
+    }
+
+    suspend fun isWatchedByUser(
+        ticket: Ticket,
+        user: User
+    ) = newSuspendedTransaction(Dispatchers.IO) {
+        val staffEntry =
+            TicketStaffTable.selectAll().where(TicketStaffTable.ticketId eq ticket.ticketId)
+                .firstOrNull()
+        staffEntry?.get(TicketStaffTable.watchedBy) == user.idLong
     }
 
     suspend fun watch(

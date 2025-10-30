@@ -12,8 +12,10 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
             DiscordPermission.TICKET_SUPPORT_SURVIVAL_VIEW,
             DiscordPermission.TICKET_CLOSE,
+            DiscordPermission.TICKET_CLAIM,
             DiscordPermission.COMMAND_TICKET_ADD,
             DiscordPermission.COMMAND_TICKET_REMOVE,
+            DiscordPermission.COMMAND_TICKET_WATCH
         ) // Supporter
     )
 )
