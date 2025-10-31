@@ -3,10 +3,11 @@ package dev.slne.surf.discord.ticket
 import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.modal.ModalRegistry
 import dev.slne.surf.discord.permission.DiscordPermission
+import dev.slne.surf.discord.util.mutableObjectListOf
 import it.unimi.dsi.fastutil.objects.ObjectList
 import net.dv8tion.jda.api.interactions.modals.Modal
 
-private val defaultReasons = ObjectList.of(
+private val defaultReasons = mutableObjectListOf(
     TicketCloseReason.of(
         "Anliegen bearbeitet",
         "Dein Anliegen wurde bearbeitet."
@@ -44,7 +45,7 @@ enum class TicketType(
         "Erstelle ein Ticket, um auf dem Survival Server gewhitelisted zu werden.",
         "📜",
         DiscordPermission.TICKET_WHITELIST_VIEW,
-        ObjectList.of(
+        mutableObjectListOf(
             TicketCloseReason.of(
                 "Anforderungen nicht erfüllt",
                 "Du erfüllst nicht alle Anforderungen für eine Whitelist."
@@ -87,7 +88,7 @@ enum class TicketType(
         "Erstelle ein Ticket, um einen Spieler zu melden.",
         "🚨",
         DiscordPermission.TICKET_REPORT_VIEW,
-        ObjectList.of(
+        mutableObjectListOf(
             TicketCloseReason.of(
                 "Fall abgeschlossen",
                 "Der gemeldete Fall wurde abgeschlossen."
@@ -103,7 +104,7 @@ enum class TicketType(
         "Erstelle ein Ticket, um einen Unban Antrag zu stellen.",
         "🔨",
         DiscordPermission.TICKET_UNBAN_VIEW,
-        ObjectList.of(
+        mutableObjectListOf(
             TicketCloseReason.of(
                 "Antrag abgelehnt",
                 "Dein Unban Antrag wurde abgelehnt."
@@ -127,7 +128,7 @@ enum class TicketType(
         "Erstelle ein Ticket, um einen Bug zu melden.",
         "🐛",
         DiscordPermission.TICKET_BUG_VIEW,
-        ObjectList.of(
+        mutableObjectListOf(
             TicketCloseReason.of(
                 "Bug bestätigt",
                 "Der gemeldete Bug wurde bestätigt und an das Entwicklungsteam weitergeleitet."
