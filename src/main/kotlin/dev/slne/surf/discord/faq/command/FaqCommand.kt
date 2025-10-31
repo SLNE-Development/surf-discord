@@ -56,7 +56,7 @@ class FaqCommand : SlashCommand {
         event.replyEmbeds(embed {
             title = faq.question
             description = faq.answer
-            color = Colors.SUCCESS
+            color = Colors.INFO
         }).queue()
     }
 }
