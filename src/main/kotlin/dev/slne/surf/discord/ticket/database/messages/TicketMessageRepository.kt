@@ -27,11 +27,13 @@ class TicketMessageRepository {
             }
         }
 
-    suspend fun logMessageEdited(messageId: Long) = newSuspendedTransaction(Dispatchers.IO) {
-        TicketMessagesTable.update({ TicketMessagesTable.messageId eq messageId }) {
-            it[messageEditedAt] = System.currentTimeMillis()
+    suspend fun logMessageEdited(messageId: Long, content: String) =
+        newSuspendedTransaction(Dispatchers.IO) {
+            TicketMessagesTable.update({ TicketMessagesTable.messageId eq messageId }) {
+                it[messageEditedAt] = System.currentTimeMillis()
+                it[TicketMessagesTable.content] = content
+            }
         }
-    }
 
     suspend fun logMessageDeleted(messageId: Long) = newSuspendedTransaction(Dispatchers.IO) {
         TicketMessagesTable.update({ TicketMessagesTable.messageId eq messageId }) {

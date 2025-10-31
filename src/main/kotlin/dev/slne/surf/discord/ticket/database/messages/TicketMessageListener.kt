@@ -5,6 +5,7 @@ import dev.slne.surf.discord.ticket.TicketService
 import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.events.message.MessageUpdateEvent
@@ -33,7 +34,7 @@ class TicketMessageListener(
         discordScope.launch {
             val ticket =
                 ticketService.getTicketByThreadId(event.channel.idLong) ?: return@launch
-            ticketMessageRepository.logMessageEdited(event.message.idLong)
+            ticketMessageRepository.logMessageEdited(event.message.idLong, event.message.contentRaw)
         }
     }
 
@@ -42,6 +43,16 @@ class TicketMessageListener(
             val ticket =
                 ticketService.getTicketByThreadId(event.channel.idLong) ?: return@launch
             ticketMessageRepository.logMessageDeleted(event.messageIdLong)
+        }
+    }
+
+    override fun onMessageBulkDelete(event: MessageBulkDeleteEvent) {
+        discordScope.launch {
+            val ticket =
+                ticketService.getTicketByThreadId(event.channel.idLong) ?: return@launch
+            for (messageId in event.messageIds.map { it.toLong() }) {
+                ticketMessageRepository.logMessageDeleted(messageId)
+            }
         }
     }
 }
