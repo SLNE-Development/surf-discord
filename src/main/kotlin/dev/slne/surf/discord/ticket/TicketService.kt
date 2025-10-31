@@ -4,12 +4,14 @@ import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.jda
 import dev.slne.surf.discord.logging.TicketLogger
 import dev.slne.surf.discord.messages.translatable
+import dev.slne.surf.discord.permission.getRolesWithPermission
 import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataRepository
 import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffRepository
 import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.random
 import it.unimi.dsi.fastutil.objects.ObjectArraySet
+import kotlinx.coroutines.future.await
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.interactions.InteractionHook
@@ -37,6 +39,12 @@ class TicketService(
             ?.complete(true) ?: run {
             hook.editOriginal(translatable("error")).queue()
             return null
+        }
+
+        type.viewPermission.getRolesWithPermission(threadChannel.guild.idLong).forEach {
+            val message = threadChannel.sendMessage("Zugriff für $it").submit(true).await()
+            message.editMessage("<@&$it>").queue()
+            message.delete().queue()
         }
 
         threadChannel.addThreadMember(user).queue()
