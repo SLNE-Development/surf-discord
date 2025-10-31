@@ -152,8 +152,6 @@ class TicketService(
             }
         ).queue()
 
-        thread.manager.setLocked(true).queue()
-        thread.manager.setArchived(true).queue()
         ticket.closedAt = System.currentTimeMillis()
         ticket.closedById = closer.idLong
         ticket.closedByName = closer.name
@@ -208,6 +206,8 @@ class TicketService(
         }
 
         markAsClosed(ticket)
+        thread.manager.setLocked(true).queue()
+        thread.manager.setArchived(true).queue()
     }
 
     suspend fun closeTicket(hook: InteractionHook, reason: String) {
