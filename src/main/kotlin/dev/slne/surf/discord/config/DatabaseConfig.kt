@@ -4,6 +4,7 @@ import dev.slne.surf.discord.announcement.database.AnnouncementTable
 import dev.slne.surf.discord.logger
 import dev.slne.surf.discord.ticket.database.members.TicketMemberTable
 import dev.slne.surf.discord.ticket.database.messages.TicketMessagesTable
+import dev.slne.surf.discord.ticket.database.messages.attachments.TicketAttachmentsTable
 import dev.slne.surf.discord.ticket.database.ticket.TicketTable
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataTable
 import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffTable
@@ -41,7 +42,8 @@ class DatabaseConfiguration {
                 TicketDataTable,
                 TicketStaffTable,
                 AnnouncementTable,
-                TicketMessagesTable
+                TicketMessagesTable,
+                TicketAttachmentsTable
             )// TODO: Remove for production
         }
         logger.info("Connected to database ${botConfig.database.database} at ${botConfig.database.hostname}:${botConfig.database.port}")
