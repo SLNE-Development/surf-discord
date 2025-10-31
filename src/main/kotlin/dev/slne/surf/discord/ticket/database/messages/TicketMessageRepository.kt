@@ -3,6 +3,7 @@ package dev.slne.surf.discord.ticket.database.messages
 import dev.slne.surf.discord.ticket.Ticket
 import net.dv8tion.jda.api.entities.Message
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.update
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -18,8 +19,20 @@ class TicketMessageRepository {
             it[referenceMessageId] = message.referencedMessage?.idLong
             it[botMessage] = message.author.isBot
             it[messageSentAt] = message.timeCreated.toInstant().toEpochMilli()
-            it[messageEditedAt] = message.timeEdited?.toInstant()?.toEpochMilli()
+            it[messageEditedAt] = null
             it[messageDeletedAt] = null
+        }
+    }
+
+    suspend fun logMessageEdited(messageId: Long) {
+        TicketMessagesTable.update({ TicketMessagesTable.messageId eq messageId }) {
+            it[messageEditedAt] = System.currentTimeMillis()
+        }
+    }
+
+    suspend fun logMessageDeleted(messageId: Long) {
+        TicketMessagesTable.update({ TicketMessagesTable.messageId eq messageId }) {
+            it[messageDeletedAt] = System.currentTimeMillis()
         }
     }
 }

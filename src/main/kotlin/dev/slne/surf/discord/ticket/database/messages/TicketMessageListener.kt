@@ -5,7 +5,9 @@ import dev.slne.surf.discord.ticket.TicketService
 import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import net.dv8tion.jda.api.events.message.MessageDeleteEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageUpdateEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.springframework.stereotype.Component
 
@@ -24,6 +26,22 @@ class TicketMessageListener(
         discordScope.launch {
             val ticket = ticketService.getTicketByThreadId(event.channel.idLong) ?: return@launch
             ticketMessageRepository.logMessage(ticket, event.message)
+        }
+    }
+
+    override fun onMessageUpdate(event: MessageUpdateEvent) {
+        discordScope.launch {
+            val ticket =
+                ticketService.getTicketByThreadId(event.channel.idLong) ?: return@launch
+            ticketMessageRepository.logMessageEdited(event.message.idLong)
+        }
+    }
+
+    override fun onMessageDelete(event: MessageDeleteEvent) {
+        discordScope.launch {
+            val ticket =
+                ticketService.getTicketByThreadId(event.channel.idLong) ?: return@launch
+            ticketMessageRepository.logMessageDeleted(event.messageIdLong)
         }
     }
 }
