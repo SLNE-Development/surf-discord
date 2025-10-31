@@ -23,7 +23,7 @@ class CommandAutoCompleteListener(
         val input = event.focusedOption.value.lowercase()
         val suggestions = Faq.entries
             .filter { it.id.lowercase().contains(input) || it.question.lowercase().contains(input) }
-            .take(5)
+            .take(25)
             .map { it.id }
 
         event.replyChoices(
