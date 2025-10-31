@@ -1,15 +1,15 @@
 package dev.slne.surf.discord.faq.command
 
-import dev.slne.surf.discord.command.CommandOption
-import dev.slne.surf.discord.command.CommandOptionType
-import dev.slne.surf.discord.command.DiscordCommand
-import dev.slne.surf.discord.command.SlashCommand
+import com.github.benmanes.caffeine.cache.Caffeine
+import dev.slne.surf.discord.command.*
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.faq.Faq
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.util.Colors
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toJavaDuration
 
 @Component
 @DiscordCommand(
@@ -19,7 +19,23 @@ import org.springframework.stereotype.Component
             "Die Frage, die angezeigt werden soll",
             CommandOptionType.STRING,
             true,
-            autocomplete = true
+            choices = [
+                CommandChoice("connect-twitch", "connect-twitch"),
+                CommandChoice("banned", "banned"),
+                CommandChoice("next-event", "next-event"),
+                CommandChoice("how-to-open-ticket", "how-to-open-ticket"),
+                CommandChoice("rulebook", "rulebook"),
+                CommandChoice("server-modpack", "server-modpack"),
+                CommandChoice("problem-resourcepack", "problem-resourcepack"),
+                CommandChoice("problem-connection", "problem-connection"),
+                CommandChoice("read-the-docs", "read-the-docs"),
+                CommandChoice("maintenance", "maintenance"),
+                CommandChoice("how-to-share-log", "how-to-share-log"),
+                CommandChoice("clan-info", "clan-info"),
+                CommandChoice("take-part-in-event", "take-part-in-event"),
+                CommandChoice("survival-downtime", "survival-downtime"),
+                CommandChoice("one-block-event", "one-block-event")
+            ]
         ),
         CommandOption(
             "user",
@@ -30,6 +46,10 @@ import org.springframework.stereotype.Component
     ]
 )
 class FaqCommand : SlashCommand {
+    private val faqCache = Caffeine.newBuilder()
+        .expireAfterWrite(30.seconds.toJavaDuration())
+        .build<Long, Pair<Faq, Long>>()
+
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         val interaction = event.interaction
 
@@ -43,6 +63,15 @@ class FaqCommand : SlashCommand {
                 .setEphemeral(true).queue()
             return
         }
+
+        if (faqCache.asMap()
+                .any { it.value.first == faq && it.value.second == event.messageChannel.idLong }
+        ) {
+            event.reply(translatable("faq.timeout")).setEphemeral(true).queue()
+            return
+        }
+
+        faqCache.put(System.currentTimeMillis(), faq to event.messageChannel.idLong)
 
         if (user != null) {
             event.reply(user.asMention).setEmbeds(embed {

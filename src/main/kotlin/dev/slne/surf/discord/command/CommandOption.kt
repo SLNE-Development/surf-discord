@@ -7,9 +7,15 @@ annotation class CommandOption(
     val description: String,
     val type: CommandOptionType = CommandOptionType.STRING,
     val required: Boolean = false,
-    val autocomplete: Boolean = false
+    val autocomplete: Boolean = false,
+    val choices: Array<CommandChoice> = []
 )
 
 enum class CommandOptionType {
     STRING, INTEGER, BOOLEAN, USER, CHANNEL, ROLE, MENTIONABLE, NUMBER
 }
+
+annotation class CommandChoice(
+    val name: String,
+    val value: String
+)

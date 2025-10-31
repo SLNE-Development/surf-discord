@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
@@ -18,7 +19,7 @@ class CommandRegistrar(
     private val context: ApplicationContext,
     private val commandScope: CoroutineScope
 ) {
-    private val registeredCommands = mutableMapOf<String, SlashCommand>()
+    private val _commands = mutableMapOf<String, SlashCommand>()
 
     @PostConstruct
     fun init() {
@@ -26,7 +27,7 @@ class CommandRegistrar(
 
         jda.addEventListener(object : ListenerAdapter() {
             override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
-                registeredCommands[event.name]?.let { command ->
+                _commands[event.name]?.let { command ->
                     commandScope.launch { command.execute(event) }
                 }
             }
@@ -43,10 +44,10 @@ class CommandRegistrar(
             }
         }
 
-        if (registeredCommands.isEmpty()) {
+        if (_commands.isEmpty()) {
             logger.warn("No Discord commands were found to register.")
         } else {
-            logger.info("Registered ${registeredCommands.size} Discord commands.")
+            logger.info("Registered ${_commands.size} Discord commands.")
         }
     }
 
@@ -57,8 +58,7 @@ class CommandRegistrar(
         options: Array<CommandOption> = emptyArray()
     ) {
         jda.guilds.forEach { guild ->
-            val commandData =
-                net.dv8tion.jda.api.interactions.commands.build.Commands.slash(name, description)
+            val commandData = Commands.slash(name, description)
 
             options.forEach { opt ->
                 val optData = when (opt.type) {
@@ -119,6 +119,10 @@ class CommandRegistrar(
                     )
                 }
 
+                opt.choices.forEach { choice ->
+                    optData.addChoice(choice.name, choice.value)
+                }
+
                 optData.setAutoComplete(opt.autocomplete)
                 commandData.addOptions(optData)
             }
@@ -126,8 +130,7 @@ class CommandRegistrar(
             guild.upsertCommand(commandData).queue()
         }
 
-        registeredCommands[name] = command
+        _commands[name] = command
         logger.info("Successfully registered command '$name' for ${jda.guilds.size} guilds.")
     }
-
 }
