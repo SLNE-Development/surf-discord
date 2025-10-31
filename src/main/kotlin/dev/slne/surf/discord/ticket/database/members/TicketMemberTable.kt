@@ -2,10 +2,9 @@ package dev.slne.surf.discord.ticket.database.members
 
 import dev.slne.surf.discord.ticket.database.ticket.TicketTable
 import org.jetbrains.exposed.dao.id.LongIdTable
-import org.jetbrains.exposed.sql.ReferenceOption
 
 object TicketMemberTable : LongIdTable("discord_ticket_members") {
-    val ticketId = reference("ticket_id", TicketTable.tickedId, onDelete = ReferenceOption.CASCADE)
+    val ticketId = long("ticket_id").references(TicketTable.tickedId).uniqueIndex()
     val memberId = long("member_id")
     val memberName = varchar("member_name", 100)
     val memberAvatarUrl = varchar("member_avatar_url", 200).nullable()
