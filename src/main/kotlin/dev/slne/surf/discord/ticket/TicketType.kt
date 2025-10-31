@@ -6,6 +6,29 @@ import dev.slne.surf.discord.permission.DiscordPermission
 import it.unimi.dsi.fastutil.objects.ObjectList
 import net.dv8tion.jda.api.interactions.modals.Modal
 
+private val defaultReasons = ObjectList.of(
+    TicketCloseReason.of(
+        "Anliegen bearbeitet",
+        "Dein Anliegen wurde bearbeitet."
+    ),
+    TicketCloseReason.of(
+        "Falscher Typ",
+        "Du hast ein Ticket des falschen Typs erstellt."
+    ),
+    TicketCloseReason.of(
+        "Spam / Missbrauch",
+        "Das Ticket wurde als Spam oder Missbrauch eingestuft."
+    ),
+    TicketCloseReason.of(
+        "Troll",
+        "Das Ticket wurde als Troll-Versuch eingestuft."
+    ),
+    TicketCloseReason.of(
+        "Inaktivität",
+        "Das Ticket wurde aufgrund von Inaktivität geschlossen."
+    )
+)
+
 enum class TicketType(
     val id: String,
     val displayName: String,
@@ -26,7 +49,9 @@ enum class TicketType(
                 "Anforderungen nicht erfüllt",
                 "Du erfüllst nicht alle Anforderungen für eine Whitelist."
             )
-        ),
+        ).apply {
+            addAll(defaultReasons)
+        },
         getBean<ModalRegistry>().get("ticket:whitelist").create()
     ),
     SUPPORT_DISCORD(
@@ -35,12 +60,7 @@ enum class TicketType(
         "Erstelle ein Ticket, um Support für den Discord Server zu erhalten.",
         "💬",
         DiscordPermission.TICKET_SUPPORT_DISCORD_VIEW,
-        ObjectList.of(
-            TicketCloseReason.of(
-                "Erledigt",
-                "Dein Anliegen wurde bearbeitet."
-            )
-        ),
+        defaultReasons,
         getBean<ModalRegistry>().get("ticket:support:discord").create()
     ),
     SUPPORT_SURVIVAL(
@@ -49,12 +69,7 @@ enum class TicketType(
         "Erstelle ein Ticket, um Support für den Survival Server zu erhalten.",
         "🛠️",
         DiscordPermission.TICKET_SUPPORT_SURVIVAL_VIEW,
-        ObjectList.of(
-            TicketCloseReason.of(
-                "Erledigt",
-                "Dein Anliegen wurde bearbeitet."
-            )
-        ),
+        defaultReasons,
         getBean<ModalRegistry>().get("ticket:support:survival").create()
     ),
     SUPPORT_EVENT(
@@ -63,12 +78,7 @@ enum class TicketType(
         "Erstelle ein Ticket, um Support für Events zu erhalten.",
         "🎉",
         DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
-        ObjectList.of(
-            TicketCloseReason.of(
-                "Erledigt",
-                "Dein Anliegen wurde bearbeitet."
-            )
-        ),
+        defaultReasons,
         getBean<ModalRegistry>().get("ticket:support:event").create()
     ),
     REPORT(
@@ -82,7 +92,9 @@ enum class TicketType(
                 "Fall abgeschlossen",
                 "Der gemeldete Fall wurde abgeschlossen."
             )
-        ),
+        ).apply {
+            addAll(defaultReasons)
+        },
         getBean<ModalRegistry>().get("ticket:report").create()
     ),
     UNBAN(
@@ -104,7 +116,9 @@ enum class TicketType(
                 "Ban verkürzt",
                 "Dein Ban wurde verkürzt."
             )
-        ),
+        ).apply {
+            addAll(defaultReasons)
+        },
         getBean<ModalRegistry>().get("ticket:unban").create()
     ),
     BUGREPORT(
@@ -126,7 +140,9 @@ enum class TicketType(
                 "Bug behoben",
                 "Der gemeldete Fehler wurde behoben. Danke für deinen Bugreport!"
             )
-        ),
+        ).apply {
+            addAll(defaultReasons)
+        },
         getBean<ModalRegistry>().get("ticket:bugreport").create()
     )
 }
