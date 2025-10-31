@@ -7,6 +7,7 @@ import dev.slne.surf.discord.command.DiscordCommand
 import dev.slne.surf.discord.command.SlashCommand
 import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.modal.ModalRegistry
+import dev.slne.surf.discord.messages.translatable
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
 
@@ -24,7 +25,7 @@ class AnnouncementEditCommand(
         val messageId = event.getOption("message_id")?.asLong ?: return
 
         if (!announcementService.isAnnouncement(messageId)) {
-            event.reply("Es wurde keine Ankündigung mit der angegebenen Nachricht-ID gefunden.")
+            event.reply(translatable("announcement.not-found", messageId.toString()))
                 .setEphemeral(true).queue()
             return
         }

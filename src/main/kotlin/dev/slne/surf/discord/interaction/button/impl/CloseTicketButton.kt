@@ -2,6 +2,7 @@ package dev.slne.surf.discord.interaction.button.impl
 
 import dev.slne.surf.discord.interaction.button.DiscordButton
 import dev.slne.surf.discord.interaction.selectmenu.SelectMenuRegistry
+import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
 import net.dv8tion.jda.api.entities.emoji.Emoji
@@ -19,20 +20,21 @@ class CloseTicketButton(
         Button.of(
             ButtonStyle.SECONDARY,
             id,
-            "Ticket schließen",
+            translatable("button.ticket.close"),
             Emoji.fromCustom("cross", 1433072192274305135, false)
         )
 
     override suspend fun onClick(event: ButtonInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.TICKET_CLOSE)) {
-            event.reply("Dazu hast du keine Berechtigung.").setEphemeral(true).queue()
+            event.reply(translatable("no-permission")).setEphemeral(true).queue()
             return
         }
 
         val selectMenu = selectMenuRegistry.get("ticket:close:reason").create(event.hook)
 
         event.deferReply(true).queue {
-            it.editOriginal("Wähle den Grund...").setActionRow(selectMenu).queue()
+            it.editOriginal(translatable("ticket.close.selectreason")).setActionRow(selectMenu)
+                .queue()
         }
     }
 }

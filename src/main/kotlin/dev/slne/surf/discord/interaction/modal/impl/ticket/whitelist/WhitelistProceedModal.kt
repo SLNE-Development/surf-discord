@@ -2,6 +2,7 @@ package dev.slne.surf.discord.interaction.modal.impl.ticket.whitelist
 
 import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.interaction.modal.DiscordModal
+import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.util.asTicketOrThrow
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
@@ -24,10 +25,10 @@ class WhitelistProceedModal(
         val twitch = ticket.ticketData.find { it.first == "twitch" }?.second
             ?: error("Twitch username missing for ticket: ${ticket.ticketId}")
 
-        return modal(id, "Spieler whitelisten") {
+        return modal(id, translatable("ticket.whitelist.proceed.modal.title")) {
             field {
                 id = "minecraft"
-                label = "Minecraft Benutzername"
+                label = translatable("ticket.whitelist.proceed.modal.field.minecraft.label")
                 required = true
                 style = TextInputStyle.SHORT
                 value = minecraft
@@ -35,7 +36,7 @@ class WhitelistProceedModal(
 
             field {
                 id = "twitch"
-                label = "Twitch Benutzername"
+                label = translatable("ticket.whitelist.proceed.modal.field.twitch.label")
                 required = true
                 style = TextInputStyle.SHORT
                 value = twitch
@@ -43,7 +44,7 @@ class WhitelistProceedModal(
 
             field {
                 id = "discord-name"
-                label = "Discord Benutzername"
+                label = translatable("ticket.whitelist.proceed.modal.field.discord-name.label")
                 required = true
                 style = TextInputStyle.SHORT
                 value = ticket.authorName
@@ -51,7 +52,7 @@ class WhitelistProceedModal(
 
             field {
                 id = "discord-id"
-                label = "Discord ID"
+                label = translatable("ticket.whitelist.proceed.modal.field.discord-id.label")
                 required = true
                 style = TextInputStyle.SHORT
                 value = ticket.authorId.toString()

@@ -21,7 +21,7 @@ class ButtonListener(
     }
 
     override fun onButtonInteraction(event: ButtonInteractionEvent) {
-        val button = registry.get(event.componentId) ?: return
+        val button = registry.get(event.componentId)
         discordScope.launch {
             button.onClick(event)
         }

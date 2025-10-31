@@ -1,6 +1,7 @@
 package dev.slne.surf.discord.interaction.selectmenu.impl
 
 import dev.slne.surf.discord.interaction.selectmenu.DiscordSelectMenu
+import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
 import net.dv8tion.jda.api.entities.emoji.Emoji
@@ -19,24 +20,24 @@ class TicketTypeSelectMenu(
             addOption(it.displayName, it.description, Emoji.fromUnicode(it.emoji))
         }
 
-        setPlaceholder("Ticket Typ wählen...")
+        setPlaceholder(translatable("ticket.type.select.placeholder"))
         setRequiredRange(1, 1)
     }.build()
 
     override suspend fun onSelect(event: StringSelectInteractionEvent) {
         val selected = event.selectedOptions.firstOrNull()
         if (selected == null) {
-            event.hook.editOriginal("Ein Fehler ist aufgetreten. Bitte versuche es erneut.").queue()
+            event.hook.editOriginal(translatable("error")).queue()
             return
         }
 
         val ticketType = getTicketType(selected.label) ?: run {
-            event.hook.editOriginal("Ein Fehler ist aufgetreten.").queue()
+            event.hook.editOriginal(translatable("error")).queue()
             return
         }
 
         if (ticketService.hasOpenTicket(event.user.idLong, ticketType)) {
-            event.reply("Du hast bereits ein offenes Ticket dieses Typs.").setEphemeral(true)
+            event.reply(translatable("ticket.already-open")).setEphemeral(true)
                 .queue()
             return
         }

@@ -2,6 +2,7 @@ package dev.slne.surf.discord.interaction.modal.impl
 
 import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.interaction.modal.DiscordModal
+import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.ticket.TicketService
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
@@ -12,12 +13,12 @@ class CustomCloseReasonModal(
     private val ticketService: TicketService
 ) : DiscordModal {
     override val id = "ticket:close:reason:custom"
-    override fun create() = modal(id, "Ticket mit eigenem Grund schließen") {
+    override fun create() = modal(id, translatable("ticket.close.reason.custom.modal.title")) {
         field {
             id = "custom-close-reason-content"
-            label = "Grund für das Schließen des Tickets"
+            label = translatable("ticket.close.reason.custom.modal.field.label")
             style = TextInputStyle.PARAGRAPH
-            placeholder = "Kein Grund angegeben..."
+            placeholder = translatable("ticket.close.reason.custom.modal.field.placeholder")
         }
     }
 
@@ -28,6 +29,6 @@ class CustomCloseReasonModal(
 
         ticketService.closeTicket(interaction.hook, customReason)
         interaction.hook.deleteOriginal()
-        interaction.reply("Das Ticket wird geschlossen...").setEphemeral(true).queue()
+        interaction.reply("ticket.closing").setEphemeral(true).queue()
     }
 }

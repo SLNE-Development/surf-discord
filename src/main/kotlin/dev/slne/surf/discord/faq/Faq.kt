@@ -5,77 +5,77 @@ import dev.slne.surf.discord.messages.translatable
 enum class Faq(val id: String, val question: String, val answer: String) {
     CONNECT_TWITCH(
         "connect-twitch",
-        translatable("command.faq.questions.connect-twitch-with-discord.question"),
-        translatable("command.faq.questions.connect-twitch-with-discord.answer")
+        translatable("faq.command.questions.connect-twitch-with-discord.question"),
+        translatable("faq.command.questions.connect-twitch-with-discord.answer")
     ),
     BANNED(
         "banned",
-        translatable("command.faq.questions.banned.question"),
-        translatable("command.faq.questions.banned.answer")
+        translatable("faq.command.questions.banned.question"),
+        translatable("faq.command.questions.banned.answer")
     ),
     NEXT_EVENT(
         "next-event",
-        translatable("command.faq.questions.event.question"),
-        translatable("command.faq.questions.event.answer")
+        translatable("faq.command.questions.event.question"),
+        translatable("faq.command.questions.event.answer")
     ),
     HOW_TO_OPEN_TICKET(
         "how-to-open-ticket",
-        translatable("command.faq.questions.open-ticket.question"),
-        translatable("command.faq.questions.open-ticket.answer")
+        translatable("faq.command.questions.open-ticket.question"),
+        translatable("faq.command.questions.open-ticket.answer")
     ),
     RULEBOOK(
         "rulebook",
-        translatable("command.faq.questions.rulebook.question"),
-        translatable("command.faq.questions.rulebook.answer")
+        translatable("faq.command.questions.rulebook.question"),
+        translatable("faq.command.questions.rulebook.answer")
     ),
     SERVER_MODPACK(
         "server-modpack",
-        translatable("command.faq.questions.server-modpack.question"),
-        translatable("command.faq.questions.server-modpack.answer")
+        translatable("faq.command.questions.server-modpack.question"),
+        translatable("faq.command.questions.server-modpack.answer")
     ),
     RESOURCEPACK_ISSUES(
         "problem-resourcepack",
-        translatable("command.faq.questions.problem-ressourcepack.question"),
-        translatable("command.faq.questions.problem-ressourcepack.answer")
+        translatable("faq.command.questions.problem-ressourcepack.question"),
+        translatable("faq.command.questions.problem-ressourcepack.answer")
     ),
     CONNECTION_ISSUES(
         "problem-connection",
-        translatable("command.faq.questions.problem-connection.question"),
-        translatable("command.faq.questions.problem-connection.answer")
+        translatable("faq.command.questions.problem-connection.question"),
+        translatable("faq.command.questions.problem-connection.answer")
     ),
     READ_THE_DOCS(
         "read-the-docs",
-        translatable("command.faq.questions.read-the-docs.question"),
-        translatable("command.faq.questions.read-the-docs.answer")
+        translatable("faq.command.questions.read-the-docs.question"),
+        translatable("faq.command.questions.read-the-docs.answer")
     ),
     MAINTENANCE(
         "maintenance",
-        translatable("command.faq.questions.maintenance.question"),
-        translatable("command.faq.questions.maintenance.answer")
+        translatable("faq.command.questions.maintenance.question"),
+        translatable("faq.command.questions.maintenance.answer")
     ),
     HOW_TO_SHARE_LOG(
         "how-to-share-log",
-        translatable("command.faq.questions.how-to-share-log.question"),
-        translatable("command.faq.questions.how-to-share-log.answer")
+        translatable("faq.command.questions.how-to-share-log.question"),
+        translatable("faq.command.questions.how-to-share-log.answer")
     ),
     CLAN_INFO(
         "clan-info",
-        translatable("command.faq.questions.clan-info.question"),
-        translatable("command.faq.questions.clan-info.answer")
+        translatable("faq.command.questions.clan-info.question"),
+        translatable("faq.command.questions.clan-info.answer")
     ),
     TAKE_PART_IN_EVENT(
         "take-part-in-event",
-        translatable("command.faq.questions.take-part-in-event.question"),
-        translatable("command.faq.questions.take-part-in-event.answer")
+        translatable("faq.command.questions.take-part-in-event.question"),
+        translatable("faq.command.questions.take-part-in-event.answer")
     ),
     SURVIVAL_DOWNTIME(
         "survival-downtime",
-        translatable("command.faq.questions.survival-downtime.question"),
-        translatable("command.faq.questions.survival-downtime.answer")
+        translatable("faq.command.questions.survival-downtime.question"),
+        translatable("faq.command.questions.survival-downtime.answer")
     ),
     ONE_BLOCK_EVENT_STATUS(
         "one-block-event",
-        translatable("command.faq.questions.one-block-event.question"),
-        translatable("command.faq.questions.one-block-event.answer")
+        translatable("faq.command.questions.one-block-event.question"),
+        translatable("faq.command.questions.one-block-event.answer")
     )
 }

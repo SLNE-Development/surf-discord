@@ -4,6 +4,7 @@ import dev.slne.surf.discord.command.CommandOption
 import dev.slne.surf.discord.command.CommandOptionType
 import dev.slne.surf.discord.command.DiscordCommand
 import dev.slne.surf.discord.command.SlashCommand
+import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.ticket.TicketMemberService
@@ -22,7 +23,7 @@ class TicketRemoveUserCommand(
 ) : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.COMMAND_TICKET_REMOVE)) {
-            event.reply("Dazu hast du keine Berechtigung.").setEphemeral(true).queue()
+            event.reply(translatable("no-permission")).setEphemeral(true).queue()
             return
         }
 
@@ -30,7 +31,7 @@ class TicketRemoveUserCommand(
         val ticket = event.hook.asTicketOrNull()
 
         if (ticket == null) {
-            event.reply("Du musst dich in einem Ticket befinden, um diesen Befehl zu nutzen.")
+            event.reply(translatable("ticket.command.not-a-ticket"))
                 .setEphemeral(true).queue()
             return
         }
@@ -38,10 +39,12 @@ class TicketRemoveUserCommand(
         val success = ticketMemberService.removeMember(ticket, user, event.user)
 
         if (success) {
-            event.reply("${user.asMention} wurde aus dem Ticket entfernt.").setEphemeral(true)
+            event.reply(translatable("ticket.command.remove.success", user.asMention))
+                .setEphemeral(true)
                 .queue()
         } else {
-            event.reply("${user.asMention} ist nicht in diesem Ticket.").setEphemeral(true).queue()
+            event.reply(translatable("ticket.command.remove.not-member", user.asMention))
+                .setEphemeral(true).queue()
         }
     }
 }

@@ -5,6 +5,7 @@ import dev.slne.surf.discord.command.CommandOption
 import dev.slne.surf.discord.command.CommandOptionType
 import dev.slne.surf.discord.command.DiscordCommand
 import dev.slne.surf.discord.command.SlashCommand
+import dev.slne.surf.discord.messages.translatable
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
 
@@ -23,13 +24,18 @@ class AnnouncementDeleteCommand(private val announcementService: AnnouncementSer
         val announcement = announcementService.getAnnouncement(announcementMessageId)
 
         if (announcement == null) {
-            event.reply("Es wurde keine Ankündigung mit der ID $announcementMessageId gefunden.")
+            event.reply(
+                translatable(
+                    "announcement.not-found",
+                    announcementMessageId.toString()
+                )
+            )
                 .setEphemeral(true).queue()
             return
         }
 
         announcementService.deleteAnnouncement(announcement)
-        event.reply("Die Ankündigung mit der ID $announcementMessageId wurde gelöscht.")
+        event.reply(translatable("announcement.deleted", announcementMessageId.toString()))
             .setEphemeral(true).queue()
     }
 }

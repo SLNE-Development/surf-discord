@@ -3,6 +3,7 @@ package dev.slne.surf.discord.interaction.button.impl
 import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.DiscordButton
 import dev.slne.surf.discord.interaction.modal.ModalRegistry
+import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
 import net.dv8tion.jda.api.entities.emoji.Emoji
@@ -17,13 +18,13 @@ class WhitelistProceedButton : DiscordButton {
     override val button = Button.of(
         ButtonStyle.SECONDARY,
         id,
-        "Whitelist annehmen",
+        translatable("button.ticket.whitelist.proceed"),
         Emoji.fromCustom("checkmark", 1433072075446423754, false)
     )
 
     override suspend fun onClick(event: ButtonInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.TICKET_WHITELIST_CONFIRM)) {
-            event.reply("Dazu hast du keine Berechtigung.").setEphemeral(true).queue()
+            event.reply(translatable("no-permission")).setEphemeral(true).queue()
             return
         }
 

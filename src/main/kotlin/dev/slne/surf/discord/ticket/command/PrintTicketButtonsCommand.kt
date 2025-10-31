@@ -4,6 +4,7 @@ import dev.slne.surf.discord.command.DiscordCommand
 import dev.slne.surf.discord.command.SlashCommand
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
+import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.util.Colors
@@ -21,24 +22,16 @@ class PrintTicketButtonsCommand(private val buttonRegistry: ButtonRegistry) : Sl
 
         event.messageChannel.sendMessageEmbeds(
             embed {
-                title = "Ticket erstellen"
-                description =
-                    "Du möchtest eine Whitelist-Anfrage stellen, einen Spieler bzw. ein Problem melden oder einen Entbannungsantrag für den Server erstellen, so kannst du hier ein Ticket erstellen.\n" +
-                            "\n" +
-                            "Bitte mache dich vorher mit unterschiedlichen Tickettypen vertraut!\n" +
-                            "Die Übersicht findest du hier: https://server.castcrafter.de/support\n" +
-                            "\n" +
-                            "Allgemeine Fragen sollten in den dafür vorgesehenen öffentlichen Kanälen gestellt werden.\n" +
-                            "\n" +
-                            "Wir bemühen uns die Tickets schnellstmöglich zu bearbeiten, jedoch arbeitet das gesamte Team freiwillig, und gerade unter der Woche kann die Bearbeitung der Tickets länger dauern."
+                title = translatable("ticket.command.ticketbuttons.title")
+                description = translatable("ticket.command.ticketbuttons.description")
 
                 color = Colors.INFO
-                footer = "Arty Support | 2025"
+                footer = translatable("ticket.command.ticketbuttons.footer")
             }
         ).addActionRow(
             buttonRegistry.get("ticket:open").button
         ).queue {
-            event.reply("Die Ticket Buttons wurden erfolgreich gesendet.").setEphemeral(true)
+            event.reply(translatable("ticket.command.ticketbuttons.success")).setEphemeral(true)
                 .queue()
         }
     }

@@ -5,6 +5,7 @@ import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
+import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.ticket.TicketData
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
@@ -20,22 +21,21 @@ class ReportTicketModal(
 ) : DiscordModal {
     override val id = "ticket:report"
 
-    override fun create() = modal(id, "Report Ticket") {
+    override fun create() = modal(id, translatable("ticket.report.modal.title")) {
         field {
             id = "target"
-            label = "Name des Spielers, den du melden möchtest"
+            label = translatable("ticket.report.modal.field.target.label")
             style = TextInputStyle.SHORT
-            placeholder = "Bitte gib den genauen Minecraft Benutzernamen an."
+            placeholder = translatable("ticket.report.modal.field.target.placeholder")
             required = true
             lengthRange = 3..16
         }
         field {
             id = "issue"
-            label = "Beschreibe dein Anliegen"
+            label = translatable("ticket.report.modal.field.issue.label")
             style = TextInputStyle.PARAGRAPH
             lengthRange = 10..4000
-            placeholder =
-                "Bitte gib so viele Informationen wie möglich an, damit wir dir bestmöglich helfen können."
+            placeholder = translatable("ticket.report.modal.field.issue.placeholder")
             required = true
         }
     }
@@ -47,7 +47,7 @@ class ReportTicketModal(
         val target = interaction.getValue("target")?.asString ?: return
         val issue = interaction.getValue("issue")?.asString ?: return
 
-        interaction.reply("Das Ticket wird erstellt...").setEphemeral(true).queue()
+        interaction.reply(translatable("ticket.creating")).setEphemeral(true).queue()
 
         val ticket =
             ticketService.createTicket(
@@ -56,7 +56,7 @@ class ReportTicketModal(
                 TicketData.of("target" to target, "issue" to issue)
             ) ?: run {
                 if (ticketService.hasOpenTicket(user.idLong, TicketType.REPORT)) {
-                    interaction.hook.editOriginal("Du hast bereits ein offenes Report Ticket.")
+                    interaction.hook.editOriginal(translatable("ticket.report.already_open"))
                         .queue()
                 } else {
                     interaction.hook.replyError()
@@ -69,25 +69,24 @@ class ReportTicketModal(
             return
         }
 
-        interaction.hook.editOriginal("Dein Ticket wurde erstellt: ${thread.asMention}")
+        interaction.hook.editOriginal(translatable("ticket.created", thread.asMention))
             .queue()
 
         thread.sendMessage(user.asMention).queue()
         thread.sendMessageEmbeds(
             embed {
-                title = "Willkommen im Ticket!"
-                description =
-                    "Dein Report Ticket wurde erstellt und wir haben deine Informationen erhalten. Bitte habe ein wenig Geduld, während das Team dein Anliegen bearbeitet."
+                title = translatable("ticket.report.embed.title")
+                description = translatable("ticket.report.embed.description")
                 color = Colors.SUCCESS
 
                 field {
-                    name = "Gemeldeter Spieler"
+                    name = translatable("ticket.report.embed.field.target")
                     value = target
                     inline = true
                 }
 
                 field {
-                    name = "Anliegen"
+                    name = translatable("ticket.report.embed.field.issue")
                     value = issue
                     inline = true
                 }//TODO: Add Whitelist Information

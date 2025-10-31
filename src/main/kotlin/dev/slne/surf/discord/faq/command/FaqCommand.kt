@@ -6,6 +6,7 @@ import dev.slne.surf.discord.command.DiscordCommand
 import dev.slne.surf.discord.command.SlashCommand
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.faq.Faq
+import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.util.Colors
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
@@ -38,7 +39,7 @@ class FaqCommand : SlashCommand {
         val faq = Faq.entries.find { it.id == question }
 
         if (faq == null) {
-            event.reply("Es wurde keine FAQ mit der ID $question gefunden.")
+            event.reply(translatable("faq.not-found", question))
                 .setEphemeral(true).queue()
             return
         }

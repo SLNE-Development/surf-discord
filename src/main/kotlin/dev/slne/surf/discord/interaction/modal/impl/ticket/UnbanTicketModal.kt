@@ -5,6 +5,7 @@ import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
+import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.ticket.TicketData
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
@@ -20,31 +21,30 @@ class UnbanTicketModal(
 ) : DiscordModal {
     override val id = "ticket:unban"
 
-    override fun create() = modal(id, "Entbannungsantrag") {
+    override fun create() = modal(id, translatable("ticket.unban.modal.title")) {
         field {
             id = "punish-id"
-            label = "Punishment ID"
+            label = translatable("ticket.unban.modal.field.punish_id.label")
             style = TextInputStyle.SHORT
-            placeholder = "Gib hier die Punishment ID deines Banns ein."
+            placeholder = translatable("ticket.unban.modal.field.punish_id.placeholder")
             required = true
         }
         field {
             id = "issue"
-            label = "Warum wurdest du gebannt?"
+            label = translatable("ticket.unban.modal.field.issue.label")
             style = TextInputStyle.PARAGRAPH
             lengthRange = 50..4000
-            placeholder =
-                "Ich habe garnichts gemacht!"
+            placeholder = translatable("ticket.unban.modal.field.issue.placeholder")
             required = true
         }
 
         field {
             id = "reason"
-            label = "Warum sollten wir dich entbannen?"
+            label = translatable("ticket.unban.modal.field.reason.label")
             style = TextInputStyle.PARAGRAPH
             lengthRange = 100..4000
             placeholder =
-                "Ich möchte bitte wieder spielen bitte bitte"
+                translatable("ticket.unban.modal.field.reason.placeholder")
             required = true
         }
     }
@@ -57,7 +57,7 @@ class UnbanTicketModal(
         val issue = interaction.getValue("issue")?.asString ?: return
         val reason = interaction.getValue("reason")?.asString ?: return
 
-        interaction.reply("Das Ticket wird erstellt...").setEphemeral(true).queue()
+        interaction.reply(translatable("ticket.creating")).setEphemeral(true).queue()
 
         val ticket =
             ticketService.createTicket(
@@ -66,7 +66,7 @@ class UnbanTicketModal(
                 TicketData.of("punish-id" to punishId, "reason" to reason, "issue" to issue)
             ) ?: run {
                 if (ticketService.hasOpenTicket(user.idLong, TicketType.UNBAN)) {
-                    interaction.hook.editOriginal("Du hast bereits einen offenen Entbannungsantrag.")
+                    interaction.hook.editOriginal(translatable("ticket.unban.already_open"))
                         .queue()
                 } else {
                     interaction.hook.replyError()
@@ -79,31 +79,30 @@ class UnbanTicketModal(
             return
         }
 
-        interaction.hook.editOriginal("Dein Ticket wurde erstellt: ${thread.asMention}")
+        interaction.hook.editOriginal(translatable("ticket.created", thread.asMention))
             .queue()
 
         thread.sendMessage(user.asMention).queue()
         thread.sendMessageEmbeds(
             embed {
-                title = "Willkommen im Ticket!"
-                description =
-                    "Dein Entbannungsantrag wurde erstellt und wir haben deine Informationen erhalten. Bitte habe ein wenig Geduld, während das Team dein Anliegen bearbeitet."
+                title = translatable("ticket.unban.embed.title")
+                description = translatable("ticket.unban.embed.description")
                 color = Colors.SUCCESS
 
                 field {
-                    name = "Punishment ID"
+                    name = translatable("ticket.unban.embed.field.punish_id")
                     value = punishId
                     inline = true
                 }
 
                 field {
-                    name = "Banngrund"
+                    name = translatable("ticket.unban.embed.field.issue")
                     value = issue
                     inline = true
                 }
 
                 field {
-                    name = "Entbannungsgrund"
+                    name = translatable("ticket.unban.embed.field.reason")
                     value = reason
                     inline = true
                 }//TODO: Add Whitelist Information

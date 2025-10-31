@@ -2,6 +2,7 @@ package dev.slne.surf.discord.ticket.command
 
 import dev.slne.surf.discord.command.DiscordCommand
 import dev.slne.surf.discord.command.SlashCommand
+import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.ticket.TicketService
@@ -16,13 +17,13 @@ class TicketWatchCommand(
 ) : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.COMMAND_TICKET_WATCH)) {
-            event.reply("Dazu hast du keine Berechtigung.").setEphemeral(true).queue()
+            event.reply(translatable("no-permission")).setEphemeral(true).queue()
             return
         }
         val ticket = event.hook.asTicketOrNull()
 
         if (ticket == null) {
-            event.reply("Du musst dich in einem Ticket befinden, um diesen Befehl zu nutzen.")
+            event.reply(translatable("ticket.command.not-a-ticket"))
                 .setEphemeral(true).queue()
             return
         }
@@ -31,16 +32,16 @@ class TicketWatchCommand(
 
         if (claimed) {
             ticketService.unwatch(ticket, event.user)
-            event.reply("Du beobachtest das Ticket nun nicht mehr.").setEphemeral(true).queue()
+            event.reply(translatable("ticket.command.watch.unwatched")).setEphemeral(true).queue()
         } else {
             if (ticketService.isWatched(ticket)) {
-                event.reply("Das Ticket wird bereits von einer anderen Person beobachtet.")
+                event.reply(translatable("ticket.command.watch.already-watched"))
                     .setEphemeral(true).queue()
                 return
             }
 
             ticketService.watch(ticket, event.user)
-            event.reply("Du beobachtest nun das Ticket.").setEphemeral(true).queue()
+            event.reply(translatable("ticket.command.watch.watched")).setEphemeral(true).queue()
         }
     }
 }

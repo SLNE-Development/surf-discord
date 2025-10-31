@@ -5,6 +5,7 @@ import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
+import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.ticket.TicketData
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
@@ -20,14 +21,14 @@ class EventSupportTicketModal(
 ) : DiscordModal {
     override val id = "ticket:support:event"
 
-    override fun create() = modal(id, "Event Support Ticket") {
+    override fun create() = modal(id, translatable("ticket.support.event.modal.title")) {
         field {
             id = "issue"
-            label = "Beschreibe dein Anliegen"
+            label = translatable("ticket.support.event.modal.field.issue.label")
             style = TextInputStyle.PARAGRAPH
             lengthRange = 10..4000
             placeholder =
-                "Bitte gib so viele Informationen wie möglich an, damit wir dir bestmöglich helfen können."
+                translatable("ticket.support.event.modal.field.issue.placeholder")
             required = true
         }
     }
@@ -38,7 +39,7 @@ class EventSupportTicketModal(
 
         val issue = interaction.getValue("issue")?.asString ?: return
 
-        interaction.reply("Das Ticket wird erstellt...").setEphemeral(true).queue()
+        interaction.reply(translatable("ticket.creating")).setEphemeral(true).queue()
 
         val ticket =
             ticketService.createTicket(
@@ -47,7 +48,7 @@ class EventSupportTicketModal(
                 TicketData.of("issue" to issue)
             ) ?: run {
                 if (ticketService.hasOpenTicket(user.idLong, TicketType.SUPPORT_EVENT)) {
-                    interaction.hook.editOriginal("Du hast bereits ein offenes Event Support Ticket.")
+                    interaction.hook.editOriginal(translatable("ticket.support.event.already_open"))
                         .queue()
                 } else {
                     interaction.hook.replyError()
@@ -60,19 +61,18 @@ class EventSupportTicketModal(
             return
         }
 
-        interaction.hook.editOriginal("Dein Ticket wurde erstellt: ${thread.asMention}")
+        interaction.hook.editOriginal(translatable("ticket.created", thread.asMention))
             .queue()
 
         thread.sendMessage(user.asMention).queue()
         thread.sendMessageEmbeds(
             embed {
-                title = "Willkommen im Ticket!"
-                description =
-                    "Dein Event Support Ticket wurde erstellt und wir haben deine Informationen erhalten. Bitte habe ein wenig Geduld, während das Team dein Anliegen bearbeitet."
+                title = translatable("ticket.support.event.embed.title")
+                description = translatable("ticket.support.event.embed.description")
                 color = Colors.SUCCESS
 
                 field {
-                    name = "Anliegen"
+                    name = translatable("ticket.support.event.embed.field.issue.name")
                     value = issue
                     inline = true
                 }//TODO: Add Whitelist Information

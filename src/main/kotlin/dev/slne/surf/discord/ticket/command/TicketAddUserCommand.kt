@@ -4,6 +4,7 @@ import dev.slne.surf.discord.command.CommandOption
 import dev.slne.surf.discord.command.CommandOptionType
 import dev.slne.surf.discord.command.DiscordCommand
 import dev.slne.surf.discord.command.SlashCommand
+import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.ticket.TicketMemberService
@@ -22,7 +23,7 @@ class TicketAddUserCommand(
 ) : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.COMMAND_TICKET_ADD)) {
-            event.reply("Dazu hast du keine Berechtigung.").setEphemeral(true).queue()
+            event.reply(translatable("no-permission")).setEphemeral(true).queue()
             return
         }
 
@@ -30,24 +31,20 @@ class TicketAddUserCommand(
         val ticket = event.hook.asTicketOrNull()
 
         if (ticket == null) {
-            event.reply("Du musst dich in einem Ticket befinden, um diesen Befehl zu nutzen.")
+            event.reply(translatable("ticket.command.not-a-ticket"))
                 .setEphemeral(true).queue()
-            return
-        }
-
-        if (ticketMemberService.isMember(ticket, user.idLong)) {
-            event.reply("${user.asMention} ist bereits Mitglied dieses Tickets.").setEphemeral(true)
-                .queue()
             return
         }
 
         val success = ticketMemberService.addMember(ticket, user, event.user)
 
         if (success) {
-            event.reply("${user.asMention} wurde zum Ticket hinzugefügt.").setEphemeral(true)
+            event.reply(translatable("ticket.command.add.success", user.asMention))
+                .setEphemeral(true)
                 .queue()
         } else {
-            event.reply("${user.asMention} ist bereits in diesem Ticket.").setEphemeral(true)
+            event.reply(translatable("ticket.command.add.already-member", user.asMention))
+                .setEphemeral(true)
                 .queue()
         }
     }

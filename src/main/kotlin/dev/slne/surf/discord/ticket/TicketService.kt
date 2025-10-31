@@ -3,6 +3,7 @@ package dev.slne.surf.discord.ticket
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.jda
 import dev.slne.surf.discord.logging.TicketLogger
+import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataRepository
 import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffRepository
@@ -34,12 +35,7 @@ class TicketService(
             ?.createThreadChannel("${type.id}-${hook.interaction.user.name}", true)
             ?.setInvitable(false)
             ?.complete(true) ?: run {
-            hook.editOriginalEmbeds(embed {
-                title = "Ticket Erstellung Fehlgeschlagen"
-                description =
-                    "Es ist ein unbekannter Fehler aufgetreten. Bitte versuche es später erneut. Sollte dieses Problem weiterhin bestehen, kontaktiere ein Teammitglied."
-                color = Colors.ERROR
-            }).queue()
+            hook.editOriginal(translatable("error")).queue()
             return null
         }
 

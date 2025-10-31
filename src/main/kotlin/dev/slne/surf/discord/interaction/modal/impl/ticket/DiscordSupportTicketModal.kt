@@ -5,6 +5,7 @@ import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
+import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.ticket.TicketData
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
@@ -20,14 +21,13 @@ class DiscordSupportTicketModal(
 ) : DiscordModal {
     override val id = "ticket:support:discord"
 
-    override fun create() = modal(id, "Discord Support Ticket") {
+    override fun create() = modal(id, translatable("ticket.support.discord.modal.title")) {
         field {
             id = "issue"
-            label = "Beschreibe dein Anliegen"
+            label = translatable("ticket.support.discord.modal.field.issue.label")
             style = TextInputStyle.PARAGRAPH
             lengthRange = 10..4000
-            placeholder =
-                "Bitte gib so viele Informationen wie möglich an, damit wir dir bestmöglich helfen können."
+            placeholder = translatable("ticket.support.discord.modal.field.issue.placeholder")
             required = true
         }
     }
@@ -38,7 +38,7 @@ class DiscordSupportTicketModal(
 
         val issue = interaction.getValue("issue")?.asString ?: return
 
-        interaction.reply("Das Ticket wird erstellt...").setEphemeral(true).queue()
+        interaction.reply(translatable("ticket.creating")).setEphemeral(true).queue()
 
         val ticket =
             ticketService.createTicket(
@@ -47,7 +47,7 @@ class DiscordSupportTicketModal(
                 TicketData.of("issue" to issue)
             ) ?: run {
                 if (ticketService.hasOpenTicket(user.idLong, TicketType.SUPPORT_DISCORD)) {
-                    interaction.hook.editOriginal("Du hast bereits ein offenes Discord Support Ticket.")
+                    interaction.hook.editOriginal(translatable("ticket.support.discord.already_open"))
                         .queue()
                 } else {
                     interaction.hook.replyError()
@@ -60,19 +60,18 @@ class DiscordSupportTicketModal(
             return
         }
 
-        interaction.hook.editOriginal("Dein Ticket wurde erstellt: ${thread.asMention}")
+        interaction.hook.editOriginal(translatable("ticket.created", thread.asMention))
             .queue()
 
         thread.sendMessage(user.asMention).queue()
         thread.sendMessageEmbeds(
             embed {
-                title = "Willkommen im Ticket!"
-                description =
-                    "Dein Discord Support Ticket wurde erstellt und wir haben deine Informationen erhalten. Bitte habe ein wenig Geduld, während das Team dein Anliegen bearbeitet."
+                title = translatable("ticket.support.discord.embed.title")
+                description = translatable("ticket.support.discord.embed.description")
                 color = Colors.SUCCESS
 
                 field {
-                    name = "Anliegen"
+                    name = translatable("ticket.support.discord.embed.field.issue")
                     value = issue
                     inline = true
                 }

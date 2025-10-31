@@ -5,6 +5,7 @@ import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
+import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.ticket.TicketData
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
@@ -20,10 +21,10 @@ class WhitelistTicketModal(
     private val ticketService: TicketService
 ) : DiscordModal {
     override val id = "ticket:whitelist"
-    override fun create() = modal(id, "Whitelist Anfrage") {
+    override fun create() = modal(id, translatable("ticket.whitelist.title")) {
         field {
             id = "whitelist-name"
-            label = "Minecraft Name"
+            label = translatable("ticket.whitelist.field.name")
             style = TextInputStyle.SHORT
             placeholder = "CastCrafter"
             required = true
@@ -32,7 +33,7 @@ class WhitelistTicketModal(
 
         field {
             id = "whitelist-twitch"
-            label = "Twitch Name"
+            label = translatable("ticket.whitelist.field.twitch")
             style = TextInputStyle.SHORT
             placeholder = "CastCrafter"
             required = true
@@ -46,7 +47,7 @@ class WhitelistTicketModal(
         val whitelistName = interaction.getValue("whitelist-name")?.asString ?: return
         val whitelistTwitch = interaction.getValue("whitelist-twitch")?.asString ?: return
 
-        interaction.reply("Das Ticket wird erstellt...").setEphemeral(true).queue()
+        interaction.reply(translatable("ticket.creating")).setEphemeral(true).queue()
 
         val ticket = ticketService.createTicket(
             interaction.hook,
@@ -54,7 +55,7 @@ class WhitelistTicketModal(
             TicketData.of("minecraft" to whitelistName, "twitch" to whitelistTwitch)
         ) ?: run {
             if (ticketService.hasOpenTicket(user.idLong, TicketType.WHITELIST)) {
-                interaction.hook.editOriginal("Du hast bereits ein offenes Whitelist Ticket.")
+                interaction.hook.editOriginal(translatable("ticket.whitelist.already_open"))
                     .queue()
             } else {
                 interaction.hook.replyError()
@@ -67,37 +68,36 @@ class WhitelistTicketModal(
             return
         }
 
-        interaction.hook.editOriginal("Dein Whitelist Ticket wurde erstellt: ${thread.asMention}")
+        interaction.hook.editOriginal(translatable("ticket.opened", thread.asMention))
             .queue()
 
         thread.sendMessage(user.asMention).queue()
         thread.sendMessageEmbeds(
             embed {
-                title = "Willkommen im Ticket!"
-                description =
-                    "Dein Whitelist Ticket wurde erstellt und wir haben deine Informationen erhalten. Bitte habe ein wenig Geduld, während das Team deine Anfrage bearbeitet."
+                title = translatable("ticket.whitelist.embed.title")
+                description = translatable("ticket.whitelist.embed.description")
                 color = Colors.SUCCESS
 
                 field {
-                    name = "Whitelist Name"
+                    name = translatable("ticket.whitelist.embed.field.name")
                     value = whitelistName
                     inline = true
                 }
 
                 field {
-                    name = "Öffentlich verknüpfter Twitch Account"
+                    name = translatable("ticket.whitelist.embed.field.twitch")
                     value = whitelistTwitch
                     inline = true
                 }
 
                 field {
-                    name = "Discord Name"
+                    name = translatable("ticket.whitelist.embed.field.discord_name")
                     value = interaction.user.name
                     inline = true
                 }
 
                 field {
-                    name = "Discord ID"
+                    name = translatable("ticket.whitelist.embed.field.discord_id")
                     value = interaction.user.id
                     inline = true
                 }

@@ -3,6 +3,7 @@ package dev.slne.surf.discord.interaction.modal.impl.announcement
 import dev.slne.surf.discord.announcement.AnnouncementService
 import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.interaction.modal.DiscordModal
+import dev.slne.surf.discord.messages.translatable
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
@@ -15,10 +16,10 @@ class EditAnnouncementModal(
     override val id = "announcement:edit"
 
     override suspend fun create(hook: InteractionHook, vararg data: String) =
-        modal(id, "Ankündigung bearbeiten") {
+        modal(id, translatable("announcement.modal.edit.title")) {
             field {
                 id = "announcement-title"
-                label = "Titel der Ankündigung"
+                label = translatable("announcement.modal.edit.field.title.label")
                 value = data[1]
                 required = true
                 style = TextInputStyle.SHORT
@@ -26,7 +27,7 @@ class EditAnnouncementModal(
 
             field {
                 id = "announcement-content"
-                label = "Inhalt der Ankündigung"
+                label = translatable("announcement.modal.edit.field.content.label")
                 value = data[2]
                 required = true
                 style = TextInputStyle.PARAGRAPH
@@ -34,7 +35,7 @@ class EditAnnouncementModal(
 
             field {
                 id = "announcement-message-id"
-                label = "Message ID"
+                label = translatable("announcement.modal.edit.field.id.label")
                 value = data[0]
                 required = true
                 style = TextInputStyle.SHORT
@@ -52,12 +53,12 @@ class EditAnnouncementModal(
         val announcement = announcementService.getAnnouncement(messageId)
 
         if (announcement == null) {
-            event.reply("Die Ankündigung wurde nicht gefunden.").setEphemeral(true).queue()
+            event.reply(translatable("announcement.not-found")).setEphemeral(true).queue()
             return
         }
 
         announcementService.editAnnouncement(announcement, title, content)
 
-        event.reply("Die Ankündigung wurde erfolgreich bearbeitet.").setEphemeral(true).queue()
+        event.reply(translatable("announcement.edited")).setEphemeral(true).queue()
     }
 }

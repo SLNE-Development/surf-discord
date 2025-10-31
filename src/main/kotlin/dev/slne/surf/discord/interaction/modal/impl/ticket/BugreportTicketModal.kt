@@ -5,6 +5,7 @@ import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
+import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.ticket.TicketData
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
@@ -20,14 +21,13 @@ class BugreportTicketModal(
 ) : DiscordModal {
     override val id = "ticket:bugreport"
 
-    override fun create() = modal(id, "BugReport Ticket") {
+    override fun create() = modal(id, translatable("ticket.bugreport.modal.title")) {
         field {
             id = "issue"
-            label = "Beschreibe den Fehler"
+            label = translatable("ticket.bugreport.modal.field.issue.label")
             style = TextInputStyle.PARAGRAPH
             lengthRange = 10..4000
-            placeholder =
-                "Bitte gib so viele Informationen wie möglich an, damit wir dir bestmöglich helfen können."
+            placeholder = translatable("ticket.bugreport.modal.field.issue.placeholder")
             required = true
         }
     }
@@ -38,7 +38,7 @@ class BugreportTicketModal(
 
         val issue = interaction.getValue("issue")?.asString ?: return
 
-        interaction.reply("Das Ticket wird erstellt...").setEphemeral(true).queue()
+        interaction.reply(translatable("ticket.creating")).setEphemeral(true).queue()
 
         val ticket =
             ticketService.createTicket(
@@ -47,7 +47,7 @@ class BugreportTicketModal(
                 TicketData.of("issue" to issue)
             ) ?: run {
                 if (ticketService.hasOpenTicket(user.idLong, TicketType.BUGREPORT)) {
-                    interaction.hook.editOriginal("Du hast bereits ein offenes BugReport Ticket.")
+                    interaction.hook.editOriginal(translatable("ticket.bugreport.already_open"))
                         .queue()
                 } else {
                     interaction.hook.replyError()
@@ -60,19 +60,18 @@ class BugreportTicketModal(
             return
         }
 
-        interaction.hook.editOriginal("Dein Ticket wurde erstellt: ${thread.asMention}")
+        interaction.hook.editOriginal(translatable("ticket.created", thread.asMention))
             .queue()
 
         thread.sendMessage(user.asMention).queue()
         thread.sendMessageEmbeds(
             embed {
-                title = "Willkommen im Ticket!"
-                description =
-                    "Dein BugReport Ticket wurde erstellt und wir haben deine Informationen erhalten. Bitte habe ein wenig Geduld, während das Team dein Anliegen bearbeitet."
+                title = translatable("ticket.bugreport.embed.title")
+                description = translatable("ticket.bugreport.embed.description")
                 color = Colors.SUCCESS
 
                 field {
-                    name = "Gefundener Bug"
+                    name = translatable("ticket.bugreport.embed.field.issue")
                     value = issue
                     inline = true
                 }//TODO: Add Whitelist Information
