@@ -18,7 +18,6 @@ class TicketRepository(
     private val ticketDataRepository: TicketDataRepository
 ) {
     suspend fun createTicket(ticket: Ticket) = newSuspendedTransaction(Dispatchers.IO) {
-        println("Creating ticket with ID ${ticket.ticketId} for author ${ticket.authorId}")
         TicketTable.insert {
             it[tickedId] = ticket.ticketId
             it[authorId] = ticket.authorId
@@ -35,7 +34,6 @@ class TicketRepository(
 
     suspend fun hasOpenTicket(authorId: Long, type: TicketType): Boolean =
         newSuspendedTransaction(Dispatchers.IO) {
-            println("Checking for open tickets for author ID $authorId and type $type")
             TicketTable.selectAll()
                 .where(
                     (TicketTable.authorId eq authorId) and
@@ -48,7 +46,6 @@ class TicketRepository(
 
     suspend fun getTicketByThreadId(threadId: Long): Ticket? =
         newSuspendedTransaction(Dispatchers.IO) {
-            println("Fetching ticket by thread ID $threadId")
             TicketTable.selectAll().where(TicketTable.threadId eq threadId)
                 .firstNotNullOfOrNull { row ->
                     val id = row[TicketTable.tickedId]
@@ -75,7 +72,6 @@ class TicketRepository(
     suspend fun markAsClosed(
         ticket: Ticket
     ) = newSuspendedTransaction(Dispatchers.IO) {
-        println("Marking ticket ID ${ticket.ticketId} as closed")
         TicketTable.update({ TicketTable.tickedId eq ticket.ticketId }) {
             it[TicketTable.closedAt] = ticket.closedAt
             it[TicketTable.closedById] = ticket.closedById
@@ -86,7 +82,6 @@ class TicketRepository(
     }
 
     suspend fun getTicketById(ticketId: Long): Ticket? = newSuspendedTransaction(Dispatchers.IO) {
-        println("Fetching ticket by ID $ticketId")
         TicketTable.selectAll().where(TicketTable.tickedId eq ticketId)
             .firstNotNullOfOrNull { row ->
                 val id = row[TicketTable.tickedId]
@@ -112,7 +107,6 @@ class TicketRepository(
 
     suspend fun getTicket(authorId: Long, type: TicketType) =
         newSuspendedTransaction(Dispatchers.IO) {
-            println("Fetching ticket for author ID $authorId and type $type")
             TicketTable.selectAll()
                 .where((TicketTable.authorId eq authorId) and (TicketTable.ticketType eq type))
                 .firstNotNullOfOrNull { row ->
