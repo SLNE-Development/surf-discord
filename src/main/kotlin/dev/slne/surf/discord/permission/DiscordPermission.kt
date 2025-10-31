@@ -2,6 +2,9 @@ package dev.slne.surf.discord.permission
 
 enum class DiscordPermission {
     COMMAND_TICKET_BUTTONS,
+    COMMAND_ANNOUNCEMENT_CREATE,
+    COMMAND_ANNOUNCEMENT_EDIT,
+    COMMAND_ANNOUNCEMENT_DELETE,
 
     COMMAND_TICKET_ADD,
     COMMAND_TICKET_REMOVE,

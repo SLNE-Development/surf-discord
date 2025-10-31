@@ -6,6 +6,8 @@ import dev.slne.surf.discord.command.CommandOptionType
 import dev.slne.surf.discord.command.DiscordCommand
 import dev.slne.surf.discord.command.SlashCommand
 import dev.slne.surf.discord.messages.translatable
+import dev.slne.surf.discord.permission.DiscordPermission
+import dev.slne.surf.discord.permission.hasPermission
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
 
@@ -19,6 +21,10 @@ import org.springframework.stereotype.Component
 class AnnouncementDeleteCommand(private val announcementService: AnnouncementService) :
     SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
+        if (!event.member.hasPermission(DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE)) {
+            event.reply(translatable("no-permission")).setEphemeral(true).queue()
+            return
+        }
         val announcementMessageId = event.getOption("announcement_id")?.asString?.toLong() ?: return
 
         val announcement = announcementService.getAnnouncement(announcementMessageId)

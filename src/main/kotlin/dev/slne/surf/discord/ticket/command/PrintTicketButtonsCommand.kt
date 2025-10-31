@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component
 class PrintTicketButtonsCommand(private val buttonRegistry: ButtonRegistry) : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.COMMAND_TICKET_BUTTONS)) {
-            event.reply("Dazu hast du keine Berechtigung.").setEphemeral(true).queue()
+            event.reply(translatable("no-permission")).setEphemeral(true).queue()
             return
         }
 
