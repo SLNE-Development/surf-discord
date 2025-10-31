@@ -1,4 +1,4 @@
-package dev.slne.surf.discord.command.impl
+package dev.slne.surf.discord.ticket.command
 
 import dev.slne.surf.discord.command.DiscordCommand
 import dev.slne.surf.discord.command.SlashCommand

@@ -1,4 +1,4 @@
-package dev.slne.surf.discord.command.impl
+package dev.slne.surf.discord.announcement.command
 
 import dev.slne.surf.discord.announcement.AnnouncementService
 import dev.slne.surf.discord.command.CommandOption

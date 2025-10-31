@@ -118,6 +118,8 @@ class CommandRegistrar(
                         opt.required
                     )
                 }
+
+                optData.setAutoComplete(opt.autocomplete)
                 commandData.addOptions(optData)
             }
 

@@ -6,7 +6,8 @@ annotation class CommandOption(
     val name: String,
     val description: String,
     val type: CommandOptionType = CommandOptionType.STRING,
-    val required: Boolean = false
+    val required: Boolean = false,
+    val autocomplete: Boolean = false
 )
 
 enum class CommandOptionType {

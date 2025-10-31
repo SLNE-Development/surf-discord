@@ -1,4 +1,4 @@
-package dev.slne.surf.discord.command.impl
+package dev.slne.surf.discord.ticket.command
 
 import dev.slne.surf.discord.command.CommandOption
 import dev.slne.surf.discord.command.CommandOptionType
@@ -12,16 +12,16 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import org.springframework.stereotype.Component
 
 @DiscordCommand(
-    "remove", "Entferne einen Nutzer vom Ticket", options = [
-        CommandOption("user", "Der Nutzer zum entfernen", CommandOptionType.USER, true)
+    "add", "Füge einen Nutzer zum Ticket hinzu", options = [
+        CommandOption("user", "Der hinzuzufügende Nutzer", CommandOptionType.USER, true)
     ]
 )
 @Component
-class TicketRemoveUserCommand(
+class TicketAddUserCommand(
     private val ticketMemberService: TicketMemberService
 ) : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
-        if (!event.member.hasPermission(DiscordPermission.COMMAND_TICKET_REMOVE)) {
+        if (!event.member.hasPermission(DiscordPermission.COMMAND_TICKET_ADD)) {
             event.reply("Dazu hast du keine Berechtigung.").setEphemeral(true).queue()
             return
         }
@@ -35,13 +35,20 @@ class TicketRemoveUserCommand(
             return
         }
 
-        val success = ticketMemberService.removeMember(ticket, user, event.user)
+        if (ticketMemberService.isMember(ticket, user.idLong)) {
+            event.reply("${user.asMention} ist bereits Mitglied dieses Tickets.").setEphemeral(true)
+                .queue()
+            return
+        }
+
+        val success = ticketMemberService.addMember(ticket, user, event.user)
 
         if (success) {
-            event.reply("${user.asMention} wurde aus dem Ticket entfernt.").setEphemeral(true)
+            event.reply("${user.asMention} wurde zum Ticket hinzugefügt.").setEphemeral(true)
                 .queue()
         } else {
-            event.reply("${user.asMention} ist nicht in diesem Ticket.").setEphemeral(true).queue()
+            event.reply("${user.asMention} ist bereits in diesem Ticket.").setEphemeral(true)
+                .queue()
         }
     }
 }
