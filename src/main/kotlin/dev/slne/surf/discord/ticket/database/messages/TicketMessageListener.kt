@@ -2,6 +2,7 @@ package dev.slne.surf.discord.ticket.database.messages
 
 import dev.slne.surf.discord.jda
 import dev.slne.surf.discord.ticket.TicketService
+import dev.slne.surf.discord.ticket.database.messages.attachments.TicketAttachmentsRepository
 import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -16,7 +17,8 @@ import org.springframework.stereotype.Component
 class TicketMessageListener(
     private val discordScope: CoroutineScope,
     private val ticketService: TicketService,
-    private val ticketMessageRepository: TicketMessageRepository
+    private val ticketMessageRepository: TicketMessageRepository,
+    private val ticketAttachmentsRepository: TicketAttachmentsRepository
 ) : ListenerAdapter() {
     @PostConstruct
     fun init() {
@@ -27,6 +29,15 @@ class TicketMessageListener(
         discordScope.launch {
             val ticket = ticketService.getTicketByThreadId(event.channel.idLong) ?: return@launch
             ticketMessageRepository.logMessage(ticket, event.message)
+            event.message.attachments.forEach {
+                ticketAttachmentsRepository.addAttachment(
+                    ticket.ticketId,
+                    event.message.idLong,
+                    it.idLong,
+                    it.url,
+                    it.proxyUrl
+                )
+            }
         }
     }
 
@@ -43,6 +54,7 @@ class TicketMessageListener(
             val ticket =
                 ticketService.getTicketByThreadId(event.channel.idLong) ?: return@launch
             ticketMessageRepository.logMessageDeleted(event.messageIdLong)
+            ticketAttachmentsRepository.markDeleted(ticket.ticketId, event.messageIdLong)
         }
     }
 
@@ -52,6 +64,7 @@ class TicketMessageListener(
                 ticketService.getTicketByThreadId(event.channel.idLong) ?: return@launch
             for (messageId in event.messageIds.map { it.toLong() }) {
                 ticketMessageRepository.logMessageDeleted(messageId)
+                ticketAttachmentsRepository.markDeleted(ticket.ticketId, messageId)
             }
         }
     }
