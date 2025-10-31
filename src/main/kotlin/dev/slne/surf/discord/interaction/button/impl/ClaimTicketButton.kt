@@ -17,12 +17,14 @@ class ClaimTicketButton(
     private val ticketService: TicketService
 ) : DiscordButton {
     override val id = "ticket:claim"
-    override val button = Button.of(
-        ButtonStyle.SECONDARY,
-        id,
-        translatable("button.ticket.claim"),
-        Emoji.fromCustom("information", 1433420020993757325, false)
-    )
+    override val button by lazy {
+        Button.of(
+            ButtonStyle.SECONDARY,
+            id,
+            translatable("button.ticket.claim"),
+            Emoji.fromCustom("information", 1433420020993757325, false)
+        )
+    }
 
     override suspend fun onClick(event: ButtonInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.TICKET_CLAIM)) {

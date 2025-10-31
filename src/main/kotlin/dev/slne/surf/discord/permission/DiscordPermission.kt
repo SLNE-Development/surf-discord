@@ -5,7 +5,6 @@ enum class DiscordPermission {
 
     COMMAND_TICKET_ADD,
     COMMAND_TICKET_REMOVE,
-    COMMAND_TICKET_WATCH,
 
     TICKET_CLOSE,
     TICKET_CLAIM,

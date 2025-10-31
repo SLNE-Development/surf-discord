@@ -40,35 +40,6 @@ class TicketLogger {
         }).queue()
     }
 
-    fun logNewWatcher(ticket: Ticket, watcherName: String) {
-        val channel =
-            ticket.getThreadChannel()?.guild?.getTextChannelById(botConfig.channels.ticketLogChannel)
-                ?: return
-
-        channel.sendMessageEmbeds(embed {
-            title = "Ticket Status Update"
-            description = "Ein neues Teammitglied wurde als Beobachter zu einem Ticket hinzugefügt."
-
-            field {
-                name = "Ticket ID"
-                value = ticket.ticketId.toString()
-                inline = true
-            }
-
-            field {
-                name = "Ticket Typ"
-                value = ticket.ticketType.displayName
-                inline = true
-            }
-
-            field {
-                name = "Beobachter"
-                value = watcherName
-                inline = true
-            }
-        }).queue()
-    }
-
     fun logNewClaimant(ticket: Ticket, claimantName: String) {
         val channel =
             ticket.getThreadChannel()?.guild?.getTextChannelById(botConfig.channels.ticketLogChannel)
@@ -93,35 +64,6 @@ class TicketLogger {
             field {
                 name = "Übernommen von"
                 value = claimantName
-                inline = true
-            }
-        }).queue()
-    }
-
-    fun logNewUnWatcher(ticket: Ticket, unwatcherName: String) {
-        val channel =
-            ticket.getThreadChannel()?.guild?.getTextChannelById(botConfig.channels.ticketLogChannel)
-                ?: return
-
-        channel.sendMessageEmbeds(embed {
-            title = "Ticket Status Update"
-            description = "Ein Teammitglied beobachtet ein Ticket nicht mehr."
-
-            field {
-                name = "Ticket ID"
-                value = ticket.ticketId.toString()
-                inline = true
-            }
-
-            field {
-                name = "Ticket Typ"
-                value = ticket.ticketType.displayName
-                inline = true
-            }
-
-            field {
-                name = "Teammitglied"
-                value = unwatcherName
                 inline = true
             }
         }).queue()

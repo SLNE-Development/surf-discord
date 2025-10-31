@@ -59,63 +59,6 @@ class TicketStaffRepository {
         staffEntry?.get(TicketStaffTable.claimedAt) != null
     }
 
-    suspend fun isWatched(
-        ticket: Ticket
-    ) = newSuspendedTransaction(Dispatchers.IO) {
-        val staffEntry =
-            TicketStaffTable.selectAll().where(TicketStaffTable.ticketId eq ticket.ticketId)
-                .firstOrNull()
-        staffEntry?.get(TicketStaffTable.watchedAt) != null
-    }
-
-    suspend fun isWatchedByUser(
-        ticket: Ticket,
-        user: User
-    ) = newSuspendedTransaction(Dispatchers.IO) {
-        val staffEntry =
-            TicketStaffTable.selectAll().where(TicketStaffTable.ticketId eq ticket.ticketId)
-                .firstOrNull()
-        staffEntry?.get(TicketStaffTable.watchedBy) == user.idLong
-    }
-
-    suspend fun watch(
-        ticket: Ticket,
-        watcher: User
-    ) = newSuspendedTransaction(Dispatchers.IO) {
-        val existing = TicketStaffTable.selectAll()
-            .where(TicketStaffTable.ticketId eq ticket.ticketId)
-            .firstOrNull()
-
-        if (existing == null) {
-            TicketStaffTable.insert {
-                it[ticketId] = ticket.ticketId
-                it[watchedAt] = System.currentTimeMillis()
-                it[watchedBy] = watcher.idLong
-                it[watchedByName] = watcher.name
-                it[watchedByAvatar] = watcher.avatarUrl
-            }
-        } else {
-            TicketStaffTable.update({ TicketStaffTable.ticketId eq ticket.ticketId }) {
-                it[watchedAt] = System.currentTimeMillis()
-                it[watchedBy] = watcher.idLong
-                it[watchedByName] = watcher.name
-                it[watchedByAvatar] = watcher.avatarUrl
-            }
-        }
-    }
-
-
-    suspend fun unwatch(
-        ticket: Ticket
-    ) = newSuspendedTransaction(Dispatchers.IO) {
-        TicketStaffTable.update(where = { TicketStaffTable.ticketId eq ticket.ticketId }) {
-            it[watchedAt] = null
-            it[watchedBy] = null
-            it[watchedByName] = null
-            it[watchedByAvatar] = null
-        }
-    }
-
     suspend fun unclaim(
         ticket: Ticket
     ) = newSuspendedTransaction(Dispatchers.IO) {

@@ -16,13 +16,14 @@ class CloseTicketButton(
     private val selectMenuRegistry: SelectMenuRegistry
 ) : DiscordButton {
     override val id = "ticket:close"
-    override val button =
+    override val button by lazy {
         Button.of(
             ButtonStyle.SECONDARY,
             id,
             translatable("button.ticket.close"),
             Emoji.fromCustom("cross", 1433072192274305135, false)
         )
+    }
 
     override suspend fun onClick(event: ButtonInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.TICKET_CLOSE)) {

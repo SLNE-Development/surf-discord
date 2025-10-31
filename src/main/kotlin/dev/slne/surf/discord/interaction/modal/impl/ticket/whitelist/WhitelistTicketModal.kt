@@ -106,6 +106,8 @@ class WhitelistTicketModal(
             getBean<ButtonRegistry>().get("ticket:whitelist:complete").button,
             getBean<ButtonRegistry>().get("ticket:close").button,
             getBean<ButtonRegistry>().get("ticket:claim").button,
+
+            ).addActionRow(
             Button.link("https://twitch.tv/$whitelistTwitch", "Twitch"),
             Button.link("https://www.laby.net/$whitelistName", "Minecraft"),
         ).queue()

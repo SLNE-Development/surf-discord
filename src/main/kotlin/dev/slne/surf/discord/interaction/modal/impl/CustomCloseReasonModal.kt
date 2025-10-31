@@ -29,6 +29,6 @@ class CustomCloseReasonModal(
 
         ticketService.closeTicket(interaction.hook, customReason)
         interaction.hook.deleteOriginal()
-        interaction.reply("ticket.closing").setEphemeral(true).queue()
+        interaction.reply(translatable("ticket.closing")).setEphemeral(true).queue()
     }
 }

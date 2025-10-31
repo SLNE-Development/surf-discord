@@ -71,8 +71,11 @@ class TicketService(
 
         ticketLogger.logNewClaimant(ticket, user.name)
 
-        ticket.getThreadChannel()?.sendMessage("${user.asMention} bearbeitet das Ticket nun.")
-            ?.queue()
+        ticket.getThreadChannel()?.sendMessageEmbeds(embed {
+            title = translatable("ticket.claimed.title")
+            description = translatable("ticket.claimed.description", user.asMention)
+            color = Colors.INFO
+        })?.queue()
     }
 
     suspend fun unclaim(ticket: Ticket, user: User) {
@@ -85,23 +88,6 @@ class TicketService(
 
     suspend fun isClaimedByUser(ticket: Ticket, user: User) =
         ticketStaffRepository.isClaimedByUser(ticket, user)
-
-    suspend fun watch(ticket: Ticket, user: User) {
-        ticketStaffRepository.watch(ticket, user)
-        ticketLogger.logNewWatcher(ticket, user.name)
-    }
-
-    suspend fun unwatch(ticket: Ticket, user: User) {
-        ticketStaffRepository.unclaim(ticket)
-
-        ticketLogger.logNewUnWatcher(ticket, user.name)
-    }
-
-    suspend fun isWatchedByUser(ticket: Ticket, user: User) =
-        ticketStaffRepository.isWatchedByUser(ticket, user)
-
-    suspend fun isWatched(ticket: Ticket) =
-        ticketStaffRepository.isWatched(ticket)
 
     suspend fun updateData(ticket: Ticket, ticketData: TicketData) =
         ticketDataRepository.setData(ticket.ticketId, ticketData)

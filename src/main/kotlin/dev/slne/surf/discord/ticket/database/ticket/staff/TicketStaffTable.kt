@@ -9,9 +9,4 @@ object TicketStaffTable : LongIdTable("discord_ticket_staff") {
     val claimedBy = long("claimed_by").nullable()
     val claimedByName = varchar("claimed_by_name", 100).nullable()
     val claimedByAvatar = varchar("claimed_by_avatar", 200).nullable()
-
-    val watchedAt = long("watched_at").nullable()
-    val watchedBy = long("watched_by").nullable()
-    val watchedByName = varchar("watched_by_name", 100).nullable()
-    val watchedByAvatar = varchar("watched_by_avatar", 200).nullable()
 }

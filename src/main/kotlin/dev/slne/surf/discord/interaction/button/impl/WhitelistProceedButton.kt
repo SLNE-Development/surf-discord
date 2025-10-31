@@ -15,12 +15,14 @@ import org.springframework.stereotype.Component
 @Component
 class WhitelistProceedButton : DiscordButton {
     override val id = "ticket:whitelist:complete"
-    override val button = Button.of(
-        ButtonStyle.SECONDARY,
-        id,
-        translatable("button.ticket.whitelist.proceed"),
-        Emoji.fromCustom("checkmark", 1433072075446423754, false)
-    )
+    override val button by lazy {
+        Button.of(
+            ButtonStyle.SECONDARY,
+            id,
+            translatable("button.ticket.whitelist.proceed"),
+            Emoji.fromCustom("checkmark", 1433072075446423754, false)
+        )
+    }
 
     override suspend fun onClick(event: ButtonInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.TICKET_WHITELIST_CONFIRM)) {
