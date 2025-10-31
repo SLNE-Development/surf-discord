@@ -42,7 +42,7 @@ class TicketService(
         }
 
         type.viewPermission.getRolesWithPermission(threadChannel.guild.idLong).forEach {
-            val message = threadChannel.sendMessage("Zugriff für $it").submit(true).await()
+            val message = threadChannel.sendMessage("Zugriff für $it...").submit(true).await()
             message.editMessage("<@&$it>").queue()
             message.delete().queue()
         }
