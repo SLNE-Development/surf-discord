@@ -11,7 +11,6 @@ import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffRepository
 import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.random
 import it.unimi.dsi.fastutil.objects.ObjectArraySet
-import kotlinx.coroutines.future.await
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.interactions.InteractionHook
@@ -41,10 +40,12 @@ class TicketService(
             return null
         }
 
-        type.viewPermission.getRolesWithPermission(threadChannel.guild.idLong).forEach {
-            val message = threadChannel.sendMessage("Zugriff für $it...").submit(true).await()
-            message.editMessage("<@&$it>").queue()
-            message.delete().queue()
+        type.viewPermission.getRolesWithPermission(threadChannel.guild.idLong).forEach { role ->
+            threadChannel.sendMessage("Zugriff für $role...").submit(true).thenAccept { message ->
+                message.editMessage("<@&$role>").submit(true).thenAccept {
+                    message.delete().queue()
+                }
+            }
         }
 
         threadChannel.addThreadMember(user).queue()
