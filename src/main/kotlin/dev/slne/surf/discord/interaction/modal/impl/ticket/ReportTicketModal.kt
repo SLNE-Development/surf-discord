@@ -28,7 +28,7 @@ class ReportTicketModal(
             label = translatable("ticket.report.modal.field.target.label")
             style = TextInputStyle.SHORT
             placeholder = translatable("ticket.report.modal.field.target.placeholder")
-            required = true
+            required = false
             lengthRange = 3..16
         }
         textInput {
