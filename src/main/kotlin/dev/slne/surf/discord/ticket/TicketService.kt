@@ -160,6 +160,7 @@ class TicketService(
         ticket.closedReason = reason
 
         ticketLogger.logClosure(ticket)
+        markAsClosed(ticket)
 
         jda.openPrivateChannelById(ticket.authorId).submit(true).thenAccept {
             it.sendMessageEmbeds(embed {
@@ -203,10 +204,11 @@ class TicketService(
                     value = "<t:${System.currentTimeMillis() / 1000}:F>"
                     inline = true
                 }
-            }).queue()
+            }).queue(null) {
+                // User has Pms disabled, ignore
+            }
         }
 
-        markAsClosed(ticket)
         thread.manager.setLocked(true).queue()
         thread.manager.setArchived(true).queue()
     }
