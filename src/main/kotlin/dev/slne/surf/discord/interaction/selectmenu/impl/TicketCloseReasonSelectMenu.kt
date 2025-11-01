@@ -6,9 +6,10 @@ import dev.slne.surf.discord.interaction.selectmenu.DiscordSelectMenu
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.util.asTicketOrThrow
+import net.dv8tion.jda.api.components.selections.SelectMenu
+import net.dv8tion.jda.api.components.selections.StringSelectMenu
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
-import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu
 import org.springframework.stereotype.Component
 
 @Component
@@ -16,7 +17,7 @@ class TicketCloseReasonSelectMenu(
     private val ticketService: TicketService
 ) : DiscordSelectMenu {
     override val id = "ticket:close:reason"
-    override suspend fun create(hook: InteractionHook): StringSelectMenu {
+    override suspend fun create(hook: InteractionHook): SelectMenu {
         val ticket = hook.asTicketOrThrow()
 
         return StringSelectMenu.create(id).apply {

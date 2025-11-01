@@ -35,9 +35,6 @@ class DiscordBot {
     }
 
     private val gatewayIntents = listOf(
-        // Emoji
-        GatewayIntent.GUILD_EMOJIS_AND_STICKERS,
-
         // Guild
         GatewayIntent.GUILD_MEMBERS,
         GatewayIntent.GUILD_PRESENCES,

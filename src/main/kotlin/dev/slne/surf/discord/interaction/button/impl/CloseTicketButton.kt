@@ -5,10 +5,11 @@ import dev.slne.surf.discord.interaction.selectmenu.SelectMenuRegistry
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
+import net.dv8tion.jda.api.components.actionrow.ActionRow
+import net.dv8tion.jda.api.components.buttons.Button
+import net.dv8tion.jda.api.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
-import net.dv8tion.jda.api.interactions.components.buttons.Button
-import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import org.springframework.stereotype.Component
 
 @Component
@@ -33,9 +34,8 @@ class CloseTicketButton(
 
         val selectMenu = selectMenuRegistry.get("ticket:close:reason").create(event.hook)
 
-        event.deferReply(true).queue {
-            it.editOriginal(translatable("ticket.close.selectreason")).setActionRow(selectMenu)
-                .queue()
-        }
+        event.reply(translatable("ticket.close.selectreason")).setEphemeral(true).addComponents(
+            ActionRow.of(selectMenu)
+        ).queue()
     }
 }

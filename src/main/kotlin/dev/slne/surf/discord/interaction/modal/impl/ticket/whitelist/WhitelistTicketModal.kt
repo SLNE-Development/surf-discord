@@ -11,9 +11,10 @@ import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
 import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.replyError
+import net.dv8tion.jda.api.components.actionrow.ActionRow
+import net.dv8tion.jda.api.components.buttons.Button
+import net.dv8tion.jda.api.components.textinput.TextInputStyle
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
-import net.dv8tion.jda.api.interactions.components.buttons.Button
-import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
 import org.springframework.stereotype.Component
 
 @Component
@@ -22,7 +23,7 @@ class WhitelistTicketModal(
 ) : DiscordModal {
     override val id = "ticket:whitelist"
     override fun create() = modal(id, translatable("ticket.whitelist.title")) {
-        field {
+        textInput {
             id = "whitelist-name"
             label = translatable("ticket.whitelist.field.name")
             style = TextInputStyle.SHORT
@@ -31,7 +32,7 @@ class WhitelistTicketModal(
             lengthRange = 3..16
         }
 
-        field {
+        textInput {
             id = "whitelist-twitch"
             label = translatable("ticket.whitelist.field.twitch")
             style = TextInputStyle.SHORT
@@ -102,14 +103,15 @@ class WhitelistTicketModal(
                     inline = true
                 }
             }
-        ).addActionRow(
-            getBean<ButtonRegistry>().get("ticket:whitelist:complete").button,
-            getBean<ButtonRegistry>().get("ticket:close").button,
-            getBean<ButtonRegistry>().get("ticket:claim").button,
-
-            ).addActionRow(
-            Button.link("https://twitch.tv/$whitelistTwitch", "Twitch"),
-            Button.link("https://www.laby.net/$whitelistName", "Minecraft"),
+        ).addComponents(
+            ActionRow.of(
+                getBean<ButtonRegistry>().get("ticket:whitelist:complete").button,
+                getBean<ButtonRegistry>().get("ticket:close").button,
+                getBean<ButtonRegistry>().get("ticket:claim").button
+            ), ActionRow.of(
+                Button.link("https://twitch.tv/$whitelistTwitch", "Twitch"),
+                Button.link("https://www.laby.net/$whitelistName", "Minecraft"),
+            )
         ).queue()
     }
 }

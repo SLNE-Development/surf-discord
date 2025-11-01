@@ -2,7 +2,7 @@ package dev.slne.surf.discord.interaction.modal
 
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
-import net.dv8tion.jda.api.interactions.modals.Modal
+import net.dv8tion.jda.api.modals.Modal
 
 interface DiscordModal {
     val id: String

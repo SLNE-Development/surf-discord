@@ -5,10 +5,10 @@ import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.util.asTicketOrThrow
+import net.dv8tion.jda.api.components.textinput.TextInputStyle
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
-import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
-import net.dv8tion.jda.api.interactions.modals.Modal
+import net.dv8tion.jda.api.modals.Modal
 import org.springframework.stereotype.Component
 
 @Component
@@ -26,7 +26,7 @@ class WhitelistProceedModal(
             ?: error("Twitch username missing for ticket: ${ticket.ticketId}")
 
         return modal(id, translatable("ticket.whitelist.proceed.modal.title")) {
-            field {
+            textInput {
                 id = "minecraft"
                 label = translatable("ticket.whitelist.proceed.modal.field.minecraft.label")
                 required = true
@@ -34,7 +34,7 @@ class WhitelistProceedModal(
                 value = minecraft
             }
 
-            field {
+            textInput {
                 id = "twitch"
                 label = translatable("ticket.whitelist.proceed.modal.field.twitch.label")
                 required = true
@@ -42,7 +42,7 @@ class WhitelistProceedModal(
                 value = twitch
             }
 
-            field {
+            textInput {
                 id = "discord-name"
                 label = translatable("ticket.whitelist.proceed.modal.field.discord-name.label")
                 required = true
@@ -50,7 +50,7 @@ class WhitelistProceedModal(
                 value = ticket.authorName
             }
 
-            field {
+            textInput {
                 id = "discord-id"
                 label = translatable("ticket.whitelist.proceed.modal.field.discord-id.label")
                 required = true

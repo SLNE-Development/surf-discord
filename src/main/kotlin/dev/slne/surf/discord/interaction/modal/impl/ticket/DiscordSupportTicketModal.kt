@@ -11,8 +11,9 @@ import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
 import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.replyError
+import net.dv8tion.jda.api.components.actionrow.ActionRow
+import net.dv8tion.jda.api.components.textinput.TextInputStyle
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
-import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
 import org.springframework.stereotype.Component
 
 @Component
@@ -22,7 +23,7 @@ class DiscordSupportTicketModal(
     override val id = "ticket:support:discord"
 
     override fun create() = modal(id, translatable("ticket.support.discord.modal.title")) {
-        field {
+        textInput {
             id = "issue"
             label = translatable("ticket.support.discord.modal.field.issue.label")
             style = TextInputStyle.PARAGRAPH
@@ -76,9 +77,11 @@ class DiscordSupportTicketModal(
                     inline = true
                 }
             }
-        ).addActionRow(
-            getBean<ButtonRegistry>().get("ticket:close").button,
-            getBean<ButtonRegistry>().get("ticket:claim").button
+        ).addComponents(
+            ActionRow.of(
+                getBean<ButtonRegistry>().get("ticket:close").button,
+                getBean<ButtonRegistry>().get("ticket:claim").button
+            )
         ).queue()
     }
 }
