@@ -9,12 +9,12 @@ import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataRepository
 import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffRepository
 import dev.slne.surf.discord.util.Colors
-import dev.slne.surf.discord.util.random
 import it.unimi.dsi.fastutil.objects.ObjectArraySet
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.interactions.InteractionHook
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class TicketService(
@@ -51,7 +51,7 @@ class TicketService(
         threadChannel.addThreadMember(user).queue()
 
         val ticket = Ticket(
-            random.nextLong(),
+            UUID.randomUUID(),
             ObjectArraySet(),
             userId,
             user.name,
@@ -68,7 +68,7 @@ class TicketService(
         )
 
         ticketRepository.createTicket(ticket)
-        ticketDataRepository.setData(ticket.ticketId, data)
+        ticketDataRepository.setData(ticket.ticketUid, data)
 
         ticketLogger.logCreation(ticket)
 
@@ -99,10 +99,13 @@ class TicketService(
         ticketStaffRepository.isClaimedByUser(ticket, user)
 
     suspend fun updateData(ticket: Ticket, ticketData: TicketData) =
-        ticketDataRepository.setData(ticket.ticketId, ticketData)
+        ticketDataRepository.setData(ticket.ticketUid, ticketData)
 
     suspend fun getTicketByThreadId(threadId: Long) =
         ticketRepository.getTicketByThreadId(threadId)
+
+    suspend fun isTicketExisting(threadId: Long) =
+        ticketRepository.getTicketByThreadId(threadId) != null
 
     suspend fun hasOpenTicket(userId: Long, ticketType: TicketType) =
         ticketRepository.hasOpenTicket(userId, ticketType)
@@ -128,7 +131,7 @@ class TicketService(
 
                 field {
                     name = "Ticket Id"
-                    value = ticket.ticketId.toString()
+                    value = ticket.ticketUid.toString()
                     inline = true
                 }
 
@@ -177,7 +180,7 @@ class TicketService(
 
                 field {
                     name = "Ticket Id"
-                    value = ticket.ticketId.toString()
+                    value = ticket.ticketUid.toString()
                     inline = true
                 }
 

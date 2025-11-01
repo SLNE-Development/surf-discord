@@ -31,7 +31,7 @@ class TicketMessageListener(
             ticketMessageRepository.logMessage(ticket, event.message)
             event.message.attachments.forEach {
                 ticketAttachmentsRepository.addAttachment(
-                    ticket.ticketId,
+                    ticket.ticketUid,
                     event.message.idLong,
                     it.idLong,
                     it.url,
@@ -43,28 +43,34 @@ class TicketMessageListener(
 
     override fun onMessageUpdate(event: MessageUpdateEvent) {
         discordScope.launch {
-            val ticket =
-                ticketService.getTicketByThreadId(event.channel.idLong) ?: return@launch
+            if (!ticketService.isTicketExisting(event.channel.idLong)) {
+                return@launch
+            }
+
             ticketMessageRepository.logMessageEdited(event.message.idLong, event.message.contentRaw)
         }
     }
 
     override fun onMessageDelete(event: MessageDeleteEvent) {
         discordScope.launch {
-            val ticket =
-                ticketService.getTicketByThreadId(event.channel.idLong) ?: return@launch
+            if (!ticketService.isTicketExisting(event.channel.idLong)) {
+                return@launch
+            }
+
             ticketMessageRepository.logMessageDeleted(event.messageIdLong)
-            ticketAttachmentsRepository.markDeleted(ticket.ticketId, event.messageIdLong)
+            ticketAttachmentsRepository.markDeleted(event.messageIdLong)
         }
     }
 
     override fun onMessageBulkDelete(event: MessageBulkDeleteEvent) {
         discordScope.launch {
-            val ticket =
-                ticketService.getTicketByThreadId(event.channel.idLong) ?: return@launch
+            if (!ticketService.isTicketExisting(event.channel.idLong)) {
+                return@launch
+            }
+
             for (messageId in event.messageIds.map { it.toLong() }) {
                 ticketMessageRepository.logMessageDeleted(messageId)
-                ticketAttachmentsRepository.markDeleted(ticket.ticketId, messageId)
+                ticketAttachmentsRepository.markDeleted(messageId)
             }
         }
     }

@@ -9,28 +9,29 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.springframework.stereotype.Repository
+import java.util.*
 
 @Repository
 class TicketDataRepository {
-    suspend fun setData(ticketId: Long, data: TicketData) =
+    suspend fun setData(ticketUid: UUID, data: TicketData) =
         newSuspendedTransaction(Dispatchers.IO) {
             TicketDataTable.deleteWhere {
-                TicketDataTable.ticketId eq ticketId
+                TicketDataTable.ticketUid eq ticketUid
             }
 
             data.forEach { dta ->
                 TicketDataTable.insert {
-                    it[TicketDataTable.ticketId] = ticketId
+                    it[TicketDataTable.ticketUid] = ticketUid
                     it[TicketDataTable.dataKey] = dta.first
                     it[TicketDataTable.dataValue] = dta.second
                 }
             }
         }
 
-    suspend fun getData(ticketId: Long): TicketData =
+    suspend fun getData(ticketUid: UUID): TicketData =
         newSuspendedTransaction(Dispatchers.IO) {
             ObjectArraySet(
-                TicketDataTable.selectAll().where(TicketDataTable.ticketId eq ticketId)
+                TicketDataTable.selectAll().where(TicketDataTable.ticketUid eq ticketUid)
                     .map { it[TicketDataTable.dataKey] to it[TicketDataTable.dataValue] })
         }
 }

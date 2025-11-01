@@ -12,6 +12,7 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.update
 import org.springframework.stereotype.Repository
+import java.util.*
 
 @Repository
 class TicketRepository(
@@ -19,7 +20,7 @@ class TicketRepository(
 ) {
     suspend fun createTicket(ticket: Ticket) = newSuspendedTransaction(Dispatchers.IO) {
         TicketTable.insert {
-            it[tickedId] = ticket.ticketId
+            it[ticketUid] = ticket.ticketUid
             it[authorId] = ticket.authorId
             it[authorName] = ticket.authorName
             it[authorAvatarUrl] = ticket.authorAvatar
@@ -48,10 +49,10 @@ class TicketRepository(
         newSuspendedTransaction(Dispatchers.IO) {
             TicketTable.selectAll().where(TicketTable.threadId eq threadId)
                 .firstNotNullOfOrNull { row ->
-                    val id = row[TicketTable.tickedId]
+                    val id = row[TicketTable.ticketUid]
                     val data = ticketDataRepository.getData(id)
                     Ticket(
-                        ticketId = id,
+                        ticketUid = id,
                         ticketData = data,
                         authorId = row[TicketTable.authorId],
                         authorName = row[TicketTable.authorName],
@@ -72,7 +73,7 @@ class TicketRepository(
     suspend fun markAsClosed(
         ticket: Ticket
     ) = newSuspendedTransaction(Dispatchers.IO) {
-        TicketTable.update({ TicketTable.tickedId eq ticket.ticketId }) {
+        TicketTable.update({ TicketTable.ticketUid eq ticket.ticketUid }) {
             it[TicketTable.closedAt] = ticket.closedAt
             it[TicketTable.closedById] = ticket.closedById
             it[TicketTable.closedByName] = ticket.closedByName
@@ -81,13 +82,13 @@ class TicketRepository(
         }
     }
 
-    suspend fun getTicketById(ticketId: Long): Ticket? = newSuspendedTransaction(Dispatchers.IO) {
-        TicketTable.selectAll().where(TicketTable.tickedId eq ticketId)
+    suspend fun getTicketById(ticketUid: UUID): Ticket? = newSuspendedTransaction(Dispatchers.IO) {
+        TicketTable.selectAll().where(TicketTable.ticketUid eq ticketUid)
             .firstNotNullOfOrNull { row ->
-                val id = row[TicketTable.tickedId]
+                val id = row[TicketTable.ticketUid]
                 val data = ticketDataRepository.getData(id)
                 Ticket(
-                    ticketId = id,
+                    ticketUid = id,
                     ticketData = data,
                     authorId = row[TicketTable.authorId],
                     authorName = row[TicketTable.authorName],
@@ -110,10 +111,10 @@ class TicketRepository(
             TicketTable.selectAll()
                 .where((TicketTable.authorId eq authorId) and (TicketTable.ticketType eq type))
                 .firstNotNullOfOrNull { row ->
-                    val id = row[TicketTable.tickedId]
+                    val id = row[TicketTable.ticketUid]
                     val data = ticketDataRepository.getData(id)
                     Ticket(
-                        ticketId = id,
+                        ticketUid = id,
                         ticketData = data,
                         authorId = row[TicketTable.authorId],
                         authorName = row[TicketTable.authorName],

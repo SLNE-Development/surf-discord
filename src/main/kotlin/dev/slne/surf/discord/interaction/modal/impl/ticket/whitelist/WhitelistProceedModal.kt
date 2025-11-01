@@ -21,9 +21,9 @@ class WhitelistProceedModal(
         val ticket = hook.asTicketOrThrow()
 
         val minecraft = ticket.ticketData.find { it.first == "minecraft" }?.second
-            ?: error("Minecraft username missing for ticket: ${ticket.ticketId}")
+            ?: error("Minecraft username missing for ticket: ${ticket.ticketUid}")
         val twitch = ticket.ticketData.find { it.first == "twitch" }?.second
-            ?: error("Twitch username missing for ticket: ${ticket.ticketId}")
+            ?: error("Twitch username missing for ticket: ${ticket.ticketUid}")
 
         return modal(id, translatable("ticket.whitelist.proceed.modal.title")) {
             textInput {

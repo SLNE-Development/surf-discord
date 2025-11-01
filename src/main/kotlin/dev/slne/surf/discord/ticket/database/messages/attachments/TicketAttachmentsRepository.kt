@@ -5,18 +5,19 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.update
 import org.springframework.stereotype.Repository
+import java.util.*
 
 @Repository
 class TicketAttachmentsRepository {
     suspend fun addAttachment(
-        ticketId: Long,
+        ticketUid: UUID,
         messageId: Long,
         attachmentId: Long,
         url: String,
         proxyUrl: String
     ) = newSuspendedTransaction(Dispatchers.IO) {
         TicketAttachmentsTable.insert {
-            it[this.ticketId] = ticketId
+            it[this.ticketUid] = ticketUid
             it[this.messageId] = messageId
             it[this.attachmentId] = attachmentId
             it[this.url] = url
@@ -26,7 +27,6 @@ class TicketAttachmentsRepository {
     }
 
     suspend fun markDeleted(
-        ticketId: Long,
         messageId: Long
     ) = newSuspendedTransaction(Dispatchers.IO) {
         TicketAttachmentsTable.update({ TicketAttachmentsTable.messageId eq messageId }) {
