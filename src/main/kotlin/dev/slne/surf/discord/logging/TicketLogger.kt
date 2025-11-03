@@ -37,7 +37,6 @@ class TicketLogger {
             }
 
             // TODO: Either replace with actual year or just replace with nothing
-            footer = "Arty Support | 2025"
         }).queue()
     }
 
