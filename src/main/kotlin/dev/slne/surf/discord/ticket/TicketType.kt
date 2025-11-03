@@ -34,6 +34,7 @@ enum class TicketType(
     val id: String,
     val displayName: String,
     val description: String,
+    val available: Boolean,
     val emoji: String,
     val viewPermission: DiscordPermission,
     val closeReasons: ObjectList<TicketCloseReason>,
@@ -43,6 +44,7 @@ enum class TicketType(
         "whitelist",
         "Whitelist Ticket",
         "Erstelle ein Ticket, um auf dem Survival Server gewhitelisted zu werden.",
+        true,
         "📜",
         DiscordPermission.TICKET_WHITELIST_VIEW,
         mutableObjectListOf(
@@ -59,6 +61,7 @@ enum class TicketType(
         "discord",
         "Discord Support Ticket",
         "Erstelle ein Ticket, um Support für den Discord Server zu erhalten.",
+        true,
         "💬",
         DiscordPermission.TICKET_SUPPORT_DISCORD_VIEW,
         defaultReasons,
@@ -68,6 +71,7 @@ enum class TicketType(
         "survival",
         "Survival Support Ticket",
         "Erstelle ein Ticket, um Support für den Survival Server zu erhalten.",
+        true,
         "🛠️",
         DiscordPermission.TICKET_SUPPORT_SURVIVAL_VIEW,
         defaultReasons,
@@ -77,6 +81,7 @@ enum class TicketType(
         "event",
         "Event Support Ticket",
         "Erstelle ein Ticket, um Support für Events zu erhalten.",
+        true,
         "🎉",
         DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
         defaultReasons,
@@ -86,6 +91,7 @@ enum class TicketType(
         "report",
         "Report Ticket",
         "Erstelle ein Ticket, um einen Spieler zu melden.",
+        true,
         "🚨",
         DiscordPermission.TICKET_REPORT_VIEW,
         mutableObjectListOf(
@@ -102,6 +108,7 @@ enum class TicketType(
         "unban",
         "Unban Antrag",
         "Erstelle ein Ticket, um einen Unban Antrag zu stellen.",
+        true,
         "🔨",
         DiscordPermission.TICKET_UNBAN_VIEW,
         mutableObjectListOf(
@@ -126,6 +133,7 @@ enum class TicketType(
         "bugreport",
         "Bugreport Ticket",
         "Erstelle ein Ticket, um einen Bug zu melden.",
+        true,
         "🐛",
         DiscordPermission.TICKET_BUG_VIEW,
         mutableObjectListOf(
@@ -145,5 +153,22 @@ enum class TicketType(
             addAll(defaultReasons)
         },
         getBean<ModalRegistry>().get("ticket:bugreport").create()
+    ),
+    SURVIVAL_WHITELIST(
+        "survival_whitelist",
+        "Survival Whitelist Ticket",
+        "Erstelle ein Ticket, um auf dem Survival Server gewhitelisted zu werden.",
+        false,
+        "🌍",
+        DiscordPermission.TICKET_WHITELIST_VIEW,
+        mutableObjectListOf(
+            TicketCloseReason.of(
+                "Anforderungen nicht erfüllt",
+                "Du erfüllst nicht alle Anforderungen für eine Whitelist."
+            )
+        ).apply {
+            addAll(defaultReasons)
+        },
+        getBean<ModalRegistry>().get("ticket:whitelist_survival").create()
     )
 }
