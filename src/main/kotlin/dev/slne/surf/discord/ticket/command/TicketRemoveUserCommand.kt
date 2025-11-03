@@ -13,8 +13,15 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import org.springframework.stereotype.Component
 
 @DiscordCommand(
-    "remove", "Entferne einen Nutzer vom Ticket", options = [
-        CommandOption("user", "Der Nutzer zum entfernen", CommandOptionType.USER, true)
+    name = "remove",
+    description = "Entferne einen Nutzer vom Ticket",
+    options = [
+        CommandOption(
+            name = "user",
+            description = "Der Nutzer zum entfernen",
+            type = CommandOptionType.USER,
+            required = true
+        )
     ]
 )
 @Component

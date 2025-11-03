@@ -16,13 +16,13 @@ class TicketMemberService(
         }
 
         ticketMemberRepository.addMember(
-            ticket,
-            user.idLong,
-            user.name,
-            user.avatarUrl,
-            addedBy.idLong,
-            addedBy.name,
-            addedBy.avatarUrl
+            ticket = ticket,
+            userId = user.idLong,
+            userName = user.name,
+            userAvatarUrl = user.avatarUrl,
+            addedById = addedBy.idLong,
+            addedByName = addedBy.name,
+            addedByAvatarUrl = addedBy.avatarUrl
         )
 
         val thread = ticket.getThreadChannel() ?: return false
@@ -36,6 +36,7 @@ class TicketMemberService(
             color = Colors.WARNING
             footer = "Hinzugefügt von ${addedBy.name}"
         }).queue()
+
         return true
     }
 
@@ -45,16 +46,17 @@ class TicketMemberService(
         }
 
         ticketMemberRepository.removeMember(
-            ticket,
-            user.idLong,
-            removedBy.name,
-            removedBy.avatarUrl
+            ticket = ticket,
+            removedById = user.idLong,
+            removedByName = removedBy.name,
+            removedByAvatarUrl = removedBy.avatarUrl
         )
+
         ticket.getThreadChannel()?.removeThreadMember(user)?.queue()
+
         return true
     }
 
-    suspend fun isMember(ticket: Ticket, userId: Long): Boolean {
-        return ticketMemberRepository.isMember(ticket, userId)
-    }
+    suspend fun isMember(ticket: Ticket, userId: Long) =
+        ticketMemberRepository.isMember(ticket, userId)
 }

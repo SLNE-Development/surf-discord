@@ -36,6 +36,7 @@ class MessageService {
 
     fun translatable(key: String, vararg args: Any?): String {
         val template = messages[key] ?: return key
+        
         return MessageFormat.format(template, *args)
     }
 }

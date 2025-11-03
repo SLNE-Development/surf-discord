@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 
+// TODO: Update this according to the command registrar
 @Component
 class ContextCommandRegistrar(
     private val jda: JDA,
@@ -24,7 +25,6 @@ class ContextCommandRegistrar(
     @PostConstruct
     fun init() {
         registerAll()
-        jda.addEventListener(this)
     }
 
     private fun registerAll() {
@@ -37,6 +37,7 @@ class ContextCommandRegistrar(
 
         beans.forEach { (_, bean) ->
             val annotation = bean::class.java.getAnnotation(DiscordContextCommand::class.java)
+
             when (annotation.type) {
                 ContextCommandType.USER -> {
                     if (bean is UserContextCommand) {

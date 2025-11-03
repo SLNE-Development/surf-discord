@@ -2,7 +2,6 @@ package dev.slne.surf.discord.interaction.modal.impl.ticket
 
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.dsl.modal
-import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.messages.translatable
@@ -17,7 +16,8 @@ import org.springframework.stereotype.Component
 
 @Component
 class UnbanTicketModal(
-    private val ticketService: TicketService
+    private val ticketService: TicketService,
+    private val buttonRegistry: ButtonRegistry
 ) : DiscordModal {
     override val id = "ticket:unban"
 
@@ -108,8 +108,8 @@ class UnbanTicketModal(
                 }//TODO: Add Whitelist Information
             }
         ).addActionRow(
-            getBean<ButtonRegistry>().get("ticket:close").button, //TODO: Add Laby.Net Profile Button
-            getBean<ButtonRegistry>().get("ticket:claim").button
+            buttonRegistry.get("ticket:close").button, //TODO: Add Laby.Net Profile Button
+            buttonRegistry.get("ticket:claim").button
         ).queue()
     }
 }

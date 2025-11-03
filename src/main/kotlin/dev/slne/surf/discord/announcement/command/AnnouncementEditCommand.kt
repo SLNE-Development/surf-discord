@@ -5,7 +5,6 @@ import dev.slne.surf.discord.command.CommandOption
 import dev.slne.surf.discord.command.CommandOptionType
 import dev.slne.surf.discord.command.DiscordCommand
 import dev.slne.surf.discord.command.SlashCommand
-import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.modal.ModalRegistry
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
@@ -14,20 +13,28 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import org.springframework.stereotype.Component
 
 @DiscordCommand(
-    "announcement-edit", "Bearbeite eine Ankündigung", options = [CommandOption(
-        "message_id", "Die ID der Ankündigungsnachricht",
-        CommandOptionType.STRING, true
-    )]
+    name = "announcement-edit",
+    description = "Bearbeite eine Ankündigung",
+    options = [
+        CommandOption(
+            name = "message_id",
+            description = "Die ID der Ankündigungsnachricht",
+            type = CommandOptionType.STRING,
+            required = true
+        )
+    ]
 )
 @Component
 class AnnouncementEditCommand(
-    private val announcementService: AnnouncementService
+    private val announcementService: AnnouncementService,
+    private val modalRegistry: ModalRegistry
 ) : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT)) {
             event.reply(translatable("no-permission")).setEphemeral(true).queue()
             return
         }
+
         val messageId = event.getOption("message_id")?.asLong ?: return
 
         if (!announcementService.isAnnouncement(messageId)) {
@@ -36,10 +43,10 @@ class AnnouncementEditCommand(
             return
         }
 
-        val announcement =
-            announcementService.getAnnouncement(messageId) ?: error("Announcement should exist")
+        val announcement = announcementService.getAnnouncement(messageId)
+            ?: error("Announcement should exist")
 
-        val modal = getBean<ModalRegistry>().get("announcement:edit").create(
+        val modal = modalRegistry.get("announcement:edit").create(
             event.hook,
             announcement.messageId.toString(),
             announcement.title,

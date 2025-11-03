@@ -39,6 +39,7 @@ class CreateAnnouncementModal(
         val content = interaction.getValue("content")?.asString ?: return
 
         announcementService.sendAnnouncement(event.user, title, content, interaction.messageChannel)
+        
         event.reply(translatable("announcement.created")).setEphemeral(true)
             .queue()
     }

@@ -2,7 +2,6 @@ package dev.slne.surf.discord.interaction.modal.impl.ticket.whitelist
 
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.dsl.modal
-import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.messages.translatable
@@ -18,7 +17,8 @@ import org.springframework.stereotype.Component
 
 @Component
 class WhitelistTicketModal(
-    private val ticketService: TicketService
+    private val ticketService: TicketService,
+    private val buttonRegistry: ButtonRegistry
 ) : DiscordModal {
     override val id = "ticket:whitelist"
     override fun create() = modal(id, translatable("ticket.whitelist.title")) {
@@ -103,11 +103,10 @@ class WhitelistTicketModal(
                 }
             }
         ).addActionRow(
-            getBean<ButtonRegistry>().get("ticket:whitelist:complete").button,
-            getBean<ButtonRegistry>().get("ticket:close").button,
-            getBean<ButtonRegistry>().get("ticket:claim").button,
-
-            ).addActionRow(
+            buttonRegistry.get("ticket:whitelist:complete").button,
+            buttonRegistry.get("ticket:close").button,
+            buttonRegistry.get("ticket:claim").button,
+        ).addActionRow(
             Button.link("https://twitch.tv/$whitelistTwitch", "Twitch"),
             Button.link("https://www.laby.net/$whitelistName", "Minecraft"),
         ).queue()

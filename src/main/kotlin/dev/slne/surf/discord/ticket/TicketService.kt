@@ -51,20 +51,20 @@ class TicketService(
         threadChannel.addThreadMember(user).queue()
 
         val ticket = Ticket(
-            random.nextLong(),
-            ObjectArraySet(),
-            userId,
-            user.name,
-            user.avatarUrl,
-            threadChannel.guild.idLong,
-            threadChannel.idLong,
-            type,
-            System.currentTimeMillis(),
-            null,
-            null,
-            null,
-            null,
-            null
+            ticketId = random.nextLong(),
+            ticketData = ObjectArraySet(),
+            authorId = userId,
+            authorName = user.name,
+            authorAvatar = user.avatarUrl,
+            guildId = threadChannel.guild.idLong,
+            threadId = threadChannel.idLong,
+            ticketType = type,
+            createdAt = System.currentTimeMillis(),
+            closedAt = null,
+            closedById = null,
+            closedByName = null,
+            closedByAvatar = null,
+            closedReason = null
         )
 
         ticketRepository.createTicket(ticket)
@@ -207,6 +207,7 @@ class TicketService(
         }
 
         markAsClosed(ticket)
+
         thread.manager.setLocked(true).queue()
         thread.manager.setArchived(true).queue()
     }
@@ -217,10 +218,6 @@ class TicketService(
         closeTicket(ticket, reason, hook.interaction.user)
     }
 
-    suspend fun markAsClosed(
-        ticket: Ticket
-    ) =
-        ticketRepository.markAsClosed(
-            ticket
-        )
+    suspend fun markAsClosed(ticket: Ticket) =
+        ticketRepository.markAsClosed(ticket)
 }

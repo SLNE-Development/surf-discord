@@ -7,6 +7,8 @@ object TicketAttachmentsTable : LongIdTable("discord_ticket_attachments") {
     val ticketId = long("ticket_id").references(TicketTable.tickedId).uniqueIndex()
     val messageId = long("message_id").uniqueIndex()
     val attachmentId = long("attachment_id").uniqueIndex()
+
+    // FIXME: 03.11.2025 17:28 not set, also this is missing a few attributes that are available via jda
     val filename = varchar("filename", 512)
     val url = varchar("url", 1024)
     val proxyUrl = varchar("proxy_url", 1024)

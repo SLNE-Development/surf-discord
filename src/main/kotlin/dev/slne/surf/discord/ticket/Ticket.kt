@@ -22,8 +22,5 @@ data class Ticket(
     var closedReason: String?,
 ) {
     fun getThreadChannel() = jda.getThreadChannelById(threadId)
-
-    fun isClosed(): Boolean {
-        return closedAt != null
-    }
+    fun isClosed() = closedAt != null
 }

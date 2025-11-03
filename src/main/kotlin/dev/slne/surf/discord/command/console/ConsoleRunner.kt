@@ -16,17 +16,21 @@ class ConsoleRunner(
 
         Thread {
             val reader = System.`in`.bufferedReader()
+
             while (true) {
                 val line = reader.readLine() ?: break
                 val parts = line.trim().split("\\s+".toRegex())
+
                 if (parts.isEmpty()) continue
-                val cmdName = parts[0]
-                val args = parts.drop(1)
-                val cmd = commands[cmdName]
-                if (cmd != null) {
-                    cmd.execute(args)
+
+                val commandName = parts[0]
+                val arguments = parts.drop(1)
+                val command = commands[commandName]
+
+                if (command != null) {
+                    command.execute(arguments)
                 } else {
-                    println("Unknown command: $cmdName. Type 'help' for commands.")
+                    println("Unknown command: $commandName. Type 'help' for commands.")
                 }
             }
         }.start()

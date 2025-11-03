@@ -12,8 +12,13 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import org.springframework.stereotype.Component
 
 @Component
-@DiscordCommand("ticketbuttons", "Sendet die Ticket Buttons in den aktuellen Kanal.")
-class PrintTicketButtonsCommand(private val buttonRegistry: ButtonRegistry) : SlashCommand {
+@DiscordCommand(
+    name = "ticketbuttons",
+    description = "Sendet die Ticket Buttons in den aktuellen Kanal."
+)
+class PrintTicketButtonsCommand(
+    private val buttonRegistry: ButtonRegistry
+) : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.COMMAND_TICKET_BUTTONS)) {
             event.reply(translatable("no-permission")).setEphemeral(true).queue()

@@ -3,9 +3,14 @@ package dev.slne.surf.discord.permission
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
 
+// TODO: Replace with database storage to be configurable at runtime and also via the panel
 private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> = mapOf(
-    1410944184231137332 to mapOf(// Arty Development Discord (Red)
-        1432660473916035133 to setOf(*DiscordPermission.entries.toTypedArray()), // Admin
+    // Arty Development Discord (Red)
+    1410944184231137332 to mapOf(
+        // Admin
+        1432660473916035133 to setOf(*DiscordPermission.entries.toTypedArray()),
+
+        // Supporter
         1432660626643222528 to setOf(
             DiscordPermission.TICKET_WHITELIST_VIEW,
             DiscordPermission.TICKET_WHITELIST_CONFIRM,
@@ -18,10 +23,14 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.COMMAND_ANNOUNCEMENT_CREATE,
             DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
             DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE
-        ) // Supporter
+        )
     ),
-    133198459531558912 to mapOf(// CastCrafter Discord
-        949704206888079490 to setOf(*DiscordPermission.entries.toTypedArray()), // Server Admin
+    // CastCrafter Discord
+    133198459531558912 to mapOf(
+        // Server Admin
+        949704206888079490 to setOf(*DiscordPermission.entries.toTypedArray()),
+
+        // Discord Moderation
         156164562499010560 to setOf(
             DiscordPermission.COMMAND_TICKET_ADD,
             DiscordPermission.COMMAND_TICKET_REMOVE,
@@ -39,8 +48,10 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.COMMAND_ANNOUNCEMENT_CREATE,
             DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
             DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE
-        ), // Discord Moderation
-        1350468732555755570L to setOf( // Management
+        ),
+
+        // Management
+        1350468732555755570L to setOf(
             DiscordPermission.COMMAND_TICKET_ADD,
             DiscordPermission.COMMAND_TICKET_REMOVE,
             DiscordPermission.TICKET_CLOSE,
@@ -57,7 +68,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE
         ),
 
-        1242929429747994664L to setOf( // Developer
+        // Developer
+        1242929429747994664L to setOf(
             DiscordPermission.COMMAND_TICKET_ADD,
             DiscordPermission.COMMAND_TICKET_REMOVE,
             DiscordPermission.TICKET_CLOSE,
@@ -66,15 +78,14 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_WHITELIST_CONFIRM,
             DiscordPermission.TICKET_SUPPORT_SURVIVAL_VIEW,
             DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
-            DiscordPermission.TICKET_REPORT_VIEW,
-            DiscordPermission.TICKET_UNBAN_VIEW,
             DiscordPermission.TICKET_BUG_VIEW,
             DiscordPermission.COMMAND_ANNOUNCEMENT_CREATE,
             DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
             DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE
         ),
 
-        1242929223593758811L to setOf( // Moderator
+        // Moderator
+        1242929223593758811L to setOf(
             DiscordPermission.COMMAND_TICKET_ADD,
             DiscordPermission.COMMAND_TICKET_REMOVE,
             DiscordPermission.TICKET_CLOSE,
@@ -87,7 +98,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_UNBAN_VIEW
         ),
 
-        1242929497041277099L to setOf( // Supporter
+        // Supporter
+        1242929497041277099L to setOf(
             DiscordPermission.COMMAND_TICKET_ADD,
             DiscordPermission.COMMAND_TICKET_REMOVE,
             DiscordPermission.TICKET_CLOSE,
@@ -97,16 +109,20 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_SUPPORT_SURVIVAL_VIEW,
             DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
             DiscordPermission.TICKET_REPORT_VIEW,
-            DiscordPermission.TICKET_UNBAN_VIEW
         ),
 
+        // Community Management
         1403107386415386736L to setOf(
             DiscordPermission.COMMAND_ANNOUNCEMENT_CREATE,
             DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
             DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE
-        ), // Community Management
-        1242929846481453107L to setOf(), // Builder
-        1001166778287792158L to setOf() // Server Team
+        ),
+
+        // Builder
+        1242929846481453107L to setOf(),
+
+        // Server Team
+        1001166778287792158L to setOf()
     )
 )
 

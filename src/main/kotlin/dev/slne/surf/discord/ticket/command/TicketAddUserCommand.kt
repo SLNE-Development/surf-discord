@@ -13,8 +13,15 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import org.springframework.stereotype.Component
 
 @DiscordCommand(
-    "add", "Füge einen Nutzer zum Ticket hinzu", options = [
-        CommandOption("user", "Der hinzuzufügende Nutzer", CommandOptionType.USER, true)
+    name = "add",
+    description = "Füge einen Nutzer zum Ticket hinzu",
+    options = [
+        CommandOption(
+            name = "user",
+            description = "Der hinzuzufügende Nutzer",
+            type = CommandOptionType.USER,
+            required = true
+        )
     ]
 )
 @Component

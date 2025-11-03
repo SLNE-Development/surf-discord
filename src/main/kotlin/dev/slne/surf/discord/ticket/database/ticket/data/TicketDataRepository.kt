@@ -12,25 +12,27 @@ import org.springframework.stereotype.Repository
 
 @Repository
 class TicketDataRepository {
-    suspend fun setData(ticketId: Long, data: TicketData) =
-        newSuspendedTransaction(Dispatchers.IO) {
-            TicketDataTable.deleteWhere {
-                TicketDataTable.ticketId eq ticketId
-            }
-
-            data.forEach { dta ->
-                TicketDataTable.insert {
-                    it[TicketDataTable.ticketId] = ticketId
-                    it[TicketDataTable.dataKey] = dta.first
-                    it[TicketDataTable.dataValue] = dta.second
-                }
-            }
+    suspend fun setData(
+        ticketId: Long,
+        data: TicketData
+    ) = newSuspendedTransaction(Dispatchers.IO) {
+        TicketDataTable.deleteWhere {
+            TicketDataTable.ticketId eq ticketId
         }
 
-    suspend fun getData(ticketId: Long): TicketData =
-        newSuspendedTransaction(Dispatchers.IO) {
-            ObjectArraySet(
-                TicketDataTable.selectAll().where(TicketDataTable.ticketId eq ticketId)
-                    .map { it[TicketDataTable.dataKey] to it[TicketDataTable.dataValue] })
+        data.forEach { dta ->
+            TicketDataTable.insert {
+                it[TicketDataTable.ticketId] = ticketId
+                it[TicketDataTable.dataKey] = dta.first
+                it[TicketDataTable.dataValue] = dta.second
+            }
         }
+    }
+
+    suspend fun getData(
+        ticketId: Long
+    ): TicketData = newSuspendedTransaction(Dispatchers.IO) {
+        TicketDataTable.selectAll().where(TicketDataTable.ticketId eq ticketId)
+            .mapTo(ObjectArraySet()) { it[TicketDataTable.dataKey] to it[TicketDataTable.dataValue] }
+    }
 }

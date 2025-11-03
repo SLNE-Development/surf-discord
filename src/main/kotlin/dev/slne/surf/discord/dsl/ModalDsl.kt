@@ -13,8 +13,7 @@ class ModalBuilder(val id: String, var title: String) {
     private val rows = mutableListOf<ActionRow>()
 
     fun field(block: TextInputBuilder.() -> Unit) {
-        val input = TextInputBuilder().apply(block).build()
-        rows.add(ActionRow.of(input))
+        rows.add(ActionRow.of(TextInputBuilder().apply(block).build()))
     }
 
     fun build(): Modal = Modal.create(id, title)
@@ -34,6 +33,7 @@ class TextInputBuilder {
 
     fun build(): TextInput {
         val builder = TextInput.create(id, label, style)
+
         placeholder?.let { builder.setPlaceholder(it) }
         lengthRange?.let {
             builder.minLength = it.first
@@ -42,11 +42,12 @@ class TextInputBuilder {
         value?.let {
             builder.value = it
         }
-        builder.setRequired(required)
+
+        builder.isRequired = required
+
         return builder.build()
     }
 }
 
-fun modal(id: String, title: String, block: ModalBuilder.() -> Unit): Modal {
-    return ModalBuilder(id, title).apply(block).build()
-}
+fun modal(id: String, title: String, block: ModalBuilder.() -> Unit) =
+    ModalBuilder(id, title).apply(block).build()
