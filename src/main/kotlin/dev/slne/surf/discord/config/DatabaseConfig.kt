@@ -26,6 +26,18 @@ class DatabaseConfiguration {
         user = botConfig.database.username,
         password = botConfig.database.password,
     ).also {
+//        transaction {
+//            SchemaUtils.create(
+//                TicketTable,
+//                TicketMemberTable,
+//                TicketDataTable,
+//                TicketStaffTable,
+//                AnnouncementTable,
+//                TicketMessagesTable,
+//                TicketAttachmentsTable
+//            )// TODO: Remove for production
+//        }
+
         logger.info("Connected to database ${botConfig.database.database} at ${botConfig.database.hostname}:${botConfig.database.port}")
     }
 }

@@ -27,7 +27,7 @@ class TicketMessageListener(
 
             event.message.attachments.forEach {
                 ticketAttachmentsRepository.addAttachment(
-                    ticket.ticketId,
+                    ticket.ticketUid,
                     event.message.idLong,
                     it.idLong,
                     it.url,
@@ -39,8 +39,9 @@ class TicketMessageListener(
 
     override fun onMessageUpdate(event: MessageUpdateEvent) {
         discordScope.launch {
-            val ticket = ticketService.getTicketByThreadId(event.channel.idLong)
-                ?: return@launch
+            if (!ticketService.isTicketExisting(event.channel.idLong)) {
+                return@launch
+            }
 
             ticketMessageRepository.logMessageEdited(event.message.idLong, event.message.contentRaw)
         }
@@ -48,25 +49,28 @@ class TicketMessageListener(
 
     override fun onMessageDelete(event: MessageDeleteEvent) {
         discordScope.launch {
-            val ticket = ticketService.getTicketByThreadId(event.channel.idLong)
-                ?: return@launch
-            ticketMessageRepository.logMessageDeleted(event.messageIdLong)
+            if (!ticketService.isTicketExisting(event.channel.idLong)) {
+                return@launch
+            }
 
+            ticketMessageRepository.logMessageDeleted(event.messageIdLong)
+            
             // TODO: Just delete this, as we dont want to store user images serverside and the attachments are gone anyway
-            ticketAttachmentsRepository.markDeleted(ticket.ticketId, event.messageIdLong)
+            ticketAttachmentsRepository.markDeleted(event.messageIdLong)
         }
     }
 
     override fun onMessageBulkDelete(event: MessageBulkDeleteEvent) {
         discordScope.launch {
-            val ticket = ticketService.getTicketByThreadId(event.channel.idLong)
-                ?: return@launch
-            
+            if (!ticketService.isTicketExisting(event.channel.idLong)) {
+                return@launch
+            }
+
             for (messageId in event.messageIds.map { it.toLong() }) {
                 ticketMessageRepository.logMessageDeleted(messageId)
-
-                // TODO: Just delete this, as we dont want to store user images serverside and the attachments are gone anyway
-                ticketAttachmentsRepository.markDeleted(ticket.ticketId, messageId)
+                
+            // TODO: Just delete this, as we dont want to store user images serverside and the attachments are gone anyway
+                ticketAttachmentsRepository.markDeleted(messageId)
             }
         }
     }

@@ -9,6 +9,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.springframework.stereotype.Repository
+import java.util.*
 
 @Repository
 class TicketRepository(
@@ -16,7 +17,7 @@ class TicketRepository(
 ) {
     suspend fun createTicket(ticket: Ticket) = newSuspendedTransaction(Dispatchers.IO) {
         TicketTable.insert {
-            it[tickedId] = ticket.ticketId
+            it[ticketUid] = ticket.ticketUid
             it[authorId] = ticket.authorId
             it[authorName] = ticket.authorName
             it[authorAvatarUrl] = ticket.authorAvatar
@@ -50,7 +51,7 @@ class TicketRepository(
     suspend fun markAsClosed(
         ticket: Ticket
     ) = newSuspendedTransaction(Dispatchers.IO) {
-        TicketTable.update({ TicketTable.tickedId eq ticket.ticketId }) {
+        TicketTable.update({ TicketTable.ticketUid eq ticket.ticketUid }) {
             it[TicketTable.closedAt] = ticket.closedAt
             it[TicketTable.closedById] = ticket.closedById
             it[TicketTable.closedByName] = ticket.closedByName

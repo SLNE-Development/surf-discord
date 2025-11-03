@@ -4,8 +4,8 @@ import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.ticket.TicketService
+import net.dv8tion.jda.api.components.textinput.TextInputStyle
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
-import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
 import org.springframework.stereotype.Component
 
 @Component
@@ -14,7 +14,7 @@ class CustomCloseReasonModal(
 ) : DiscordModal {
     override val id = "ticket:close:reason:custom"
     override fun create() = modal(id, translatable("ticket.close.reason.custom.modal.title")) {
-        field {
+        textInput {
             id = "custom-close-reason-content"
             label = translatable("ticket.close.reason.custom.modal.field.label")
             style = TextInputStyle.PARAGRAPH

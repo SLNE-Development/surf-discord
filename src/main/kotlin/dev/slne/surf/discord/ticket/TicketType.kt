@@ -5,7 +5,7 @@ import dev.slne.surf.discord.interaction.modal.ModalRegistry
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.util.mutableObjectListOf
 import it.unimi.dsi.fastutil.objects.ObjectList
-import net.dv8tion.jda.api.interactions.modals.Modal
+import net.dv8tion.jda.api.modals.Modal
 
 private val defaultReasons = mutableObjectListOf(
     TicketCloseReason.of(

@@ -20,7 +20,7 @@ class TicketLogger {
 
             field {
                 name = "Ticket ID"
-                value = ticket.ticketId.toString()
+                value = ticket.ticketUid.toString()
                 inline = true
             }
 
@@ -51,7 +51,7 @@ class TicketLogger {
 
             field {
                 name = "Ticket ID"
-                value = ticket.ticketId.toString()
+                value = ticket.ticketUid.toString()
                 inline = true
             }
 
@@ -80,7 +80,7 @@ class TicketLogger {
 
             field {
                 name = "Ticket ID"
-                value = ticket.ticketId.toString()
+                value = ticket.ticketUid.toString()
                 inline = true
             }
 
@@ -110,7 +110,7 @@ class TicketLogger {
 
             field {
                 name = "Ticket ID"
-                value = ticket.ticketId.toString()
+                value = ticket.ticketUid.toString()
                 inline = true
             }
 

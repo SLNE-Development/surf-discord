@@ -23,7 +23,7 @@ class TicketMemberRepository {
         addedByAvatarUrl: String?
     ) = newSuspendedTransaction(Dispatchers.IO) {
         TicketMemberTable.upsert {
-            it[ticketId] = ticket.ticketId
+            it[ticketUid] = ticket.ticketUid
             it[memberId] = userId
             it[memberName] = userName
             it[memberAvatarUrl] = userAvatarUrl
@@ -46,7 +46,7 @@ class TicketMemberRepository {
         removedByAvatarUrl: String?
     ) =
         newSuspendedTransaction(Dispatchers.IO) {
-            TicketMemberTable.update({ (TicketMemberTable.ticketId eq ticket.ticketId) and (TicketMemberTable.memberId eq removedById) and (TicketMemberTable.removedAt.isNull()) }) {
+            TicketMemberTable.update({ (TicketMemberTable.ticketUid eq ticket.ticketUid) and (TicketMemberTable.memberId eq removedById) and (TicketMemberTable.removedAt.isNull()) }) {
                 it[removedAt] = System.currentTimeMillis()
                 it[this.removedById] = removedById
                 it[this.removedByName] = removedByName
@@ -56,14 +56,14 @@ class TicketMemberRepository {
 
     suspend fun getMembers(ticket: Ticket): List<Long> = newSuspendedTransaction(Dispatchers.IO) {
         TicketMemberTable.selectAll()
-            .where((TicketMemberTable.ticketId eq ticket.ticketId) and (TicketMemberTable.removedAt.isNull()))
+            .where((TicketMemberTable.ticketUid eq ticket.ticketUid) and (TicketMemberTable.removedAt.isNull()))
             .map { it[TicketMemberTable.memberId] }
     }
 
     suspend fun isMember(ticket: Ticket, userId: Long): Boolean =
         newSuspendedTransaction(Dispatchers.IO) {
             TicketMemberTable.selectAll()
-                .where((TicketMemberTable.ticketId eq ticket.ticketId) and (TicketMemberTable.memberId eq userId) and (TicketMemberTable.removedAt.isNull()))
+                .where((TicketMemberTable.ticketUid eq ticket.ticketUid) and (TicketMemberTable.memberId eq userId) and (TicketMemberTable.removedAt.isNull()))
                 .count() > 0
         }
 }

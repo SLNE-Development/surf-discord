@@ -10,8 +10,9 @@ import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
 import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.replyError
+import net.dv8tion.jda.api.components.actionrow.ActionRow
+import net.dv8tion.jda.api.components.textinput.TextInputStyle
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
-import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
 import org.springframework.stereotype.Component
 
 @Component
@@ -22,14 +23,14 @@ class UnbanTicketModal(
     override val id = "ticket:unban"
 
     override fun create() = modal(id, translatable("ticket.unban.modal.title")) {
-        field {
+        textInput {
             id = "punish-id"
             label = translatable("ticket.unban.modal.field.punish_id.label")
             style = TextInputStyle.SHORT
             placeholder = translatable("ticket.unban.modal.field.punish_id.placeholder")
             required = true
         }
-        field {
+        textInput {
             id = "issue"
             label = translatable("ticket.unban.modal.field.issue.label")
             style = TextInputStyle.PARAGRAPH
@@ -38,7 +39,7 @@ class UnbanTicketModal(
             required = true
         }
 
-        field {
+        textInput {
             id = "reason"
             label = translatable("ticket.unban.modal.field.reason.label")
             style = TextInputStyle.PARAGRAPH
@@ -107,9 +108,11 @@ class UnbanTicketModal(
                     inline = true
                 }//TODO: Add Whitelist Information
             }
-        ).addActionRow(
-            buttonRegistry.get("ticket:close").button, //TODO: Add Laby.Net Profile Button
-            buttonRegistry.get("ticket:claim").button
+        ).addComponents(
+            ActionRow.of(
+                buttonRegistry.get("ticket:close").button, //TODO: Add Laby.Net Profile Button
+                buttonRegistry.get("ticket:claim").button
+            )
         ).queue()
     }
 }

@@ -4,9 +4,9 @@ import dev.slne.surf.discord.announcement.AnnouncementService
 import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.messages.translatable
+import net.dv8tion.jda.api.components.textinput.TextInputStyle
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
-import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
 import org.springframework.stereotype.Component
 
 @Component
@@ -17,7 +17,7 @@ class EditAnnouncementModal(
 
     override suspend fun create(hook: InteractionHook, vararg data: String) =
         modal(id, translatable("announcement.modal.edit.title")) {
-            field {
+            textInput {
                 id = "announcement-title"
                 label = translatable("announcement.modal.edit.field.title.label")
                 value = data[1]
@@ -25,7 +25,7 @@ class EditAnnouncementModal(
                 style = TextInputStyle.SHORT
             }
 
-            field {
+            textInput {
                 id = "announcement-content"
                 label = translatable("announcement.modal.edit.field.content.label")
                 value = data[2]
@@ -33,7 +33,7 @@ class EditAnnouncementModal(
                 style = TextInputStyle.PARAGRAPH
             }
 
-            field {
+            textInput {
                 id = "announcement-message-id"
                 label = translatable("announcement.modal.edit.field.id.label")
                 value = data[0]

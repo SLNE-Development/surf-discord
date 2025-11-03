@@ -17,12 +17,12 @@ class TicketStaffRepository {
         claimer: User
     ) = newSuspendedTransaction(Dispatchers.IO) {
         val existing = TicketStaffTable.selectAll()
-            .where(TicketStaffTable.ticketId eq ticket.ticketId)
+            .where(TicketStaffTable.ticketUid eq ticket.ticketUid)
             .firstOrNull()
 
         if (existing == null) {
             TicketStaffTable.insert {
-                it[ticketId] = ticket.ticketId
+                it[ticketUid] = ticket.ticketUid
                 it[claimedAt] = System.currentTimeMillis()
                 it[claimedBy] = claimer.idLong
                 it[claimedByName] = claimer.name
@@ -30,7 +30,7 @@ class TicketStaffRepository {
             }
         } else {
             // Nur Claim-Felder updaten
-            TicketStaffTable.update({ TicketStaffTable.ticketId eq ticket.ticketId }) {
+            TicketStaffTable.update({ TicketStaffTable.ticketUid eq ticket.ticketUid }) {
                 it[claimedAt] = System.currentTimeMillis()
                 it[claimedBy] = claimer.idLong
                 it[claimedByName] = claimer.name
@@ -45,7 +45,7 @@ class TicketStaffRepository {
         user: User
     ) = newSuspendedTransaction(Dispatchers.IO) {
         val staffEntry = TicketStaffTable.selectAll()
-            .where(TicketStaffTable.ticketId eq ticket.ticketId)
+            .where(TicketStaffTable.ticketUid eq ticket.ticketUid)
             .firstOrNull()
         
         staffEntry?.get(TicketStaffTable.claimedBy) == user.idLong
@@ -55,7 +55,7 @@ class TicketStaffRepository {
         ticket: Ticket
     ) = newSuspendedTransaction(Dispatchers.IO) {
         val staffEntry = TicketStaffTable.selectAll()
-            .where(TicketStaffTable.ticketId eq ticket.ticketId)
+            .where(TicketStaffTable.ticketUid eq ticket.ticketUid)
             .firstOrNull()
 
         staffEntry?.get(TicketStaffTable.claimedAt) != null
@@ -64,7 +64,7 @@ class TicketStaffRepository {
     suspend fun unclaim(
         ticket: Ticket
     ) = newSuspendedTransaction(Dispatchers.IO) {
-        TicketStaffTable.update(where = { TicketStaffTable.ticketId eq ticket.ticketId }) {
+        TicketStaffTable.update(where = { TicketStaffTable.ticketUid eq ticket.ticketUid }) {
             it[claimedAt] = null
             it[claimedBy] = null
             it[claimedByName] = null

@@ -1,10 +1,10 @@
 package dev.slne.surf.discord.ticket.database.ticket
 
 import dev.slne.surf.discord.ticket.TicketType
-import org.jetbrains.exposed.dao.id.LongIdTable
+import org.jetbrains.exposed.dao.id.ULongIdTable
 
-object TicketTable : LongIdTable("discord_tickets") {
-    val tickedId = long("ticket_id").uniqueIndex()
+object TicketTable : ULongIdTable("discord_tickets") {
+    val ticketUid = uuid("ticket_uid").uniqueIndex()
     val authorId = long("author_id")
     val authorName = varchar("author_name", 100)
     val authorAvatarUrl = varchar("author_avatar_url", 255).nullable()

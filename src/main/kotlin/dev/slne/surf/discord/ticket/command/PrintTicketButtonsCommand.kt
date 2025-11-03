@@ -8,6 +8,7 @@ import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.util.Colors
+import net.dv8tion.jda.api.components.actionrow.ActionRow
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
 
@@ -33,8 +34,8 @@ class PrintTicketButtonsCommand(
                 color = Colors.INFO
                 footer = translatable("ticket.command.ticketbuttons.footer")
             }
-        ).addActionRow(
-            buttonRegistry.get("ticket:open").button
+        ).addComponents(
+            ActionRow.of(buttonRegistry.get("ticket:open").button)
         ).queue {
             event.reply(translatable("ticket.command.ticketbuttons.success")).setEphemeral(true)
                 .queue()

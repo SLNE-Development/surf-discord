@@ -10,8 +10,9 @@ import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
 import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.replyError
+import net.dv8tion.jda.api.components.actionrow.ActionRow
+import net.dv8tion.jda.api.components.textinput.TextInputStyle
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
-import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
 import org.springframework.stereotype.Component
 
 @Component
@@ -22,7 +23,7 @@ class SurvivalSupportTicketModal(
     override val id = "ticket:support:survival"
 
     override fun create() = modal(id, translatable("ticket.support.survival.modal.title")) {
-        field {
+        textInput {
             id = "issue"
             label = translatable("ticket.support.survival.modal.field.issue.label")
             style = TextInputStyle.PARAGRAPH
@@ -76,9 +77,11 @@ class SurvivalSupportTicketModal(
                     inline = true
                 }//TODO: Add Whitelist Information
             }
-        ).addActionRow(
-            buttonRegistry.get("ticket:close").button, //TODO: Add Laby.Net Profile Button
-            buttonRegistry.get("ticket:claim").button
+        ).addComponents(
+            ActionRow.of(
+                buttonRegistry.get("ticket:close").button, //TODO: Add Laby.Net Profile Button
+                buttonRegistry.get("ticket:claim").button
+            )
         ).queue()
     }
 }

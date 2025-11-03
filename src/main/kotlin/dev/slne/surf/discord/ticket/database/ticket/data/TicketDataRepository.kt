@@ -9,11 +9,12 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.springframework.stereotype.Repository
+import java.util.*
 
 @Repository
 class TicketDataRepository {
     suspend fun setData(
-        ticketId: Long,
+        ticketId: UUID,
         data: TicketData
     ) = newSuspendedTransaction(Dispatchers.IO) {
         TicketDataTable.deleteWhere {
@@ -30,7 +31,7 @@ class TicketDataRepository {
     }
 
     suspend fun getData(
-        ticketId: Long
+        ticketId: UUID
     ): TicketData = newSuspendedTransaction(Dispatchers.IO) {
         TicketDataTable.selectAll().where(TicketDataTable.ticketId eq ticketId)
             .mapTo(ObjectArraySet()) { it[TicketDataTable.dataKey] to it[TicketDataTable.dataValue] }
