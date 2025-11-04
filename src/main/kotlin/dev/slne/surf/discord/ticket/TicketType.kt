@@ -59,7 +59,7 @@ enum class TicketType(
         },
         modal = modalRegistry.get("ticket:whitelist").create()
     ),
-    SUPPORT_DISCORD(
+    DISCORD_SUPPORT(
         id = "discord",
         displayName = "Discord Support Ticket",
         description = "Erstelle ein Ticket, um Support für den Discord Server zu erhalten.",
@@ -68,7 +68,7 @@ enum class TicketType(
         closeReasons = defaultReasons,
         modal = modalRegistry.get("ticket:support:discord").create()
     ),
-    SUPPORT_SURVIVAL(
+    SURVIVAL_SUPPORT(
         id = "survival",
         displayName = "Survival Support Ticket",
         description = "Erstelle ein Ticket, um Support für den Survival Server zu erhalten.",
@@ -77,7 +77,7 @@ enum class TicketType(
         closeReasons = defaultReasons,
         modal = modalRegistry.get("ticket:support:survival").create()
     ),
-    SUPPORT_EVENT(
+    EVENT_SUPPORT(
         id = "event",
         displayName = "Event Support Ticket",
         description = "Erstelle ein Ticket, um Support für Events zu erhalten.",
@@ -149,5 +149,14 @@ enum class TicketType(
             addAll(defaultReasons)
         },
         modal = modalRegistry.get("ticket:bugreport").create()
-    )
+    ),
+    SERVER_SUPPORT(
+        id = "server",
+        displayName = "Server Support Ticket",
+        description = "Erstelle ein Ticket, um Support für den Server zu erhalten.",
+        emoji = "🖥️",
+        viewPermission = DiscordPermission.TICKET_BUG_VIEW,
+        closeReasons = defaultReasons,
+        modal = modalRegistry.get("ticket:bugreport").create()
+    );
 }

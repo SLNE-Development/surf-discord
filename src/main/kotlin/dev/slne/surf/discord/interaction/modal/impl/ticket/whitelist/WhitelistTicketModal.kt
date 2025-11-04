@@ -2,10 +2,10 @@ package dev.slne.surf.discord.interaction.modal.impl.ticket.whitelist
 
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.dsl.modal
+import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.messages.translatable
-import dev.slne.surf.discord.ticket.TicketData
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
 import dev.slne.surf.discord.util.Colors
@@ -19,8 +19,10 @@ import org.springframework.stereotype.Component
 @Component
 class WhitelistTicketModal(
     private val ticketService: TicketService,
-    private val buttonRegistry: ButtonRegistry
 ) : DiscordModal {
+    private val buttonRegistry by lazy {
+        getBean<ButtonRegistry>()
+    }
     override val id = "ticket:whitelist"
     override fun create() = modal(id, translatable("ticket.whitelist.title")) {
         textInput {
@@ -53,7 +55,7 @@ class WhitelistTicketModal(
         val ticket = ticketService.createTicket(
             interaction.hook,
             TicketType.WHITELIST,
-            TicketData.of("minecraft" to whitelistName, "twitch" to whitelistTwitch)
+            mapOf("minecraft" to whitelistName, "twitch" to whitelistTwitch),
         ) ?: run {
             if (ticketService.hasOpenTicket(user.idLong, TicketType.WHITELIST)) {
                 interaction.hook.editOriginal(translatable("ticket.whitelist.already_open"))

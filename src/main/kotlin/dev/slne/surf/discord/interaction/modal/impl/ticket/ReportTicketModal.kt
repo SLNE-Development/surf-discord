@@ -2,10 +2,10 @@ package dev.slne.surf.discord.interaction.modal.impl.ticket
 
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.dsl.modal
+import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.messages.translatable
-import dev.slne.surf.discord.ticket.TicketData
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
 import dev.slne.surf.discord.util.Colors
@@ -18,8 +18,10 @@ import org.springframework.stereotype.Component
 @Component
 class ReportTicketModal(
     private val ticketService: TicketService,
-    private val buttonRegistry: ButtonRegistry
 ) : DiscordModal {
+    private val buttonRegistry by lazy {
+        getBean<ButtonRegistry>()
+    }
     override val id = "ticket:report"
 
     override fun create() = modal(id, translatable("ticket.report.modal.title")) {
@@ -54,7 +56,7 @@ class ReportTicketModal(
             ticketService.createTicket(
                 interaction.hook,
                 TicketType.REPORT,
-                TicketData.of("target" to target, "issue" to issue)
+                mapOf("issue" to issue, "target" to target),
             ) ?: run {
                 if (ticketService.hasOpenTicket(user.idLong, TicketType.REPORT)) {
                     interaction.hook.editOriginal(translatable("ticket.report.already_open"))

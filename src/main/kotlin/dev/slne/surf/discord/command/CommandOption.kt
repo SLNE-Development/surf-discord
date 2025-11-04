@@ -21,7 +21,8 @@ fun CommandOption.toOptionData(): OptionData {
         this.description,
         this.required
     )
-    data.isAutoComplete = true
+
+    data.isAutoComplete = autocomplete
 
     this.choices.forEach { choice ->
         data.addChoice(choice.name, choice.value)

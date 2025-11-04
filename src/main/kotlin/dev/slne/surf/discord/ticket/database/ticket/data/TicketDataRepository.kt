@@ -1,7 +1,6 @@
 package dev.slne.surf.discord.ticket.database.ticket.data
 
 import dev.slne.surf.discord.ticket.TicketData
-import it.unimi.dsi.fastutil.objects.ObjectArraySet
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
@@ -18,14 +17,14 @@ class TicketDataRepository {
         data: TicketData
     ) = newSuspendedTransaction(Dispatchers.IO) {
         TicketDataTable.deleteWhere {
-            TicketDataTable.ticketId eq ticketId
+            TicketDataTable.ticketUid eq ticketId
         }
 
-        data.forEach { dta ->
+        data.forEach { (key, value) ->
             TicketDataTable.insert {
-                it[TicketDataTable.ticketId] = ticketId
-                it[TicketDataTable.dataKey] = dta.first
-                it[TicketDataTable.dataValue] = dta.second
+                it[TicketDataTable.ticketUid] = ticketId
+                it[TicketDataTable.dataKey] = key
+                it[TicketDataTable.dataValue] = value
             }
         }
     }
@@ -33,7 +32,7 @@ class TicketDataRepository {
     suspend fun getData(
         ticketId: UUID
     ): TicketData = newSuspendedTransaction(Dispatchers.IO) {
-        TicketDataTable.selectAll().where(TicketDataTable.ticketId eq ticketId)
-            .mapTo(ObjectArraySet()) { it[TicketDataTable.dataKey] to it[TicketDataTable.dataValue] }
+        TicketDataTable.selectAll().where(TicketDataTable.ticketUid eq ticketId)
+            .associate { it[TicketDataTable.dataKey] to it[TicketDataTable.dataValue] }
     }
 }

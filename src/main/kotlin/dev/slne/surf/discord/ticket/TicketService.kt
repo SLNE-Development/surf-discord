@@ -9,7 +9,6 @@ import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataRepository
 import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffRepository
 import dev.slne.surf.discord.util.Colors
-import it.unimi.dsi.fastutil.objects.ObjectArraySet
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.interactions.InteractionHook
@@ -51,8 +50,8 @@ class TicketService(
         threadChannel.addThreadMember(user).queue()
 
         val ticket = Ticket(
-            ticketId = UUID.randomUUID(),
-            ticketData = ObjectArraySet(),
+            ticketUid = UUID.randomUUID(),
+            ticketData = mapOf(),
             authorId = userId,
             authorName = user.name,
             authorAvatar = user.avatarUrl,

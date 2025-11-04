@@ -132,3 +132,4 @@ gradle-app.setting
 messages/**
 
 .kotlin/**/**
+config.yml

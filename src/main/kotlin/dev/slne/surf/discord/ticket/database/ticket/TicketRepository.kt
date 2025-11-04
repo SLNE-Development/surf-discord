@@ -22,7 +22,7 @@ class TicketRepository(
             it[authorName] = ticket.authorName
             it[authorAvatarUrl] = ticket.authorAvatar
             it[guildId] = ticket.guildId
-            it[threadId] = ticket.threadId
+            ticket.threadId?.let { id -> it[threadId] = id }
             it[ticketType] = ticket.ticketType
             it[createdAt] = ticket.createdAt
             it[closedAt] = ticket.closedAt
@@ -60,8 +60,8 @@ class TicketRepository(
         }
     }
 
-    suspend fun getTicketById(ticketId: Long): Ticket? = newSuspendedTransaction(Dispatchers.IO) {
-        TicketTable.selectAll().where(TicketTable.tickedId eq ticketId)
+    suspend fun getTicketById(ticketId: UUID): Ticket? = newSuspendedTransaction(Dispatchers.IO) {
+        TicketTable.selectAll().where(TicketTable.ticketUid eq ticketId)
             .firstNotNullOfOrNull { it.toTicket() }
     }
 
@@ -73,11 +73,11 @@ class TicketRepository(
         }
 
     private suspend fun ResultRow.toTicket(): Ticket {
-        val id = this[TicketTable.tickedId]
+        val id = this[TicketTable.ticketUid]
         val data = ticketDataRepository.getData(id)
 
         return Ticket(
-            ticketId = id,
+            ticketUid = id,
             ticketData = data,
             authorId = this[TicketTable.authorId],
             authorName = this[TicketTable.authorName],

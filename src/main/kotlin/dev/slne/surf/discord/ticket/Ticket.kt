@@ -1,10 +1,9 @@
 package dev.slne.surf.discord.ticket
 
 import dev.slne.surf.discord.jda
-import it.unimi.dsi.fastutil.objects.ObjectSet
 import java.util.*
 
-typealias TicketData = ObjectSet<Pair<String, String>>
+typealias TicketData = Map<String, String>
 
 data class Ticket(
     val ticketUid: UUID,
@@ -13,7 +12,7 @@ data class Ticket(
     val authorName: String,
     val authorAvatar: String?,
     val guildId: Long,
-    val threadId: Long,
+    val threadId: Long?,
     val ticketType: TicketType,
     val createdAt: Long,
     var closedAt: Long?,
@@ -22,6 +21,6 @@ data class Ticket(
     var closedByAvatar: String?,
     var closedReason: String?,
 ) {
-    fun getThreadChannel() = jda.getThreadChannelById(threadId)
+    fun getThreadChannel() = threadId?.let { jda.getThreadChannelById(it) }
     fun isClosed() = closedAt != null
 }

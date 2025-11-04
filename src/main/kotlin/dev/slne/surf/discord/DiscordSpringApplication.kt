@@ -3,10 +3,10 @@ package dev.slne.surf.discord
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.springframework.beans.factory.getBean
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.web.reactive.config.EnableWebFlux
 
 lateinit var dataContext: ConfigurableApplicationContext
 
@@ -20,7 +20,7 @@ fun main(args: Array<String>) {
 
 @SpringBootApplication
 @EnableCaching
-@EntityScan
+@EnableWebFlux
 class DiscordSpringApplication
 
 val logger = ComponentLogger.logger("surf-discord")
