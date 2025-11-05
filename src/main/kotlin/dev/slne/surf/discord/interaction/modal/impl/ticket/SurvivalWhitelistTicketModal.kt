@@ -33,5 +33,11 @@ class SurvivalWhitelistTicketModal(
         interaction.reply(translatable("ticket.whitelist.survival.processing")).setEphemeral(true)
             .queue()
 
+        //TODO: Check whitelist
+        //TODO: Create Whitelist
+
+        //TODO: If successful -> send dm
+
+
     }
 }
