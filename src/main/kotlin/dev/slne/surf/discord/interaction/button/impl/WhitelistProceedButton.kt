@@ -1,6 +1,5 @@
 package dev.slne.surf.discord.interaction.button.impl
 
-import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.DiscordButton
 import dev.slne.surf.discord.interaction.modal.ModalRegistry
 import dev.slne.surf.discord.messages.translatable
@@ -13,7 +12,9 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import org.springframework.stereotype.Component
 
 @Component
-class WhitelistProceedButton : DiscordButton {
+class WhitelistProceedButton(
+    private val modalRegistry: ModalRegistry
+) : DiscordButton {
     override val id = "ticket:whitelist:complete"
     override val button by lazy {
         Button.of(
@@ -30,7 +31,7 @@ class WhitelistProceedButton : DiscordButton {
             return
         }
 
-        val modal = getBean<ModalRegistry>().get("ticket:whitelist:proceed").create(event.hook)
+        val modal = modalRegistry.get("ticket:whitelist:proceed").create(event.hook)
         event.replyModal(modal).queue()
     }
 }

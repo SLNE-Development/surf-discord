@@ -9,7 +9,6 @@ import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataRepository
 import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffRepository
 import dev.slne.surf.discord.util.Colors
-import it.unimi.dsi.fastutil.objects.ObjectArraySet
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.interactions.InteractionHook
@@ -51,20 +50,20 @@ class TicketService(
         threadChannel.addThreadMember(user).queue()
 
         val ticket = Ticket(
-            UUID.randomUUID(),
-            ObjectArraySet(),
-            userId,
-            user.name,
-            user.avatarUrl,
-            threadChannel.guild.idLong,
-            threadChannel.idLong,
-            type,
-            System.currentTimeMillis(),
-            null,
-            null,
-            null,
-            null,
-            null
+            ticketUid = UUID.randomUUID(),
+            ticketData = mapOf(),
+            authorId = userId,
+            authorName = user.name,
+            authorAvatar = user.avatarUrl,
+            guildId = threadChannel.guild.idLong,
+            threadId = threadChannel.idLong,
+            ticketType = type,
+            createdAt = System.currentTimeMillis(),
+            closedAt = null,
+            closedById = null,
+            closedByName = null,
+            closedByAvatar = null,
+            closedReason = null
         )
 
         ticketRepository.createTicket(ticket)
@@ -222,10 +221,6 @@ class TicketService(
         closeTicket(ticket, reason, hook.interaction.user)
     }
 
-    suspend fun markAsClosed(
-        ticket: Ticket
-    ) =
-        ticketRepository.markAsClosed(
-            ticket
-        )
+    suspend fun markAsClosed(ticket: Ticket) =
+        ticketRepository.markAsClosed(ticket)
 }

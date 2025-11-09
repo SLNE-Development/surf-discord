@@ -13,20 +13,27 @@ import org.springframework.stereotype.Component
 
 @Component
 @DiscordCommand(
-    "announcement-delete", "Lösche eine Ankündigung", options = [CommandOption(
-        "announcement_id", "Die ID der Ankündigung, die gelöscht werden soll",
-        CommandOptionType.STRING, true
-    )]
+    name = "announcement-delete",
+    description = "Lösche eine Ankündigung",
+    options = [
+        CommandOption(
+            name = "announcement_id",
+            description = "Die ID der Ankündigung, die gelöscht werden soll",
+            type = CommandOptionType.STRING,
+            required = true
+        )
+    ]
 )
-class AnnouncementDeleteCommand(private val announcementService: AnnouncementService) :
-    SlashCommand {
+class AnnouncementDeleteCommand(
+    private val announcementService: AnnouncementService
+) : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE)) {
             event.reply(translatable("no-permission")).setEphemeral(true).queue()
             return
         }
-        val announcementMessageId = event.getOption("announcement_id")?.asString?.toLong() ?: return
 
+        val announcementMessageId = event.getOption("announcement_id")?.asString?.toLong() ?: return
         val announcement = announcementService.getAnnouncement(announcementMessageId)
 
         if (announcement == null) {
@@ -35,12 +42,13 @@ class AnnouncementDeleteCommand(private val announcementService: AnnouncementSer
                     "announcement.not-found",
                     announcementMessageId.toString()
                 )
-            )
-                .setEphemeral(true).queue()
+            ).setEphemeral(true).queue()
+
             return
         }
 
         announcementService.deleteAnnouncement(announcement)
+        
         event.reply(translatable("announcement.deleted", announcementMessageId.toString()))
             .setEphemeral(true).queue()
     }

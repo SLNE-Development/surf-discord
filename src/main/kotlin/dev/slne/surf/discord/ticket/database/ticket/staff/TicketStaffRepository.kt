@@ -44,18 +44,20 @@ class TicketStaffRepository {
         ticket: Ticket,
         user: User
     ) = newSuspendedTransaction(Dispatchers.IO) {
-        val staffEntry =
-            TicketStaffTable.selectAll().where(TicketStaffTable.ticketUid eq ticket.ticketUid)
-                .firstOrNull()
+        val staffEntry = TicketStaffTable.selectAll()
+            .where(TicketStaffTable.ticketUid eq ticket.ticketUid)
+            .firstOrNull()
+        
         staffEntry?.get(TicketStaffTable.claimedBy) == user.idLong
     }
 
     suspend fun isClaimed(
         ticket: Ticket
     ) = newSuspendedTransaction(Dispatchers.IO) {
-        val staffEntry =
-            TicketStaffTable.selectAll().where(TicketStaffTable.ticketUid eq ticket.ticketUid)
-                .firstOrNull()
+        val staffEntry = TicketStaffTable.selectAll()
+            .where(TicketStaffTable.ticketUid eq ticket.ticketUid)
+            .firstOrNull()
+
         staffEntry?.get(TicketStaffTable.claimedAt) != null
     }
 

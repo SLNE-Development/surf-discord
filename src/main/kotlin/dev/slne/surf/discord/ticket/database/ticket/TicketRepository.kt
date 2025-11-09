@@ -4,13 +4,10 @@ import dev.slne.surf.discord.ticket.Ticket
 import dev.slne.surf.discord.ticket.TicketType
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataRepository
 import kotlinx.coroutines.Dispatchers
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import org.jetbrains.exposed.sql.update
 import org.springframework.stereotype.Repository
 import java.util.*
 
@@ -25,7 +22,7 @@ class TicketRepository(
             it[authorName] = ticket.authorName
             it[authorAvatarUrl] = ticket.authorAvatar
             it[guildId] = ticket.guildId
-            it[threadId] = ticket.threadId
+            ticket.threadId?.let { id -> it[threadId] = id }
             it[ticketType] = ticket.ticketType
             it[createdAt] = ticket.createdAt
             it[closedAt] = ticket.closedAt
@@ -48,26 +45,7 @@ class TicketRepository(
     suspend fun getTicketByThreadId(threadId: Long): Ticket? =
         newSuspendedTransaction(Dispatchers.IO) {
             TicketTable.selectAll().where(TicketTable.threadId eq threadId)
-                .firstNotNullOfOrNull { row ->
-                    val id = row[TicketTable.ticketUid]
-                    val data = ticketDataRepository.getData(id)
-                    Ticket(
-                        ticketUid = id,
-                        ticketData = data,
-                        authorId = row[TicketTable.authorId],
-                        authorName = row[TicketTable.authorName],
-                        authorAvatar = row[TicketTable.authorAvatarUrl],
-                        guildId = row[TicketTable.guildId],
-                        threadId = row[TicketTable.threadId],
-                        ticketType = row[TicketTable.ticketType],
-                        createdAt = row[TicketTable.createdAt],
-                        closedAt = row[TicketTable.closedAt],
-                        closedById = row[TicketTable.closedById],
-                        closedByName = row[TicketTable.closedByName],
-                        closedByAvatar = row[TicketTable.closedByAvatarUrl],
-                        closedReason = row[TicketTable.closedReason]
-                    )
-                }
+                .firstNotNullOfOrNull { it.toTicket() }
         }
 
     suspend fun markAsClosed(
@@ -82,53 +60,37 @@ class TicketRepository(
         }
     }
 
-    suspend fun getTicketById(ticketUid: UUID): Ticket? = newSuspendedTransaction(Dispatchers.IO) {
-        TicketTable.selectAll().where(TicketTable.ticketUid eq ticketUid)
-            .firstNotNullOfOrNull { row ->
-                val id = row[TicketTable.ticketUid]
-                val data = ticketDataRepository.getData(id)
-                Ticket(
-                    ticketUid = id,
-                    ticketData = data,
-                    authorId = row[TicketTable.authorId],
-                    authorName = row[TicketTable.authorName],
-                    authorAvatar = row[TicketTable.authorAvatarUrl],
-                    guildId = row[TicketTable.guildId],
-                    threadId = row[TicketTable.threadId],
-                    ticketType = row[TicketTable.ticketType],
-                    createdAt = row[TicketTable.createdAt],
-                    closedAt = row[TicketTable.closedAt],
-                    closedById = row[TicketTable.closedById],
-                    closedByName = row[TicketTable.closedByName],
-                    closedByAvatar = row[TicketTable.closedByAvatarUrl],
-                    closedReason = row[TicketTable.closedReason]
-                )
-            }
+    suspend fun getTicketById(ticketId: UUID): Ticket? = newSuspendedTransaction(Dispatchers.IO) {
+        TicketTable.selectAll().where(TicketTable.ticketUid eq ticketId)
+            .firstNotNullOfOrNull { it.toTicket() }
     }
 
     suspend fun getTicket(authorId: Long, type: TicketType) =
         newSuspendedTransaction(Dispatchers.IO) {
             TicketTable.selectAll()
                 .where((TicketTable.authorId eq authorId) and (TicketTable.ticketType eq type))
-                .firstNotNullOfOrNull { row ->
-                    val id = row[TicketTable.ticketUid]
-                    val data = ticketDataRepository.getData(id)
-                    Ticket(
-                        ticketUid = id,
-                        ticketData = data,
-                        authorId = row[TicketTable.authorId],
-                        authorName = row[TicketTable.authorName],
-                        authorAvatar = row[TicketTable.authorAvatarUrl],
-                        guildId = row[TicketTable.guildId],
-                        threadId = row[TicketTable.threadId],
-                        ticketType = row[TicketTable.ticketType],
-                        createdAt = row[TicketTable.createdAt],
-                        closedAt = row[TicketTable.closedAt],
-                        closedById = row[TicketTable.closedById],
-                        closedByName = row[TicketTable.closedByName],
-                        closedByAvatar = row[TicketTable.closedByAvatarUrl],
-                        closedReason = row[TicketTable.closedReason]
-                    )
-                }
+                .firstNotNullOfOrNull { it.toTicket() }
         }
+
+    private suspend fun ResultRow.toTicket(): Ticket {
+        val id = this[TicketTable.ticketUid]
+        val data = ticketDataRepository.getData(id)
+
+        return Ticket(
+            ticketUid = id,
+            ticketData = data,
+            authorId = this[TicketTable.authorId],
+            authorName = this[TicketTable.authorName],
+            authorAvatar = this[TicketTable.authorAvatarUrl],
+            guildId = this[TicketTable.guildId],
+            threadId = this[TicketTable.threadId],
+            ticketType = this[TicketTable.ticketType],
+            createdAt = this[TicketTable.createdAt],
+            closedAt = this[TicketTable.closedAt],
+            closedById = this[TicketTable.closedById],
+            closedByName = this[TicketTable.closedByName],
+            closedByAvatar = this[TicketTable.closedByAvatarUrl],
+            closedReason = this[TicketTable.closedReason]
+        )
+    }
 }

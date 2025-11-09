@@ -14,8 +14,12 @@ import org.springframework.stereotype.Component
 
 @Component
 class TicketCloseReasonSelectMenu(
-    private val ticketService: TicketService
+    private val ticketService: TicketService,
 ) : DiscordSelectMenu {
+    private val modalRegistry by lazy {
+        getBean<ModalRegistry>()
+    }
+
     override val id = "ticket:close:reason"
     override suspend fun create(hook: InteractionHook): SelectMenu {
         val ticket = hook.asTicketOrThrow()
@@ -43,7 +47,7 @@ class TicketCloseReasonSelectMenu(
 
         if (selected.value == "custom") {
             event.replyModal(
-                getBean<ModalRegistry>().get("ticket:close:reason:custom").create()
+                modalRegistry.get("ticket:close:reason:custom").create()
             ).queue()
         } else {
             event.reply(translatable("ticket.closing")).setEphemeral(true).queue()

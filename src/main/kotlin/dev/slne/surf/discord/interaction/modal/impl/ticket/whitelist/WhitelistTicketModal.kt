@@ -6,7 +6,6 @@ import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.messages.translatable
-import dev.slne.surf.discord.ticket.TicketData
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
 import dev.slne.surf.discord.util.Colors
@@ -19,8 +18,11 @@ import org.springframework.stereotype.Component
 
 @Component
 class WhitelistTicketModal(
-    private val ticketService: TicketService
+    private val ticketService: TicketService,
 ) : DiscordModal {
+    private val buttonRegistry by lazy {
+        getBean<ButtonRegistry>()
+    }
     override val id = "ticket:whitelist"
     override fun create() = modal(id, translatable("ticket.whitelist.title")) {
         textInput {
@@ -53,7 +55,7 @@ class WhitelistTicketModal(
         val ticket = ticketService.createTicket(
             interaction.hook,
             TicketType.WHITELIST,
-            TicketData.of("minecraft" to whitelistName, "twitch" to whitelistTwitch)
+            mapOf("minecraft" to whitelistName, "twitch" to whitelistTwitch),
         ) ?: run {
             if (ticketService.hasOpenTicket(user.idLong, TicketType.WHITELIST)) {
                 interaction.hook.editOriginal(translatable("ticket.whitelist.already_open"))
@@ -105,9 +107,9 @@ class WhitelistTicketModal(
             }
         ).addComponents(
             ActionRow.of(
-                getBean<ButtonRegistry>().get("ticket:whitelist:complete").button,
-                getBean<ButtonRegistry>().get("ticket:close").button,
-                getBean<ButtonRegistry>().get("ticket:claim").button
+                buttonRegistry.get("ticket:whitelist:complete").button,
+                buttonRegistry.get("ticket:close").button,
+                buttonRegistry.get("ticket:claim").button
             ), ActionRow.of(
                 Button.link("https://twitch.tv/$whitelistTwitch", "Twitch"),
                 Button.link("https://www.laby.net/$whitelistName", "Minecraft"),

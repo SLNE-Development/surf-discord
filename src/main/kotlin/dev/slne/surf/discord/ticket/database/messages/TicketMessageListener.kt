@@ -1,9 +1,7 @@
 package dev.slne.surf.discord.ticket.database.messages
 
-import dev.slne.surf.discord.jda
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.database.messages.attachments.TicketAttachmentsRepository
-import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent
@@ -20,15 +18,13 @@ class TicketMessageListener(
     private val ticketMessageRepository: TicketMessageRepository,
     private val ticketAttachmentsRepository: TicketAttachmentsRepository
 ) : ListenerAdapter() {
-    @PostConstruct
-    fun init() {
-        jda.addEventListener(this)
-    }
-
     override fun onMessageReceived(event: MessageReceivedEvent) {
         discordScope.launch {
-            val ticket = ticketService.getTicketByThreadId(event.channel.idLong) ?: return@launch
+            val ticket = ticketService.getTicketByThreadId(event.channel.idLong)
+                ?: return@launch
+
             ticketMessageRepository.logMessage(ticket, event.message)
+
             event.message.attachments.forEach {
                 ticketAttachmentsRepository.addAttachment(
                     ticket.ticketUid,
@@ -58,7 +54,7 @@ class TicketMessageListener(
             }
 
             ticketMessageRepository.logMessageDeleted(event.messageIdLong)
-            ticketAttachmentsRepository.markDeleted(event.messageIdLong)
+            ticketAttachmentsRepository.delete(event.messageIdLong)
         }
     }
 
@@ -70,7 +66,7 @@ class TicketMessageListener(
 
             for (messageId in event.messageIds.map { it.toLong() }) {
                 ticketMessageRepository.logMessageDeleted(messageId)
-                ticketAttachmentsRepository.markDeleted(messageId)
+                ticketAttachmentsRepository.delete(messageId)
             }
         }
     }

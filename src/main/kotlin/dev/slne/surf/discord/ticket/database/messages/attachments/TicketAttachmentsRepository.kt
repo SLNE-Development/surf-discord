@@ -1,9 +1,10 @@
 package dev.slne.surf.discord.ticket.database.messages.attachments
 
 import kotlinx.coroutines.Dispatchers
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import org.jetbrains.exposed.sql.update
 import org.springframework.stereotype.Repository
 import java.util.*
 
@@ -26,11 +27,11 @@ class TicketAttachmentsRepository {
         }
     }
 
-    suspend fun markDeleted(
+    suspend fun delete(
         messageId: Long
     ) = newSuspendedTransaction(Dispatchers.IO) {
-        TicketAttachmentsTable.update({ TicketAttachmentsTable.messageId eq messageId }) {
-            it[this.deletedAt] = System.currentTimeMillis()
+        TicketAttachmentsTable.deleteWhere {
+            TicketAttachmentsTable.messageId eq messageId
         }
     }
 }

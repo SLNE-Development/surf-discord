@@ -6,7 +6,6 @@ import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.messages.translatable
-import dev.slne.surf.discord.ticket.TicketData
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
 import dev.slne.surf.discord.util.Colors
@@ -18,8 +17,11 @@ import org.springframework.stereotype.Component
 
 @Component
 class SurvivalSupportTicketModal(
-    private val ticketService: TicketService
+    private val ticketService: TicketService,
 ) : DiscordModal {
+    private val buttonRegistry by lazy {
+        getBean<ButtonRegistry>()
+    }
     override val id = "ticket:support:survival"
 
     override fun create() = modal(id, translatable("ticket.support.survival.modal.title")) {
@@ -44,10 +46,10 @@ class SurvivalSupportTicketModal(
         val ticket =
             ticketService.createTicket(
                 interaction.hook,
-                TicketType.SUPPORT_SURVIVAL,
-                TicketData.of("issue" to issue)
+                TicketType.SURVIVAL_SUPPORT,
+                mapOf("issue" to issue)
             ) ?: run {
-                if (ticketService.hasOpenTicket(user.idLong, TicketType.SUPPORT_SURVIVAL)) {
+                if (ticketService.hasOpenTicket(user.idLong, TicketType.SURVIVAL_SUPPORT)) {
                     interaction.hook.editOriginal(translatable("ticket.support.survival.already_open"))
                         .queue()
                 } else {
@@ -79,8 +81,8 @@ class SurvivalSupportTicketModal(
             }
         ).addComponents(
             ActionRow.of(
-                getBean<ButtonRegistry>().get("ticket:close").button, //TODO: Add Laby.Net Profile Button
-                getBean<ButtonRegistry>().get("ticket:claim").button
+                buttonRegistry.get("ticket:close").button, //TODO: Add Laby.Net Profile Button
+                buttonRegistry.get("ticket:claim").button
             )
         ).queue()
     }

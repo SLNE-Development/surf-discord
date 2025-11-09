@@ -52,15 +52,14 @@ class FaqCommand : SlashCommand {
 
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         val interaction = event.interaction
-
         val question = interaction.getOption("question")?.asString ?: return
         val user = interaction.getOption("user")?.asUser
-
         val faq = Faq.entries.find { it.id == question }
 
         if (faq == null) {
             event.reply(translatable("faq.not-found", question))
                 .setEphemeral(true).queue()
+
             return
         }
 
@@ -79,6 +78,7 @@ class FaqCommand : SlashCommand {
                 description = faq.answer
                 color = Colors.SUCCESS
             }).queue()
+
             return
         }
 

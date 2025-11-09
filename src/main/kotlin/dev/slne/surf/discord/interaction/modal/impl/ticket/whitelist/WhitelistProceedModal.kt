@@ -20,9 +20,9 @@ class WhitelistProceedModal(
     override suspend fun create(hook: InteractionHook, vararg data: String): Modal {
         val ticket = hook.asTicketOrThrow()
 
-        val minecraft = ticket.ticketData.find { it.first == "minecraft" }?.second
+        val minecraft = ticket.ticketData["minecraft"]
             ?: error("Minecraft username missing for ticket: ${ticket.ticketUid}")
-        val twitch = ticket.ticketData.find { it.first == "twitch" }?.second
+        val twitch = ticket.ticketData["twitch"]
             ?: error("Twitch username missing for ticket: ${ticket.ticketUid}")
 
         return modal(id, translatable("ticket.whitelist.proceed.modal.title")) {

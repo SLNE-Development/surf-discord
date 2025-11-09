@@ -15,6 +15,7 @@ class ModalBuilder(val id: String, var title: String) {
 
     fun textInput(block: TextInputBuilder.() -> Unit) {
         val input = TextInputBuilder().apply(block)
+        
         rows.add(Label.of(input.label, input.build()))
     }
 
@@ -38,6 +39,7 @@ class TextInputBuilder {
 
     fun build(): TextInput {
         val builder = TextInput.create(id, style)
+        
         placeholder?.let { builder.setPlaceholder(it) }
         lengthRange?.let {
             builder.minLength = it.first
@@ -46,11 +48,12 @@ class TextInputBuilder {
         value?.let {
             builder.value = it
         }
+        
         builder.isRequired = required
+      
         return builder.build()
     }
 }
 
-fun modal(id: String, title: String, block: ModalBuilder.() -> Unit): Modal {
-    return ModalBuilder(id, title).apply(block).build()
-}
+fun modal(id: String, title: String, block: ModalBuilder.() -> Unit) =
+    ModalBuilder(id, title).apply(block).build()

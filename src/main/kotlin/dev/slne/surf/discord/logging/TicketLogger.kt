@@ -36,7 +36,7 @@ class TicketLogger {
                 inline = true
             }
 
-            footer = "Arty Support | 2025"
+            // TODO: Either replace with actual year or just replace with nothing
         }).queue()
     }
 
@@ -144,8 +144,6 @@ class TicketLogger {
                 value = ticket.closedReason ?: "Kein Grund angegeben"
                 inline = true
             }
-
-            footer = "Arty Support | 2025"
         }).queue()
     }
 }

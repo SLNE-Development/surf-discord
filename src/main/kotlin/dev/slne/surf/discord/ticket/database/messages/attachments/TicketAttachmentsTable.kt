@@ -7,7 +7,7 @@ object TicketAttachmentsTable : LongIdTable("discord_ticket_attachments") {
     val ticketUid = uuid("ticket_uid").references(TicketTable.ticketUid).uniqueIndex()
     val messageId = long("message_id").uniqueIndex()
     val attachmentId = long("attachment_id").uniqueIndex()
-    val filename = varchar("filename", 512)
+
     val url = varchar("url", 1024)
     val proxyUrl = varchar("proxy_url", 1024)
     val deletedAt = long("deleted_at").nullable()

@@ -30,6 +30,10 @@ private val defaultReasons = mutableObjectListOf(
     )
 )
 
+private val modalRegistry by lazy {
+    getBean<ModalRegistry>()
+}
+
 enum class TicketType(
     val id: String,
     val displayName: String,
@@ -40,110 +44,119 @@ enum class TicketType(
     val modal: Modal? = null
 ) {
     WHITELIST(
-        "whitelist",
-        "Whitelist Ticket",
-        "Erstelle ein Ticket, um auf dem Survival Server gewhitelisted zu werden.",
-        "📜",
-        DiscordPermission.TICKET_WHITELIST_VIEW,
-        mutableObjectListOf(
+        id = "whitelist",
+        displayName = "Whitelist Ticket",
+        description = "Erstelle ein Ticket, um auf dem Survival Server gewhitelisted zu werden.",
+        emoji = "📜",
+        viewPermission = DiscordPermission.TICKET_WHITELIST_VIEW,
+        closeReasons = mutableObjectListOf(
             TicketCloseReason.of(
-                "Anforderungen nicht erfüllt",
-                "Du erfüllst nicht alle Anforderungen für eine Whitelist."
+                displayName = "Anforderungen nicht erfüllt",
+                description = "Du erfüllst nicht alle Anforderungen für eine Whitelist."
             )
         ).apply {
             addAll(defaultReasons)
         },
-        getBean<ModalRegistry>().get("ticket:whitelist").create()
+        modal = modalRegistry.get("ticket:whitelist").create()
     ),
-    SUPPORT_DISCORD(
-        "discord",
-        "Discord Support Ticket",
-        "Erstelle ein Ticket, um Support für den Discord Server zu erhalten.",
-        "💬",
-        DiscordPermission.TICKET_SUPPORT_DISCORD_VIEW,
-        defaultReasons,
-        getBean<ModalRegistry>().get("ticket:support:discord").create()
+    DISCORD_SUPPORT(
+        id = "discord",
+        displayName = "Discord Support Ticket",
+        description = "Erstelle ein Ticket, um Support für den Discord Server zu erhalten.",
+        emoji = "💬",
+        viewPermission = DiscordPermission.TICKET_SUPPORT_DISCORD_VIEW,
+        closeReasons = defaultReasons,
+        modal = modalRegistry.get("ticket:support:discord").create()
     ),
-    SUPPORT_SURVIVAL(
-        "survival",
-        "Survival Support Ticket",
-        "Erstelle ein Ticket, um Support für den Survival Server zu erhalten.",
-        "🛠️",
-        DiscordPermission.TICKET_SUPPORT_SURVIVAL_VIEW,
-        defaultReasons,
-        getBean<ModalRegistry>().get("ticket:support:survival").create()
+    SURVIVAL_SUPPORT(
+        id = "survival",
+        displayName = "Survival Support Ticket",
+        description = "Erstelle ein Ticket, um Support für den Survival Server zu erhalten.",
+        emoji = "🛠️",
+        viewPermission = DiscordPermission.TICKET_SUPPORT_SURVIVAL_VIEW,
+        closeReasons = defaultReasons,
+        modal = modalRegistry.get("ticket:support:survival").create()
     ),
-    SUPPORT_EVENT(
-        "event",
-        "Event Support Ticket",
-        "Erstelle ein Ticket, um Support für Events zu erhalten.",
-        "🎉",
-        DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
-        defaultReasons,
-        getBean<ModalRegistry>().get("ticket:support:event").create()
+    EVENT_SUPPORT(
+        id = "event",
+        displayName = "Event Support Ticket",
+        description = "Erstelle ein Ticket, um Support für Events zu erhalten.",
+        emoji = "🎉",
+        viewPermission = DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
+        closeReasons = defaultReasons,
+        modal = modalRegistry.get("ticket:support:event").create()
     ),
     REPORT(
-        "report",
-        "Report Ticket",
-        "Erstelle ein Ticket, um einen Spieler zu melden.",
-        "🚨",
-        DiscordPermission.TICKET_REPORT_VIEW,
-        mutableObjectListOf(
+        id = "report",
+        displayName = "Report Ticket",
+        description = "Erstelle ein Ticket, um einen Spieler zu melden.",
+        emoji = "🚨",
+        viewPermission = DiscordPermission.TICKET_REPORT_VIEW,
+        closeReasons = mutableObjectListOf(
             TicketCloseReason.of(
-                "Fall abgeschlossen",
-                "Der gemeldete Fall wurde abgeschlossen."
+                displayName = "Fall abgeschlossen",
+                description = "Der gemeldete Fall wurde abgeschlossen."
             )
         ).apply {
             addAll(defaultReasons)
         },
-        getBean<ModalRegistry>().get("ticket:report").create()
+        modal = modalRegistry.get("ticket:report").create()
     ),
     UNBAN(
-        "unban",
-        "Unban Antrag",
-        "Erstelle ein Ticket, um einen Unban Antrag zu stellen.",
-        "🔨",
-        DiscordPermission.TICKET_UNBAN_VIEW,
-        mutableObjectListOf(
+        id = "unban",
+        displayName = "Unban Antrag",
+        description = "Erstelle ein Ticket, um einen Unban Antrag zu stellen.",
+        emoji = "🔨",
+        viewPermission = DiscordPermission.TICKET_UNBAN_VIEW,
+        closeReasons = mutableObjectListOf(
             TicketCloseReason.of(
-                "Antrag abgelehnt",
-                "Dein Unban Antrag wurde abgelehnt."
+                displayName = "Antrag abgelehnt",
+                description = "Dein Unban Antrag wurde abgelehnt."
             ),
             TicketCloseReason.of(
-                "Ban aufgehoben",
-                "Du wurdest entbannt. Bitte mache dich erneut mit unserem Regelwerk vertraut."
+                displayName = "Ban aufgehoben",
+                description = "Du wurdest entbannt. Bitte mache dich erneut mit unserem Regelwerk vertraut."
             ),
             TicketCloseReason.of(
-                "Ban verkürzt",
-                "Dein Ban wurde verkürzt."
+                displayName = "Ban verkürzt",
+                description = "Dein Ban wurde verkürzt."
             )
         ).apply {
             addAll(defaultReasons)
         },
-        getBean<ModalRegistry>().get("ticket:unban").create()
+        modal = modalRegistry.get("ticket:unban").create()
     ),
     BUGREPORT(
-        "bugreport",
-        "Bugreport Ticket",
-        "Erstelle ein Ticket, um einen Bug zu melden.",
-        "🐛",
-        DiscordPermission.TICKET_BUG_VIEW,
-        mutableObjectListOf(
+        id = "bugreport",
+        displayName = "Bugreport Ticket",
+        description = "Erstelle ein Ticket, um einen Bug zu melden.",
+        emoji = "🐛",
+        viewPermission = DiscordPermission.TICKET_BUG_VIEW,
+        closeReasons = mutableObjectListOf(
             TicketCloseReason.of(
-                "Bug bestätigt",
-                "Der gemeldete Bug wurde bestätigt und an das Entwicklungsteam weitergeleitet."
+                displayName = "Bug bestätigt",
+                description = "Der gemeldete Bug wurde bestätigt und an das Entwicklungsteam weitergeleitet."
             ),
             TicketCloseReason.of(
-                "Bug nicht reproduzierbar",
-                "Der Fehler konnte nicht reproduziert werden."
+                displayName = "Bug nicht reproduzierbar",
+                description = "Der Fehler konnte nicht reproduziert werden."
             ),
             TicketCloseReason.of(
-                "Bug behoben",
-                "Der gemeldete Fehler wurde behoben. Danke für deinen Bugreport!"
+                displayName = "Bug behoben",
+                description = "Der gemeldete Fehler wurde behoben. Danke für deinen Bugreport!"
             )
         ).apply {
             addAll(defaultReasons)
         },
-        getBean<ModalRegistry>().get("ticket:bugreport").create()
-    )
+        modal = modalRegistry.get("ticket:bugreport").create()
+    ),
+    SERVER_SUPPORT(
+        id = "server",
+        displayName = "Server Support Ticket",
+        description = "Erstelle ein Ticket, um Support für den Server zu erhalten.",
+        emoji = "🖥️",
+        viewPermission = DiscordPermission.TICKET_BUG_VIEW,
+        closeReasons = defaultReasons,
+        modal = modalRegistry.get("ticket:bugreport").create()
+    );
 }

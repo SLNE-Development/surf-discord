@@ -1,7 +1,8 @@
 package dev.slne.surf.discord.announcement
 
 import dev.slne.surf.discord.announcement.database.AnnouncementRepository
-import dev.slne.surf.discord.dsl.embed
+import dev.slne.surf.discord.dsl.editEmbed
+import dev.slne.surf.discord.dsl.sendEmbed
 import dev.slne.surf.discord.jda
 import dev.slne.surf.discord.util.Colors
 import kotlinx.coroutines.future.await
@@ -20,11 +21,12 @@ class AnnouncementService(
         content: String,
         channel: MessageChannel
     ) {
-        val message = channel.sendMessageEmbeds(embed {
+        val message = channel.sendEmbed {
             this.title = title
             this.description = content
             this.color = Colors.INFO
-        }).submit(true).await()
+        }.submit(true).await()
+
         val messageId = message.idLong
         val channelId = message.channelIdLong
 
@@ -49,16 +51,14 @@ class AnnouncementService(
         newTitle: String,
         newContent: String
     ) {
-        val channel =
-            jda.getGuildChannelById(announcement.channelId) as? GuildMessageChannel ?: return
-        channel.editMessageEmbedsById(
-            announcement.messageId,
-            embed {
-                title = newTitle
-                description = newContent
-                color = Colors.INFO
-            }
-        ).queue()
+        val channel = jda.getGuildChannelById(announcement.channelId) as? GuildMessageChannel
+            ?: return
+
+        channel.editEmbed(announcement.messageId) {
+            title = newTitle
+            description = newContent
+            color = Colors.INFO
+        }.queue()
 
         announcementRepository.editAnnouncement(
             announcement.messageId,
@@ -68,8 +68,8 @@ class AnnouncementService(
     }
 
     suspend fun deleteAnnouncement(announcement: DiscordAnnouncement) {
-        val channel =
-            jda.getGuildChannelById(announcement.channelId) as? GuildMessageChannel ?: return
+        val channel = jda.getGuildChannelById(announcement.channelId) as? GuildMessageChannel
+            ?: return
 
         channel.deleteMessageById(announcement.messageId).queue()
         announcementRepository.deleteAnnouncement(announcement.messageId)

@@ -10,7 +10,10 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import org.springframework.stereotype.Component
 
 @Component
-@DiscordCommand("announcement-create", "Erstelle eine Ankündigung")
+@DiscordCommand(
+    name = "announcement-create",
+    description = "Erstelle eine Ankündigung"
+)
 class AnnouncementCreateCommand(
     private val modalRegistry: ModalRegistry
 ) : SlashCommand {
@@ -20,7 +23,6 @@ class AnnouncementCreateCommand(
             return
         }
 
-        val modal = modalRegistry.get("announcement:create").create()
-        event.replyModal(modal).queue()
+        event.replyModal(modalRegistry.get("announcement:create").create()).queue()
     }
 }
