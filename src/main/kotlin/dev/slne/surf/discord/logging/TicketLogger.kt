@@ -144,8 +144,6 @@ class TicketLogger {
                 value = ticket.closedReason ?: "Kein Grund angegeben"
                 inline = true
             }
-
-            footer = "Arty Support | 2025"
         }).queue()
     }
 }

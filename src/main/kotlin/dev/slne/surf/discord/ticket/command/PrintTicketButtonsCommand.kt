@@ -12,11 +12,11 @@ import net.dv8tion.jda.api.components.actionrow.ActionRow
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
 
-@Component
 @DiscordCommand(
     name = "ticketbuttons",
     description = "Sendet die Ticket Buttons in den aktuellen Kanal."
 )
+@Component
 class PrintTicketButtonsCommand(
     private val buttonRegistry: ButtonRegistry
 ) : SlashCommand {
@@ -32,7 +32,6 @@ class PrintTicketButtonsCommand(
                 description = translatable("ticket.command.ticketbuttons.description")
 
                 color = Colors.INFO
-                footer = translatable("ticket.command.ticketbuttons.footer")
             }
         ).addComponents(
             ActionRow.of(buttonRegistry.get("ticket:open").button)
