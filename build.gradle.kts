@@ -1,11 +1,11 @@
 plugins {
-    id("org.springframework.boot") version "4.0.0-SNAPSHOT"
+    id("org.springframework.boot") version "3.5.5"
     id("io.spring.dependency-management") version "1.1.7"
 
-    kotlin("jvm") version "2.2.21"
-    kotlin("plugin.serialization") version "2.2.21"
-    kotlin("plugin.jpa") version "2.2.21"
-    kotlin("plugin.spring") version "2.2.21"
+    kotlin("jvm") version "2.2.10"
+    kotlin("plugin.serialization") version "2.2.10"
+    kotlin("plugin.jpa") version "2.2.10"
+    kotlin("plugin.spring") version "2.2.10"
 }
 
 group = "dev.slne.surf.discord"
@@ -13,7 +13,6 @@ version = findProperty("version") as String
 
 repositories {
     mavenCentral()
-    maven { url = uri("https://repo.spring.io/snapshot") }
 }
 
 dependencies {
@@ -28,17 +27,8 @@ dependencies {
     implementation("com.charleskorn.kaml:kaml-jvm:0.72.0")
     implementation("net.dv8tion:JDA:6.1.0")
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.3")
-    implementation("org.springframework.boot:spring-boot-starter-cache")
 
     runtimeOnly("org.mariadb.jdbc:mariadb-java-client:3.2.0")
-
-    implementation("org.springframework.boot:spring-boot-starter-restclient")
-    implementation("org.springframework.boot:spring-boot-starter-webclient")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
-    testImplementation("org.springframework.boot:spring-boot-starter-restclient-test")
 }
 
 kotlin { jvmToolchain(21) }

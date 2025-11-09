@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.ConfigurableApplicationContext
-import org.springframework.web.reactive.config.EnableWebFlux
 
 lateinit var dataContext: ConfigurableApplicationContext
 
@@ -20,7 +19,6 @@ fun main(args: Array<String>) {
 
 @SpringBootApplication
 @EnableCaching
-@EnableWebFlux
 class DiscordSpringApplication
 
 val logger = ComponentLogger.logger("surf-discord")
