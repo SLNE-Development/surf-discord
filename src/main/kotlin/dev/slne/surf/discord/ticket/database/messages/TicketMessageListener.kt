@@ -54,9 +54,9 @@ class TicketMessageListener(
             }
 
             ticketMessageRepository.logMessageDeleted(event.messageIdLong)
-            
+
             // TODO: Just delete this, as we dont want to store user images serverside and the attachments are gone anyway
-            ticketAttachmentsRepository.markDeleted(event.messageIdLong)
+            ticketAttachmentsRepository.delete(event.messageIdLong)
         }
     }
 
@@ -68,9 +68,9 @@ class TicketMessageListener(
 
             for (messageId in event.messageIds.map { it.toLong() }) {
                 ticketMessageRepository.logMessageDeleted(messageId)
-                
-            // TODO: Just delete this, as we dont want to store user images serverside and the attachments are gone anyway
-                ticketAttachmentsRepository.markDeleted(messageId)
+
+                // TODO: Just delete this, as we dont want to store user images serverside and the attachments are gone anyway
+                ticketAttachmentsRepository.delete(messageId)
             }
         }
     }
