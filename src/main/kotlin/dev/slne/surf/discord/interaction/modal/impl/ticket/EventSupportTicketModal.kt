@@ -42,6 +42,15 @@ class EventSupportTicketModal(
 
         val issue = interaction.getValue("issue")?.asString ?: return
 
+        if (true) {
+            interaction.replyEmbeds(embed {
+                title = "Aktuell können keine Event Support Tickets erstellt werden."
+                description =
+                    "Aufgrund der aktuellen Wartungsarbeiten am Netzwerk können keine Event Support Tickets erstellt werden."
+            }).setEphemeral(true).queue()
+            return
+        }
+
         interaction.reply(translatable("ticket.creating")).setEphemeral(true).queue()
 
         val ticket =

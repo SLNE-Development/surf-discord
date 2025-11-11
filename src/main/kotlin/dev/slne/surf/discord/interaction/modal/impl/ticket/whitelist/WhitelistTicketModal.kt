@@ -50,6 +50,15 @@ class WhitelistTicketModal(
         val whitelistName = interaction.getValue("whitelist-name")?.asString ?: return
         val whitelistTwitch = interaction.getValue("whitelist-twitch")?.asString ?: return
 
+        if (true) {
+            interaction.replyEmbeds(embed {
+                title = "Aktuell können keine Whitelist Tickets erstellt werden."
+                description =
+                    "Aufgrund der aktuellen Wartungsarbeiten am Survival Server können keine Whitelist Tickets erstellt werden."
+            }).setEphemeral(true).queue()
+            return
+        }
+
         interaction.reply(translatable("ticket.creating")).setEphemeral(true).queue()
 
         val ticket = ticketService.createTicket(
