@@ -115,6 +115,8 @@ class UnbanTicketModal(
                 buttonRegistry.get("ticket:close").button, //TODO: Add Laby.Net Profile Button
                 buttonRegistry.get("ticket:claim").button
             )
-        ).queue()
+        ).submit(true).thenAccept {
+            thread.pinMessageById(it.idLong).queue()
+        }
     }
 }

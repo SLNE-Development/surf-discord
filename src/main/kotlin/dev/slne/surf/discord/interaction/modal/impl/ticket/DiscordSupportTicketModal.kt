@@ -84,6 +84,8 @@ class DiscordSupportTicketModal(
                 buttonRegistry.get("ticket:close").button,
                 buttonRegistry.get("ticket:claim").button
             )
-        ).queue()
+        ).submit(true).thenAccept {
+            thread.pinMessageById(it.idLong).queue()
+        }
     }
 }

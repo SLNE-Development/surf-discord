@@ -123,6 +123,8 @@ class WhitelistTicketModal(
                 Button.link("https://twitch.tv/$whitelistTwitch", "Twitch"),
                 Button.link("https://www.laby.net/$whitelistName", "Minecraft"),
             )
-        ).queue()
+        ).submit(true).thenAccept {
+            thread.pinMessageById(it.idLong).queue()
+        }
     }
 }
