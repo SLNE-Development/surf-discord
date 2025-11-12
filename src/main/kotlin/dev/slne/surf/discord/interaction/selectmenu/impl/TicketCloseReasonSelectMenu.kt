@@ -6,6 +6,7 @@ import dev.slne.surf.discord.interaction.selectmenu.DiscordSelectMenu
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.util.asTicketOrThrow
+import kotlinx.coroutines.future.await
 import net.dv8tion.jda.api.components.selections.SelectMenu
 import net.dv8tion.jda.api.components.selections.StringSelectMenu
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
@@ -50,7 +51,7 @@ class TicketCloseReasonSelectMenu(
                 modalRegistry.get("ticket:close:reason:custom").create()
             ).queue()
         } else {
-            event.reply(translatable("ticket.closing")).setEphemeral(true).queue()
+            event.reply(translatable("ticket.closing")).setEphemeral(true).submit(true).await()
 
             ticketService.closeTicket(
                 ticket,
