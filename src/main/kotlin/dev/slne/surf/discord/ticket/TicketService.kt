@@ -168,7 +168,7 @@ class TicketService(
             it.sendMessageEmbeds(embed {
                 title = "Dein Ticket wurde geschlossen"
                 description =
-                    "Dein ${ticket.ticketType.displayName} wurde geschlossen.\n\nGrund: $reason"
+                    "Dein ${ticket.ticketType.displayName} wurde geschlossen."
                 color = Colors.INFO
 
                 field {
