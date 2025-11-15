@@ -1,7 +1,7 @@
 package dev.slne.discord.discord.interaction.select
 
-import dev.minn.jda.ktx.interactions.components.StringSelectMenu
-import net.dv8tion.jda.api.interactions.components.selections.SelectOption
+import net.dv8tion.jda.api.components.selections.SelectOption
+import net.dv8tion.jda.api.components.selections.StringSelectMenu
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
 
 abstract class DiscordSelectMenu(
@@ -11,13 +11,11 @@ abstract class DiscordSelectMenu(
 
     private val valueRange: IntRange
 ) {
-    fun build() = StringSelectMenu(
-        customId = id,
-        placeholder = placeholder,
-        valueRange = valueRange
-    ) {
-        addOptions(this@DiscordSelectMenu.options)
-    }
+    fun build() = StringSelectMenu.create(id)
+        .setPlaceholder(placeholder)
+        .setRequiredRange(valueRange.first, valueRange.last)
+        .addOptions(options)
+        .build()
 
     abstract suspend fun onSelect(
         interaction: StringSelectInteraction,

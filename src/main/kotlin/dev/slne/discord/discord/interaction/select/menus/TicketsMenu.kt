@@ -1,13 +1,12 @@
 package dev.slne.discord.discord.interaction.select.menus
 
 import dev.minn.jda.ktx.coroutines.await
-import dev.minn.jda.ktx.interactions.components.SelectOption
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager
 import dev.slne.discord.discord.interaction.select.DiscordSelectMenu
 import dev.slne.discord.message.translatable
 import dev.slne.discord.ticket.TicketType
 import dev.slne.discord.ticket.getTicketTypeByConfigName
-import net.dv8tion.jda.api.interactions.components.selections.SelectOption
+import net.dv8tion.jda.api.components.selections.SelectOption
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
 import kotlin.math.min
 
@@ -19,12 +18,10 @@ class TicketsMenu(
     translatable("menu.ticket.select.placeholder"),
     TicketType.entries.filter { it != TicketType.WHITELIST && it != TicketType.SURVIVAL_SUPPORT }
         .map { ticketType ->
-            SelectOption(
-                ticketType.displayName,
-                ticketType.configName,
-                ticketType.description.run { substring(0, min(length, 100)) },
-                ticketType.emoji
-            )
+            SelectOption.of(ticketType.displayName, ticketType.configName)
+                .withDescription(ticketType.description.run { substring(0, min(length, 100)) })
+                .withEmoji(ticketType.emoji)
+
         },
     1..1
 ) {

@@ -1,6 +1,6 @@
 package dev.slne.discord.discord.interaction.modal.step
 
-import net.dv8tion.jda.api.interactions.components.ActionComponent
+import net.dv8tion.jda.api.components.ActionComponent
 
 class ModalComponentBuilder {
     private val _components = mutableListOf<ActionComponent>()

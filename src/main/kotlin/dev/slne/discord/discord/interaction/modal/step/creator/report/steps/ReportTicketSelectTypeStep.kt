@@ -1,7 +1,5 @@
 package dev.slne.discord.discord.interaction.modal.step.creator.report.steps
 
-import dev.minn.jda.ktx.interactions.components.InlineModal
-import dev.minn.jda.ktx.interactions.components.SelectOption
 import dev.slne.discord.discord.interaction.modal.step.MessageQueue
 import dev.slne.discord.discord.interaction.modal.step.ModalSelectionStep
 import dev.slne.discord.discord.interaction.modal.step.StepBuilder
@@ -11,9 +9,14 @@ import dev.slne.discord.message.MessageManager
 import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.user.UserService
 import dev.slne.discord.persistence.service.whitelist.WhitelistService
+import net.dv8tion.jda.api.components.label.Label
+import net.dv8tion.jda.api.components.selections.SelectOption
+import net.dv8tion.jda.api.components.textinput.TextInput
+import net.dv8tion.jda.api.components.textinput.TextInputStyle
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
+import net.dv8tion.jda.api.modals.Modal
 
 private const val OPTION_GRIEFING = "griefing"
 private const val OPTION_PLAYER = "player"
@@ -26,32 +29,33 @@ class ReportTicketSelectTypeStep(
     private val messageManager: MessageManager
 ) : ModalSelectionStep(
     translatable("modal.report.step.type.selection.title"),
-    SelectOption(
+    SelectOption.of(
         translatable("modal.report.step.type.selection.griefing.label"),
-        OPTION_GRIEFING,
-        description = translatable("modal.report.step.type.selection.griefing.description")
-    ),
-    SelectOption(
+        OPTION_GRIEFING
+    ).withDescription(translatable("modal.report.step.type.selection.griefing.description")),
+    SelectOption.of(
         translatable("modal.report.step.type.selection.player.label"),
-        OPTION_PLAYER,
-        description = translatable("modal.report.step.type.selection.player.description")
-    )
+        OPTION_PLAYER
+    ).withDescription(translatable("modal.report.step.type.selection.player.description"))
 ) {
     private var playerName: String? = null
 
-    override fun InlineModal.buildModalComponents(interaction: StringSelectInteraction) {
+    override fun buildModalComponents(builder: Modal.Builder, interaction: StringSelectInteraction) {
         val label = if (isGriefing) {
             translatable("modal.report.step.type.input.griefing.own-name")
         } else {
             translatable("modal.report.step.type.input.report.reported-player")
         }
 
-        short(
-            REPORTING_PLAYER_NAME_INPUT,
-            label,
-            required = true,
-            requiredLength = 3..16,
-            placeholder = "Notch"
+        builder.addComponents(
+            Label.of(
+                label,
+                TextInput.create(REPORTING_PLAYER_NAME_INPUT, TextInputStyle.SHORT)
+                    .setRequiredRange(3, 16)
+                    .setRequired(true)
+                    .setPlaceholder("Notch")
+                    .build()
+            )
         )
     }
 

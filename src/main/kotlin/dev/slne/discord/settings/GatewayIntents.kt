@@ -6,7 +6,7 @@ object GatewayIntents {
 
     val gatewayIntents = listOf(
         // Emoji
-        GatewayIntent.GUILD_EMOJIS_AND_STICKERS,
+        GatewayIntent.GUILD_EXPRESSIONS,
 
         // Guild
         GatewayIntent.GUILD_MEMBERS,

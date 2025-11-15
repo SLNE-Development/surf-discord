@@ -13,7 +13,7 @@ class DiscordButtonListener(private val jda: JDA, private val processor: Discord
     @PostConstruct
     fun registerListener() {
         jda.listener<ButtonInteractionEvent> { event ->
-            val id = event.button.id ?: return@listener
+            val id = event.button.customId ?: return@listener
             processor.getHandler(id)?.second?.apply { event.onClick() }
         }
     }

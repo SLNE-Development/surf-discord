@@ -10,10 +10,11 @@ import dev.slne.discord.discord.interaction.select.DiscordSelectMenuManager
 import dev.slne.discord.discord.interaction.select.menus.TicketsMenu
 import dev.slne.discord.message.EmbedColors
 import dev.slne.discord.message.translatable
+import net.dv8tion.jda.api.components.actionrow.ActionRow
+import net.dv8tion.jda.api.components.buttons.ButtonStyle
+import net.dv8tion.jda.api.components.selections.SelectMenu
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction
-import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
-import net.dv8tion.jda.api.interactions.components.selections.SelectMenu
 
 const val OpenTicketButtonId = "open-ticket"
 
@@ -45,7 +46,7 @@ class OpenTicketButton(
         interaction.deferReply(true)
             .await()
             .sendMessageEmbeds(embed)
-            .setActionRow(menu)
+            .addComponents(ActionRow.of(menu))
             .setEphemeral(true)
             .await()
     }

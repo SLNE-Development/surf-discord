@@ -7,10 +7,11 @@ import dev.slne.discord.discord.interaction.command.context.DiscordContextMenuCo
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.whitelist.WhitelistService
+import net.dv8tion.jda.api.components.actionrow.ActionRow
+import net.dv8tion.jda.api.components.buttons.Button
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.command.GenericContextInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
-import net.dv8tion.jda.api.interactions.components.buttons.Button
 
 @DiscordContextMenuCommandMeta(
     name = "Show Admin Panel",
@@ -45,6 +46,6 @@ class OpenAdminPanelEntryContextMenuCommand(
                 "interaction.context.menu.admin-panel.private-message",
                 interaction.target.asMention
             )
-        ).setActionRow(button).await()
+        ).setComponents(ActionRow.of(button)).await()
     }
 }

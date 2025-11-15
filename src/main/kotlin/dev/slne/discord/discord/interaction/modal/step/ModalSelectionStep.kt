@@ -1,14 +1,14 @@
 package dev.slne.discord.discord.interaction.modal.step
 
 import dev.minn.jda.ktx.events.listener
-import dev.minn.jda.ktx.interactions.components.StringSelectMenu
 import dev.slne.discord.exception.step.modal.selection.ValidateModalSelectionException
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.suspendCancellableCoroutine
 import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.components.selections.SelectOption
+import net.dv8tion.jda.api.components.selections.StringSelectMenu
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
-import net.dv8tion.jda.api.interactions.components.selections.SelectOption
 import org.springframework.stereotype.Component
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.resume
@@ -29,10 +29,10 @@ abstract class ModalSelectionStep(
         steps[id] = this
     }
 
-    fun createSelection() = StringSelectMenu(id) {
-        addOptions(this@ModalSelectionStep.options)
-        maxValues = 1
-    }
+    fun createSelection() = StringSelectMenu.create(id)
+        .addOptions(options)
+        .setMaxValues(1)
+        .build()
 
     @Throws(ValidateModalSelectionException::class)
     open suspend fun afterSelection(event: StringSelectInteractionEvent) {

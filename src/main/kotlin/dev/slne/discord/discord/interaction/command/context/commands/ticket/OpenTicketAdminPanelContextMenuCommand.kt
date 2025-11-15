@@ -7,11 +7,12 @@ import dev.slne.discord.discord.interaction.command.context.DiscordContextMenuCo
 import dev.slne.discord.guild.permission.CommandPermission
 import dev.slne.discord.message.translatable
 import dev.slne.discord.persistence.service.ticket.TicketService
+import net.dv8tion.jda.api.components.actionrow.ActionRow
+import net.dv8tion.jda.api.components.buttons.Button
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.command.GenericContextInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
-import net.dv8tion.jda.api.interactions.components.buttons.Button
 
 @DiscordContextMenuCommandMeta(
     name = "Show Ticket in Panel",
@@ -48,6 +49,6 @@ class OpenTicketAdminPanelContextMenuCommand(
                 "interaction.context.menu.ticket-admin-panel.private-message",
                 channel.asMention
             )
-        ).setActionRow(button).await()
+        ).setComponents(ActionRow.of(button)).await()
     }
 }

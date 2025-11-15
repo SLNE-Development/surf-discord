@@ -8,6 +8,7 @@ import dev.slne.discord.util.mutableObject2ObjectMapOf
 import dev.slne.discord.util.mutableObjectListOf
 import dev.slne.discord.util.ultimateTargetClass
 import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.interactions.InteractionContextType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
@@ -70,19 +71,25 @@ class DiscordCommandProcessor : BeanPostProcessor {
 
         for ((meta, command) in commands.values) {
             commandData.add(
-                Commands.slash(meta.name, meta.description)
-                    .setGuildOnly(meta.guildOnly)
-                    .setNSFW(meta.nsfw)
-                    .addSubcommands(command.subCommands)
-                    .addOptions(command.options)
+                Commands.slash(meta.name, meta.description).apply {
+                    if (meta.guildOnly) {
+                        setContexts(InteractionContextType.GUILD)
+                    }
+                    isNSFW = meta.nsfw
+                    addSubcommands(command.subCommands)
+                    addOptions(command.options)
+                }
             )
         }
 
         for ((meta, command) in contextMenuCommands.values) {
             commandData.add(
-                Commands.context(command.type.jdaMap, meta.name)
-                    .setGuildOnly(meta.guildOnly)
-                    .setNSFW(meta.nsfw)
+                Commands.context(command.type.jdaMap, meta.name).apply {
+                    if (meta.guildOnly) {
+                        setContexts(InteractionContextType.GUILD)
+                    }
+                    isNSFW = meta.nsfw
+                }
             )
         }
 

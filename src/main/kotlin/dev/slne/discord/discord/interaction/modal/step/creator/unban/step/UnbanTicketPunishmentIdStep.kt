@@ -1,6 +1,5 @@
 package dev.slne.discord.discord.interaction.modal.step.creator.unban.step
 
-import dev.minn.jda.ktx.interactions.components.InlineModal
 import dev.slne.discord.discord.interaction.modal.step.MessageQueue
 import dev.slne.discord.discord.interaction.modal.step.ModalStep
 import dev.slne.discord.message.translatable
@@ -8,9 +7,13 @@ import dev.slne.discord.persistence.external.PunishmentNote
 import dev.slne.discord.persistence.service.punishment.PunishmentNoteService
 import dev.slne.discord.persistence.service.punishment.PunishmentService
 import dev.slne.discord.persistence.service.ticket.TicketService
+import net.dv8tion.jda.api.components.label.Label
+import net.dv8tion.jda.api.components.textinput.TextInput
+import net.dv8tion.jda.api.components.textinput.TextInputStyle
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
+import net.dv8tion.jda.api.modals.Modal
 
 private const val PUNISHMENT_ID = "punishment-id"
 
@@ -22,13 +25,16 @@ class UnbanTicketPunishmentIdStep(
 
     private var punishmentId: String? = null
 
-    override fun InlineModal.buildModalComponents(interaction: StringSelectInteraction) {
-        short(
-            PUNISHMENT_ID,
-            translatable("modal.unban.step.punishment-id.input.label"),
-            placeholder = translatable("modal.unban.step.punishment-id.input.placeholder"),
-            required = true,
-            requiredLength = 6..8
+    override fun buildModalComponents(builder: Modal.Builder, interaction: StringSelectInteraction) {
+        builder.addComponents(
+            Label.of(
+                translatable("modal.unban.step.punishment-id.input.label"),
+                TextInput.create(PUNISHMENT_ID, TextInputStyle.SHORT)
+                    .setPlaceholder(translatable("modal.unban.step.punishment-id.input.placeholder"))
+                    .setRequired(true)
+                    .setRequiredRange(6, 8)
+                    .build()
+            )
         )
     }
 

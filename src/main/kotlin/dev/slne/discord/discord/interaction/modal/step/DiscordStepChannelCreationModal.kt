@@ -1,9 +1,6 @@
 package dev.slne.discord.discord.interaction.modal.step
 
 import dev.minn.jda.ktx.coroutines.await
-import dev.minn.jda.ktx.interactions.components.InlineModal
-import dev.minn.jda.ktx.interactions.components.replyModal
-import dev.minn.jda.ktx.messages.MessageCreate
 import dev.slne.discord.annotation.ChannelCreationModal
 import dev.slne.discord.discord.interaction.modal.DiscordModalManager
 import dev.slne.discord.exception.DiscordException
@@ -12,6 +9,7 @@ import dev.slne.discord.ticket.Ticket
 import dev.slne.discord.ticket.TicketChannelHelper
 import dev.slne.discord.ticket.TicketCreator
 import dev.slne.discord.ticket.result.TicketCreateResult
+import net.dv8tion.jda.api.components.actionrow.ActionRow
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
@@ -21,6 +19,8 @@ import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionE
 import net.dv8tion.jda.api.interactions.InteractionHook
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
+import net.dv8tion.jda.api.modals.Modal
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.jetbrains.annotations.ApiStatus
 import java.io.Serial
@@ -45,8 +45,8 @@ abstract class DiscordStepChannelCreationModal(
     @ApiStatus.OverrideOnly
     protected abstract fun buildSteps(): StepBuilder
 
-    private fun InlineModal.buildModalComponents(interaction: StringSelectInteraction) {
-        steps.forEach { it.fillModalComponents(this, interaction) }
+    private fun buildModalComponents(builder: Modal.Builder, interaction: StringSelectInteraction) {
+        steps.forEach { it.fillModalComponents(builder, interaction) }
     }
 
     suspend fun startChannelCreation(
@@ -121,7 +121,8 @@ abstract class DiscordStepChannelCreationModal(
 
     private suspend fun replyModal(
         modalCallback: StringSelectInteraction,
-    ) = modalCallback.replyModal(id, title) { buildModalComponents(modalCallback) }.await()
+    ) = modalCallback.replyModal(Modal.create(id, title).apply { buildModalComponents(this, modalCallback) }.build())
+        .await()
 
 
     suspend fun handleUserSubmitModal(event: ModalInteractionEvent) {
@@ -163,10 +164,12 @@ abstract class DiscordStepChannelCreationModal(
             if (step is ModalSelectionStep) {
                 lastStepMessage?.delete()?.await()
 
-                lastStepMessage = hook.sendMessage(MessageCreate {
-                    content = step.selectTitle
-                    actionRow(step.createSelection())
-                }).setEphemeral(true).await()
+                lastStepMessage = hook.sendMessage(
+                    MessageCreateBuilder()
+                        .setContent(step.selectTitle)
+                        .setComponents(ActionRow.of(step.createSelection()))
+                        .build()
+                ).setEphemeral(true).await()
 
                 lastStepEvent = step.awaitSelection()
 

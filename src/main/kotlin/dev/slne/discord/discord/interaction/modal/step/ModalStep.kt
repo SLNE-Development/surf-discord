@@ -1,11 +1,11 @@
 package dev.slne.discord.discord.interaction.modal.step
 
-import dev.minn.jda.ktx.interactions.components.InlineModal
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction
+import net.dv8tion.jda.api.modals.Modal
 import org.jetbrains.annotations.ApiStatus
 import java.io.Serial
 
@@ -13,13 +13,13 @@ abstract class ModalStep {
     val children: MutableList<ModalStep> by lazy { buildChildSteps().steps }
 
     @ApiStatus.OverrideOnly
-    protected abstract fun InlineModal.buildModalComponents(interaction: StringSelectInteraction)
+    protected abstract fun buildModalComponents(builder: Modal.Builder, interaction: StringSelectInteraction)
 
-    fun fillModalComponents(modal: InlineModal, interaction: StringSelectInteraction) {
-        modal.buildModalComponents(interaction)
+    fun fillModalComponents(builder: Modal.Builder, interaction: StringSelectInteraction) {
+        buildModalComponents(builder, interaction)
 
         for (child in children) {
-            child.fillModalComponents(modal, interaction)
+            child.fillModalComponents(builder, interaction)
         }
     }
 
