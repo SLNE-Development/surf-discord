@@ -65,7 +65,10 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_APPLICATION_VIEW,
             DiscordPermission.COMMAND_ANNOUNCEMENT_CREATE,
             DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
-            DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE
+            DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE,
+            DiscordPermission.FEEDBACK_DELETE,
+            DiscordPermission.FEEDBACK_DENY,
+            DiscordPermission.FEEDBACK_APPROVE
         ),
 
         // Developer
@@ -81,7 +84,10 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_BUG_VIEW,
             DiscordPermission.COMMAND_ANNOUNCEMENT_CREATE,
             DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
-            DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE
+            DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE,
+            DiscordPermission.FEEDBACK_DELETE,
+            DiscordPermission.FEEDBACK_DENY,
+            DiscordPermission.FEEDBACK_APPROVE
         ),
 
         // Moderator

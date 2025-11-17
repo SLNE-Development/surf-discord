@@ -3,6 +3,8 @@ package dev.slne.surf.discord.feedback.database
 import dev.slne.surf.discord.feedback.FeedbackCategory
 import kotlinx.coroutines.Dispatchers
 import net.dv8tion.jda.api.entities.User
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.update
@@ -51,5 +53,9 @@ class FeedbackRepository {
             it[acceptedAt] = System.currentTimeMillis()
             it[updatedAt] = System.currentTimeMillis()
         }
+    }
+
+    suspend fun deleteFeedback(threadId: Long) = newSuspendedTransaction(Dispatchers.IO) {
+        FeedbackTable.deleteWhere { FeedbackTable.postThreadId eq threadId }
     }
 }

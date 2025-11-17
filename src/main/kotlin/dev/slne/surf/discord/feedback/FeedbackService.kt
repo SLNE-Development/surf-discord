@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.entities.channel.forums.ForumTagSnowflake
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.utils.messages.MessageCreateData
 import org.springframework.stereotype.Component
 
@@ -48,6 +49,7 @@ class FeedbackService(
             ActionRow.of(
                 buttonRegistry.get("button:feedback:approve").button,
                 buttonRegistry.get("button:feedback:decline").button,
+                buttonRegistry.get("button:feedback:delete").button,
             )
         ).submit(true).await()
 
@@ -65,7 +67,11 @@ class FeedbackService(
             .queue()
     }
 
-    suspend fun approveFeedback(thread: ThreadChannel, approvedBy: User) {
+    suspend fun approveFeedback(
+        event: ButtonInteractionEvent,
+        thread: ThreadChannel,
+        approvedBy: User
+    ) {
         thread.sendEmbed {
             title = "Feedback genehmigt"
             description =
@@ -74,13 +80,19 @@ class FeedbackService(
             footer = "Genehmigt von ${approvedBy.name}"
         }.submit(true).await()
 
-        thread.manager.setArchived(true).queue()
+        event.reply("Feedback angenommen.").setEphemeral(true).queue()
+
         thread.manager.setLocked(true).queue()
+        thread.manager.setArchived(true).queue()
 
         feedbackRepository.approveFeedback(thread.idLong, approvedBy)
     }
 
-    suspend fun declineFeedback(thread: ThreadChannel, declinedBy: User) {
+    suspend fun declineFeedback(
+        event: ButtonInteractionEvent,
+        thread: ThreadChannel,
+        declinedBy: User
+    ) {
         thread.sendEmbed {
             title = "Feedback abgelehnt"
             description =
@@ -89,11 +101,18 @@ class FeedbackService(
             footer = "Abgelehnt von ${declinedBy.name}"
         }.submit(true).await()
 
-        thread.appliedTags
+        event.reply("Feedback abgelehnt.").setEphemeral(true).queue()
 
-        thread.manager.setArchived(true).queue()
         thread.manager.setLocked(true).queue()
+        thread.manager.setArchived(true).queue()
 
         feedbackRepository.declineFeedback(thread.idLong)
+    }
+
+    suspend fun deleteFeedback(
+        thread: ThreadChannel
+    ) {
+        feedbackRepository.deleteFeedback(thread.idLong)
+        thread.delete().queue()
     }
 }

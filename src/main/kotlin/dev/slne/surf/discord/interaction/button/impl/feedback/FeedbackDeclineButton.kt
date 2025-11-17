@@ -2,6 +2,9 @@ package dev.slne.surf.discord.interaction.button.impl.feedback
 
 import dev.slne.surf.discord.feedback.FeedbackService
 import dev.slne.surf.discord.interaction.button.DiscordButton
+import dev.slne.surf.discord.messages.translatable
+import dev.slne.surf.discord.permission.DiscordPermission
+import dev.slne.surf.discord.permission.hasPermission
 import net.dv8tion.jda.api.components.buttons.Button
 import net.dv8tion.jda.api.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.entities.emoji.Emoji
@@ -21,8 +24,11 @@ class FeedbackDeclineButton(
     )
 
     override suspend fun onClick(event: ButtonInteractionEvent) {
-        feedbackService.declineFeedback(event.channel.asThreadChannel(), event.user)
+        if (!event.member.hasPermission(DiscordPermission.FEEDBACK_DENY)) {
+            event.reply(translatable("no-permission")).setEphemeral(true).queue()
+            return
+        }
 
-        event.reply("Feedback abgelehnt.").setEphemeral(true).queue()
+        feedbackService.declineFeedback(event, event.channel.asThreadChannel(), event.user)
     }
 }
