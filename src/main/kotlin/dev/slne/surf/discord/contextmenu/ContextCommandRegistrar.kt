@@ -12,7 +12,6 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 
-// TODO: Update this according to the command registrar
 @Component
 class ContextCommandRegistrar(
     private val jda: JDA,
