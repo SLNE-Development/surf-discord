@@ -1,4 +1,4 @@
-package dev.slne.surf.discord.interaction.button.impl
+package dev.slne.surf.discord.interaction.button.impl.ticket
 
 import dev.slne.surf.discord.interaction.button.DiscordButton
 import dev.slne.surf.discord.messages.translatable

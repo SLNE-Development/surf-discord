@@ -5,5 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ChannelConfig(
     val ticketChannel: Long,
-    val ticketLogChannel: Long
+    val ticketLogChannel: Long,
+    val suggestionChannel: Long,
+    val feedbackChannel: Long
 )
