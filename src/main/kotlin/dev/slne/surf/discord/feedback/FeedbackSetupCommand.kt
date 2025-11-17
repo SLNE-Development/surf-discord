@@ -19,5 +19,7 @@ class FeedbackSetupCommand(
             description =
                 "Du hast Feedback oder Verbesserungsvorschläge für den Server? Dann kannst du diese hier einreichen. Unser Team wird dein Feedback prüfen und gegebenenfalls umsetzen."
         }.addComponents(ActionRow.of(buttonRegistry.get("feedback:create").button)).queue()
+
+        event.reply("Das Feedback-Embed wurde erfolgreich gesendet.").setEphemeral(true).queue()
     }
 }

@@ -11,7 +11,7 @@ object FeedbackTable : LongIdTable("discord_feedback") {
     val createdAt = long("created_at")
     val updatedAt = long("updated_at")
 
-    val accepted = bool("accepted").default(false)
+    val accepted = bool("accepted").nullable()
     val acceptedById = long("accepted_by_id").nullable()
     val acceptedByName = varchar("accepted_by_name", 100).nullable()
     val acceptedByAvatarUrl = varchar("accepted_by_avatar_url", 200).nullable()

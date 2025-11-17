@@ -2,6 +2,7 @@ package dev.slne.surf.discord.interaction.selectmenu.impl.feedback
 
 import dev.slne.surf.discord.feedback.FeedbackCategory
 import dev.slne.surf.discord.interaction.selectmenu.DiscordSelectMenu
+import dev.slne.surf.discord.util.formattedEnumEntryName
 import net.dv8tion.jda.api.components.selections.SelectOption
 import net.dv8tion.jda.api.components.selections.StringSelectMenu
 import org.springframework.stereotype.Component
@@ -13,7 +14,7 @@ class FeedbackCategorySelectMenu : DiscordSelectMenu {
     override fun create() = StringSelectMenu
         .create(id)
         .addOptions(FeedbackCategory.entries.map {
-            SelectOption.of(it.name.lowercase().replaceFirstChar { it.uppercase() }, it.name)
+            SelectOption.of(it.name.formattedEnumEntryName, it.numerationId.toString())
         })
         .build()
 }

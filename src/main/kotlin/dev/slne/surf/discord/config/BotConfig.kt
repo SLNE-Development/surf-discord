@@ -2,6 +2,7 @@ package dev.slne.surf.discord.config
 
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.decodeFromStream
+import dev.slne.surf.discord.config.feedback.FeedbackConfig
 import kotlinx.serialization.Serializable
 import org.jetbrains.annotations.ApiStatus
 import kotlin.io.path.Path
@@ -12,6 +13,7 @@ import kotlin.io.path.inputStream
 data class BotConfig(
     val botToken: String,
     val channels: ChannelConfig,
+    val feedback: FeedbackConfig,
     val database: DatabaseConfig
 )
 

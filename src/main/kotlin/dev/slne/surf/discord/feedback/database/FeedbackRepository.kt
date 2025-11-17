@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import net.dv8tion.jda.api.entities.User
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import org.jetbrains.exposed.sql.update
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -29,6 +30,26 @@ class FeedbackRepository {
             it[this.category] = category
             it[this.title] = title
             it[this.content] = content
+        }
+    }
+
+    suspend fun approveFeedback(threadId: Long, acceptedBy: User) =
+        newSuspendedTransaction(Dispatchers.IO) {
+            FeedbackTable.update(where = { FeedbackTable.postThreadId eq threadId }) {
+                it[accepted] = true
+                it[acceptedById] = acceptedBy.idLong
+                it[acceptedByName] = acceptedBy.name
+                it[acceptedByAvatarUrl] = acceptedBy.avatarUrl
+                it[acceptedAt] = System.currentTimeMillis()
+                it[updatedAt] = System.currentTimeMillis()
+            }
+        }
+
+    suspend fun declineFeedback(threadId: Long) = newSuspendedTransaction(Dispatchers.IO) {
+        FeedbackTable.update(where = { FeedbackTable.postThreadId eq threadId }) {
+            it[accepted] = true
+            it[acceptedAt] = System.currentTimeMillis()
+            it[updatedAt] = System.currentTimeMillis()
         }
     }
 }

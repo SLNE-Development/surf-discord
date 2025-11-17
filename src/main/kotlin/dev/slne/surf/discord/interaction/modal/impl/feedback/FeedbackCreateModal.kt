@@ -22,7 +22,7 @@ class FeedbackCreateModal(
 
     override fun create() = modal(id, "Feedback erstellen") {
         selectMenu(
-            "modal:feedback:create:type",
+            "Feedback Kategorie",
             selectMenuRegistry.get("select:feedback:category").create()
         )
 
@@ -45,7 +45,10 @@ class FeedbackCreateModal(
 
     override suspend fun onSubmit(event: ModalInteractionEvent) {
         val category =
-            FeedbackCategory.entries.firstOrNull { it.name == event.getValue("modal:feedback:create:type")?.asString }
+            FeedbackCategory.entries.firstOrNull {
+                it.numerationId == event.getValue("select:feedback:category")?.asStringList?.first()
+                    ?.toInt()
+            }
                 ?: return
         val content = event.getValue("modal:feedback:create:content")?.asString ?: return
         val title = event.getValue("modal:feedback:create:title")?.asString ?: return
