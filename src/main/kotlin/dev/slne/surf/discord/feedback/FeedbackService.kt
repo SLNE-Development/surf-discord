@@ -36,7 +36,7 @@ class FeedbackService(
 
         val post = channel.createForumPost(
             title, MessageCreateData.fromContent(
-                content
+                "$title\n\n$content"
             )
         ).setTags(
             buildList {
@@ -72,7 +72,7 @@ class FeedbackService(
                 "Dein eingereichtes Feedback wurde genehmigt und wird nun weiter intern verarbeitet. Vielen Dank für deine Unterstützung!"
             color = Colors.INFO
             footer = "Genehmigt von ${approvedBy.name}"
-        }.queue()
+        }.submit(true).await()
 
         thread.manager.setArchived(true).queue()
         thread.manager.setLocked(true).queue()
@@ -87,7 +87,7 @@ class FeedbackService(
                 "Dein eingereichtes Feedback wurde leider abgelehnt. Wir danken dir dennoch für deine Mühe und dein Engagement!"
             color = Colors.ERROR
             footer = "Abgelehnt von ${declinedBy.name}"
-        }.queue()
+        }.submit(true).await()
 
         thread.appliedTags
 
