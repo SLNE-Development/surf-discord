@@ -87,7 +87,9 @@ class FeedbackService(
                 "Dein eingereichtes Feedback wurde leider abgelehnt. Wir danken dir dennoch für deine Mühe und dein Engagement!"
             color = Colors.ERROR
             footer = "Abgelehnt von ${declinedBy.name}"
-        }
+        }.queue()
+
+        thread.appliedTags
 
         thread.manager.setArchived(true).queue()
         thread.manager.setLocked(true).queue()

@@ -8,8 +8,6 @@ import kotlinx.serialization.Serializable
 data class FeedbackConfig(
     val feedbackChannel: Long,
     val feedbackLogChannel: Long,
-    val feedbackApprovedTag: Long,
-    val feedbackDeclinedTag: Long,
     val categories: List<FeedbackCategoryConfig> = FeedbackCategory.entries.map {
         FeedbackCategoryConfig(
             name = it.name,
