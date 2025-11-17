@@ -18,7 +18,7 @@ class FeedbackCreateButton(
     }
 
     override val id = "feedback:create"
-    override val button = Button.success(id, translatable("feedback.button.create"))
+    override val button get() = Button.success(id, translatable("feedback.button.create"))
 
     override suspend fun onClick(event: ButtonInteractionEvent) {
         event.replyModal(modalRegistry.get("modal:feedback:create").create()).queue()

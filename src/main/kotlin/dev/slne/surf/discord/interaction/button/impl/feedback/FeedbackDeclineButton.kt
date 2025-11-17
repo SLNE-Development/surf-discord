@@ -16,12 +16,13 @@ class FeedbackDeclineButton(
     private val feedbackService: FeedbackService
 ) : DiscordButton {
     override val id = "button:feedback:decline"
-    override val button = Button.of(
-        ButtonStyle.SECONDARY,
-        id,
-        translatable("feedback.button.decline"),
-        Emoji.fromCustom("cross", 1433072192274305135, false)
-    )
+    override val button
+        get() = Button.of(
+            ButtonStyle.SECONDARY,
+            id,
+            translatable("feedback.button.decline"),
+            Emoji.fromCustom("cross", 1433072192274305135, false)
+        )
 
     override suspend fun onClick(event: ButtonInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.FEEDBACK_DECLINE)) {

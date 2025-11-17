@@ -54,6 +54,8 @@ class FeedbackService(
             )
         ).submit(true).await()
 
+        post.threadChannel.addThreadMember(event.user).queue()
+
         feedbackRepository.createFeedback(
             event.user,
             createdAt,

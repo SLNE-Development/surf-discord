@@ -16,12 +16,13 @@ class FeedbackApproveButton(
     private val feedbackService: FeedbackService
 ) : DiscordButton {
     override val id = "button:feedback:approve"
-    override val button = Button.of(
-        ButtonStyle.SECONDARY,
-        id,
-        translatable("feedback.button.approve"),
-        Emoji.fromCustom("checkmark", 1433072075446423754, false)
-    )
+    override val button
+        get() = Button.of(
+            ButtonStyle.SECONDARY,
+            id,
+            translatable("feedback.button.approve"),
+            Emoji.fromCustom("checkmark", 1433072075446423754, false)
+        )
 
     override suspend fun onClick(event: ButtonInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.FEEDBACK_APPROVE)) {
