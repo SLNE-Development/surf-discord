@@ -50,6 +50,6 @@ class FeedbackCreateModal(
         val content = event.getValue("modal:feedback:create:content")?.asString ?: return
         val title = event.getValue("modal:feedback:create:title")?.asString ?: return
 
-        feedbackService.createFeedback(event.user, category, title, content)
+        feedbackService.createFeedback(event, category, title, content)
     }
 }

@@ -5,7 +5,7 @@ import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.feedback.database.FeedbackRepository
 import dev.slne.surf.discord.jda
 import kotlinx.coroutines.future.await
-import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.utils.messages.MessageCreateData
 import org.springframework.stereotype.Component
 
@@ -14,7 +14,7 @@ class FeedbackService(
     private val feedbackRepository: FeedbackRepository
 ) {
     suspend fun createFeedback(
-        author: User,
+        event: ModalInteractionEvent,
         category: FeedbackCategory,
         title: String,
         content: String
@@ -37,12 +37,23 @@ class FeedbackService(
 
                     field {
                         name = "Erstellt von"
-                        value = "${author.asTag} (${author.name})"
+                        value = "${event.user.asTag} (${event.user.name})"
                         inline = true
                     }
                 }
             )).submit(true).await()
 
-        feedbackRepository.createFeedback()
+        feedbackRepository.createFeedback(
+            event.user,
+            createdAt,
+            post.threadChannel.idLong,
+            category,
+            title,
+            content
+        )
+
+        event.reply("Dein Feedback wurde erfolgreich übermittelt. Vielen Dank! Ansehen: ${post.threadChannel.asMention}")
+            .setEphemeral(true)
+            .queue()
     }
 }
