@@ -14,7 +14,7 @@ class FeedbackDeleteButton(
     private val feedbackService: FeedbackService
 ) : DiscordButton {
     override val id = "button:feedback:delete"
-    override val button = Button.danger(id, "Löschen")
+    override val button = Button.danger(id, translatable("feedback.button.delete"))
 
     override suspend fun onClick(event: ButtonInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.FEEDBACK_DELETE)) {

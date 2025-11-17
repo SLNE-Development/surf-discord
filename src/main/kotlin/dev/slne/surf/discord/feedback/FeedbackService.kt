@@ -6,6 +6,7 @@ import dev.slne.surf.discord.feedback.database.FeedbackRepository
 import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.jda
+import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.util.Colors
 import kotlinx.coroutines.future.await
 import net.dv8tion.jda.api.components.actionrow.ActionRow
@@ -62,7 +63,7 @@ class FeedbackService(
             content
         )
 
-        event.reply("Dein Feedback wurde erfolgreich übermittelt. Vielen Dank! Ansehen: ${post.threadChannel.asMention}")
+        event.reply(translatable("feedback.submitted", post.threadChannel.asMention))
             .setEphemeral(true)
             .queue()
     }
@@ -73,14 +74,13 @@ class FeedbackService(
         approvedBy: User
     ) {
         thread.sendEmbed {
-            title = "Feedback genehmigt"
-            description =
-                "Dein eingereichtes Feedback wurde genehmigt und wird nun weiter intern verarbeitet. Vielen Dank für deine Unterstützung!"
+            title = translatable("feedback.embed.approved.title")
+            description = translatable("feedback.embed.approved.description")
             color = Colors.INFO
-            footer = "Genehmigt von ${approvedBy.name}"
+            footer = translatable("feedback.embed.approved.footer", approvedBy.name)
         }.submit(true).await()
 
-        event.reply("Feedback angenommen.").setEphemeral(true).queue()
+        event.reply(translatable("feedback.approved")).setEphemeral(true).queue()
 
         thread.manager.setLocked(true).queue()
         thread.manager.setArchived(true).queue()
@@ -94,14 +94,13 @@ class FeedbackService(
         declinedBy: User
     ) {
         thread.sendEmbed {
-            title = "Feedback abgelehnt"
-            description =
-                "Dein eingereichtes Feedback wurde leider abgelehnt. Wir danken dir dennoch für deine Mühe und dein Engagement!"
+            title = translatable("feedback.embed.declined.title")
+            description = translatable("feedback.embed.declined.description")
             color = Colors.ERROR
-            footer = "Abgelehnt von ${declinedBy.name}"
+            footer = translatable("feedback.embed.declined.footer", declinedBy.name)
         }.submit(true).await()
 
-        event.reply("Feedback abgelehnt.").setEphemeral(true).queue()
+        event.reply(translatable("feedback.declined")).setEphemeral(true).queue()
 
         thread.manager.setLocked(true).queue()
         thread.manager.setArchived(true).queue()

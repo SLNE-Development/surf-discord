@@ -19,7 +19,7 @@ class FeedbackApproveButton(
     override val button = Button.of(
         ButtonStyle.SECONDARY,
         id,
-        "Annehmen",
+        translatable("feedback.button.approve"),
         Emoji.fromCustom("checkmark", 1433072075446423754, false)
     )
 

@@ -67,7 +67,7 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
             DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE,
             DiscordPermission.FEEDBACK_DELETE,
-            DiscordPermission.FEEDBACK_DENY,
+            DiscordPermission.FEEDBACK_DECLINE,
             DiscordPermission.FEEDBACK_APPROVE
         ),
 
@@ -86,7 +86,7 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
             DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE,
             DiscordPermission.FEEDBACK_DELETE,
-            DiscordPermission.FEEDBACK_DENY,
+            DiscordPermission.FEEDBACK_DECLINE,
             DiscordPermission.FEEDBACK_APPROVE
         ),
 

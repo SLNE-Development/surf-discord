@@ -13,7 +13,7 @@ enum class DiscordPermission {
     TICKET_CLAIM,
 
     FEEDBACK_APPROVE,
-    FEEDBACK_DENY,
+    FEEDBACK_DECLINE,
     FEEDBACK_DELETE,
 
     TICKET_WHITELIST_VIEW,
