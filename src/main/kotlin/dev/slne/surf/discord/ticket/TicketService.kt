@@ -39,12 +39,29 @@ class TicketService(
             return null
         }
 
-        type.viewPermission.getRolesWithPermission(threadChannel.guild.idLong).forEach { role ->
-            threadChannel.sendMessage("Zugriff für $role...").submit(true).thenAccept { message ->
-                message.editMessage("<@&$role>").submit(true).thenAccept {
-                    message.delete().queue()
-                }
+        if (type != TicketType.APPLICATION) {
+            type.viewPermission.getRolesWithPermission(threadChannel.guild.idLong).forEach { role ->
+                threadChannel.sendMessage("Granting access for $role...").submit(true)
+                    .thenAccept { message ->
+                        message.editMessage("<@&$role>").submit(true).thenAccept {
+                            message.delete().queue()
+                        }
+                    }
             }
+        } else {
+            val applicationType = TicketApplicationType.valueOf(
+                data["application_type"] ?: error("Missing application type")
+            )
+
+            applicationType.viewPermission.getRolesWithPermission(threadChannel.guild.idLong)
+                .forEach { role ->
+                    threadChannel.sendMessage("Granting access for $role...").submit(true)
+                        .thenAccept { message ->
+                            message.editMessage("<@&$role>").submit(true).thenAccept {
+                                message.delete().queue()
+                            }
+                        }
+                }
         }
 
         threadChannel.addThreadMember(user).queue()

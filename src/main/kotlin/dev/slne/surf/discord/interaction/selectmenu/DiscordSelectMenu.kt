@@ -6,7 +6,13 @@ import net.dv8tion.jda.api.interactions.InteractionHook
 
 interface DiscordSelectMenu {
     val id: String
-    suspend fun create(hook: InteractionHook): SelectMenu
+    suspend fun create(hook: InteractionHook): SelectMenu {
+        error("Async select menu creation not implemented")
+    }
+
+    fun create(): SelectMenu {
+        error("Sync select menu creation not implemented")
+    }
 
     suspend fun onSelect(event: StringSelectInteractionEvent) {}
 }
