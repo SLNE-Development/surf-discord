@@ -13,7 +13,7 @@ class SelectMenuListener(
 ) : ListenerAdapter() {
     override fun onStringSelectInteraction(event: StringSelectInteractionEvent) {
         discordScope.launch {
-            registry.get(event.componentId).onSelect(event)
+            registry.getOrNull(event.componentId)?.onSelect(event)
         }
     }
 }
