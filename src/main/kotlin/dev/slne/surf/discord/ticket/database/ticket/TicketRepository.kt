@@ -9,6 +9,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.springframework.stereotype.Repository
+import java.time.ZonedDateTime
 import java.util.*
 
 @Repository
@@ -24,9 +25,11 @@ class TicketRepository(
             it[guildId] = ticket.guildId
             ticket.threadId?.let { id -> it[threadId] = id }
             it[ticketType] = ticket.ticketType
-            it[createdAt] = ticket.createdAt
+            it[openedAt] = ticket.createdAt
             it[closedAt] = ticket.closedAt
             it[closedById] = ticket.closedById
+            it[createdAt] = ZonedDateTime.now()
+            it[updatedAt] = ZonedDateTime.now()
         }
     }
 
@@ -57,6 +60,7 @@ class TicketRepository(
             it[TicketTable.closedByName] = ticket.closedByName
             it[TicketTable.closedByAvatarUrl] = ticket.closedByAvatar
             it[TicketTable.closedReason] = ticket.closedReason
+            it[updatedAt] = ZonedDateTime.now()
         }
     }
 
@@ -85,7 +89,7 @@ class TicketRepository(
             guildId = this[TicketTable.guildId],
             threadId = this[TicketTable.threadId],
             ticketType = this[TicketTable.ticketType],
-            createdAt = this[TicketTable.createdAt],
+            createdAt = this[TicketTable.openedAt],
             closedAt = this[TicketTable.closedAt],
             closedById = this[TicketTable.closedById],
             closedByName = this[TicketTable.closedByName],

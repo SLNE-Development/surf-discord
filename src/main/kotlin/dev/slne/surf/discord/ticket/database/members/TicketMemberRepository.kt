@@ -10,6 +10,7 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.sql.upsert
 import org.springframework.stereotype.Repository
+import java.time.ZonedDateTime
 
 @Repository
 class TicketMemberRepository {
@@ -27,7 +28,9 @@ class TicketMemberRepository {
             it[memberId] = userId
             it[memberName] = userName
             it[memberAvatarUrl] = userAvatarUrl
-            it[addedAt] = System.currentTimeMillis()
+            it[addedAt] = ZonedDateTime.now()
+            it[createdAt] = ZonedDateTime.now()
+            it[updatedAt] = ZonedDateTime.now()
             it[this.addedById] = addedById
             it[this.addedByName] = addedByName
             it[this.addedByAvatarUrl] = addedByAvatarUrl
@@ -47,10 +50,11 @@ class TicketMemberRepository {
     ) =
         newSuspendedTransaction(Dispatchers.IO) {
             TicketMemberTable.update({ (TicketMemberTable.ticketId eq ticket.ticketId) and (TicketMemberTable.memberId eq removedById) and (TicketMemberTable.removedAt.isNull()) }) {
-                it[removedAt] = System.currentTimeMillis()
+                it[removedAt] = ZonedDateTime.now()
                 it[this.removedById] = removedById
                 it[this.removedByName] = removedByName
                 it[this.removedByAvatarUrl] = removedByAvatarUrl
+                it[updatedAt] = ZonedDateTime.now()
             }
         }
 

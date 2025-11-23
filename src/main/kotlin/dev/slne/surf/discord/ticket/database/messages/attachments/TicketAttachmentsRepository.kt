@@ -6,24 +6,41 @@ import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.springframework.stereotype.Repository
-import java.util.*
+import java.time.ZonedDateTime
 
 @Repository
 class TicketAttachmentsRepository {
     suspend fun addAttachment(
-        ticketId: UUID,
-        messageId: Long,
         attachmentId: Long,
+        fileName: String,
         url: String,
-        proxyUrl: String
+        proxyUrl: String,
+        waveform: String?,
+        contentType: String?,
+        description: String?,
+        size: Int,
+        height: Int?,
+        width: Int?,
+        ephemeral: Boolean,
+        durationSeconds: Float?,
+        messageId: Long,
     ) = newSuspendedTransaction(Dispatchers.IO) {
         TicketAttachmentsTable.insert {
-            it[this.ticketId] = ticketId
-            it[this.messageId] = messageId
             it[this.attachmentId] = attachmentId
+            it[this.fileName] = fileName
             it[this.url] = url
             it[this.proxyUrl] = proxyUrl
-            it[this.deletedAt] = null
+            it[this.waveform] = waveform
+            it[this.contentType] = contentType
+            it[this.description] = description
+            it[this.size] = size
+            it[this.height] = height
+            it[this.width] = width
+            it[this.ephemeral] = ephemeral
+            it[this.durationSeconds] = durationSeconds
+            it[this.messageId] = messageId
+            it[this.createdAt] = ZonedDateTime.now()
+            it[this.updatedAt] = ZonedDateTime.now()
         }
     }
 

@@ -9,6 +9,7 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.update
 import org.springframework.stereotype.Repository
+import java.time.ZonedDateTime
 
 @Repository
 class TicketStaffRepository {
@@ -23,7 +24,7 @@ class TicketStaffRepository {
         if (existing == null) {
             TicketStaffTable.insert {
                 it[ticketId] = ticket.ticketId
-                it[claimedAt] = System.currentTimeMillis()
+                it[claimedAt] = ZonedDateTime.now()
                 it[claimedBy] = claimer.idLong
                 it[claimedByName] = claimer.name
                 it[claimedByAvatar] = claimer.avatarUrl
@@ -31,7 +32,7 @@ class TicketStaffRepository {
         } else {
             // Nur Claim-Felder updaten
             TicketStaffTable.update({ TicketStaffTable.ticketId eq ticket.ticketId }) {
-                it[claimedAt] = System.currentTimeMillis()
+                it[claimedAt] = ZonedDateTime.now()
                 it[claimedBy] = claimer.idLong
                 it[claimedByName] = claimer.name
                 it[claimedByAvatar] = claimer.avatarUrl

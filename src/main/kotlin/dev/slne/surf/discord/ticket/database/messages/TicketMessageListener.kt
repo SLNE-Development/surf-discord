@@ -27,11 +27,19 @@ class TicketMessageListener(
 
             event.message.attachments.forEach {
                 ticketAttachmentsRepository.addAttachment(
-                    ticket.ticketId,
-                    event.message.idLong,
                     it.idLong,
+                    it.fileName,
                     it.url,
-                    it.proxyUrl
+                    it.proxyUrl,
+                    it.waveform.toString(),
+                    it.contentType,
+                    it.description,
+                    it.size,
+                    it.height,
+                    it.width,
+                    it.isEphemeral,
+                    it.duration.toFloat(),
+                    event.message.idLong,
                 )
             }
         }

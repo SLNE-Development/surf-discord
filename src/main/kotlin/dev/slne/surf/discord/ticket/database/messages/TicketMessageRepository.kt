@@ -7,6 +7,7 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.update
 import org.springframework.stereotype.Repository
+import java.time.ZonedDateTime
 
 @Repository
 class TicketMessageRepository {
@@ -21,23 +22,27 @@ class TicketMessageRepository {
                 it[messageId] = message.idLong
                 it[referenceMessageId] = message.referencedMessage?.idLong
                 it[botMessage] = message.author.isBot
-                it[messageSentAt] = message.timeCreated.toInstant().toEpochMilli()
+                it[messageSentAt] = message.timeCreated.toZonedDateTime()
                 it[messageEditedAt] = null
                 it[messageDeletedAt] = null
+                it[createdAt] = ZonedDateTime.now()
+                it[updatedAt] = ZonedDateTime.now()
             }
         }
 
     suspend fun logMessageEdited(messageId: Long, content: String) =
         newSuspendedTransaction(Dispatchers.IO) {
             TicketMessagesTable.update({ TicketMessagesTable.messageId eq messageId }) {
-                it[messageEditedAt] = System.currentTimeMillis()
+                it[messageEditedAt] = ZonedDateTime.now()
+                it[updatedAt] = ZonedDateTime.now()
                 it[TicketMessagesTable.content] = content
             }
         }
 
     suspend fun logMessageDeleted(messageId: Long) = newSuspendedTransaction(Dispatchers.IO) {
         TicketMessagesTable.update({ TicketMessagesTable.messageId eq messageId }) {
-            it[messageDeletedAt] = System.currentTimeMillis()
+            it[messageDeletedAt] = ZonedDateTime.now()
+            it[updatedAt] = ZonedDateTime.now()
         }
     }
 }
