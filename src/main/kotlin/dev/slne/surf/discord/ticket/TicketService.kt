@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.interactions.InteractionHook
 import org.springframework.stereotype.Service
+import java.time.ZonedDateTime
 import java.util.*
 
 @Service
@@ -75,7 +76,7 @@ class TicketService(
             guildId = threadChannel.guild.idLong,
             threadId = threadChannel.idLong,
             ticketType = type,
-            createdAt = System.currentTimeMillis(),
+            createdAt = ZonedDateTime.now(),
             closedAt = null,
             closedById = null,
             closedByName = null,
@@ -160,7 +161,7 @@ class TicketService(
 
                 field {
                     name = "Ticket Erstellungsdatum"
-                    value = "<t:${ticket.createdAt / 1000}:F>"
+                    value = "<t:${ticket.createdAt.toEpochSecond() / 1000}:F>"
                     inline = true
                 }
 
@@ -172,7 +173,7 @@ class TicketService(
             }
         ).queue()
 
-        ticket.closedAt = System.currentTimeMillis()
+        ticket.closedAt = ZonedDateTime.now()
         ticket.closedById = closer.idLong
         ticket.closedByName = closer.name
         ticket.closedByAvatar = closer.avatarUrl
@@ -214,7 +215,7 @@ class TicketService(
 
                 field {
                     name = "Erstellungsdatum"
-                    value = "<t:${ticket.createdAt / 1000}:F>"
+                    value = "<t:${ticket.createdAt.toEpochSecond() / 1000}:F>"
                     inline = true
                 }
 
