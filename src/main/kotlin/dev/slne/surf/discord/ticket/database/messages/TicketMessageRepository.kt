@@ -13,7 +13,7 @@ class TicketMessageRepository {
     suspend fun logMessage(ticket: Ticket, message: Message) =
         newSuspendedTransaction(Dispatchers.IO) {
             TicketMessagesTable.insert {
-                it[ticketUid] = ticket.ticketUid
+                it[ticketId] = ticket.ticketId
                 it[authorId] = message.author.idLong
                 it[authorName] = message.author.name
                 it[authorAvatarUrl] = message.author.avatarUrl ?: ""

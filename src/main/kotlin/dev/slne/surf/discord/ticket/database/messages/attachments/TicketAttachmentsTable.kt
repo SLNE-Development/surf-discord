@@ -4,7 +4,7 @@ import dev.slne.surf.discord.ticket.database.ticket.TicketTable
 import org.jetbrains.exposed.dao.id.LongIdTable
 
 object TicketAttachmentsTable : LongIdTable("discord_ticket_attachments") {
-    val ticketUid = uuid("ticket_uid").references(TicketTable.ticketUid).uniqueIndex()
+    val ticketId = uuid("ticket_id").references(TicketTable.ticketId).uniqueIndex()
     val messageId = long("message_id").uniqueIndex()
     val attachmentId = long("attachment_id").uniqueIndex()
 

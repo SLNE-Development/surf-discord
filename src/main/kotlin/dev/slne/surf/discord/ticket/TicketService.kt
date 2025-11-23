@@ -67,7 +67,7 @@ class TicketService(
         threadChannel.addThreadMember(user).queue()
 
         val ticket = Ticket(
-            ticketUid = UUID.randomUUID(),
+            ticketId = UUID.randomUUID(),
             ticketData = mapOf(),
             authorId = userId,
             authorName = user.name,
@@ -84,7 +84,7 @@ class TicketService(
         )
 
         ticketRepository.createTicket(ticket)
-        ticketDataRepository.setData(ticket.ticketUid, data)
+        ticketDataRepository.setData(ticket.ticketId, data)
 
         ticketLogger.logCreation(ticket)
 
@@ -115,7 +115,7 @@ class TicketService(
         ticketStaffRepository.isClaimedByUser(ticket, user)
 
     suspend fun updateData(ticket: Ticket, ticketData: TicketData) =
-        ticketDataRepository.setData(ticket.ticketUid, ticketData)
+        ticketDataRepository.setData(ticket.ticketId, ticketData)
 
     suspend fun getTicketByThreadId(threadId: Long) =
         ticketRepository.getTicketByThreadId(threadId)
@@ -147,7 +147,7 @@ class TicketService(
 
                 field {
                     name = "Ticket Id"
-                    value = ticket.ticketUid.toString()
+                    value = ticket.ticketId.toString()
                     inline = true
                 }
 
@@ -196,7 +196,7 @@ class TicketService(
 
                 field {
                     name = "Ticket Id"
-                    value = ticket.ticketUid.toString()
+                    value = ticket.ticketId.toString()
                     inline = true
                 }
 

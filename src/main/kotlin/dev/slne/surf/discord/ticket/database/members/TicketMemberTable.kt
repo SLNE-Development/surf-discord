@@ -4,7 +4,7 @@ import dev.slne.surf.discord.ticket.database.ticket.TicketTable
 import org.jetbrains.exposed.dao.id.LongIdTable
 
 object TicketMemberTable : LongIdTable("discord_ticket_members") {
-    val ticketUid = uuid("ticket_uid").references(TicketTable.ticketUid)
+    val ticketId = uuid("ticket_id").references(TicketTable.ticketId)
     val memberId = long("member_id")
     val memberName = varchar("member_name", 100)
     val memberAvatarUrl = varchar("member_avatar_url", 200).nullable()
@@ -18,6 +18,6 @@ object TicketMemberTable : LongIdTable("discord_ticket_members") {
     val removedByAvatarUrl = varchar("removed_by_avatar_url", 200).nullable()
 
     init {
-        index(true, ticketUid, memberId)
+        index(true, ticketId, memberId)
     }
 }
