@@ -49,7 +49,7 @@ class TicketTypeSelectMenu(
             event.hook.deleteOriginal().queue()
             event.replyModal(modal).queue()
         } else {
-            event.hook.editOriginal("TODO: Ticket Modal: ${selected.label}").queue()
+            event.hook.editOriginal(translatable("error")).queue()
         }
     }
 

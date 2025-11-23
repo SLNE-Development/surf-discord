@@ -2,7 +2,6 @@ package dev.slne.surf.discord.interaction.selectmenu
 
 import org.springframework.stereotype.Component
 
-// TODO: Replace with modal registrar?
 @Component
 class SelectMenuRegistry(menus: List<DiscordSelectMenu>) {
     private val menuMap = menus.associateBy { it.id }

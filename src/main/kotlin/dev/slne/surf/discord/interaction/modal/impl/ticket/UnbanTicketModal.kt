@@ -108,11 +108,11 @@ class UnbanTicketModal(
                     name = translatable("ticket.unban.embed.field.reason")
                     value = reason
                     inline = true
-                }//TODO: Add Whitelist Information
+                }
             }
         ).addComponents(
             ActionRow.of(
-                buttonRegistry.get("ticket:close").button, //TODO: Add Laby.Net Profile Button
+                buttonRegistry.get("ticket:close").button,
                 buttonRegistry.get("ticket:claim").button
             )
         ).submit(true).thenAccept {

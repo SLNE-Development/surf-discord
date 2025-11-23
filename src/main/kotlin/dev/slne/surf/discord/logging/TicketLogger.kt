@@ -35,8 +35,6 @@ class TicketLogger {
                 value = "${ticket.authorName} (${ticket.authorId})"
                 inline = true
             }
-
-            // TODO: Either replace with actual year or just replace with nothing
         }).queue()
     }
 
