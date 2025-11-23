@@ -51,4 +51,9 @@ class DiscordBot {
         GatewayIntent.DIRECT_MESSAGE_REACTIONS,
         GatewayIntent.DIRECT_MESSAGE_TYPING
     )
+
+    companion object {
+        val SURVIVAL_ENABLED = false
+        val EVENT_ENABLED = true
+    }
 }
