@@ -4,6 +4,7 @@ import dev.slne.surf.discord.config.botConfig
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.ticket.Ticket
 import dev.slne.surf.discord.util.Colors
+import net.dv8tion.jda.api.entities.User
 import org.springframework.stereotype.Service
 
 @Service
@@ -142,6 +143,29 @@ class TicketLogger {
             field {
                 name = "Schließungsgrund"
                 value = ticket.closedReason ?: "Kein Grund angegeben"
+                inline = true
+            }
+        }).queue()
+    }
+
+    fun logWhitelist(playerName: String, discordUser: User) {
+        val channel =
+            discordUser.jda.getTextChannelById(botConfig.channels.ticketLogChannel) ?: return
+
+        channel.sendMessageEmbeds(embed {
+            title = "Whitelist Anfrage"
+            description = "Ein Spieler wurde **automatisch** gewhitelisted."
+            color = Colors.SUCCESS
+
+            field {
+                name = "Minecraft Name"
+                value = playerName
+                inline = true
+            }
+
+            field {
+                name = "Discord Nutzer"
+                value = "${discordUser.asMention} (${discordUser.name})"
                 inline = true
             }
         }).queue()
