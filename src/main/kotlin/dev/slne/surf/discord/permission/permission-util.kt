@@ -3,7 +3,6 @@ package dev.slne.surf.discord.permission
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
 
-// TODO: Replace with database storage to be configurable at runtime and also via the panel
 private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> = mapOf(
     // Arty Development Discord (Red)
     1410944184231137332 to mapOf(
@@ -44,7 +43,6 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_REPORT_VIEW,
             DiscordPermission.TICKET_UNBAN_VIEW,
             DiscordPermission.TICKET_BUG_VIEW,
-            DiscordPermission.TICKET_APPLICATION_VIEW,
             DiscordPermission.COMMAND_ANNOUNCEMENT_CREATE,
             DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
             DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE
@@ -62,7 +60,7 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
             DiscordPermission.TICKET_REPORT_VIEW,
             DiscordPermission.TICKET_UNBAN_VIEW,
-            DiscordPermission.TICKET_APPLICATION_VIEW,
+            DiscordPermission.TICKET_APPLICATION_SUPPORTER,
             DiscordPermission.COMMAND_ANNOUNCEMENT_CREATE,
             DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
             DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE
@@ -79,6 +77,9 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_SUPPORT_SURVIVAL_VIEW,
             DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
             DiscordPermission.TICKET_BUG_VIEW,
+            DiscordPermission.TICKET_APPLICATION_BUILDER,
+            DiscordPermission.TICKET_APPLICATION_DEVELOPER,
+            DiscordPermission.TICKET_APPLICATION_DESIGNER,
             DiscordPermission.COMMAND_ANNOUNCEMENT_CREATE,
             DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
             DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE

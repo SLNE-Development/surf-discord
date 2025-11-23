@@ -13,7 +13,7 @@ class ModalListener(
 ) : ListenerAdapter() {
     override fun onModalInteraction(event: ModalInteractionEvent) {
         discordScope.launch {
-            registry.get(event.modalId).onSubmit(event)
+            registry.getOrNull(event.modalId)?.onSubmit(event)
         }
     }
 }

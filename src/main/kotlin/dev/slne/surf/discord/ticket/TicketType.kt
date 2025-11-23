@@ -158,5 +158,25 @@ enum class TicketType(
         viewPermission = DiscordPermission.TICKET_BUG_VIEW,
         closeReasons = defaultReasons,
         modal = modalRegistry.get("ticket:bugreport").create()
-    );
+    ),
+    APPLICATION(
+        id = "application",
+        displayName = "Bewerbung",
+        description = "Erstelle ein Ticket, um eine Bewerbung zu starten.",
+        emoji = "📝",
+        viewPermission = DiscordPermission.UNKNOWN,
+        closeReasons = mutableObjectListOf(
+            TicketCloseReason.of(
+                displayName = "Bewerbung abgelehnt",
+                description = "Deine Bewerbung wurde abgelehnt."
+            ),
+            TicketCloseReason.of(
+                displayName = "Bewerbung angenommen",
+                description = "Deine Bewerbung wurde angenommen."
+            )
+        ).apply {
+            addAll(defaultReasons)
+        },
+        modal = modalRegistry.get("ticket:application").create()
+    )
 }

@@ -39,18 +39,35 @@ class TicketService(
             return null
         }
 
-        type.viewPermission.getRolesWithPermission(threadChannel.guild.idLong).forEach { role ->
-            threadChannel.sendMessage("Zugriff für $role...").submit(true).thenAccept { message ->
-                message.editMessage("<@&$role>").submit(true).thenAccept {
-                    message.delete().queue()
-                }
+        if (type != TicketType.APPLICATION) {
+            type.viewPermission.getRolesWithPermission(threadChannel.guild.idLong).forEach { role ->
+                threadChannel.sendMessage("Granting access for $role...").submit(true)
+                    .thenAccept { message ->
+                        message.editMessage("<@&$role>").submit(true).thenAccept {
+                            message.delete().queue()
+                        }
+                    }
             }
+        } else {
+            val applicationType = TicketApplicationType.valueOf(
+                data["application_type"] ?: error("Missing application type")
+            )
+
+            applicationType.viewPermission.getRolesWithPermission(threadChannel.guild.idLong)
+                .forEach { role ->
+                    threadChannel.sendMessage("Granting access for $role...").submit(true)
+                        .thenAccept { message ->
+                            message.editMessage("<@&$role>").submit(true).thenAccept {
+                                message.delete().queue()
+                            }
+                        }
+                }
         }
 
         threadChannel.addThreadMember(user).queue()
 
         val ticket = Ticket(
-            ticketUid = UUID.randomUUID(),
+            ticketId = UUID.randomUUID(),
             ticketData = mapOf(),
             authorId = userId,
             authorName = user.name,
@@ -67,7 +84,7 @@ class TicketService(
         )
 
         ticketRepository.createTicket(ticket)
-        ticketDataRepository.setData(ticket.ticketUid, data)
+        ticketDataRepository.setData(ticket.ticketId, data)
 
         ticketLogger.logCreation(ticket)
 
@@ -98,7 +115,7 @@ class TicketService(
         ticketStaffRepository.isClaimedByUser(ticket, user)
 
     suspend fun updateData(ticket: Ticket, ticketData: TicketData) =
-        ticketDataRepository.setData(ticket.ticketUid, ticketData)
+        ticketDataRepository.setData(ticket.ticketId, ticketData)
 
     suspend fun getTicketByThreadId(threadId: Long) =
         ticketRepository.getTicketByThreadId(threadId)
@@ -130,7 +147,7 @@ class TicketService(
 
                 field {
                     name = "Ticket Id"
-                    value = ticket.ticketUid.toString()
+                    value = ticket.ticketId.toString()
                     inline = true
                 }
 
@@ -179,7 +196,7 @@ class TicketService(
 
                 field {
                     name = "Ticket Id"
-                    value = ticket.ticketUid.toString()
+                    value = ticket.ticketId.toString()
                     inline = true
                 }
 

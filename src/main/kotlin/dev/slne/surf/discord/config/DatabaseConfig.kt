@@ -35,7 +35,7 @@ class DatabaseConfiguration {
 //                AnnouncementTable,
 //                TicketMessagesTable,
 //                TicketAttachmentsTable
-//            )// TODO: Remove for production
+//            )//
 //        }
 
         logger.info("Connected to database ${botConfig.database.database} at ${botConfig.database.hostname}:${botConfig.database.port}")

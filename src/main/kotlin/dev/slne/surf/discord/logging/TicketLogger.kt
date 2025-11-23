@@ -20,7 +20,7 @@ class TicketLogger {
 
             field {
                 name = "Ticket ID"
-                value = ticket.ticketUid.toString()
+                value = ticket.ticketId.toString()
                 inline = true
             }
 
@@ -35,8 +35,6 @@ class TicketLogger {
                 value = "${ticket.authorName} (${ticket.authorId})"
                 inline = true
             }
-
-            // TODO: Either replace with actual year or just replace with nothing
         }).queue()
     }
 
@@ -51,7 +49,7 @@ class TicketLogger {
 
             field {
                 name = "Ticket ID"
-                value = ticket.ticketUid.toString()
+                value = ticket.ticketId.toString()
                 inline = true
             }
 
@@ -80,7 +78,7 @@ class TicketLogger {
 
             field {
                 name = "Ticket ID"
-                value = ticket.ticketUid.toString()
+                value = ticket.ticketId.toString()
                 inline = true
             }
 
@@ -110,7 +108,7 @@ class TicketLogger {
 
             field {
                 name = "Ticket ID"
-                value = ticket.ticketUid.toString()
+                value = ticket.ticketId.toString()
                 inline = true
             }
 

@@ -6,7 +6,7 @@ import java.util.*
 typealias TicketData = Map<String, String>
 
 data class Ticket(
-    val ticketUid: UUID,
+    val ticketId: UUID,
     var ticketData: TicketData,
     val authorId: Long,
     val authorName: String,

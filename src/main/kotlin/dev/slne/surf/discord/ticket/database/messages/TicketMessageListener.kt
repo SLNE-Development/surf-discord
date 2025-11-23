@@ -27,7 +27,7 @@ class TicketMessageListener(
 
             event.message.attachments.forEach {
                 ticketAttachmentsRepository.addAttachment(
-                    ticket.ticketUid,
+                    ticket.ticketId,
                     event.message.idLong,
                     it.idLong,
                     it.url,

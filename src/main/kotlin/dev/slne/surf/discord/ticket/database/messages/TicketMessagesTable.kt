@@ -4,7 +4,7 @@ import dev.slne.surf.discord.ticket.database.ticket.TicketTable
 import org.jetbrains.exposed.dao.id.LongIdTable
 
 object TicketMessagesTable : LongIdTable("discord_ticket_messages") {
-    val ticketUid = uuid("ticket_uid").references(TicketTable.ticketUid)
+    val ticketId = uuid("ticket_id").references(TicketTable.ticketId)
     val authorId = long("author_id")
     val authorName = varchar("author_name", 100)
     val authorAvatarUrl = varchar("author_avatar_url", 255)

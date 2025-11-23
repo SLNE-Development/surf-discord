@@ -27,3 +27,8 @@ fun <T> mutableObjectListOf(vararg elements: T) = ObjectArrayList<T>(elements)
 fun <T> mutableObjectListOf() = ObjectArrayList<T>()
 fun <T> mutableObjectSetOf(vararg elements: T) = ObjectOpenHashSet(elements)
 fun <T> mutableObjectSetOf() = ObjectOpenHashSet<T>()
+
+val String.formattedEnumEntryName
+    get() = this.split("_").joinToString(" ") { word ->
+        word.lowercase().replaceFirstChar { it.uppercase() }
+    }

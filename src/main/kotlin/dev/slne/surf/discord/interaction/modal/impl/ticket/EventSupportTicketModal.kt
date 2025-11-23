@@ -87,11 +87,11 @@ class EventSupportTicketModal(
                     name = translatable("ticket.support.event.embed.field.issue.name")
                     value = issue
                     inline = true
-                }//TODO: Add Whitelist Information
+                }
             }
         ).addComponents(
             ActionRow.of(
-                buttonRegistry.get("ticket:close").button, //TODO: Add Laby.Net Profile Button
+                buttonRegistry.get("ticket:close").button,
                 buttonRegistry.get("ticket:claim").button
             )
         ).submit(true).thenAccept {

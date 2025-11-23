@@ -11,14 +11,14 @@ import java.util.*
 @Repository
 class TicketAttachmentsRepository {
     suspend fun addAttachment(
-        ticketUid: UUID,
+        ticketId: UUID,
         messageId: Long,
         attachmentId: Long,
         url: String,
         proxyUrl: String
     ) = newSuspendedTransaction(Dispatchers.IO) {
         TicketAttachmentsTable.insert {
-            it[this.ticketUid] = ticketUid
+            it[this.ticketId] = ticketId
             it[this.messageId] = messageId
             it[this.attachmentId] = attachmentId
             it[this.url] = url

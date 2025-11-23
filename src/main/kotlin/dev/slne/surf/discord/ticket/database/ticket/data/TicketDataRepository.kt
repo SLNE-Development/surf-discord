@@ -17,12 +17,12 @@ class TicketDataRepository {
         data: TicketData
     ) = newSuspendedTransaction(Dispatchers.IO) {
         TicketDataTable.deleteWhere {
-            TicketDataTable.ticketUid eq ticketId
+            TicketDataTable.ticketId eq ticketId
         }
 
         data.forEach { (key, value) ->
             TicketDataTable.insert {
-                it[TicketDataTable.ticketUid] = ticketId
+                it[TicketDataTable.ticketId] = ticketId
                 it[TicketDataTable.dataKey] = key
                 it[TicketDataTable.dataValue] = value
             }
@@ -32,7 +32,7 @@ class TicketDataRepository {
     suspend fun getData(
         ticketId: UUID
     ): TicketData = newSuspendedTransaction(Dispatchers.IO) {
-        TicketDataTable.selectAll().where(TicketDataTable.ticketUid eq ticketId)
+        TicketDataTable.selectAll().where(TicketDataTable.ticketId eq ticketId)
             .associate { it[TicketDataTable.dataKey] to it[TicketDataTable.dataValue] }
     }
 }

@@ -17,7 +17,7 @@ class TicketRepository(
 ) {
     suspend fun createTicket(ticket: Ticket) = newSuspendedTransaction(Dispatchers.IO) {
         TicketTable.insert {
-            it[ticketUid] = ticket.ticketUid
+            it[ticketId] = ticket.ticketId
             it[authorId] = ticket.authorId
             it[authorName] = ticket.authorName
             it[authorAvatarUrl] = ticket.authorAvatar
@@ -51,7 +51,7 @@ class TicketRepository(
     suspend fun markAsClosed(
         ticket: Ticket
     ) = newSuspendedTransaction(Dispatchers.IO) {
-        TicketTable.update({ TicketTable.ticketUid eq ticket.ticketUid }) {
+        TicketTable.update({ TicketTable.ticketId eq ticket.ticketId }) {
             it[TicketTable.closedAt] = ticket.closedAt
             it[TicketTable.closedById] = ticket.closedById
             it[TicketTable.closedByName] = ticket.closedByName
@@ -61,7 +61,7 @@ class TicketRepository(
     }
 
     suspend fun getTicketById(ticketId: UUID): Ticket? = newSuspendedTransaction(Dispatchers.IO) {
-        TicketTable.selectAll().where(TicketTable.ticketUid eq ticketId)
+        TicketTable.selectAll().where(TicketTable.ticketId eq ticketId)
             .firstNotNullOfOrNull { it.toTicket() }
     }
 
@@ -73,11 +73,11 @@ class TicketRepository(
         }
 
     private suspend fun ResultRow.toTicket(): Ticket {
-        val id = this[TicketTable.ticketUid]
+        val id = this[TicketTable.ticketId]
         val data = ticketDataRepository.getData(id)
 
         return Ticket(
-            ticketUid = id,
+            ticketId = id,
             ticketData = data,
             authorId = this[TicketTable.authorId],
             authorName = this[TicketTable.authorName],
