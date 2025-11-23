@@ -161,7 +161,7 @@ class TicketService(
 
                 field {
                     name = "Ticket Erstellungsdatum"
-                    value = "<t:${ticket.createdAt.toEpochSecond() / 1000}:F>"
+                    value = "<t:${ticket.createdAt.toInstant().toEpochMilli() / 1000}:F>"
                     inline = true
                 }
 
@@ -215,7 +215,7 @@ class TicketService(
 
                 field {
                     name = "Erstellungsdatum"
-                    value = "<t:${ticket.createdAt.toEpochSecond() / 1000}:F>"
+                    value = "<t:${ticket.createdAt.toInstant().toEpochMilli() / 1000}:F>"
                     inline = true
                 }
 

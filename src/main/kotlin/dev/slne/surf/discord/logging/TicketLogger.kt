@@ -127,7 +127,9 @@ class TicketLogger {
             field {
                 name = "Zeitraum"
                 value =
-                    "<t:${ticket.createdAt.toEpochSecond() / 1000}:F> - <t:${System.currentTimeMillis() / 1000}:F>"
+                    "<t:${
+                        ticket.createdAt.toInstant().toEpochMilli() / 1000
+                    }:F> - <t:${System.currentTimeMillis() / 1000}:F>"
                 inline = true
             }
 
