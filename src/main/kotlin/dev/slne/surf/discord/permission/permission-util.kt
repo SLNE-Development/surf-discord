@@ -82,6 +82,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_APPLICATION_BUILDER,
             DiscordPermission.TICKET_APPLICATION_DEVELOPER,
             DiscordPermission.TICKET_APPLICATION_DESIGNER,
+            DiscordPermission.TICKET_UNBAN_VIEW,
+            DiscordPermission.TICKET_REPORT_VIEW,
             DiscordPermission.COMMAND_ANNOUNCEMENT_CREATE,
             DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
             DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE
@@ -110,8 +112,7 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_WHITELIST_VIEW,
             DiscordPermission.TICKET_WHITELIST_CONFIRM,
             DiscordPermission.TICKET_SUPPORT_SURVIVAL_VIEW,
-            DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
-            DiscordPermission.TICKET_REPORT_VIEW,
+            DiscordPermission.TICKET_SUPPORT_EVENT_VIEW
         ),
 
         // Community Management
