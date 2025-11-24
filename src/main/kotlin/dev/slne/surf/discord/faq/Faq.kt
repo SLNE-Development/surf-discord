@@ -77,5 +77,10 @@ enum class Faq(val id: String, val question: String, val answer: String) {
         "one-block-event",
         translatable("faq.command.questions.one-block-event.question"),
         translatable("faq.command.questions.one-block-event.answer")
+    ),
+    HOW_TO_JOIN(
+        "how-to-join",
+        translatable("faq.command.questions.how-to-join.question"),
+        translatable("faq.command.questions.how-to-join.answer")
     )
 }

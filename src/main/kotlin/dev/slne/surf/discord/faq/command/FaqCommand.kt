@@ -34,7 +34,8 @@ import kotlin.time.toJavaDuration
                 CommandChoice("clan-info", "clan-info"),
                 CommandChoice("take-part-in-event", "take-part-in-event"),
                 CommandChoice("survival-downtime", "survival-downtime"),
-                CommandChoice("one-block-event", "one-block-event")
+                CommandChoice("one-block-event", "one-block-event"),
+                CommandChoice("how-to-join", "how-to-join"),
             ]
         ),
         CommandOption(
