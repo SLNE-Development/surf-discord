@@ -21,7 +21,7 @@ object TicketTable : ULongIdTable("ticket_tickets") {
     val openedAt = zonedDateTime("opened_at")
 
     val closedById =
-        varchar("closed_by_id", 20).nullable().transform({ it?.toLong() }, { it.toString() })
+        varchar("closed_by_id", 20).nullable().transform({ it?.toLong() }, { it?.toString() })
     val closedByName = varchar("closed_by_name", 64).nullable()
     val closedByAvatarUrl = varchar("closed_by_avatar_url", 255).nullable()
 

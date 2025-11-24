@@ -28,14 +28,15 @@ class TicketMemberService(
         val thread = ticket.getThreadChannel() ?: return false
 
         thread.addThreadMember(user).queue()
-        thread.sendMessage(user.asMention).queue()
-        thread.sendMessageEmbeds(embed {
-            title = "Willkommen im Ticket"
-            description =
-                "Du wurdest zu diesem Ticket hinzugefügt. Bitte sieh dir den Verlauf des Tickets an und warte auf eine Nachricht eines Teammitglieds."
-            color = Colors.WARNING
-            footer = "Hinzugefügt von ${addedBy.name}"
-        }).queue()
+        thread.sendMessage(user.asMention).setEmbeds(
+            embed {
+                title = "Willkommen im Ticket"
+                description =
+                    "Du wurdest zu diesem Ticket hinzugefügt. Bitte sieh dir den Verlauf des Tickets an und warte auf eine Nachricht eines Teammitglieds."
+                color = Colors.WARNING
+                footer = "Hinzugefügt von ${addedBy.name}"
+            }
+        ).queue()
 
         return true
     }
