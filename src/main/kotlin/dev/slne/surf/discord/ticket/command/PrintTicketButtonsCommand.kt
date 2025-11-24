@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component
     name = "ticketbuttons",
     description = "Sendet die Ticket Buttons in den aktuellen Kanal.",
     options = [CommandOption(
-        "messageId",
+        "message",
         "Die ID der Nachricht, zu der die Ticket Buttons hinzugefügt werden sollen.",
         type = CommandOptionType.STRING,
         required = false,
@@ -35,7 +35,7 @@ class PrintTicketButtonsCommand(
             return
         }
 
-        val messageId: Long? = event.getOption("messageId")?.asLong
+        val messageId: Long? = event.getOption("message")?.asLong
 
         if (messageId != null) {
             val channel = event.channel
