@@ -14,7 +14,8 @@ import org.springframework.stereotype.Component
 
 @Component
 class CloseTicketButton(
-    private val selectMenuRegistry: SelectMenuRegistry
+    private val selectMenuRegistry: SelectMenuRegistry,
+    private val emojis: Emojis
 ) : DiscordButton {
     override val id = "ticket:close"
     override val button by lazy {
@@ -22,7 +23,7 @@ class CloseTicketButton(
             ButtonStyle.SECONDARY,
             id,
             translatable("button.ticket.close"),
-            Emojis.crossMark
+            emojis.crossMark
         )
     }
 

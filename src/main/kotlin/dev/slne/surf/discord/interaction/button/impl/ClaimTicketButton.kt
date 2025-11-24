@@ -14,7 +14,8 @@ import org.springframework.stereotype.Component
 
 @Component
 class ClaimTicketButton(
-    private val ticketService: TicketService
+    private val ticketService: TicketService,
+    private val emojis: Emojis
 ) : DiscordButton {
     override val id = "ticket:claim"
     override val button by lazy {
@@ -22,7 +23,7 @@ class ClaimTicketButton(
             ButtonStyle.SECONDARY,
             id,
             translatable("button.ticket.claim"),
-            Emojis.information
+            emojis.information
         )
     }
 

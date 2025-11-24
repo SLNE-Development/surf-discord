@@ -11,14 +11,16 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import org.springframework.stereotype.Component
 
 @Component
-class WhitelistCreateButton : DiscordButton {
+class WhitelistCreateButton(
+    private val emojis: Emojis
+) : DiscordButton {
     override val id = "whitelist:create"
     override val button by lazy {
         Button.of(
             ButtonStyle.SECONDARY,
             id,
             translatable("button.ticket.whitelist"),
-            Emojis.checkMark
+            emojis.checkMark
         )
     }
 

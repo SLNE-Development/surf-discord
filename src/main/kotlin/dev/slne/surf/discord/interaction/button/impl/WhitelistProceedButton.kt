@@ -5,15 +5,16 @@ import dev.slne.surf.discord.interaction.modal.ModalRegistry
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
+import dev.slne.surf.discord.util.Emojis
 import net.dv8tion.jda.api.components.buttons.Button
 import net.dv8tion.jda.api.components.buttons.ButtonStyle
-import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import org.springframework.stereotype.Component
 
 @Component
 class WhitelistProceedButton(
-    private val modalRegistry: ModalRegistry
+    private val modalRegistry: ModalRegistry,
+    private val emojis: Emojis
 ) : DiscordButton {
     override val id = "ticket:whitelist:complete"
     override val button by lazy {
@@ -21,7 +22,7 @@ class WhitelistProceedButton(
             ButtonStyle.SECONDARY,
             id,
             translatable("button.ticket.whitelist.proceed"),
-            Emoji.fromCustom("checkmark", 1433072075446423754, false)
+            emojis.checkMark
         )
     }
 
