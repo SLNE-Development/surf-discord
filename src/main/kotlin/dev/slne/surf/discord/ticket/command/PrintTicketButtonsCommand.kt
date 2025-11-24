@@ -41,6 +41,13 @@ class PrintTicketButtonsCommand(
             val channel = event.channel
             val message = channel.retrieveMessageById(messageId).submit(true).await()
 
+            if (message.author.idLong != event.jda.selfUser.idLong) {
+                event.reply(translatable("ticket.command.ticketbuttons.edit.not-bot-message"))
+                    .setEphemeral(true)
+                    .queue()
+                return
+            }
+
             message.editMessageEmbeds(
                 embed {
                     title = translatable("ticket.command.ticketbuttons.title")

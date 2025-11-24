@@ -2,6 +2,7 @@ package dev.slne.surf.discord.command.console.impl
 
 import dev.slne.surf.discord.command.console.ConsoleCommand
 import dev.slne.surf.discord.jda
+import dev.slne.surf.discord.logger
 import net.dv8tion.jda.api.entities.Icon
 import org.springframework.stereotype.Component
 import java.io.File
@@ -29,5 +30,7 @@ class EmojiCreateCommand : ConsoleCommand {
             it.createEmoji("crossmark", crossMarkIcon).queue()
             it.createEmoji("information", informationIcon).queue()
         }
+
+        logger.info("Created Emojis in all guilds.")
     }
 }
