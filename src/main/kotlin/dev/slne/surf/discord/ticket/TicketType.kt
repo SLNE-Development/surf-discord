@@ -43,22 +43,22 @@ enum class TicketType(
     val closeReasons: ObjectList<TicketCloseReason>,
     val modal: Modal? = null
 ) {
-    WHITELIST(
-        id = "whitelist",
-        displayName = "Whitelist Ticket",
-        description = "Erstelle ein Ticket, um auf dem Survival Server gewhitelisted zu werden.",
-        emoji = "📜",
-        viewPermission = DiscordPermission.TICKET_WHITELIST_VIEW,
-        closeReasons = mutableObjectListOf(
-            TicketCloseReason.of(
-                displayName = "Anforderungen nicht erfüllt",
-                description = "Du erfüllst nicht alle Anforderungen für eine Whitelist."
-            )
-        ).apply {
-            addAll(defaultReasons)
-        },
-        modal = modalRegistry.get("ticket:whitelist").create()
-    ),
+    //    WHITELIST(
+//        id = "whitelist",
+//        displayName = "Whitelist Ticket",
+//        description = "Erstelle ein Ticket, um auf dem Survival Server gewhitelisted zu werden.",
+//        emoji = "📜",
+//        viewPermission = DiscordPermission.TICKET_WHITELIST_VIEW,
+//        closeReasons = mutableObjectListOf(
+//            TicketCloseReason.of(
+//                displayName = "Anforderungen nicht erfüllt",
+//                description = "Du erfüllst nicht alle Anforderungen für eine Whitelist."
+//            )
+//        ).apply {
+//            addAll(defaultReasons)
+//        },
+//        modal = modalRegistry.get("ticket:whitelist").create()
+//    ),
     DISCORD_SUPPORT(
         id = "discord",
         displayName = "Discord Support Ticket",
