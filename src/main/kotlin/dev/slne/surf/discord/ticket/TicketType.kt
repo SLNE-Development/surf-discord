@@ -150,15 +150,16 @@ enum class TicketType(
         },
         modal = modalRegistry.get("ticket:bugreport").create()
     ),
-    SERVER_SUPPORT(
-        id = "server",
-        displayName = "Server Support Ticket",
-        description = "Erstelle ein Ticket, um Support für den Server zu erhalten.",
-        emoji = "🖥️",
-        viewPermission = DiscordPermission.TICKET_BUG_VIEW,
-        closeReasons = defaultReasons,
-        modal = modalRegistry.get("ticket:bugreport").create()
-    ),
+
+    //    SERVER_SUPPORT(
+//        id = "server",
+//        displayName = "Server Support Ticket",
+//        description = "Erstelle ein Ticket, um Support für den Server zu erhalten.",
+//        emoji = "🖥️",
+//        viewPermission = DiscordPermission.TICKET_BUG_VIEW,
+//        closeReasons = defaultReasons,
+//        modal = modalRegistry.get("ticket:bugreport").create()
+//    ),
     APPLICATION(
         id = "application",
         displayName = "Bewerbung",
