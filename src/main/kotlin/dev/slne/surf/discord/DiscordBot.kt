@@ -27,7 +27,7 @@ class DiscordBot {
 
         try {
             jda.awaitReady()
-            logger.info("Discord Bot is ready.")
+            logger.info("Discord Bot is ready. Loading commands...")
         } catch (exception: InterruptedException) {
             logger.error("Failed to await ready.", exception)
             exitProcess(1)
