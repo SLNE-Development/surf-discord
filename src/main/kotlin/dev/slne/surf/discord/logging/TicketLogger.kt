@@ -11,7 +11,9 @@ import org.springframework.stereotype.Service
 class TicketLogger {
     fun logCreation(ticket: Ticket) {
         val channel =
-            ticket.getThreadChannel()?.guild?.getTextChannelById(botConfig.channels.ticketLogChannel)
+            ticket.getThreadChannel()?.guild?.getTextChannelById(
+                botConfig.channels.ticketLogChannel ?: return
+            )
                 ?: return
 
         channel.sendMessageEmbeds(embed {
@@ -41,7 +43,9 @@ class TicketLogger {
 
     fun logNewClaimant(ticket: Ticket, claimantName: String) {
         val channel =
-            ticket.getThreadChannel()?.guild?.getTextChannelById(botConfig.channels.ticketLogChannel)
+            ticket.getThreadChannel()?.guild?.getTextChannelById(
+                botConfig.channels.ticketLogChannel ?: return
+            )
                 ?: return
 
         channel.sendMessageEmbeds(embed {
@@ -70,7 +74,9 @@ class TicketLogger {
 
     fun logNewUnClaimant(ticket: Ticket, unclaimantName: String) {
         val channel =
-            ticket.getThreadChannel()?.guild?.getTextChannelById(botConfig.channels.ticketLogChannel)
+            ticket.getThreadChannel()?.guild?.getTextChannelById(
+                botConfig.channels.ticketLogChannel ?: return
+            )
                 ?: return
 
         channel.sendMessageEmbeds(embed {
@@ -99,7 +105,9 @@ class TicketLogger {
 
     fun logClosure(ticket: Ticket) {
         val channel =
-            ticket.getThreadChannel()?.guild?.getTextChannelById(botConfig.channels.ticketLogChannel)
+            ticket.getThreadChannel()?.guild?.getTextChannelById(
+                botConfig.channels.ticketLogChannel ?: return
+            )
                 ?: return
 
         channel.sendMessageEmbeds(embed {
@@ -150,7 +158,8 @@ class TicketLogger {
 
     fun logWhitelist(playerName: String, discordUser: User) {
         val channel =
-            discordUser.jda.getTextChannelById(botConfig.channels.ticketLogChannel) ?: return
+            discordUser.jda.getTextChannelById(botConfig.channels.ticketLogChannel ?: return)
+                ?: return
 
         channel.sendMessageEmbeds(embed {
             title = "Whitelist Anfrage"
