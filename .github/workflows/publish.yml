@@ -3,7 +3,7 @@ name: Publish to Maven & Create GitHub Release
 on:
   push:
     branches:
-      - master
+      - version/*
   workflow_dispatch:
 
 env:
@@ -11,7 +11,7 @@ env:
   SLNE_SNAPSHOTS_REPO_PASSWORD: ${{ secrets.SLNE_SNAPSHOTS_REPO_PASSWORD }}
   SLNE_RELEASES_REPO_USERNAME: ${{ secrets.SLNE_RELEASES_REPO_USERNAME }}
   SLNE_RELEASES_REPO_PASSWORD: ${{ secrets.SLNE_RELEASES_REPO_PASSWORD }}
-  MODULE_REGEX: "bot\\.jar$"
+  MODULE_REGEX: "surf-discord.*\\.jar$"
 
 jobs:
   build:
