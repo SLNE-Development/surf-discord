@@ -17,7 +17,7 @@ class EmojiCreateCommand : ConsoleCommand {
         val crossMarkFile = File("emojis/crossmark.png")
 
         if (!checkmarkFile.exists() || !informationFile.exists() || !crossMarkFile.exists()) {
-            println("Some Emoji files not found in the 'emojis' directory. (checkmark.png, information.png, crossmark.png)")
+            logger.error("Some Emoji files not found in the 'emojis' directory. (checkmark.png, information.png, crossmark.png)")
             return
         }
 

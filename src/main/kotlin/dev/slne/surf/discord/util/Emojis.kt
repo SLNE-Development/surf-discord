@@ -38,19 +38,19 @@ class Emojis(
         crossMark = Emoji.fromCustom(cross!!.name, cross.idLong, cross.isAnimated)
         information = Emoji.fromCustom(info!!.name, info.idLong, info.isAnimated)
 
-        println("Emoji initialization complete.")
+        logger.info("Emoji initialization complete.")
     }
 
 
     fun failure() {
-        println("Required emojis not found. Creating them...")
+        logger.warn("Required emojis not found. Creating them...")
 
         val checkmarkFile = File("emojis/checkmark.png")
         val informationFile = File("emojis/information.png")
         val crossMarkFile = File("emojis/crossmark.png")
 
         if (!checkmarkFile.exists() || !informationFile.exists() || !crossMarkFile.exists()) {
-            println("Some emoji files not found in the 'emojis' directory. (checkmark.png, information.png, crossmark.png)")
+            logger.error("Some emoji files not found in the 'emojis' directory. (checkmark.png, information.png, crossmark.png)")
             return
         }
 
@@ -64,7 +64,7 @@ class Emojis(
             it.createEmoji("information", informationIcon).queue()
         }
 
-        println("Created emojis in all guilds.")
+        logger.info("Created emojis in all guilds.")
     }
 
 }
