@@ -26,8 +26,6 @@ class TicketRepository(
             ticket.threadId?.let { id -> it[threadId] = id }
             it[ticketType] = ticket.ticketType
             it[openedAt] = ticket.createdAt
-            it[closedAt] = ticket.closedAt
-            it[closedById] = ticket.closedById
             it[createdAt] = ZonedDateTime.now()
             it[updatedAt] = ZonedDateTime.now()
         }
@@ -78,6 +76,7 @@ class TicketRepository(
 
     private suspend fun ResultRow.toTicket(): Ticket {
         val id = this[TicketTable.ticketId]
+        val internalId = this[TicketTable.id].value
         val data = ticketDataRepository.getData(id)
 
         return Ticket(
@@ -95,6 +94,8 @@ class TicketRepository(
             closedByName = this[TicketTable.closedByName],
             closedByAvatar = this[TicketTable.closedByAvatarUrl],
             closedReason = this[TicketTable.closedReason]
-        )
+        ).apply {
+            this.internalTicketId = internalId
+        }
     }
 }

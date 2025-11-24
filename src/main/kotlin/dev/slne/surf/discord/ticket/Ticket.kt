@@ -22,6 +22,8 @@ data class Ticket(
     var closedByAvatar: String?,
     var closedReason: String?,
 ) {
+    var internalTicketId: ULong? = null
+
     fun getThreadChannel() = threadId?.let { jda.getThreadChannelById(it) }
     fun isClosed() = closedAt != null
 }
