@@ -5,10 +5,10 @@ import dev.slne.surf.discord.interaction.selectmenu.SelectMenuRegistry
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
+import dev.slne.surf.discord.util.Emojis
 import net.dv8tion.jda.api.components.actionrow.ActionRow
 import net.dv8tion.jda.api.components.buttons.Button
 import net.dv8tion.jda.api.components.buttons.ButtonStyle
-import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import org.springframework.stereotype.Component
 
@@ -22,7 +22,7 @@ class CloseTicketButton(
             ButtonStyle.SECONDARY,
             id,
             translatable("button.ticket.close"),
-            Emoji.fromCustom("cross", 1433072192274305135, false)
+            Emojis.crossMark
         )
     }
 

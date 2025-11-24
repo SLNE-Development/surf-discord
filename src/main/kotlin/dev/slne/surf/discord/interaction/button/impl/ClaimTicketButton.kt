@@ -5,10 +5,10 @@ import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.ticket.TicketService
+import dev.slne.surf.discord.util.Emojis
 import dev.slne.surf.discord.util.asTicketOrThrow
 import net.dv8tion.jda.api.components.buttons.Button
 import net.dv8tion.jda.api.components.buttons.ButtonStyle
-import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import org.springframework.stereotype.Component
 
@@ -22,7 +22,7 @@ class ClaimTicketButton(
             ButtonStyle.SECONDARY,
             id,
             translatable("button.ticket.claim"),
-            Emoji.fromCustom("information", 1433420020993757325, false)
+            Emojis.information
         )
     }
 
