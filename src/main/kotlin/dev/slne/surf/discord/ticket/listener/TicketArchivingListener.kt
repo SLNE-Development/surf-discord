@@ -1,5 +1,6 @@
 package dev.slne.surf.discord.ticket.listener
 
+import dev.slne.surf.discord.logger
 import dev.slne.surf.discord.ticket.TicketService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -28,6 +29,8 @@ class TicketArchivingListener(
             }
 
             event.channel.asThreadChannel().manager.setArchived(false).queue()
+
+            logger.info("Prevented archiving of ticket thread channel ${channel.name} because the ticket is not closed.")
         }
     }
 }
