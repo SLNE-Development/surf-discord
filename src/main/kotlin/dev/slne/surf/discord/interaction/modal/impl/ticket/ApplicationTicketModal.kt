@@ -1,5 +1,6 @@
 package dev.slne.surf.discord.interaction.modal.impl.ticket
 
+import dev.slne.surf.discord.DiscordBot
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.getBean
@@ -82,6 +83,15 @@ class ApplicationTicketModal(
         val motivation = interaction.getValue("motivation")?.asString ?: return
         val why = interaction.getValue("why")?.asString ?: return
         val experience = interaction.getValue("experience")?.asString ?: return
+
+        if ((!DiscordBot.SUPPORT_APPLICATION_ENABLED && applicationType == TicketApplicationType.SUPPORTER) || (!DiscordBot.TWITCH_APPLICATION_ENABLED && applicationType == TicketApplicationType.TWITCH_MODERATOR)) {
+            interaction.replyEmbeds(embed {
+                title = translatable("ticket.application.not-available.title")
+                description = translatable("ticket.application.not-available.description")
+                color = Colors.WARNING
+            }).queue()
+            return
+        }
 
         interaction.reply(translatable("ticket.creating")).setEphemeral(true).queue()
 
