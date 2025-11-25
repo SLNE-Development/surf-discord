@@ -89,7 +89,7 @@ class ApplicationTicketModal(
                 title = translatable("ticket.application.not-available.title")
                 description = translatable("ticket.application.not-available.description")
                 color = Colors.WARNING
-            }).queue()
+            }).setEphemeral(true).queue()
             return
         }
 
