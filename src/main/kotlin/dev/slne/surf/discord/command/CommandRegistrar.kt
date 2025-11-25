@@ -29,7 +29,7 @@ class CommandRegistrar(
             override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
                 commands[event.name]?.let { (_, command) ->
                     commandScope.launch { command.execute(event) }
-                    logger.info("${event.user.name} executed discord command '${event.name}'")
+                    logger.info("${event.user.name} executed discord command '${event.commandString}'")
                 }
             }
         })
