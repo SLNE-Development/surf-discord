@@ -82,8 +82,8 @@ class BugreportTicketModal(
             }
         ).addComponents(
             ActionRow.of(
-                buttonRegistry.get("ticket:close").button,
-                buttonRegistry.get("ticket:claim").button
+                buttonRegistry.get("ticket:claim").button,
+                buttonRegistry.get("ticket:close").button
             )
         ).submit(true).thenAccept {
             thread.pinMessageById(it.idLong).queue()
