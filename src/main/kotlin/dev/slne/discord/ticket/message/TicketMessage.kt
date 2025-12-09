@@ -79,8 +79,8 @@ data class TicketMessage(
 ) {
 
     companion object {
-        suspend fun fromMessage(message: Message) =
-            TicketMessage(
+        suspend fun fromMessage(message: Message): TicketMessage {
+            val ticketMessage = TicketMessage(
                 messageId = message.id,
                 jsonContent = message.contentDisplay,
                 authorId = message.author.id,
@@ -92,6 +92,15 @@ data class TicketMessage(
                 botMessage = message.author.isBot,
                 ticket = message.channel.ticket()
             )
+            
+            // Process attachments from the Discord message
+            message.attachments.forEach { attachment ->
+                val ticketMessageAttachment = TicketMessageAttachment(attachment)
+                ticketMessage.addAttachment(ticketMessageAttachment)
+            }
+            
+            return ticketMessage
+        }
     }
 
     val attachments: List<TicketMessageAttachment> get() = _attachments
