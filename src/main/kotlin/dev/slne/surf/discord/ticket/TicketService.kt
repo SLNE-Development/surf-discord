@@ -4,7 +4,9 @@ import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.jda
 import dev.slne.surf.discord.logging.TicketLogger
 import dev.slne.surf.discord.messages.translatable
+import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.getRolesWithPermission
+import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataRepository
 import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffRepository
@@ -235,6 +237,19 @@ class TicketService(
 
     suspend fun closeTicket(hook: InteractionHook, reason: String) {
         val ticket = getTicketByThreadId(hook.interaction.channel?.idLong ?: 0L) ?: return
+
+        if (ticketStaffRepository.isClaimed(ticket)) {
+            if (ticketStaffRepository.isClaimedByUser(
+                    ticket,
+                    hook.interaction.user
+                ) || hook.interaction.member.hasPermission(DiscordPermission.TICKET_CLOSE_BYPASS_CLAIM)
+            ) {
+                closeTicket(ticket, reason, hook.interaction.user)
+            } else {
+                hook.editOriginal(translatable("ticket.close.claimed-by-other")).queue()
+                return
+            }
+        }
 
         closeTicket(ticket, reason, hook.interaction.user)
     }
