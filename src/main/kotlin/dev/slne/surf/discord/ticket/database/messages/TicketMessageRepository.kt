@@ -4,6 +4,7 @@ import dev.slne.surf.discord.ticket.Ticket
 import kotlinx.coroutines.Dispatchers
 import net.dv8tion.jda.api.entities.Message
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.update
 import org.springframework.stereotype.Repository
@@ -11,7 +12,7 @@ import java.time.ZonedDateTime
 
 @Repository
 class TicketMessageRepository {
-    suspend fun logMessage(ticket: Ticket, message: Message) =
+    suspend fun logMessage(ticket: Ticket, message: Message): Long =
         newSuspendedTransaction(Dispatchers.IO) {
             TicketMessagesTable.insert {
                 it[ticketId] =
@@ -28,7 +29,7 @@ class TicketMessageRepository {
                 it[messageDeletedAt] = null
                 it[createdAt] = ZonedDateTime.now()
                 it[updatedAt] = ZonedDateTime.now()
-            }
+            }[TicketMessagesTable.id].value
         }
 
     suspend fun logMessageEdited(messageId: Long, content: String) =
@@ -46,4 +47,14 @@ class TicketMessageRepository {
             it[updatedAt] = ZonedDateTime.now()
         }
     }
+
+    suspend fun getDbIdFromDiscordMessageId(discordMessageId: Long): Long? =
+        newSuspendedTransaction(Dispatchers.IO) {
+            TicketMessagesTable
+                .select(TicketMessagesTable.id)
+                .where { TicketMessagesTable.messageId eq discordMessageId }
+                .singleOrNull()
+                ?.get(TicketMessagesTable.id)
+                ?.value
+        }
 }
