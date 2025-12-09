@@ -23,7 +23,7 @@ class TicketMessageListener(
             val ticket = ticketService.getTicketByThreadId(event.channel.idLong)
                 ?: return@launch
 
-            ticketMessageRepository.logMessage(ticket, event.message)
+            val dbMessageId = ticketMessageRepository.logMessage(ticket, event.message)
 
             event.message.attachments.forEach {
                 ticketAttachmentsRepository.addAttachment(
@@ -39,7 +39,7 @@ class TicketMessageListener(
                     it.width,
                     it.isEphemeral,
                     it.duration.toFloat(),
-                    event.message.idLong,
+                    dbMessageId,
                 )
             }
         }

@@ -11,7 +11,7 @@ import java.time.ZonedDateTime
 
 @Repository
 class TicketMessageRepository {
-    suspend fun logMessage(ticket: Ticket, message: Message) =
+    suspend fun logMessage(ticket: Ticket, message: Message): Long =
         newSuspendedTransaction(Dispatchers.IO) {
             TicketMessagesTable.insert {
                 it[ticketId] =
@@ -28,7 +28,7 @@ class TicketMessageRepository {
                 it[messageDeletedAt] = null
                 it[createdAt] = ZonedDateTime.now()
                 it[updatedAt] = ZonedDateTime.now()
-            }
+            }[TicketMessagesTable.id].value
         }
 
     suspend fun logMessageEdited(messageId: Long, content: String) =
