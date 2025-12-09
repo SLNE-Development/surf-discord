@@ -4,7 +4,7 @@ import dev.slne.surf.discord.ticket.Ticket
 import kotlinx.coroutines.Dispatchers
 import net.dv8tion.jda.api.entities.Message
 import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.update
 import org.springframework.stereotype.Repository
@@ -51,9 +51,10 @@ class TicketMessageRepository {
     suspend fun getDbIdFromDiscordMessageId(discordMessageId: Long): Long? =
         newSuspendedTransaction(Dispatchers.IO) {
             TicketMessagesTable
-                .selectAll()
+                .select(TicketMessagesTable.id)
                 .where { TicketMessagesTable.messageId eq discordMessageId }
-                .map { it[TicketMessagesTable.id].value }
                 .singleOrNull()
+                ?.get(TicketMessagesTable.id)
+                ?.value
         }
 }
