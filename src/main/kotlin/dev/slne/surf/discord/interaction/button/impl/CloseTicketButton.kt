@@ -33,6 +33,7 @@ class CloseTicketButton(
             return
         }
 
+
         val selectMenu = selectMenuRegistry.get("ticket:close:reason").create(event.hook)
 
         event.reply(translatable("ticket.close.selectreason")).setEphemeral(true).addComponents(

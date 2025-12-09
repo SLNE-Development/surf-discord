@@ -54,12 +54,9 @@ class TicketCloseReasonSelectMenu(
             event.reply(translatable("ticket.closing")).setEphemeral(true).submit(true).await()
 
             ticketService.closeTicket(
-                ticket,
                 selected.value,
-                event.user
+                event.hook
             )
-
-            event.hook.deleteOriginal().queue()
         }
     }
 }
