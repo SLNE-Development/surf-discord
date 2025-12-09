@@ -132,8 +132,26 @@ class TicketService(
     suspend fun getTicketByUserAndType(userId: Long, ticketType: TicketType) =
         ticketRepository.getTicket(userId, ticketType)
 
-    suspend fun closeTicket(ticket: Ticket, reason: String, closer: User) {
+    suspend fun closeTicket(reason: String, hook: InteractionHook) {
+        val ticket = getTicketByThreadId(hook.interaction.channel?.idLong ?: 0L) ?: return
         val thread = ticket.getThreadChannel() ?: return
+        val closer = hook.interaction.user
+        val closerMember = jda.getGuildById(ticket.guildId)?.getMemberById(closer.idLong) ?: return
+
+        if (ticketStaffRepository.isClaimed(ticket)) {
+            if (!ticketStaffRepository.isClaimedByUser(
+                    ticket,
+                    closer
+                ) && !closerMember.hasPermission(DiscordPermission.TICKET_CLOSE_BYPASS_CLAIM)
+            ) {
+                hook.editOriginalEmbeds(embed {
+                    title = translatable("ticket.close.denied.title")
+                    description = translatable("ticket.close.claimed-by-other")
+                    color = Colors.ERROR
+                }).queue()
+                return
+            }
+        }
 
         thread.sendMessageEmbeds(
             embed {
@@ -233,25 +251,6 @@ class TicketService(
 
         thread.manager.setLocked(true).queue()
         thread.manager.setArchived(true).queue()
-    }
-
-    suspend fun closeTicket(hook: InteractionHook, reason: String) {
-        val ticket = getTicketByThreadId(hook.interaction.channel?.idLong ?: 0L) ?: return
-
-        if (ticketStaffRepository.isClaimed(ticket)) {
-            if (ticketStaffRepository.isClaimedByUser(
-                    ticket,
-                    hook.interaction.user
-                ) || hook.interaction.member.hasPermission(DiscordPermission.TICKET_CLOSE_BYPASS_CLAIM)
-            ) {
-                closeTicket(ticket, reason, hook.interaction.user)
-            } else {
-                hook.editOriginal(translatable("ticket.close.claimed-by-other")).queue()
-                return
-            }
-        }
-
-        closeTicket(ticket, reason, hook.interaction.user)
     }
 
     suspend fun markAsClosed(ticket: Ticket) =
