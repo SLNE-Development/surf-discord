@@ -4,7 +4,9 @@ import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.jda
 import dev.slne.surf.discord.logging.TicketLogger
 import dev.slne.surf.discord.messages.translatable
+import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.getRolesWithPermission
+import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataRepository
 import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffRepository
@@ -130,8 +132,26 @@ class TicketService(
     suspend fun getTicketByUserAndType(userId: Long, ticketType: TicketType) =
         ticketRepository.getTicket(userId, ticketType)
 
-    suspend fun closeTicket(ticket: Ticket, reason: String, closer: User) {
+    suspend fun closeTicket(reason: String, hook: InteractionHook) {
+        val ticket = getTicketByThreadId(hook.interaction.channel?.idLong ?: 0L) ?: return
         val thread = ticket.getThreadChannel() ?: return
+        val closer = hook.interaction.user
+        val closerMember = jda.getGuildById(ticket.guildId)?.getMemberById(closer.idLong) ?: return
+
+        if (ticketStaffRepository.isClaimed(ticket)) {
+            if (!ticketStaffRepository.isClaimedByUser(
+                    ticket,
+                    closer
+                ) && !closerMember.hasPermission(DiscordPermission.TICKET_CLOSE_BYPASS_CLAIM)
+            ) {
+                hook.editOriginalEmbeds(embed {
+                    title = translatable("ticket.close.denied.title")
+                    description = translatable("ticket.close.claimed-by-other")
+                    color = Colors.ERROR
+                }).queue()
+                return
+            }
+        }
 
         thread.sendMessageEmbeds(
             embed {
@@ -231,12 +251,6 @@ class TicketService(
 
         thread.manager.setLocked(true).queue()
         thread.manager.setArchived(true).queue()
-    }
-
-    suspend fun closeTicket(hook: InteractionHook, reason: String) {
-        val ticket = getTicketByThreadId(hook.interaction.channel?.idLong ?: 0L) ?: return
-
-        closeTicket(ticket, reason, hook.interaction.user)
     }
 
     suspend fun markAsClosed(ticket: Ticket) =
