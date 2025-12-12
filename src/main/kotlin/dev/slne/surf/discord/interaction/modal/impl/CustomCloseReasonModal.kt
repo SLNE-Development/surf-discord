@@ -4,7 +4,6 @@ import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.ticket.TicketService
-import kotlinx.coroutines.future.await
 import net.dv8tion.jda.api.components.textinput.TextInputStyle
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import org.springframework.stereotype.Component
@@ -29,7 +28,7 @@ class CustomCloseReasonModal(
         val customReason = interaction.getValue("custom-close-reason-content")?.asString ?: return
 
         interaction.hook.deleteOriginal()
-        interaction.reply(translatable("ticket.closing")).setEphemeral(true).submit(true).await()
+        interaction.reply(translatable("ticket.closing")).setEphemeral(true).queue()
 
         ticketService.closeTicket(customReason, event.hook)
     }

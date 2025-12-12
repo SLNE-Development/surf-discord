@@ -133,10 +133,11 @@ class TicketService(
         ticketRepository.getTicket(userId, ticketType)
 
     suspend fun closeTicket(reason: String, hook: InteractionHook) {
-        val ticket = getTicketByThreadId(hook.interaction.channel?.idLong ?: 0L) ?: return
-        val thread = ticket.getThreadChannel() ?: return
+        val ticket =
+            getTicketByThreadId(hook.interaction.channel?.idLong ?: 0L) ?: error("Not a ticket")
+        val thread = ticket.getThreadChannel() ?: error("Not a ticket")
         val closer = hook.interaction.user
-        val closerMember = jda.getGuildById(ticket.guildId)?.getMemberById(closer.idLong) ?: return
+        val closerMember = hook.interaction.member ?: error("Member is null")
 
         if (ticketStaffRepository.isClaimed(ticket)) {
             if (!ticketStaffRepository.isClaimedByUser(
