@@ -63,8 +63,6 @@ class WhitelistProceedModal(
     override suspend fun onSubmit(event: ModalInteractionEvent) {
         event.reply("Der Whitelist Antrag wurde eingereicht.").setEphemeral(true).queue()
 
-        ticketService.closeTicket(event.hook, "Du befindest dich nun auf der Whitelist.")
-
         //TODO: Weiterverarbeitung - Database
     }
 }

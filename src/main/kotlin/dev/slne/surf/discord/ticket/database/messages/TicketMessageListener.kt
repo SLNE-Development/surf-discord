@@ -23,7 +23,7 @@ class TicketMessageListener(
             val ticket = ticketService.getTicketByThreadId(event.channel.idLong)
                 ?: return@launch
 
-            ticketMessageRepository.logMessage(ticket, event.message)
+            val dbMessageId = ticketMessageRepository.logMessage(ticket, event.message)
 
             event.message.attachments.forEach {
                 ticketAttachmentsRepository.addAttachment(
@@ -39,7 +39,7 @@ class TicketMessageListener(
                     it.width,
                     it.isEphemeral,
                     it.duration.toFloat(),
-                    event.message.idLong,
+                    dbMessageId,
                 )
             }
         }
@@ -62,7 +62,12 @@ class TicketMessageListener(
             }
 
             ticketMessageRepository.logMessageDeleted(event.messageIdLong)
-            ticketAttachmentsRepository.delete(event.messageIdLong)
+            
+            // Get the database ID from the Discord message ID before deleting attachments
+            val dbMessageId = ticketMessageRepository.getDbIdFromDiscordMessageId(event.messageIdLong)
+            if (dbMessageId != null) {
+                ticketAttachmentsRepository.delete(dbMessageId)
+            }
         }
     }
 
@@ -74,7 +79,12 @@ class TicketMessageListener(
 
             for (messageId in event.messageIds.map { it.toLong() }) {
                 ticketMessageRepository.logMessageDeleted(messageId)
-                ticketAttachmentsRepository.delete(messageId)
+                
+                // Get the database ID from the Discord message ID before deleting attachments
+                val dbMessageId = ticketMessageRepository.getDbIdFromDiscordMessageId(messageId)
+                if (dbMessageId != null) {
+                    ticketAttachmentsRepository.delete(dbMessageId)
+                }
             }
         }
     }
