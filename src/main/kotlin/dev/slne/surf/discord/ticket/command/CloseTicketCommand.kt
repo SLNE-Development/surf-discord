@@ -6,6 +6,7 @@ import dev.slne.surf.discord.interaction.selectmenu.SelectMenuRegistry
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
+import dev.slne.surf.discord.util.asTicketOrNull
 import net.dv8tion.jda.api.components.actionrow.ActionRow
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
@@ -18,6 +19,12 @@ class CloseTicketCommand(
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.TICKET_CLOSE)) {
             event.reply(translatable("no-permission")).setEphemeral(true).queue()
+            return
+        }
+
+        event.hook.asTicketOrNull() ?: run {
+            event.reply(translatable("ticket.command.not-a-ticket"))
+                .setEphemeral(true).queue()
             return
         }
 
