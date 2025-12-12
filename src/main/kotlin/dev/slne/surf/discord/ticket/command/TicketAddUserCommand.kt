@@ -9,6 +9,7 @@ import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.ticket.TicketMemberService
 import dev.slne.surf.discord.util.asTicketOrNull
+import kotlinx.coroutines.future.await
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
 
@@ -21,6 +22,12 @@ import org.springframework.stereotype.Component
             description = "Der hinzuzufügende Nutzer",
             type = CommandOptionType.USER,
             required = true
+        ),
+        CommandOption(
+            name = "silent",
+            description = "Fügt den Nutzer still hinzu, ohne eine Nachricht zu senden",
+            type = CommandOptionType.BOOLEAN,
+            required = false
         )
     ]
 )
@@ -35,11 +42,28 @@ class TicketAddUserCommand(
         }
 
         val user = event.getOption("user")?.asUser ?: error("User option is missing")
+        val silent = event.getOption("silent")?.asBoolean ?: false
         val ticket = event.hook.asTicketOrNull()
 
         if (ticket == null) {
             event.reply(translatable("ticket.command.not-a-ticket"))
                 .setEphemeral(true).queue()
+            return
+        }
+
+        if (silent) {
+            if (!event.member.hasPermission(DiscordPermission.COMMAND_TICKET_ADD_SILENT)) {
+                event.reply(translatable("no-permission")).setEphemeral(true).queue()
+                return
+            }
+
+            val msg = event.channel.sendMessage("Adding user silent...").submit(true).await()
+            val edited = msg.editMessage(user.asMention).submit(true).await()
+            edited.delete().queue()
+
+            event.reply(translatable("ticket.command.add.success", user.asMention))
+                .setEphemeral(true)
+                .queue()
             return
         }
 
