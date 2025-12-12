@@ -1,11 +1,14 @@
 package dev.slne.surf.discord.interaction.modal.impl.ticket
 
+import dev.slne.surf.discord.DiscordBot
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.messages.translatable
+import dev.slne.surf.discord.permission.DiscordPermission
+import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
 import dev.slne.surf.discord.util.Colors
@@ -42,11 +45,12 @@ class EventSupportTicketModal(
 
         val issue = interaction.getValue("issue")?.asString ?: return
 
-        if (true) {
+        if (!DiscordBot.EVENT_ENABLED && !event.member.hasPermission(DiscordPermission.TICKET_TYPE_BYPASS)) {
             interaction.replyEmbeds(embed {
                 title = "Aktuell können keine Event Support Tickets erstellt werden."
                 description =
                     "Aufgrund der aktuellen Wartungsarbeiten am Netzwerk können keine Event Support Tickets erstellt werden."
+                color = Colors.ERROR
             }).setEphemeral(true).queue()
             return
         }

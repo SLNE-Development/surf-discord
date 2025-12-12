@@ -77,6 +77,7 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.COMMAND_TICKET_ADD_SILENT,
             DiscordPermission.COMMAND_TICKET_REMOVE,
             DiscordPermission.COMMAND_TICKET_BUTTONS,
+            DiscordPermission.TICKET_TYPE_BYPASS,
             DiscordPermission.TICKET_CLOSE,
             DiscordPermission.TICKET_CLOSE_BYPASS_CLAIM,
             DiscordPermission.TICKET_CLAIM,

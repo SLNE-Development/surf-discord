@@ -7,7 +7,10 @@ import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.messages.translatable
+import dev.slne.surf.discord.permission.DiscordPermission
+import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.ticket.TicketService
+import dev.slne.surf.discord.util.Colors
 import net.dv8tion.jda.api.components.textinput.TextInputStyle
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import org.springframework.stereotype.Component
@@ -36,11 +39,12 @@ class WhitelistTicketModal(
         val user = interaction.user
         val whitelistName = interaction.getValue("whitelist-name")?.asString ?: return
 
-        if (!DiscordBot.SURVIVAL_ENABLED) {
+        if (!DiscordBot.SURVIVAL_ENABLED && !event.member.hasPermission(DiscordPermission.TICKET_TYPE_BYPASS)) {
             interaction.replyEmbeds(embed {
                 title = "Aktuell können keine Whitelist Tickets erstellt werden."
                 description =
                     "Aufgrund der aktuellen Wartungsarbeiten am Survival Server können keine Whitelist Tickets erstellt werden."
+                color = Colors.ERROR
             }).setEphemeral(true).queue()
             return
         }
