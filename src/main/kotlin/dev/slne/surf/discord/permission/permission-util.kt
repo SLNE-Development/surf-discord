@@ -48,7 +48,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_BUG_VIEW,
             DiscordPermission.COMMAND_ANNOUNCEMENT_CREATE,
             DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
-            DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE
+            DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE,
+            DiscordPermission.TICKET_REPLY_DEADLINE,
         ),
 
         // Management
@@ -65,6 +66,7 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
             DiscordPermission.TICKET_REPORT_VIEW,
             DiscordPermission.TICKET_UNBAN_VIEW,
+            DiscordPermission.TICKET_REPLY_DEADLINE,
             DiscordPermission.TICKET_APPLICATION_SUPPORTER,
             DiscordPermission.COMMAND_ANNOUNCEMENT_CREATE,
             DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
@@ -82,6 +84,7 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_CLOSE_BYPASS_CLAIM,
             DiscordPermission.TICKET_CLAIM,
             DiscordPermission.TICKET_WHITELIST_VIEW,
+            DiscordPermission.TICKET_REPLY_DEADLINE,
             DiscordPermission.TICKET_WHITELIST_CONFIRM,
             DiscordPermission.TICKET_SUPPORT_SURVIVAL_VIEW,
             DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
@@ -102,6 +105,7 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.COMMAND_TICKET_REMOVE,
             DiscordPermission.TICKET_CLOSE,
             DiscordPermission.TICKET_CLAIM,
+            DiscordPermission.TICKET_REPLY_DEADLINE,
             DiscordPermission.TICKET_WHITELIST_VIEW,
             DiscordPermission.TICKET_WHITELIST_CONFIRM,
             DiscordPermission.TICKET_SUPPORT_SURVIVAL_VIEW,
@@ -117,6 +121,7 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_CLOSE,
             DiscordPermission.TICKET_CLAIM,
             DiscordPermission.TICKET_WHITELIST_VIEW,
+            DiscordPermission.TICKET_REPLY_DEADLINE,
             DiscordPermission.TICKET_WHITELIST_CONFIRM,
             DiscordPermission.TICKET_SUPPORT_SURVIVAL_VIEW,
             DiscordPermission.TICKET_SUPPORT_EVENT_VIEW
