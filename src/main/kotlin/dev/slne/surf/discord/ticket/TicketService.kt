@@ -242,7 +242,7 @@ class TicketService(
 
                 field {
                     name = "Schließungsdatum"
-                    value = "<t:${System.currentTimeMillis() / 1000}:F>"
+                    value = "<t:${ZonedDateTime.now().toInstant().toEpochMilli() / 1000}:F>"
                     inline = true
                 }
             }).queue(null) {
