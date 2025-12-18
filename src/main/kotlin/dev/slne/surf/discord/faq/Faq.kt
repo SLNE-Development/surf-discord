@@ -82,5 +82,10 @@ enum class Faq(val id: String, val question: String, val answer: String) {
         "how-to-join",
         translatable("faq.command.questions.how-to-join.question"),
         translatable("faq.command.questions.how-to-join.answer")
-    )
+    ),
+    ASK(
+        "ask",
+        translatable("faq.command.questions.ask.question"),
+        translatable("faq.command.questions.ask.answer")
+    ),
 }
