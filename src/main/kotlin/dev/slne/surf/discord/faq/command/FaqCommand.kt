@@ -36,6 +36,7 @@ import kotlin.time.toJavaDuration
                 CommandChoice("survival-downtime", "survival-downtime"),
                 CommandChoice("one-block-event", "one-block-event"),
                 CommandChoice("how-to-join", "how-to-join"),
+                CommandChoice("ask", "ask"),
             ]
         ),
         CommandOption(
@@ -77,7 +78,7 @@ class FaqCommand : SlashCommand {
             event.reply(user.asMention).setEmbeds(embed {
                 title = faq.question
                 description = faq.answer
-                color = Colors.SUCCESS
+                color = Colors.INFO
             }).queue()
 
             return
