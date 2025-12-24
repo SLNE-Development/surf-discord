@@ -50,6 +50,7 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
             DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE,
             DiscordPermission.TICKET_REPLY_DEADLINE,
+            DiscordPermission.COMMAND_FAQ
         ),
 
         // Management
@@ -70,7 +71,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_APPLICATION_SUPPORTER,
             DiscordPermission.COMMAND_ANNOUNCEMENT_CREATE,
             DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
-            DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE
+            DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE,
+            DiscordPermission.COMMAND_FAQ
         ),
 
         // Developer
@@ -96,7 +98,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_REPORT_VIEW,
             DiscordPermission.COMMAND_ANNOUNCEMENT_CREATE,
             DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
-            DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE
+            DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE,
+            DiscordPermission.COMMAND_FAQ
         ),
 
         // Moderator
@@ -111,7 +114,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_SUPPORT_SURVIVAL_VIEW,
             DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
             DiscordPermission.TICKET_REPORT_VIEW,
-            DiscordPermission.TICKET_UNBAN_VIEW
+            DiscordPermission.TICKET_UNBAN_VIEW,
+            DiscordPermission.COMMAND_FAQ
         ),
 
         // Supporter
@@ -124,21 +128,27 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_REPLY_DEADLINE,
             DiscordPermission.TICKET_WHITELIST_CONFIRM,
             DiscordPermission.TICKET_SUPPORT_SURVIVAL_VIEW,
-            DiscordPermission.TICKET_SUPPORT_EVENT_VIEW
+            DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
+            DiscordPermission.COMMAND_FAQ
         ),
 
         // Community Management
         1403107386415386736L to setOf(
             DiscordPermission.COMMAND_ANNOUNCEMENT_CREATE,
             DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
-            DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE
+            DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE,
+            DiscordPermission.COMMAND_FAQ
         ),
 
         // Builder
-        1242929846481453107L to setOf(),
+        1242929846481453107L to setOf(
+            DiscordPermission.COMMAND_FAQ
+        ),
 
         // Server Team
-        1001166778287792158L to setOf()
+        1001166778287792158L to setOf(
+            DiscordPermission.COMMAND_FAQ
+        )
     )
 )
 
