@@ -5,6 +5,8 @@ import dev.slne.surf.discord.command.*
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.faq.Faq
 import dev.slne.surf.discord.messages.translatable
+import dev.slne.surf.discord.permission.DiscordPermission
+import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.util.Colors
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
@@ -57,6 +59,12 @@ class FaqCommand : SlashCommand {
         val question = interaction.getOption("question")?.asString ?: return
         val user = interaction.getOption("user")?.asUser
         val faq = Faq.entries.find { it.id == question }
+
+        if (!event.member.hasPermission(DiscordPermission.COMMAND_FAQ)) {
+            event.reply(translatable("no-permission")).setEphemeral(true).queue()
+            return
+        }
+
 
         if (faq == null) {
             event.reply(translatable("faq.not-found", question))
