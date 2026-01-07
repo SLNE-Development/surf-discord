@@ -5,6 +5,7 @@ import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.commands.build.Commands
@@ -36,8 +37,12 @@ class CommandRegistrar(
     }
 
     fun registerAllCommands() {
-        commands.forEach { _, (annotation, _) ->
-            registerCommand(annotation.name, annotation.description, annotation.options)
+        jda.guilds.forEach { guild ->
+            guild.updateCommands().queue()
+
+            commands.forEach { _, (annotation, _) ->
+                registerCommand(annotation.name, annotation.description, guild, annotation.options)
+            }
         }
 
         if (commands.isEmpty()) {
@@ -50,16 +55,15 @@ class CommandRegistrar(
     fun registerCommand(
         name: String,
         description: String,
+        guild: Guild,
         options: Array<CommandOption> = emptyArray()
     ) {
-        jda.guilds.forEach { guild ->
-            val commandData = Commands.slash(name, description).addOptions(options.map {
-                it.toOptionData()
-            })
+        val commandData = Commands.slash(name, description).addOptions(options.map {
+            it.toOptionData()
+        })
 
-            guild.upsertCommand(commandData).queue() // TODO: Fix this to send all commands at once
-        }
+        guild.upsertCommand(commandData).queue()
 
-        logger.info("Successfully registered command '$name' for ${jda.guilds.size} guilds.")
+        logger.info("Successfully registered command '$name' for guild '${guild.name}'")
     }
 }
