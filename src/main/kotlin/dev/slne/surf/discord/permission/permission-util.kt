@@ -69,6 +69,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_UNBAN_VIEW,
             DiscordPermission.TICKET_REPLY_DEADLINE,
             DiscordPermission.TICKET_APPLICATION_SUPPORTER,
+            DiscordPermission.TICKET_APPLICATION_BUILDER,
+            DiscordPermission.TICKET_APPLICATION_DESIGNER,
             DiscordPermission.COMMAND_ANNOUNCEMENT_CREATE,
             DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
             DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE,
