@@ -5,15 +5,20 @@ import org.springframework.beans.factory.getBean
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.cache.annotation.EnableCaching
+import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
+import kotlin.properties.Delegates
 
-lateinit var dataContext: ConfigurableApplicationContext
+var dataContext: ConfigurableApplicationContext by Delegates.notNull()
 
 inline fun <reified B : Any> getBean(): B = dataContext.getBean<B>()
 
 fun main(args: Array<String>) {
-    dataContext = SpringApplicationBuilder(DiscordSpringApplication::class.java)
+    SpringApplicationBuilder(DiscordSpringApplication::class.java)
         .profiles("production")
+        .initializers(ApplicationContextInitializer<ConfigurableApplicationContext> { applicationContext ->
+            dataContext = applicationContext
+        })
         .run(*args)
 }
 

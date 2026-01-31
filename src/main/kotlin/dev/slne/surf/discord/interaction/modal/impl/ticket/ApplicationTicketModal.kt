@@ -3,7 +3,6 @@ package dev.slne.surf.discord.interaction.modal.impl.ticket
 import dev.slne.surf.discord.DiscordBot
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.dsl.modal
-import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.interaction.selectmenu.SelectMenuRegistry
@@ -21,17 +20,11 @@ import org.springframework.stereotype.Component
 
 @Component
 class ApplicationTicketModal(
-    private val ticketService: TicketService
+    private val ticketService: TicketService,
+    private val buttonRegistry: ButtonRegistry,
+    private val selectMenuRegistry: SelectMenuRegistry
 ) : DiscordModal {
     override val id = "ticket:application"
-
-    private val buttonRegistry by lazy {
-        getBean<ButtonRegistry>()
-    }
-
-    private val selectMenuRegistry by lazy {
-        getBean<SelectMenuRegistry>()
-    }
 
     override fun create() = modal(id, "Bewerbung") {
         selectMenu(

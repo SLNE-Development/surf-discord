@@ -3,25 +3,17 @@ package dev.slne.surf.discord.interaction.modal.impl.ticket.whitelist
 import dev.slne.surf.discord.DiscordBot
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.dsl.modal
-import dev.slne.surf.discord.getBean
-import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
-import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.util.Colors
 import net.dv8tion.jda.api.components.textinput.TextInputStyle
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import org.springframework.stereotype.Component
 
 @Component
-class WhitelistTicketModal(
-    private val ticketService: TicketService,
-) : DiscordModal {
-    private val buttonRegistry by lazy {
-        getBean<ButtonRegistry>()
-    }
+class WhitelistTicketModal : DiscordModal {
     override val id = "ticket:whitelist"
     override fun create() = modal(id, translatable("ticket.whitelist.title")) {
         textInput {

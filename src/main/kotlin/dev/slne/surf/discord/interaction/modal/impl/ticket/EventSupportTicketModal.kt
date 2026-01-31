@@ -3,7 +3,6 @@ package dev.slne.surf.discord.interaction.modal.impl.ticket
 import dev.slne.surf.discord.DiscordBot
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.dsl.modal
-import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.messages.translatable
@@ -21,10 +20,8 @@ import org.springframework.stereotype.Component
 @Component
 class EventSupportTicketModal(
     private val ticketService: TicketService,
+    private val buttonRegistry: ButtonRegistry,
 ) : DiscordModal {
-    private val buttonRegistry by lazy {
-        getBean<ButtonRegistry>()
-    }
     override val id = "ticket:support:event"
 
     override fun create() = modal(id, translatable("ticket.support.event.modal.title")) {

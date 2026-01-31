@@ -1,6 +1,5 @@
 package dev.slne.surf.discord.interaction.selectmenu.impl
 
-import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.modal.ModalRegistry
 import dev.slne.surf.discord.interaction.selectmenu.DiscordSelectMenu
 import dev.slne.surf.discord.messages.translatable
@@ -16,11 +15,8 @@ import org.springframework.stereotype.Component
 @Component
 class TicketCloseReasonSelectMenu(
     private val ticketService: TicketService,
+    private val modalRegistry: ModalRegistry,
 ) : DiscordSelectMenu {
-    private val modalRegistry by lazy {
-        getBean<ModalRegistry>()
-    }
-
     override val id = "ticket:close:reason"
     override suspend fun create(hook: InteractionHook): SelectMenu {
         val ticket = hook.asTicketOrThrow()
