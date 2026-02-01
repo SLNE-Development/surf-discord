@@ -27,7 +27,7 @@ class ViewWhitelistInformationContextCommand(
             return
         }
 
-        val minecraftName = whitelist.getMinecraftName()
+        val minecraftName = whitelist.getMinecraftName() ?: whitelist.minecraftUuid.toString()
 
         event.replyEmbeds(embed {
             title = translatable("whitelist.embed.information.title")

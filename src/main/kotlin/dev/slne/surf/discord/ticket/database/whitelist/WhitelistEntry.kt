@@ -23,5 +23,5 @@ data class WhitelistEntry(
     }
 
     private val playerLookupService by lazy { getBean<PlayerLookupService>() }
-    suspend fun getMinecraftName() = playerLookupService.getUsername(minecraftUuid) ?: "Unbekannt"
+    suspend fun getMinecraftName() = playerLookupService.getUsername(minecraftUuid)
 }
