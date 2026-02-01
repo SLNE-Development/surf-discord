@@ -1,5 +1,6 @@
 package dev.slne.surf.discord.interaction.modal.impl.ticket.whitelist
 
+import dev.slne.surf.discord.config.botConfig
 import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.messages.translatable
@@ -46,6 +47,13 @@ class SurvivalWhitelistCreateModal(
             event.hook.editOriginal(translatable("whitelist.survival.modal.user-not-found"))
                 .queue()
             return
+        }
+
+        event.member?.let {
+            event.guild?.addRoleToMember(it,
+                event.guild?.getRoleById(botConfig.whitelistedRoleId)
+                    ?: error("Whitelisted role not found")
+            )?.queue()
         }
 
         event.hook.editOriginal(translatable("whitelist.survival.modal.success"))
