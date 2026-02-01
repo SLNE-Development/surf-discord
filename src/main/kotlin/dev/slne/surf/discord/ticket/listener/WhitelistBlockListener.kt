@@ -1,5 +1,6 @@
 package dev.slne.surf.discord.ticket.listener
 
+import dev.slne.surf.discord.config.botConfig
 import dev.slne.surf.discord.logger
 import dev.slne.surf.discord.ticket.database.whitelist.WhitelistService
 import kotlinx.coroutines.CoroutineScope
@@ -33,6 +34,12 @@ class WhitelistBlockListener(
             whitelistService.unblockWhitelist(userId).let {
                 if (it) {
                     logger.info("Unblocked whitelist for user ${event.user.asTag} (${userId}) due to joining the guild.")
+
+                    event.guild.addRoleToMember(
+                        event.member,
+                        event.jda.getRoleById(botConfig.whitelistedRoleId)
+                            ?: error("Whitelisted role not found")
+                    ).queue()
                 }
             }
         }
