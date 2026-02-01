@@ -63,6 +63,6 @@ class WhitelistRepository {
                 createdAt = it[WhitelistTable.createdAt],
                 updatedAt = it[WhitelistTable.updatedAt]
             )
-        }.firstOrNull() ?: WhitelistEntry.empty()
+        }.firstOrNull()
     }
 }

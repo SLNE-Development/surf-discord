@@ -20,7 +20,7 @@ data class MojangProfile(val id: String, val name: String)
 data class MinecraftServicesProfile(val id: String, val name: String)
 
 @Serializable
-data class MinetoolsResponse(val status: String, val id: String? = null)
+data class MinetoolsResponse(val status: String, val id: String? = null, val name: String? = null)
 
 @Service
 class PlayerLookupService {
@@ -28,49 +28,79 @@ class PlayerLookupService {
         expectSuccess = false
     }
 
-    private val cache = Caffeine.newBuilder()
+    private val cacheUuid = Caffeine.newBuilder()
         .expireAfterWrite(Duration.ofMinutes(30))
         .maximumSize(10_000)
         .build<String, UUID>()
 
+    private val cacheName = Caffeine.newBuilder()
+        .expireAfterWrite(Duration.ofMinutes(30))
+        .maximumSize(10_000)
+        .build<UUID, String>()
+
     suspend fun getUuid(username: String): UUID? =
-        cache.getIfPresent(username)
-            ?: lookup(username)?.also { cache.put(username, it) }
+        cacheUuid.getIfPresent(username)
+            ?: lookup(username)?.also {
+                cacheUuid.put(username, it)
+                cacheName.put(it, username)
+            }
+
+    suspend fun getUsername(uuid: UUID): String? =
+        cacheName.getIfPresent(uuid)
+            ?: reverseLookup(uuid)?.also { cacheName.put(uuid, it) }
 
     private suspend fun lookup(username: String): UUID? = coroutineScope {
         mojang(username) ?: minecraftServices(username) ?: minetools(username)
     }
 
+    private suspend fun reverseLookup(uuid: UUID): String? = coroutineScope {
+        mojangByUuid(uuid) ?: minecraftServicesByUuid(uuid) ?: minetoolsByUuid(uuid)
+    }
+
     private suspend fun mojang(username: String): UUID? {
         val response = client.get("https://api.mojang.com/users/profiles/minecraft/$username")
-
-        if (response.status != HttpStatusCode.OK) {
-            return null
-        }
-
+        if (response.status != HttpStatusCode.OK) return null
         return undashedUuidToUuid(Json.decodeFromString<MojangProfile>(response.bodyAsText()).id)
+    }
+
+    private suspend fun mojangByUuid(uuid: UUID): String? {
+        val response =
+            client.get(
+                "https://sessionserver.mojang.com/session/minecraft/profile/${
+                    uuid.toString().replace("-", "")
+                }"
+            )
+        if (response.status != HttpStatusCode.OK) return null
+        return Json.decodeFromString<MojangProfile>(response.bodyAsText()).name
     }
 
     private suspend fun minecraftServices(username: String): UUID? {
         val response =
             client.get("https://api.minecraftservices.com/minecraft/profile/lookup/name/$username")
-
-        if (response.status != HttpStatusCode.OK) {
-            return null
-        }
-
+        if (response.status != HttpStatusCode.OK) return null
         return undashedUuidToUuid(Json.decodeFromString<MinecraftServicesProfile>(response.bodyAsText()).id)
+    }
+
+    private suspend fun minecraftServicesByUuid(uuid: UUID): String? {
+        val response =
+            client.get("https://api.minecraftservices.com/minecraft/profile/$uuid")
+        if (response.status != HttpStatusCode.OK) return null
+        return Json.decodeFromString<MinecraftServicesProfile>(response.bodyAsText()).name
     }
 
     private suspend fun minetools(username: String): UUID? {
         val response = client.get("https://api.minetools.eu/uuid/$username")
-
-        if (response.status != HttpStatusCode.OK) {
-            return null
-        }
-        
+        if (response.status != HttpStatusCode.OK) return null
         val body = Json.decodeFromString<MinetoolsResponse>(response.bodyAsText())
         return if (body.status == "OK") undashedUuidToUuid(body.id) else null
+    }
+
+    private suspend fun minetoolsByUuid(uuid: UUID): String? {
+        val response =
+            client.get("https://api.minetools.eu/profile/${uuid.toString().replace("-", "")}")
+        if (response.status != HttpStatusCode.OK) return null
+        val body = Json.decodeFromString<MinetoolsResponse>(response.bodyAsText())
+        return if (body.status == "OK") body.name else null
     }
 
     private fun undashedUuidToUuid(uuid: String?) = uuid?.let {
@@ -82,4 +112,3 @@ class PlayerLookupService {
         )
     }
 }
-
