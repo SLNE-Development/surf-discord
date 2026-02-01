@@ -44,14 +44,14 @@ class WhitelistRepository {
         WhitelistTable.update(where = { WhitelistTable.discordUserId eq discordId }) {
             it[this.blocked] = true
             it[this.updatedAt] = OffsetDateTime.now()
-        }
+        } > 0
     }
 
     suspend fun unblockWhitelist(discordId: Long) = suspendTransaction {
         WhitelistTable.update(where = { WhitelistTable.discordUserId eq discordId }) {
             it[this.blocked] = false
             it[this.updatedAt] = OffsetDateTime.now()
-        }
+        } > 0
     }
 
     suspend fun getWhitelist(discordId: Long) = suspendTransaction {

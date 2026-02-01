@@ -5,8 +5,6 @@ import dev.slne.surf.discord.command.CommandOptionType
 import dev.slne.surf.discord.command.DiscordCommand
 import dev.slne.surf.discord.command.SlashCommand
 import dev.slne.surf.discord.dsl.embed
-import dev.slne.surf.discord.getBean
-import dev.slne.surf.discord.interaction.modal.ModalRegistry
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
@@ -30,10 +28,6 @@ import java.time.format.DateTimeFormatter
 class ViewWhitelistCommand(
     private val whitelistService: WhitelistService
 ) : SlashCommand {
-    private val modalRegistry by lazy {
-        getBean<ModalRegistry>()
-    }
-
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.WHITELIST_VIEW)) {
             event.reply(translatable("no-permission")).setEphemeral(true).queue()
