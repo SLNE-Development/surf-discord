@@ -3,6 +3,7 @@ package dev.slne.surf.discord.ticket.database.whitelist
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.r2dbc.deleteWhere
 import org.jetbrains.exposed.v1.r2dbc.insert
 import org.jetbrains.exposed.v1.r2dbc.selectAll
 import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
@@ -76,5 +77,9 @@ class WhitelistRepository {
             it[this.blocked] = blocked
             it[this.updatedAt] = OffsetDateTime.now()
         }
+    }
+
+    suspend fun deleteWhitelist(discordId: Long) = suspendTransaction {
+        WhitelistTable.deleteWhere { WhitelistTable.discordUserId eq discordId } > 0
     }
 }

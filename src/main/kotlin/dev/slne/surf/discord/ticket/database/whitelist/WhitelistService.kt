@@ -33,4 +33,6 @@ class WhitelistService(
             whitelistRepository.editWhitelist(discordId, it, blocked)
         }
     }
+
+    suspend fun deleteWhitelist(discordId: Long) = whitelistRepository.deleteWhitelist(discordId)
 }
