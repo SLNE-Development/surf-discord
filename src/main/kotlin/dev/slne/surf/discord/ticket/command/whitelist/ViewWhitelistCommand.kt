@@ -1,33 +1,48 @@
-package dev.slne.surf.discord.ticket.command.context
+package dev.slne.surf.discord.ticket.command.whitelist
 
-import dev.slne.surf.discord.contextmenu.ContextCommandType
-import dev.slne.surf.discord.contextmenu.DiscordContextCommand
-import dev.slne.surf.discord.contextmenu.UserContextCommand
+import dev.slne.surf.discord.command.CommandOption
+import dev.slne.surf.discord.command.CommandOptionType
+import dev.slne.surf.discord.command.DiscordCommand
+import dev.slne.surf.discord.command.SlashCommand
 import dev.slne.surf.discord.dsl.embed
+import dev.slne.surf.discord.getBean
+import dev.slne.surf.discord.interaction.modal.ModalRegistry
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.ticket.database.whitelist.WhitelistService
 import dev.slne.surf.discord.util.Colors
-import net.dv8tion.jda.api.events.interaction.command.UserContextInteractionEvent
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
 import java.time.format.DateTimeFormatter
 
-@DiscordContextCommand(
-    "Whitelist Ansehen",
-    ContextCommandType.USER
+@DiscordCommand(
+    name = "wl-view",
+    description = "Whitelist Eintrag ansehen",
+    options = [CommandOption(
+        name = "user",
+        description = "Der Discord Nutzer, dessen Whitelist Eintrag gezeigt werden soll",
+        type = CommandOptionType.USER,
+        required = true
+    )]
 )
 @Component
-class ViewWhitelistInformationContextCommand(
+class ViewWhitelistCommand(
     private val whitelistService: WhitelistService
-) : UserContextCommand {
-    override suspend fun execute(event: UserContextInteractionEvent) {
+) : SlashCommand {
+    private val modalRegistry by lazy {
+        getBean<ModalRegistry>()
+    }
+
+    override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.WHITELIST_VIEW)) {
             event.reply(translatable("no-permission")).setEphemeral(true).queue()
             return
         }
 
-        val whitelist = whitelistService.getWhitelist(event.target.idLong) ?: run {
+        val userId = event.getOption("user")?.asUser?.idLong ?: return
+
+        val whitelist = whitelistService.getWhitelist(userId) ?: run {
             event.reply(translatable("whitelist.embed.information.no_whitelist"))
                 .setEphemeral(true)
                 .queue()

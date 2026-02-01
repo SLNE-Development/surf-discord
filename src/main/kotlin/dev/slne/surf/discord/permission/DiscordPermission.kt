@@ -12,6 +12,7 @@ enum class DiscordPermission {
     COMMAND_TICKET_REMOVE,
 
     WHITELIST_VIEW,
+    WHITELIST_EDIT,
 
     TICKET_CLOSE,
     TICKET_CLOSE_BYPASS_CLAIM,

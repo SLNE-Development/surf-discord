@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service
 import java.time.Duration
 import java.util.*
 
+private val json = Json { ignoreUnknownKeys = true }
+
 @Serializable
 data class MojangProfile(val id: String, val name: String)
 
@@ -60,7 +62,7 @@ class PlayerLookupService {
     private suspend fun mojang(username: String): UUID? {
         val response = client.get("https://api.mojang.com/users/profiles/minecraft/$username")
         if (response.status != HttpStatusCode.OK) return null
-        return undashedUuidToUuid(Json.decodeFromString<MojangProfile>(response.bodyAsText()).id)
+        return undashedUuidToUuid(json.decodeFromString<MojangProfile>(response.bodyAsText()).id)
     }
 
     private suspend fun mojangByUuid(uuid: UUID): String? {
@@ -71,27 +73,27 @@ class PlayerLookupService {
                 }"
             )
         if (response.status != HttpStatusCode.OK) return null
-        return Json.decodeFromString<MojangProfile>(response.bodyAsText()).name
+        return json.decodeFromString<MojangProfile>(response.bodyAsText()).name
     }
 
     private suspend fun minecraftServices(username: String): UUID? {
         val response =
             client.get("https://api.minecraftservices.com/minecraft/profile/lookup/name/$username")
         if (response.status != HttpStatusCode.OK) return null
-        return undashedUuidToUuid(Json.decodeFromString<MinecraftServicesProfile>(response.bodyAsText()).id)
+        return undashedUuidToUuid(json.decodeFromString<MinecraftServicesProfile>(response.bodyAsText()).id)
     }
 
     private suspend fun minecraftServicesByUuid(uuid: UUID): String? {
         val response =
             client.get("https://api.minecraftservices.com/minecraft/profile/$uuid")
         if (response.status != HttpStatusCode.OK) return null
-        return Json.decodeFromString<MinecraftServicesProfile>(response.bodyAsText()).name
+        return json.decodeFromString<MinecraftServicesProfile>(response.bodyAsText()).name
     }
 
     private suspend fun minetools(username: String): UUID? {
         val response = client.get("https://api.minetools.eu/uuid/$username")
         if (response.status != HttpStatusCode.OK) return null
-        val body = Json.decodeFromString<MinetoolsResponse>(response.bodyAsText())
+        val body = json.decodeFromString<MinetoolsResponse>(response.bodyAsText())
         return if (body.status == "OK") undashedUuidToUuid(body.id) else null
     }
 
@@ -99,7 +101,7 @@ class PlayerLookupService {
         val response =
             client.get("https://api.minetools.eu/profile/${uuid.toString().replace("-", "")}")
         if (response.status != HttpStatusCode.OK) return null
-        val body = Json.decodeFromString<MinetoolsResponse>(response.bodyAsText())
+        val body = json.decodeFromString<MinetoolsResponse>(response.bodyAsText())
         return if (body.status == "OK") body.name else null
     }
 

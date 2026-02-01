@@ -65,4 +65,16 @@ class WhitelistRepository {
             )
         }.firstOrNull()
     }
+
+    suspend fun editWhitelist(
+        discordId: Long,
+        minecraftUuid: UUID,
+        blocked: Boolean
+    ) = suspendTransaction {
+        WhitelistTable.update(where = { WhitelistTable.discordUserId eq discordId }) {
+            it[this.minecraftUuid] = minecraftUuid
+            it[this.blocked] = blocked
+            it[this.updatedAt] = OffsetDateTime.now()
+        }
+    }
 }
