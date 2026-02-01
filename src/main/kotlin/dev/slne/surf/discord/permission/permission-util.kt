@@ -18,10 +18,7 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_CLOSE,
             DiscordPermission.TICKET_CLAIM,
             DiscordPermission.COMMAND_TICKET_ADD,
-            DiscordPermission.COMMAND_TICKET_REMOVE,
-            DiscordPermission.COMMAND_ANNOUNCEMENT_CREATE,
-            DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
-            DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE
+            DiscordPermission.COMMAND_TICKET_REMOVE
         )
     ),
     // CastCrafter Discord
@@ -46,11 +43,9 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_REPORT_VIEW,
             DiscordPermission.TICKET_UNBAN_VIEW,
             DiscordPermission.TICKET_BUG_VIEW,
-            DiscordPermission.COMMAND_ANNOUNCEMENT_CREATE,
-            DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
-            DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE,
             DiscordPermission.TICKET_REPLY_DEADLINE,
-            DiscordPermission.COMMAND_FAQ
+            DiscordPermission.COMMAND_FAQ,
+            DiscordPermission.WHITELIST_VIEW
         ),
 
         // Management
@@ -72,10 +67,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_APPLICATION_BUILDER,
             DiscordPermission.TICKET_APPLICATION_DESIGNER,
             DiscordPermission.TICKET_APPLICATION_DEVELOPER,
-            DiscordPermission.COMMAND_ANNOUNCEMENT_CREATE,
-            DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
-            DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE,
-            DiscordPermission.COMMAND_FAQ
+            DiscordPermission.COMMAND_FAQ,
+            DiscordPermission.WHITELIST_VIEW
         ),
 
         // Developer
@@ -97,10 +90,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_APPLICATION_DEVELOPER,
             DiscordPermission.TICKET_UNBAN_VIEW,
             DiscordPermission.TICKET_REPORT_VIEW,
-            DiscordPermission.COMMAND_ANNOUNCEMENT_CREATE,
-            DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
-            DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE,
-            DiscordPermission.COMMAND_FAQ
+            DiscordPermission.COMMAND_FAQ,
+            DiscordPermission.WHITELIST_VIEW
         ),
 
         // Moderator
@@ -116,7 +107,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
             DiscordPermission.TICKET_REPORT_VIEW,
             DiscordPermission.TICKET_UNBAN_VIEW,
-            DiscordPermission.COMMAND_FAQ
+            DiscordPermission.COMMAND_FAQ,
+            DiscordPermission.WHITELIST_VIEW
         ),
 
         // Supporter
@@ -130,14 +122,12 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_WHITELIST_CONFIRM,
             DiscordPermission.TICKET_SUPPORT_SURVIVAL_VIEW,
             DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
-            DiscordPermission.COMMAND_FAQ
+            DiscordPermission.COMMAND_FAQ,
+            DiscordPermission.WHITELIST_VIEW
         ),
 
         // Community Management
         1403107386415386736L to setOf(
-            DiscordPermission.COMMAND_ANNOUNCEMENT_CREATE,
-            DiscordPermission.COMMAND_ANNOUNCEMENT_EDIT,
-            DiscordPermission.COMMAND_ANNOUNCEMENT_DELETE,
             DiscordPermission.COMMAND_FAQ
         ),
 
