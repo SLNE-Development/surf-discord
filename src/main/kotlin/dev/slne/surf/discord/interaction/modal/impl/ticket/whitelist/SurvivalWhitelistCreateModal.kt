@@ -31,12 +31,6 @@ class SurvivalWhitelistCreateModal(
 
         event.reply(translatable("whitelist.survival.modal.processing")).setEphemeral(true).queue()
 
-        if (whitelistService.isWhitelisted(discordId)) {
-            event.hook.editOriginal(translatable("whitelist.survival.modal.already_whitelisted"))
-                .queue()
-            return
-        }
-
         if (whitelistService.isWhitelisted(minecraftUsername)) {
             event.hook.editOriginal(translatable("whitelist.survival.modal.username_taken"))
                 .queue()
@@ -50,7 +44,8 @@ class SurvivalWhitelistCreateModal(
         }
 
         event.member?.let {
-            event.guild?.addRoleToMember(it,
+            event.guild?.addRoleToMember(
+                it,
                 event.guild?.getRoleById(botConfig.whitelistedRoleId)
                     ?: error("Whitelisted role not found")
             )?.queue()
