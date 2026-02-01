@@ -42,7 +42,10 @@ class SurvivalWhitelistCreateModal(
             return
         }
 
-        whitelistService.whitelist(discordId, minecraftUsername)
+        if (whitelistService.whitelist(discordId, minecraftUsername) == null) {
+            event.hook.editOriginal(translatable("whitelist.survival.modal.user-not-found"))
+                .queue()
+        }
 
         event.hook.editOriginal(translatable("whitelist.survival.modal.success"))
             .queue()

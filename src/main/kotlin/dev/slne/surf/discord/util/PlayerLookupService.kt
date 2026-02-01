@@ -12,6 +12,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.springframework.stereotype.Service
 import java.time.Duration
+import java.util.*
 
 @Serializable
 data class MojangProfile(val id: String, val name: String)
@@ -31,13 +32,13 @@ class PlayerLookupService {
     private val cache = Caffeine.newBuilder()
         .expireAfterWrite(Duration.ofMinutes(30))
         .maximumSize(10_000)
-        .build<String, String>()
+        .build<String, UUID>()
 
-    suspend fun getUuid(username: String): String? =
+    suspend fun getUuid(username: String): UUID? =
         cache.getIfPresent(username)
             ?: lookup(username)?.also { cache.put(username, it) }
 
-    private suspend fun lookup(username: String): String? = coroutineScope {
+    private suspend fun lookup(username: String): UUID? = coroutineScope {
         listOf(
             async { mojang(username) },
             async { minecraftServices(username) },
@@ -45,24 +46,24 @@ class PlayerLookupService {
         ).firstNotNullOfOrNull { it.await() }
     }
 
-    private suspend fun mojang(username: String): String? {
+    private suspend fun mojang(username: String): UUID? {
         val response = client.get("https://api.mojang.com/users/profiles/minecraft/$username")
         if (response.status != HttpStatusCode.OK) return null
-        return Json.decodeFromString<MojangProfile>(response.bodyAsText()).id
+        return UUID.fromString(Json.decodeFromString<MojangProfile>(response.bodyAsText()).id)
     }
 
-    private suspend fun minecraftServices(username: String): String? {
+    private suspend fun minecraftServices(username: String): UUID? {
         val response =
             client.get("https://api.minecraftservices.com/minecraft/profile/name/$username")
         if (response.status != HttpStatusCode.OK) return null
-        return Json.decodeFromString<MinecraftServicesProfile>(response.bodyAsText()).id
+        return UUID.fromString(Json.decodeFromString<MinecraftServicesProfile>(response.bodyAsText()).id)
     }
 
-    private suspend fun minetools(username: String): String? {
+    private suspend fun minetools(username: String): UUID? {
         val response = client.get("https://api.minetools.eu/uuid/$username")
         if (response.status != HttpStatusCode.OK) return null
         val body = Json.decodeFromString<MinetoolsResponse>(response.bodyAsText())
-        return if (body.status == "OK") body.id else null
+        return if (body.status == "OK") UUID.fromString(body.id) else null
     }
 }
 
