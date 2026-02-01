@@ -1,47 +1,26 @@
-package dev.slne.surf.discord.interaction.button.impl
+package dev.slne.surf.discord.ticket.command.context
 
+import dev.slne.surf.discord.contextmenu.ContextCommandType
+import dev.slne.surf.discord.contextmenu.DiscordContextCommand
+import dev.slne.surf.discord.contextmenu.UserContextCommand
 import dev.slne.surf.discord.dsl.embed
-import dev.slne.surf.discord.interaction.button.DiscordButton
 import dev.slne.surf.discord.messages.translatable
-import dev.slne.surf.discord.permission.DiscordPermission
-import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.ticket.database.whitelist.WhitelistService
 import dev.slne.surf.discord.util.Colors
-import dev.slne.surf.discord.util.Emojis
-import dev.slne.surf.discord.util.asTicketOrNull
-import net.dv8tion.jda.api.components.buttons.Button
-import net.dv8tion.jda.api.components.buttons.ButtonStyle
-import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
+import net.dv8tion.jda.api.events.interaction.command.UserContextInteractionEvent
 import org.springframework.stereotype.Component
 import java.time.format.DateTimeFormatter
 
+@DiscordContextCommand(
+    "Whitelist Ansehen",
+    ContextCommandType.USER
+)
 @Component
-class WhitelistInformationButton(
-    private val emojis: Emojis,
+class ViewWhitelistInformationContextCommand(
     private val whitelistService: WhitelistService
-) : DiscordButton {
-    override val id = "whitelist:button:information"
-    override val button by lazy {
-        Button.of(
-            ButtonStyle.SECONDARY,
-            id,
-            translatable("button.ticket.whitelist.view"),
-            emojis.checkMark
-        )
-    }
-
-    override suspend fun onClick(event: ButtonInteractionEvent) {
-        if (!event.member.hasPermission(DiscordPermission.WHITELIST_VIEW)) {
-            event.reply(translatable("no-permission")).setEphemeral(true).queue()
-            return
-        }
-
-        val ticket = event.hook.asTicketOrNull() ?: run {
-            event.reply(translatable("ticket.no-ticket")).setEphemeral(true).queue()
-            return
-        }
-
-        val whitelist = whitelistService.getWhitelist(ticket.authorId) ?: run {
+) : UserContextCommand {
+    override suspend fun execute(event: UserContextInteractionEvent) {
+        val whitelist = whitelistService.getWhitelist(event.target.idLong) ?: run {
             event.reply(translatable("whitelist.embed.information.no_whitelist"))
                 .setEphemeral(true)
                 .queue()
