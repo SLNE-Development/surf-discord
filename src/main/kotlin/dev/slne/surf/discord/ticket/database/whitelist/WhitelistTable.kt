@@ -9,6 +9,7 @@ object WhitelistTable : LongIdTable("discord_whitelists") {
     val minecraftUuid =
         varchar("minecraft_uuid", 36).transform({ UUID.fromString(it) }, { it.toString() })
             .uniqueIndex()
+    val blocked = bool("blocked").default(false)
     val createdAt = offsetDateTime("created_at")
     val updatedAt = offsetDateTime("updated_at")
 }

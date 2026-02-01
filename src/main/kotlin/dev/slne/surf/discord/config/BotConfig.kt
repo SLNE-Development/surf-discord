@@ -12,7 +12,8 @@ import kotlin.io.path.inputStream
 data class BotConfig(
     val botToken: String,
     val channels: ChannelConfig,
-    val database: DatabaseConfig
+    val database: DatabaseConfig,
+    val whitelistedRoleId: Long = 0L,
 )
 
 val botConfig by lazy {

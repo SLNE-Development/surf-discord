@@ -7,11 +7,12 @@ import dev.slne.surf.discord.ticket.database.messages.attachments.TicketAttachme
 import dev.slne.surf.discord.ticket.database.ticket.TicketTable
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataTable
 import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffTable
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
+import org.jetbrains.exposed.v1.r2dbc.SchemaUtils
+import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Service
 
@@ -28,23 +29,23 @@ data class DatabaseConfig(
 @Service
 class DatabaseConfiguration {
     @Bean
-    fun setupDatabase(): Database = Database.connect(
-        url = "jdbc:mariadb://${botConfig.database.hostname}:${botConfig.database.port}/${botConfig.database.database}",
-        driver = "org.mariadb.jdbc.Driver",
+    fun setupDatabase(): R2dbcDatabase = R2dbcDatabase.connect(
+        url = "r2dbc:mariadb://${botConfig.database.hostname}:${botConfig.database.port}/${botConfig.database.database}",
         user = botConfig.database.username,
         password = botConfig.database.password,
     ).also {
-        transaction {
-            SchemaUtils.create(
-                TicketTable,
-                TicketMemberTable,
-                TicketDataTable,
-                TicketStaffTable,
-                TicketMessagesTable,
-                TicketAttachmentsTable
-            )
+        runBlocking {
+            suspendTransaction {
+                SchemaUtils.create(
+                    TicketTable,
+                    TicketMemberTable,
+                    TicketDataTable,
+                    TicketStaffTable,
+                    TicketMessagesTable,
+                    TicketAttachmentsTable
+                )
+            }
+            logger.info("Connected to database ${botConfig.database.database} at ${botConfig.database.hostname}:${botConfig.database.port}")
         }
-
-        logger.info("Connected to database ${botConfig.database.database} at ${botConfig.database.hostname}:${botConfig.database.port}")
     }
 }

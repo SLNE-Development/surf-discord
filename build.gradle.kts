@@ -18,6 +18,7 @@ repositories {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("io.ktor:ktor-client-core:3.3.2")
+    implementation("io.ktor:ktor-client-cio:2.3.5")
     implementation("org.jetbrains.exposed:exposed-r2dbc:1.0.0")
     implementation("org.jetbrains.exposed:exposed-core:1.0.0")
     implementation("org.jetbrains.exposed:exposed-json:1.0.0")
