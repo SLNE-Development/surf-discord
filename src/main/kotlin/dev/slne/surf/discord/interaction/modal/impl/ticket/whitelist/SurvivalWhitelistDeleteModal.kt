@@ -1,5 +1,6 @@
 package dev.slne.surf.discord.interaction.modal.impl.ticket.whitelist
 
+import dev.slne.surf.discord.config.botConfig
 import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.messages.translatable
@@ -62,6 +63,15 @@ class SurvivalWhitelistDeleteModal(
         }
 
         whitelistService.deleteWhitelist(discordId)
+
+        event.guild?.let { guild ->
+            guild.getMemberById(discordId)?.let {
+                guild.removeRoleFromMember(it,
+                    guild.getRoleById(botConfig.whitelistedRoleId)
+                        ?: error("Whitelisted role is null")
+                ).queue()
+            }
+        }
 
         event.reply(translatable("whitelist.embed.information.successfully-deleted"))
             .setEphemeral(true)

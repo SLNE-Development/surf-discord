@@ -48,7 +48,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.WHITELIST_VIEW,
             DiscordPermission.WHITELIST_BYPASS,
             DiscordPermission.WHITELIST_EDIT,
-            DiscordPermission.TICKET_APPLICATION_TWITCH_MODERATOR
+            DiscordPermission.TICKET_APPLICATION_TWITCH_MODERATOR,
+            DiscordPermission.WHITELIST_DELETE
         ),
 
         // Management
@@ -73,7 +74,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.COMMAND_FAQ,
             DiscordPermission.WHITELIST_VIEW,
             DiscordPermission.WHITELIST_BYPASS,
-            DiscordPermission.WHITELIST_EDIT
+            DiscordPermission.WHITELIST_EDIT,
+            DiscordPermission.WHITELIST_DELETE
         ),
 
         // Developer
@@ -98,7 +100,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.COMMAND_FAQ,
             DiscordPermission.WHITELIST_VIEW,
             DiscordPermission.WHITELIST_BYPASS,
-            DiscordPermission.WHITELIST_EDIT
+            DiscordPermission.WHITELIST_EDIT,
+            DiscordPermission.WHITELIST_DELETE
         ),
 
         // Moderator
