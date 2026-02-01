@@ -16,14 +16,11 @@ class TicketArchivingListener(
     override fun onChannelUpdateArchived(event: ChannelUpdateArchivedEvent) {
         val channel = event.channel
 
-        logger.info("Channel ${channel.name} archiving status changed to ${event.newValue}")
-
         discordScope.launch {
             val ticket = ticketService.getTicketByThreadId(channel.idLong)
                 ?: return@launch
 
             if (!channel.type.isThread) {
-                logger.info("Channel ${channel.name} is not a thread, ignoring.")
                 return@launch
             }
 
