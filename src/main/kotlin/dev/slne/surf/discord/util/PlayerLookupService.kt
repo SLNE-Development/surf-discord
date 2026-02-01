@@ -6,7 +6,6 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -39,31 +38,48 @@ class PlayerLookupService {
             ?: lookup(username)?.also { cache.put(username, it) }
 
     private suspend fun lookup(username: String): UUID? = coroutineScope {
-        listOf(
-            async { mojang(username) },
-            async { minecraftServices(username) },
-            async { minetools(username) }
-        ).firstNotNullOfOrNull { it.await() }
+        mojang(username) ?: minecraftServices(username) ?: minetools(username)
     }
 
     private suspend fun mojang(username: String): UUID? {
         val response = client.get("https://api.mojang.com/users/profiles/minecraft/$username")
-        if (response.status != HttpStatusCode.OK) return null
-        return UUID.fromString(Json.decodeFromString<MojangProfile>(response.bodyAsText()).id)
+
+        if (response.status != HttpStatusCode.OK) {
+            return null
+        }
+
+        return undashedUuidToUuid(Json.decodeFromString<MojangProfile>(response.bodyAsText()).id)
     }
 
     private suspend fun minecraftServices(username: String): UUID? {
         val response =
-            client.get("https://api.minecraftservices.com/minecraft/profile/name/$username")
-        if (response.status != HttpStatusCode.OK) return null
-        return UUID.fromString(Json.decodeFromString<MinecraftServicesProfile>(response.bodyAsText()).id)
+            client.get("https://api.minecraftservices.com/minecraft/profile/lookup/name/$username")
+
+        if (response.status != HttpStatusCode.OK) {
+            return null
+        }
+
+        return undashedUuidToUuid(Json.decodeFromString<MinecraftServicesProfile>(response.bodyAsText()).id)
     }
 
     private suspend fun minetools(username: String): UUID? {
         val response = client.get("https://api.minetools.eu/uuid/$username")
-        if (response.status != HttpStatusCode.OK) return null
+
+        if (response.status != HttpStatusCode.OK) {
+            return null
+        }
+        
         val body = Json.decodeFromString<MinetoolsResponse>(response.bodyAsText())
-        return if (body.status == "OK") UUID.fromString(body.id) else null
+        return if (body.status == "OK") undashedUuidToUuid(body.id) else null
+    }
+
+    private fun undashedUuidToUuid(uuid: String?) = uuid?.let {
+        UUID.fromString(
+            it.replaceFirst(
+                "(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})".toRegex(),
+                "$1-$2-$3-$4-$5"
+            )
+        )
     }
 }
 
