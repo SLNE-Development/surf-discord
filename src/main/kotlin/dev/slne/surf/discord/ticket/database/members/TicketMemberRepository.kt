@@ -1,14 +1,15 @@
 package dev.slne.surf.discord.ticket.database.members
 
 import dev.slne.surf.discord.ticket.Ticket
-import kotlinx.coroutines.Dispatchers
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import org.jetbrains.exposed.sql.update
-import org.jetbrains.exposed.sql.upsert
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.isNull
+import org.jetbrains.exposed.v1.r2dbc.selectAll
+import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
+import org.jetbrains.exposed.v1.r2dbc.update
+import org.jetbrains.exposed.v1.r2dbc.upsert
 import org.springframework.stereotype.Repository
 import java.time.ZonedDateTime
 
@@ -22,7 +23,7 @@ class TicketMemberRepository {
         addedById: Long,
         addedByName: String,
         addedByAvatarUrl: String?
-    ) = newSuspendedTransaction(Dispatchers.IO) {
+    ) = suspendTransaction {
         TicketMemberTable.upsert {
             it[ticketId] = ticket.ticketId
             it[memberId] = userId
@@ -48,7 +49,7 @@ class TicketMemberRepository {
         removedByName: String,
         removedByAvatarUrl: String?
     ) =
-        newSuspendedTransaction(Dispatchers.IO) {
+        suspendTransaction {
             TicketMemberTable.update({ (TicketMemberTable.ticketId eq ticket.ticketId) and (TicketMemberTable.memberId eq removedById) and (TicketMemberTable.removedAt.isNull()) }) {
                 it[removedAt] = ZonedDateTime.now()
                 it[this.removedById] = removedById
@@ -58,14 +59,14 @@ class TicketMemberRepository {
             }
         }
 
-    suspend fun getMembers(ticket: Ticket): List<Long> = newSuspendedTransaction(Dispatchers.IO) {
+    suspend fun getMembers(ticket: Ticket): List<Long> = suspendTransaction {
         TicketMemberTable.selectAll()
             .where((TicketMemberTable.ticketId eq ticket.ticketId) and (TicketMemberTable.removedAt.isNull()))
-            .map { it[TicketMemberTable.memberId] }
+            .map { it[TicketMemberTable.memberId] }.toList()
     }
 
     suspend fun isMember(ticket: Ticket, userId: Long): Boolean =
-        newSuspendedTransaction(Dispatchers.IO) {
+        suspendTransaction {
             TicketMemberTable.selectAll()
                 .where((TicketMemberTable.ticketId eq ticket.ticketId) and (TicketMemberTable.memberId eq userId) and (TicketMemberTable.removedAt.isNull()))
                 .count() > 0

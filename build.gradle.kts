@@ -18,8 +18,10 @@ repositories {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("io.ktor:ktor-client-core:3.3.2")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.55.0")
-    implementation("org.jetbrains.exposed:exposed-core:0.55.0")
+    implementation("org.jetbrains.exposed:exposed-r2dbc:1.0.0")
+    implementation("org.jetbrains.exposed:exposed-core:1.0.0")
+    implementation("org.jetbrains.exposed:exposed-json:1.0.0")
+    implementation("org.jetbrains.exposed:exposed-java-time:1.0.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     implementation("it.unimi.dsi:fastutil:8.5.16")
@@ -29,7 +31,7 @@ dependencies {
     implementation("net.dv8tion:JDA:6.1.0")
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.3")
 
-    runtimeOnly("org.mariadb.jdbc:mariadb-java-client:3.2.0")
+    runtimeOnly("org.mariadb:r2dbc-mariadb:1.3.0")
 }
 
 kotlin { jvmToolchain(21) }

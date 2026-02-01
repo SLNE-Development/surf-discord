@@ -1,12 +1,12 @@
 package dev.slne.surf.discord.ticket.database.ticket.data
 
 import dev.slne.surf.discord.ticket.TicketData
-import kotlinx.coroutines.Dispatchers
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import kotlinx.coroutines.flow.toList
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.r2dbc.deleteWhere
+import org.jetbrains.exposed.v1.r2dbc.insert
+import org.jetbrains.exposed.v1.r2dbc.selectAll
+import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import org.springframework.stereotype.Repository
 import java.util.*
 
@@ -15,7 +15,7 @@ class TicketDataRepository {
     suspend fun setData(
         ticketId: UUID,
         data: TicketData
-    ) = newSuspendedTransaction(Dispatchers.IO) {
+    ) = suspendTransaction {
         TicketDataTable.deleteWhere {
             TicketDataTable.ticketId eq ticketId
         }
@@ -31,8 +31,8 @@ class TicketDataRepository {
 
     suspend fun getData(
         ticketId: UUID
-    ): TicketData = newSuspendedTransaction(Dispatchers.IO) {
-        TicketDataTable.selectAll().where(TicketDataTable.ticketId eq ticketId)
+    ): TicketData = suspendTransaction {
+        TicketDataTable.selectAll().where(TicketDataTable.ticketId eq ticketId).toList()
             .associate { it[TicketDataTable.dataKey] to it[TicketDataTable.dataValue] }
     }
 }

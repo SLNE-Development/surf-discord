@@ -1,7 +1,7 @@
 package dev.slne.surf.discord.ticket.database.messages
 
-import dev.slne.surf.discord.util.zonedDateTime
-import org.jetbrains.exposed.dao.id.LongIdTable
+import dev.slne.surf.discord.ticket.database.column.zonedDateTime
+import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
 
 object TicketMessagesTable : LongIdTable("ticket_messages") {
     val ticketId = ulong("ticket_id")

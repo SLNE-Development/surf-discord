@@ -1,6 +1,5 @@
 package dev.slne.surf.discord.config
 
-import dev.slne.surf.discord.announcement.database.AnnouncementTable
 import dev.slne.surf.discord.logger
 import dev.slne.surf.discord.ticket.database.members.TicketMemberTable
 import dev.slne.surf.discord.ticket.database.messages.TicketMessagesTable
@@ -41,7 +40,6 @@ class DatabaseConfiguration {
                 TicketMemberTable,
                 TicketDataTable,
                 TicketStaffTable,
-                AnnouncementTable,
                 TicketMessagesTable,
                 TicketAttachmentsTable
             )
