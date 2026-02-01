@@ -1,10 +1,14 @@
 package dev.slne.surf.discord.interaction.button.impl
 
+import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.button.DiscordButton
 import dev.slne.surf.discord.interaction.modal.ModalRegistry
 import dev.slne.surf.discord.messages.translatable
+import dev.slne.surf.discord.permission.DiscordPermission
+import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.ticket.database.whitelist.WhitelistService
+import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.Emojis
 import net.dv8tion.jda.api.components.buttons.Button
 import net.dv8tion.jda.api.components.buttons.ButtonStyle
@@ -31,13 +35,15 @@ class WhitelistCreateButton(
     }
 
     override suspend fun onClick(event: ButtonInteractionEvent) {
-//        event.replyEmbeds(embed {
-//            title = "Fehlgeschlagen"
-//            description =
-//                "Zurzeit können keine Whitelist Anträge eingereicht werden. Der Survival Server ist zurzeit in Wartungsarbeiten und somit eine Whitelist nicht möglich. Bitte habe Verständnis."
-//            color = Colors.WARNING
-//        }).setEphemeral(true).queue()
-        // return
+        if (!event.member.hasPermission(DiscordPermission.WHITELIST_BYPASS)) {
+            event.replyEmbeds(embed {
+                title = "Fehlgeschlagen"
+                description =
+                    "Zurzeit können keine Whitelist Anträge eingereicht werden. Der Survival Server ist zurzeit in Wartungsarbeiten und somit eine Whitelist nicht möglich. Bitte habe Verständnis."
+                color = Colors.WARNING
+            }).setEphemeral(true).queue()
+            return
+        }
 
         if (whitelistService.isWhitelisted(event.user.idLong)) {
             event.reply(translatable("whitelist.survival.modal.already_whitelisted"))

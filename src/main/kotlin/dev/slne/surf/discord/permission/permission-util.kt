@@ -45,7 +45,9 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_BUG_VIEW,
             DiscordPermission.TICKET_REPLY_DEADLINE,
             DiscordPermission.COMMAND_FAQ,
-            DiscordPermission.WHITELIST_VIEW
+            DiscordPermission.WHITELIST_VIEW,
+            DiscordPermission.WHITELIST_BYPASS,
+            DiscordPermission.WHITELIST_EDIT
         ),
 
         // Management
@@ -68,7 +70,9 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_APPLICATION_DESIGNER,
             DiscordPermission.TICKET_APPLICATION_DEVELOPER,
             DiscordPermission.COMMAND_FAQ,
-            DiscordPermission.WHITELIST_VIEW
+            DiscordPermission.WHITELIST_VIEW,
+            DiscordPermission.WHITELIST_BYPASS,
+            DiscordPermission.WHITELIST_EDIT
         ),
 
         // Developer
@@ -91,7 +95,9 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_UNBAN_VIEW,
             DiscordPermission.TICKET_REPORT_VIEW,
             DiscordPermission.COMMAND_FAQ,
-            DiscordPermission.WHITELIST_VIEW
+            DiscordPermission.WHITELIST_VIEW,
+            DiscordPermission.WHITELIST_BYPASS,
+            DiscordPermission.WHITELIST_EDIT
         ),
 
         // Moderator
@@ -108,7 +114,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_REPORT_VIEW,
             DiscordPermission.TICKET_UNBAN_VIEW,
             DiscordPermission.COMMAND_FAQ,
-            DiscordPermission.WHITELIST_VIEW
+            DiscordPermission.WHITELIST_VIEW,
+            DiscordPermission.WHITELIST_EDIT
         ),
 
         // Supporter
