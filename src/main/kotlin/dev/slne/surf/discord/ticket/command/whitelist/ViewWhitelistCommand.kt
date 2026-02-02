@@ -18,10 +18,15 @@ import java.time.format.DateTimeFormatter
     name = "wl-view",
     description = "Whitelist Eintrag ansehen",
     options = [CommandOption(
-        name = "user",
+        name = "discord-user",
         description = "Der Discord Nutzer, dessen Whitelist Eintrag gezeigt werden soll",
         type = CommandOptionType.USER,
-        required = true
+        required = false
+    ), CommandOption(
+        name = "minecraft-name",
+        description = "Der Minecraft Name, dessen Whitelist Eintrag gezeigt werden soll",
+        type = CommandOptionType.STRING,
+        required = false
     )]
 )
 @Component
@@ -34,49 +39,107 @@ class ViewWhitelistCommand(
             return
         }
 
-        val userId = event.getOption("user")?.asUser?.idLong ?: return
+        val userId = event.getOption("discord-user")?.asUser?.idLong
+        val minecraftNameOption = event.getOption("minecraft-name")?.asString
 
-        val whitelist = whitelistService.getWhitelist(userId) ?: run {
-            event.reply(translatable("whitelist.embed.information.no_whitelist"))
+        if (userId == null && minecraftNameOption == null) {
+            event.reply(translatable("whitelist.command.view.missing-parameters"))
                 .setEphemeral(true)
                 .queue()
             return
         }
 
-        val minecraftName = whitelist.getMinecraftName() ?: whitelist.minecraftUuid.toString()
+        if (userId != null) {
+            val whitelist = whitelistService.getWhitelist(userId) ?: run {
+                event.reply(translatable("whitelist.embed.information.no_whitelist"))
+                    .setEphemeral(true)
+                    .queue()
+                return
+            }
 
-        event.replyEmbeds(embed {
-            title = translatable("whitelist.embed.information.title")
-            field {
-                name = translatable("whitelist.embed.information.minecraft")
-                value = minecraftName
-                inline = true
-            }
-            field {
-                name = translatable("whitelist.embed.information.discord")
-                value = event.jda.getUserById(whitelist.discordId)?.asMention
-                    ?: whitelist.discordId.toString()
-                inline = true
-            }
-            field {
-                name = translatable("whitelist.embed.information.created")
-                value = whitelist.createdAt.format(dateTimeFormatter)
-                inline = true
-            }
-            field {
-                name = translatable("whitelist.embed.information.updated")
-                value = whitelist.updatedAt.format(dateTimeFormatter)
-                inline = true
-            }
-            field {
-                name = translatable("whitelist.embed.information.blocked")
-                value = whitelist.blocked.let {
-                    if (it) "Ja" else "Nein"
+            val minecraftName = whitelist.getMinecraftName() ?: whitelist.minecraftUuid.toString()
+
+            event.replyEmbeds(embed {
+                title = translatable("whitelist.embed.information.title")
+                field {
+                    name = translatable("whitelist.embed.information.minecraft")
+                    value = minecraftName
+                    inline = true
                 }
-                inline = true
+                field {
+                    name = translatable("whitelist.embed.information.discord")
+                    value = "<@${whitelist.discordId}>"
+                    inline = true
+                }
+                field {
+                    name = translatable("whitelist.embed.information.created")
+                    value = whitelist.createdAt.format(dateTimeFormatter)
+                    inline = true
+                }
+                field {
+                    name = translatable("whitelist.embed.information.updated")
+                    value = whitelist.updatedAt.format(dateTimeFormatter)
+                    inline = true
+                }
+                field {
+                    name = translatable("whitelist.embed.information.blocked")
+                    value = whitelist.blocked.let {
+                        if (it) "Ja" else "Nein"
+                    }
+                    inline = true
+                }
+                color = Colors.SUCCESS
+            }).setEphemeral(true).queue()
+            return
+        }
+
+        if (minecraftNameOption != null) {
+            val whitelist = whitelistService.getWhitelist(minecraftNameOption) ?: run {
+                event.reply(translatable("whitelist.embed.information.no_whitelist"))
+                    .setEphemeral(true)
+                    .queue()
+                return
             }
-            color = Colors.SUCCESS
-        }).setEphemeral(true).queue()
+
+            val minecraftName = whitelist.getMinecraftName() ?: whitelist.minecraftUuid.toString()
+
+            event.replyEmbeds(embed {
+                title = translatable("whitelist.embed.information.title")
+                field {
+                    name = translatable("whitelist.embed.information.minecraft")
+                    value = minecraftName
+                    inline = true
+                }
+                field {
+                    name = translatable("whitelist.embed.information.discord")
+                    value = "<@${whitelist.discordId}>"
+                    inline = true
+                }
+                field {
+                    name = translatable("whitelist.embed.information.created")
+                    value = whitelist.createdAt.format(dateTimeFormatter)
+                    inline = true
+                }
+                field {
+                    name = translatable("whitelist.embed.information.updated")
+                    value = whitelist.updatedAt.format(dateTimeFormatter)
+                    inline = true
+                }
+                field {
+                    name = translatable("whitelist.embed.information.blocked")
+                    value = whitelist.blocked.let {
+                        if (it) "Ja" else "Nein"
+                    }
+                    inline = true
+                }
+                color = Colors.SUCCESS
+            }).setEphemeral(true).queue()
+            return
+        }
+
+        event.reply(translatable("whitelist.command.view.missing-parameters"))
+            .setEphemeral(true)
+            .queue()
     }
 
     private val dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")

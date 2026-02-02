@@ -59,8 +59,7 @@ class WhitelistInformationButton(
             }
             field {
                 name = translatable("whitelist.embed.information.discord")
-                value = event.jda.getUserById(whitelist.discordId)?.asMention
-                    ?: whitelist.discordId.toString()
+                value = "<@${whitelist.discordId}>"
                 inline = true
             }
             field {

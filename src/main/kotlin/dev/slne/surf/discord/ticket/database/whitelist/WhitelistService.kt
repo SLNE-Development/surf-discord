@@ -23,6 +23,10 @@ class WhitelistService(
     suspend fun unblockWhitelist(discordId: Long) = whitelistRepository.unblockWhitelist(discordId)
 
     suspend fun getWhitelist(discordId: Long) = whitelistRepository.getWhitelist(discordId)
+    suspend fun getWhitelist(minecraftName: String) =
+        playerLookupService.getUuid(minecraftName)?.let {
+            whitelistRepository.getWhitelist(it)
+        }
 
     suspend fun updateWhitelist(
         discordId: Long,

@@ -67,6 +67,18 @@ class WhitelistRepository {
         }.firstOrNull()
     }
 
+    suspend fun getWhitelist(minecraftUuid: UUID) = suspendTransaction {
+        WhitelistTable.selectAll().where(WhitelistTable.minecraftUuid eq minecraftUuid).map {
+            WhitelistEntry(
+                discordId = it[WhitelistTable.discordUserId],
+                minecraftUuid = it[WhitelistTable.minecraftUuid],
+                blocked = it[WhitelistTable.blocked],
+                createdAt = it[WhitelistTable.createdAt],
+                updatedAt = it[WhitelistTable.updatedAt]
+            )
+        }.firstOrNull()
+    }
+
     suspend fun editWhitelist(
         discordId: Long,
         minecraftUuid: UUID,
