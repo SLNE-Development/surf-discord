@@ -31,6 +31,7 @@ dependencies {
     implementation("net.kyori:adventure-text-logger-slf4j:4.24.0")
     implementation("com.charleskorn.kaml:kaml-jvm:0.72.0")
     implementation("net.dv8tion:JDA:6.1.0")
+    implementation("club.minnced:jda-ktx:0.12.0")
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.3")
 
     runtimeOnly("org.mariadb:r2dbc-mariadb:1.3.0")
