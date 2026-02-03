@@ -92,7 +92,7 @@ class TicketService(
             ticketDataRepository.setData(it, data)
         }
 
-        ticketMemberService.addMember(ticket, user, jda.selfUser)
+        ticketMemberService.addMember(ticket, user, jda.selfUser, false)
         ticketLogger.logCreation(ticket)
 
         return ticket

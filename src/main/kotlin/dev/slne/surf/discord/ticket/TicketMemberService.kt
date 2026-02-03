@@ -12,7 +12,12 @@ import org.springframework.stereotype.Service
 class TicketMemberService(
     private val ticketMemberRepository: TicketMemberRepository
 ) {
-    suspend fun addMember(ticket: Ticket, user: User, addedBy: User): Boolean {
+    suspend fun addMember(
+        ticket: Ticket,
+        user: User,
+        addedBy: User,
+        welcome: Boolean = true
+    ): Boolean {
         if (ticketMemberRepository.isMember(ticket, user.idLong)) {
             return false
         }
@@ -30,15 +35,18 @@ class TicketMemberService(
         val thread = ticket.getThreadChannel() ?: return false
 
         thread.addThreadMember(user).queue()
-        thread.sendMessage(user.asMention).setEmbeds(
-            embed {
-                title = "Willkommen im Ticket"
-                description =
-                    "Du wurdest zu diesem Ticket hinzugefügt. Bitte sieh dir den Verlauf des Tickets an und warte auf eine Nachricht eines Teammitglieds."
-                color = Colors.WARNING
-                footer = "Hinzugefügt von ${addedBy.name}"
-            }
-        ).queue()
+
+        if (welcome) {
+            thread.sendMessage(user.asMention).setEmbeds(
+                embed {
+                    title = "Willkommen im Ticket"
+                    description =
+                        "Du wurdest zu diesem Ticket hinzugefügt. Bitte sieh dir den Verlauf des Tickets an und warte auf eine Nachricht eines Teammitglieds."
+                    color = Colors.WARNING
+                    footer = "Hinzugefügt von ${addedBy.name}"
+                }
+            ).queue()
+        }
 
         return true
     }
