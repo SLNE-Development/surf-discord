@@ -23,6 +23,7 @@ class TicketService(
     private val ticketRepository: TicketRepository,
     private val ticketDataRepository: TicketDataRepository,
     private val ticketStaffRepository: TicketStaffRepository,
+    private val ticketMemberService: TicketMemberService,
     private val ticketChannel: TextChannel?,
     private val ticketLogger: TicketLogger
 ) {
@@ -91,7 +92,7 @@ class TicketService(
             ticketDataRepository.setData(it, data)
         }
 
-
+        ticketMemberService.addMember(ticket, user, jda.selfUser)
         ticketLogger.logCreation(ticket)
 
         return ticket
