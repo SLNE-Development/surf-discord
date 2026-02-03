@@ -19,10 +19,11 @@ class TicketLeaveListener(
         discordScope.launch {
             val ticket = ticketService.getTicketByThreadId(event.thread.idLong) ?: return@launch
 
-            if (ticketMemberService.isMember(ticket, event.member.idLong)) {
+            if (ticketMemberService.isMember(ticket, event.threadMember.member.idLong)) {
                 val message =
-                    event.thread.sendMessage("Readding ${event.member.nickname}").await()
-                val edited = message.editMessage(event.member.asMention).await()
+                    event.thread.sendMessage("Readding ${event.threadMember.member.nickname}")
+                        .await()
+                val edited = message.editMessage(event.threadMember.member.asMention).await()
                 edited.delete().queue()
             }
         }
