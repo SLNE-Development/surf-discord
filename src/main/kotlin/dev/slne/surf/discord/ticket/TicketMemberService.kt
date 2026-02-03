@@ -1,8 +1,10 @@
 package dev.slne.surf.discord.ticket
 
+import dev.minn.jda.ktx.coroutines.await
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.ticket.database.members.TicketMemberRepository
 import dev.slne.surf.discord.util.Colors
+import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.User
 import org.springframework.stereotype.Service
 
@@ -37,6 +39,17 @@ class TicketMemberService(
                 footer = "Hinzugefügt von ${addedBy.name}"
             }
         ).queue()
+
+        return true
+    }
+
+    suspend fun addRole(ticket: Ticket, role: Role, addedBy: User): Boolean {
+        val guild = ticket.getThreadChannel()?.guild ?: return false
+        val members = guild.findMembersWithRoles(role).await() ?: return false
+
+        members.forEach {
+            addMember(ticket, it.user, addedBy)
+        }
 
         return true
     }
