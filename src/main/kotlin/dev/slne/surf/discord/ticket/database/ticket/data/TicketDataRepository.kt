@@ -8,12 +8,11 @@ import org.jetbrains.exposed.v1.r2dbc.insert
 import org.jetbrains.exposed.v1.r2dbc.selectAll
 import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import org.springframework.stereotype.Repository
-import java.util.*
 
 @Repository
 class TicketDataRepository {
     suspend fun setData(
-        ticketId: UUID,
+        ticketId: ULong,
         data: TicketData
     ) = suspendTransaction {
         TicketDataTable.deleteWhere {
@@ -30,7 +29,7 @@ class TicketDataRepository {
     }
 
     suspend fun getData(
-        ticketId: UUID
+        ticketId: ULong
     ): TicketData = suspendTransaction {
         TicketDataTable.selectAll().where(TicketDataTable.ticketId eq ticketId).toList()
             .associate { it[TicketDataTable.dataKey] to it[TicketDataTable.dataValue] }

@@ -87,7 +87,10 @@ class TicketService(
         )
 
         ticketRepository.createTicket(ticket)
-        ticketDataRepository.setData(ticket.ticketId, data)
+        ticketRepository.getInternalId(ticket.ticketId)?.let {
+            ticketDataRepository.setData(it, data)
+        }
+
 
         ticketLogger.logCreation(ticket)
 
@@ -118,7 +121,10 @@ class TicketService(
         ticketStaffRepository.isClaimedByUser(ticket, user)
 
     suspend fun updateData(ticket: Ticket, ticketData: TicketData) =
-        ticketDataRepository.setData(ticket.ticketId, ticketData)
+        ticketRepository.getInternalId(ticket.ticketId)?.let {
+            ticketDataRepository.setData(it, ticketData)
+        }
+
 
     suspend fun getTicketByThreadId(threadId: Long) =
         ticketRepository.getTicketByThreadId(threadId)

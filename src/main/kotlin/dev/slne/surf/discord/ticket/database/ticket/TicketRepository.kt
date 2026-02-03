@@ -37,6 +37,12 @@ class TicketRepository(
         }
     }
 
+    suspend fun getInternalId(ticketId: UUID) = suspendTransaction {
+        TicketTable.selectAll().where(TicketTable.ticketId eq ticketId)
+            .map { it[TicketTable.id].value }
+            .firstOrNull()
+    }
+
     suspend fun hasOpenTicket(authorId: Long, type: TicketType): Boolean =
         suspendTransaction {
             TicketTable.selectAll()
@@ -83,7 +89,7 @@ class TicketRepository(
     private suspend fun ResultRow.toTicket(): Ticket {
         val id = this[TicketTable.ticketId]
         val internalId = this[TicketTable.id].value
-        val data = ticketDataRepository.getData(id)
+        val data = ticketDataRepository.getData(internalId)
 
         return Ticket(
             ticketId = id,
