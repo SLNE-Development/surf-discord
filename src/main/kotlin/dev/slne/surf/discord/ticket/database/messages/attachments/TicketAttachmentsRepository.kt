@@ -1,10 +1,9 @@
 package dev.slne.surf.discord.ticket.database.messages.attachments
 
-import kotlinx.coroutines.Dispatchers
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.r2dbc.deleteWhere
+import org.jetbrains.exposed.v1.r2dbc.insert
+import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import org.springframework.stereotype.Repository
 import java.time.ZonedDateTime
 
@@ -24,7 +23,7 @@ class TicketAttachmentsRepository {
         ephemeral: Boolean,
         durationSeconds: Float?,
         messageId: Long,
-    ) = newSuspendedTransaction(Dispatchers.IO) {
+    ) = suspendTransaction {
         TicketAttachmentsTable.insert {
             it[this.attachmentId] = attachmentId
             it[this.fileName] = fileName
@@ -46,7 +45,7 @@ class TicketAttachmentsRepository {
 
     suspend fun delete(
         messageId: Long
-    ) = newSuspendedTransaction(Dispatchers.IO) {
+    ) = suspendTransaction {
         TicketAttachmentsTable.deleteWhere {
             TicketAttachmentsTable.messageId eq messageId
         }

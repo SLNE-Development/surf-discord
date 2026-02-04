@@ -9,6 +9,10 @@ import net.dv8tion.jda.api.modals.Modal
 
 private val defaultReasons = mutableObjectListOf(
     TicketCloseReason.of(
+        "Kein Grund",
+        "Es wurde kein spezifischer Grund angegeben."
+    ),
+    TicketCloseReason.of(
         "Anliegen bearbeitet",
         "Dein Anliegen wurde bearbeitet."
     ),

@@ -12,5 +12,6 @@ class HelpCommand : ConsoleCommand {
         println("   - help: Zeigt alle verfügbaren Console Commands an")
         println("   - registercommands: Registriert alle Discord-Commands")
         println("   - createartyemojis: Erstellt die Arty Emojis neu")
+        println("   - clear-whitelist-role: Entfernt alle Nutzer von der Whitelisted Rolle")
     }
 }

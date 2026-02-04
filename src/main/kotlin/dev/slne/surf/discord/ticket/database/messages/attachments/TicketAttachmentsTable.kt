@@ -1,7 +1,7 @@
 package dev.slne.surf.discord.ticket.database.messages.attachments
 
-import dev.slne.surf.discord.util.zonedDateTime
-import org.jetbrains.exposed.dao.id.LongIdTable
+import dev.slne.surf.discord.ticket.database.column.zonedDateTime
+import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
 
 object TicketAttachmentsTable : LongIdTable("ticket_message_attachments") {
     val attachmentId =

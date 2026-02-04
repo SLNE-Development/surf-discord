@@ -23,6 +23,7 @@ class TicketService(
     private val ticketRepository: TicketRepository,
     private val ticketDataRepository: TicketDataRepository,
     private val ticketStaffRepository: TicketStaffRepository,
+    private val ticketMemberService: TicketMemberService,
     private val ticketChannel: TextChannel?,
     private val ticketLogger: TicketLogger
 ) {
@@ -87,8 +88,11 @@ class TicketService(
         )
 
         ticketRepository.createTicket(ticket)
-        ticketDataRepository.setData(ticket.ticketId, data)
+        ticketRepository.getInternalId(ticket.ticketId)?.let {
+            ticketDataRepository.setData(it, data)
+        }
 
+        ticketMemberService.addMember(ticket, user, jda.selfUser, false)
         ticketLogger.logCreation(ticket)
 
         return ticket
@@ -118,7 +122,10 @@ class TicketService(
         ticketStaffRepository.isClaimedByUser(ticket, user)
 
     suspend fun updateData(ticket: Ticket, ticketData: TicketData) =
-        ticketDataRepository.setData(ticket.ticketId, ticketData)
+        ticketRepository.getInternalId(ticket.ticketId)?.let {
+            ticketDataRepository.setData(it, ticketData)
+        }
+
 
     suspend fun getTicketByThreadId(threadId: Long) =
         ticketRepository.getTicketByThreadId(threadId)

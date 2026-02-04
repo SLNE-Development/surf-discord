@@ -3,11 +3,17 @@ package dev.slne.surf.discord.ticket.database.ticket
 import dev.slne.surf.discord.ticket.Ticket
 import dev.slne.surf.discord.ticket.TicketType
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataRepository
-import kotlinx.coroutines.Dispatchers
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
+import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.isNull
+import org.jetbrains.exposed.v1.r2dbc.insert
+import org.jetbrains.exposed.v1.r2dbc.selectAll
+import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
+import org.jetbrains.exposed.v1.r2dbc.update
 import org.springframework.stereotype.Repository
 import java.time.ZonedDateTime
 import java.util.*
@@ -16,7 +22,7 @@ import java.util.*
 class TicketRepository(
     private val ticketDataRepository: TicketDataRepository
 ) {
-    suspend fun createTicket(ticket: Ticket) = newSuspendedTransaction(Dispatchers.IO) {
+    suspend fun createTicket(ticket: Ticket) = suspendTransaction {
         TicketTable.insert {
             it[ticketId] = ticket.ticketId
             it[authorId] = ticket.authorId
@@ -31,8 +37,14 @@ class TicketRepository(
         }
     }
 
+    suspend fun getInternalId(ticketId: UUID) = suspendTransaction {
+        TicketTable.selectAll().where(TicketTable.ticketId eq ticketId)
+            .map { it[TicketTable.id].value }
+            .firstOrNull()
+    }
+
     suspend fun hasOpenTicket(authorId: Long, type: TicketType): Boolean =
-        newSuspendedTransaction(Dispatchers.IO) {
+        suspendTransaction {
             TicketTable.selectAll()
                 .where(
                     (TicketTable.authorId eq authorId) and
@@ -44,14 +56,14 @@ class TicketRepository(
 
 
     suspend fun getTicketByThreadId(threadId: Long): Ticket? =
-        newSuspendedTransaction(Dispatchers.IO) {
-            TicketTable.selectAll().where(TicketTable.threadId eq threadId)
-                .firstNotNullOfOrNull { it.toTicket() }
+        suspendTransaction {
+            TicketTable.selectAll().where(TicketTable.threadId eq threadId).filterNotNull()
+                .map { it.toTicket() }.firstOrNull()
         }
 
     suspend fun markAsClosed(
         ticket: Ticket
-    ) = newSuspendedTransaction(Dispatchers.IO) {
+    ) = suspendTransaction {
         TicketTable.update({ TicketTable.ticketId eq ticket.ticketId }) {
             it[TicketTable.closedAt] = ticket.closedAt
             it[TicketTable.closedById] = ticket.closedById
@@ -62,22 +74,22 @@ class TicketRepository(
         }
     }
 
-    suspend fun getTicketById(ticketId: UUID): Ticket? = newSuspendedTransaction(Dispatchers.IO) {
+    suspend fun getTicketById(ticketId: UUID): Ticket? = suspendTransaction {
         TicketTable.selectAll().where(TicketTable.ticketId eq ticketId)
-            .firstNotNullOfOrNull { it.toTicket() }
+            .filterNotNull().map { it.toTicket() }.firstOrNull()
     }
 
     suspend fun getTicket(authorId: Long, type: TicketType) =
-        newSuspendedTransaction(Dispatchers.IO) {
+        suspendTransaction {
             TicketTable.selectAll()
                 .where((TicketTable.authorId eq authorId) and (TicketTable.ticketType eq type))
-                .firstNotNullOfOrNull { it.toTicket() }
+                .filterNotNull().map { it.toTicket() }.firstOrNull()
         }
 
     private suspend fun ResultRow.toTicket(): Ticket {
         val id = this[TicketTable.ticketId]
         val internalId = this[TicketTable.id].value
-        val data = ticketDataRepository.getData(id)
+        val data = ticketDataRepository.getData(internalId)
 
         return Ticket(
             ticketId = id,

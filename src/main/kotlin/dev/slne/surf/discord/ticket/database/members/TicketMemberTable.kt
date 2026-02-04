@@ -1,7 +1,7 @@
 package dev.slne.surf.discord.ticket.database.members
 
-import dev.slne.surf.discord.util.zonedDateTime
-import org.jetbrains.exposed.dao.id.LongIdTable
+import dev.slne.surf.discord.ticket.database.column.zonedDateTime
+import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
 import java.util.*
 
 object TicketMemberTable : LongIdTable("ticket_members") {
