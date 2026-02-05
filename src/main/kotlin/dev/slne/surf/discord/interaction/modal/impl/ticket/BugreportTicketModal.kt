@@ -26,7 +26,7 @@ class BugreportTicketModal(
             id = "issue"
             label = translatable("ticket.bugreport.modal.field.issue.label")
             style = TextInputStyle.PARAGRAPH
-            lengthRange = 10..4000
+            lengthRange = 10..1024
             placeholder = translatable("ticket.bugreport.modal.field.issue.placeholder")
             required = true
         }
