@@ -34,7 +34,7 @@ class ReportTicketModal(
             id = "issue"
             label = translatable("ticket.report.modal.field.issue.label")
             style = TextInputStyle.PARAGRAPH
-            lengthRange = 10..1024
+            lengthRange = 10..4000
             placeholder = translatable("ticket.report.modal.field.issue.placeholder")
             required = true
         }

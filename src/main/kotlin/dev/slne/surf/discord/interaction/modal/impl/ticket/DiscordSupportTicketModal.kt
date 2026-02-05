@@ -26,7 +26,7 @@ class DiscordSupportTicketModal(
             id = "issue"
             label = translatable("ticket.support.discord.modal.field.issue.label")
             style = TextInputStyle.PARAGRAPH
-            lengthRange = 10..1024
+            lengthRange = 10..4000
             placeholder = translatable("ticket.support.discord.modal.field.issue.placeholder")
             required = true
         }

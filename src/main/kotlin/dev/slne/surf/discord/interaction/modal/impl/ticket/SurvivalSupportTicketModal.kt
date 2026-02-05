@@ -29,7 +29,7 @@ class SurvivalSupportTicketModal(
             id = "issue"
             label = translatable("ticket.support.survival.modal.field.issue.label")
             style = TextInputStyle.PARAGRAPH
-            lengthRange = 10..1024
+            lengthRange = 10..4000
             placeholder = translatable("ticket.support.survival.modal.field.issue.placeholder")
             required = true
         }
