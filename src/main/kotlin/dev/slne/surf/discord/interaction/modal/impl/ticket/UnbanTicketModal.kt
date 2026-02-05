@@ -95,16 +95,20 @@ class UnbanTicketModal(
                     inline = true
                 }
 
-                field {
-                    name = translatable("ticket.unban.embed.field.issue")
-                    value = issue
-                    inline = true
+                issue.chunked(1024).forEach { chunk ->
+                    field {
+                        name = translatable("ticket.unban.embed.field.issue")
+                        value = chunk
+                        inline = true
+                    }
                 }
 
-                field {
-                    name = translatable("ticket.unban.embed.field.reason")
-                    value = reason
-                    inline = true
+                reason.chunked(1024).forEach { chunk ->
+                    field {
+                        name = translatable("ticket.unban.embed.field.reason")
+                        value = chunk
+                        inline = true
+                    }
                 }
             }
         ).addComponents(

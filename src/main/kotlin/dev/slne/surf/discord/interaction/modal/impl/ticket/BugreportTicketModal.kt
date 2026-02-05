@@ -70,11 +70,14 @@ class BugreportTicketModal(
                 description = translatable("ticket.bugreport.embed.description")
                 color = Colors.SUCCESS
 
-                field {
-                    name = translatable("ticket.bugreport.embed.field.issue")
-                    value = issue
-                    inline = true
+                issue.chunked(1024).forEach { chunk ->
+                    field {
+                        name = translatable("ticket.bugreport.embed.field.issue")
+                        value = chunk
+                        inline = true
+                    }
                 }
+
             }
         ).addComponents(
             ActionRow.of(
