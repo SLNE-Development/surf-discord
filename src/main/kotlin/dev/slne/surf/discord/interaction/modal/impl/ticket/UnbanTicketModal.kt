@@ -33,7 +33,7 @@ class UnbanTicketModal(
             id = "issue"
             label = translatable("ticket.unban.modal.field.issue.label")
             style = TextInputStyle.PARAGRAPH
-            lengthRange = 50..4000
+            lengthRange = 50..2000
             placeholder = translatable("ticket.unban.modal.field.issue.placeholder")
             required = true
         }
@@ -42,7 +42,7 @@ class UnbanTicketModal(
             id = "reason"
             label = translatable("ticket.unban.modal.field.reason.label")
             style = TextInputStyle.PARAGRAPH
-            lengthRange = 100..4000
+            lengthRange = 100..3500
             placeholder =
                 translatable("ticket.unban.modal.field.reason.placeholder")
             required = true
