@@ -27,6 +27,7 @@ class UnbanTicketModal(
             label = translatable("ticket.unban.modal.field.punish_id.label")
             style = TextInputStyle.SHORT
             placeholder = translatable("ticket.unban.modal.field.punish_id.placeholder")
+            lengthRange = 1..20
             required = true
         }
         textInput {
