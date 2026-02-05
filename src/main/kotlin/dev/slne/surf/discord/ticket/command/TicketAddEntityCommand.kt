@@ -15,33 +15,41 @@ import org.springframework.stereotype.Component
 
 @DiscordCommand(
     name = "add",
-    description = "Füge einen Nutzer zum Ticket hinzu",
+    description = "Füge einen Nutzer oder eine Rolle zum Ticket hinzu",
     options = [
         CommandOption(
             name = "user",
             description = "Der hinzuzufügende Nutzer",
             type = CommandOptionType.USER,
-            required = true
+            required = false
+        ),
+        CommandOption(
+            name = "role",
+            description = "Die hinzuzufügende Rolle",
+            type = CommandOptionType.ROLE,
+            required = false
         ),
         CommandOption(
             name = "silent",
-            description = "Fügt den Nutzer still hinzu, ohne eine Nachricht zu senden",
+            description = "Fügt den Nutzer/die Rolle still hinzu, ohne eine Nachricht zu senden",
             type = CommandOptionType.BOOLEAN,
             required = false
         )
     ]
 )
 @Component
-class TicketAddUserCommand(
+class TicketAddEntityCommand(
     private val ticketMemberService: TicketMemberService
 ) : SlashCommand {
+
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.COMMAND_TICKET_ADD)) {
             event.reply(translatable("no-permission")).setEphemeral(true).queue()
             return
         }
 
-        val user = event.getOption("user")?.asUser ?: error("User option is missing")
+        val user = event.getOption("user")?.asUser
+        val role = event.getOption("role")?.asRole
         val silent = event.getOption("silent")?.asBoolean ?: false
         val ticket = event.hook.asTicketOrNull()
 
@@ -51,30 +59,53 @@ class TicketAddUserCommand(
             return
         }
 
-        if (silent) {
-            if (!event.member.hasPermission(DiscordPermission.COMMAND_TICKET_ADD_SILENT)) {
-                event.reply(translatable("no-permission")).setEphemeral(true).queue()
-                return
-            }
+        val targetRole = if (user == null) role else null
 
-            val msg = event.channel.sendMessage("Adding user silent...").submit(true).await()
-            val edited = msg.editMessage(user.asMention).submit(true).await()
-            edited.delete().queue()
-
-            event.reply(translatable("ticket.command.add.success", user.asMention))
+        if (user == null && targetRole == null) {
+            event.reply(translatable("ticket.command.add.missing-target"))
                 .setEphemeral(true)
                 .queue()
             return
         }
 
-        val success = ticketMemberService.addMember(ticket, user, event.user)
+        if (silent && !event.member.hasPermission(DiscordPermission.COMMAND_TICKET_ADD_SILENT)) {
+            event.reply(translatable("no-permission")).setEphemeral(true).queue()
+            return
+        }
+
+        if (silent) {
+            val mention = user?.asMention ?: targetRole?.asMention
+            ?: error("Target user and role are both null")
+
+            val msg = event.channel.sendMessage("silent").submit(true).await()
+            val edited = msg.editMessage(mention).submit(true).await()
+            edited.delete().queue()
+
+            event.reply(translatable("ticket.command.add.success", mention))
+                .setEphemeral(true)
+                .queue()
+            return
+        }
+
+        val success = if (user != null) {
+            ticketMemberService.addMember(ticket, user, event.user)
+        } else {
+            ticketMemberService.addRole(
+                ticket,
+                targetRole ?: error("Target user and role are both null"),
+                event.user
+            )
+        }
+
+        val mention = user?.asMention ?: targetRole?.asMention
+        ?: error("Target user and role are both null")
 
         if (success) {
-            event.reply(translatable("ticket.command.add.success", user.asMention))
+            event.reply(translatable("ticket.command.add.success", mention))
                 .setEphemeral(true)
                 .queue()
         } else {
-            event.reply(translatable("ticket.command.add.already-member", user.asMention))
+            event.reply(translatable("ticket.command.add.already-member", mention))
                 .setEphemeral(true)
                 .queue()
         }

@@ -1,19 +1,20 @@
 package dev.slne.surf.discord.ticket.database.messages
 
 import dev.slne.surf.discord.ticket.Ticket
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.singleOrNull
 import net.dv8tion.jda.api.entities.Message
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import org.jetbrains.exposed.sql.update
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.r2dbc.insert
+import org.jetbrains.exposed.v1.r2dbc.select
+import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
+import org.jetbrains.exposed.v1.r2dbc.update
 import org.springframework.stereotype.Repository
 import java.time.ZonedDateTime
 
 @Repository
 class TicketMessageRepository {
     suspend fun logMessage(ticket: Ticket, message: Message): Long =
-        newSuspendedTransaction(Dispatchers.IO) {
+        suspendTransaction {
             TicketMessagesTable.insert {
                 it[ticketId] =
                     ticket.internalTicketId ?: error("Ticket ${ticket.ticketId} has no internal ID")
@@ -33,7 +34,7 @@ class TicketMessageRepository {
         }
 
     suspend fun logMessageEdited(messageId: Long, content: String) =
-        newSuspendedTransaction(Dispatchers.IO) {
+        suspendTransaction {
             TicketMessagesTable.update({ TicketMessagesTable.messageId eq messageId }) {
                 it[messageEditedAt] = ZonedDateTime.now()
                 it[updatedAt] = ZonedDateTime.now()
@@ -41,7 +42,7 @@ class TicketMessageRepository {
             }
         }
 
-    suspend fun logMessageDeleted(messageId: Long) = newSuspendedTransaction(Dispatchers.IO) {
+    suspend fun logMessageDeleted(messageId: Long) = suspendTransaction {
         TicketMessagesTable.update({ TicketMessagesTable.messageId eq messageId }) {
             it[messageDeletedAt] = ZonedDateTime.now()
             it[updatedAt] = ZonedDateTime.now()
@@ -49,7 +50,7 @@ class TicketMessageRepository {
     }
 
     suspend fun getDbIdFromDiscordMessageId(discordMessageId: Long): Long? =
-        newSuspendedTransaction(Dispatchers.IO) {
+        suspendTransaction {
             TicketMessagesTable
                 .select(TicketMessagesTable.id)
                 .where { TicketMessagesTable.messageId eq discordMessageId }
