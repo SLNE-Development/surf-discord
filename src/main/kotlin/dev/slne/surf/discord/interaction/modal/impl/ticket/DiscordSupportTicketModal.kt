@@ -70,11 +70,14 @@ class DiscordSupportTicketModal(
                 description = translatable("ticket.support.discord.embed.description")
                 color = Colors.SUCCESS
 
-                field {
-                    name = translatable("ticket.support.discord.embed.field.issue")
-                    value = issue
-                    inline = true
+                issue.chunked(1024).forEach { chunk ->
+                    field {
+                        name = translatable("ticket.support.discord.embed.field.issue")
+                        value = chunk
+                        inline = true
+                    }
                 }
+
             }
         ).addComponents(
             ActionRow.of(

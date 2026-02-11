@@ -83,10 +83,12 @@ class SurvivalSupportTicketModal(
                 description = translatable("ticket.support.survival.embed.description")
                 color = Colors.SUCCESS
 
-                field {
-                    name = translatable("ticket.support.survival.embed.field.issue")
-                    value = issue
-                    inline = true
+                issue.chunked(1024).forEach { chunk ->
+                    field {
+                        name = translatable("ticket.support.survival.embed.field.issue")
+                        value = chunk
+                        inline = true
+                    }
                 }
             }
         ).addComponents(

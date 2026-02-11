@@ -85,10 +85,12 @@ class ReportTicketModal(
                     inline = true
                 }
 
-                field {
-                    name = translatable("ticket.report.embed.field.issue")
-                    value = issue
-                    inline = true
+                issue.chunked(1024).forEach { chunk ->
+                    field {
+                        name = translatable("ticket.report.embed.field.issue")
+                        value = chunk
+                        inline = true
+                    }
                 }
             }
         ).addComponents(

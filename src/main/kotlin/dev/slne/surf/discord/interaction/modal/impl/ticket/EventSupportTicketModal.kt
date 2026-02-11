@@ -84,11 +84,14 @@ class EventSupportTicketModal(
                 description = translatable("ticket.support.event.embed.description")
                 color = Colors.SUCCESS
 
-                field {
-                    name = translatable("ticket.support.event.embed.field.issue.name")
-                    value = issue
-                    inline = true
+                issue.chunked(1024).forEach { chunk ->
+                    field {
+                        name = translatable("ticket.support.event.embed.field.issue.name")
+                        value = chunk
+                        inline = true
+                    }
                 }
+
             }
         ).addComponents(
             ActionRow.of(
