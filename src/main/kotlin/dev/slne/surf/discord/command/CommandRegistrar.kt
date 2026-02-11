@@ -38,8 +38,6 @@ class CommandRegistrar(
 
     fun registerAllCommands() {
         jda.guilds.forEach { guild ->
-            guild.updateCommands().queue()
-
             commands.forEach { _, (annotation, _) ->
                 registerCommand(annotation.name, annotation.description, guild, annotation.options)
             }
@@ -50,6 +48,14 @@ class CommandRegistrar(
         } else {
             logger.info("Registered ${commands.size} Discord commands.")
         }
+    }
+
+    fun unregisterAllCommands() {
+        jda.guilds.forEach { guild ->
+            guild.updateCommands().queue()
+        }
+
+        logger.info("Unregistered all Discord commands.")
     }
 
     fun registerCommand(
