@@ -30,6 +30,7 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
         156164562499010560 to setOf(
             DiscordPermission.COMMAND_TICKET_ADD,
             DiscordPermission.COMMAND_TICKET_ADD_SILENT,
+            DiscordPermission.COMMAND_TICKET_ADD_ROLE,
             DiscordPermission.COMMAND_TICKET_REMOVE,
             DiscordPermission.COMMAND_TICKET_BUTTONS,
             DiscordPermission.TICKET_CLOSE,
@@ -57,6 +58,7 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
         1350468732555755570L to setOf(
             DiscordPermission.COMMAND_TICKET_ADD,
             DiscordPermission.COMMAND_TICKET_ADD_SILENT,
+            DiscordPermission.COMMAND_TICKET_ADD_ROLE,
             DiscordPermission.COMMAND_TICKET_REMOVE,
             DiscordPermission.TICKET_CLOSE,
             DiscordPermission.TICKET_CLOSE_BYPASS_CLAIM,
