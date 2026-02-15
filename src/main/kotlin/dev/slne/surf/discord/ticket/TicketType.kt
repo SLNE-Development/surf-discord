@@ -183,5 +183,14 @@ enum class TicketType(
             addAll(defaultReasons)
         },
         modal = modalRegistry.get("ticket:application").create()
+    ),
+    COMPLAINT(
+        id = "complaint",
+        displayName = "Team Beschwerde",
+        description = "Erstelle ein Ticket, um eine Beschwerde über ein Teammitglied einzureichen. Dieses Ticket kann nur von der Teamleitung eingesehen werden.",
+        emoji = "⚠️",
+        viewPermission = DiscordPermission.TICKET_COMPLAINT_VIEW,
+        closeReasons = defaultReasons,
+        modal = modalRegistry.get("ticket:complaint").create()
     )
 }

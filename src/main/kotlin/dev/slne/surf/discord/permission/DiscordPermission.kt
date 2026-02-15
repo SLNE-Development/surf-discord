@@ -30,6 +30,7 @@ enum class DiscordPermission {
     TICKET_REPORT_VIEW,
     TICKET_UNBAN_VIEW,
     TICKET_BUG_VIEW,
+    TICKET_COMPLAINT_VIEW,
 
     TICKET_TYPE_BYPASS,
 
