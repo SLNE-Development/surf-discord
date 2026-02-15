@@ -47,22 +47,6 @@ enum class TicketType(
     val closeReasons: ObjectList<TicketCloseReason>,
     val modal: Modal? = null
 ) {
-    //    WHITELIST(
-//        id = "whitelist",
-//        displayName = "Whitelist Ticket",
-//        description = "Erstelle ein Ticket, um auf dem Survival Server gewhitelisted zu werden.",
-//        emoji = "📜",
-//        viewPermission = DiscordPermission.TICKET_WHITELIST_VIEW,
-//        closeReasons = mutableObjectListOf(
-//            TicketCloseReason.of(
-//                displayName = "Anforderungen nicht erfüllt",
-//                description = "Du erfüllst nicht alle Anforderungen für eine Whitelist."
-//            )
-//        ).apply {
-//            addAll(defaultReasons)
-//        },
-//        modal = modalRegistry.get("ticket:whitelist").create()
-//    ),
     DISCORD_SUPPORT(
         id = "discord",
         displayName = "Discord Support Ticket",
@@ -154,16 +138,6 @@ enum class TicketType(
         },
         modal = modalRegistry.get("ticket:bugreport").create()
     ),
-
-    //    SERVER_SUPPORT(
-//        id = "server",
-//        displayName = "Server Support Ticket",
-//        description = "Erstelle ein Ticket, um Support für den Server zu erhalten.",
-//        emoji = "🖥️",
-//        viewPermission = DiscordPermission.TICKET_BUG_VIEW,
-//        closeReasons = defaultReasons,
-//        modal = modalRegistry.get("ticket:bugreport").create()
-//    ),
     APPLICATION(
         id = "application",
         displayName = "Bewerbung",
@@ -183,5 +157,14 @@ enum class TicketType(
             addAll(defaultReasons)
         },
         modal = modalRegistry.get("ticket:application").create()
-    )
+    ),
+    COMPLAINT(
+        id = "complaint",
+        displayName = "Team Beschwerde",
+        description = "Eine Beschwerde über ein Teammitglied. Dieses Ticket kann nur von der Teamleitung eingesehen werden.",
+        emoji = "⚠️",
+        viewPermission = DiscordPermission.TICKET_COMPLAINT_VIEW,
+        closeReasons = defaultReasons,
+        modal = modalRegistry.get("ticket:complaint").create()
+    );
 }

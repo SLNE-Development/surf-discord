@@ -90,6 +90,11 @@ class TicketAddEntityCommand(
         val success = if (user != null) {
             ticketMemberService.addMember(ticket, user, event.user)
         } else {
+            if (!event.member.hasPermission(DiscordPermission.COMMAND_TICKET_ADD_ROLE)) {
+                event.reply(translatable("no-permission")).setEphemeral(true).queue()
+                return
+            }
+
             ticketMemberService.addRole(
                 ticket,
                 targetRole ?: error("Target user and role are both null"),
