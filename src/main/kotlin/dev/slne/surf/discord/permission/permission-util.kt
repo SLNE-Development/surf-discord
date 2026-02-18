@@ -99,8 +99,6 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
             DiscordPermission.TICKET_BUG_VIEW,
             DiscordPermission.TICKET_APPLICATION_DEVELOPER,
-            DiscordPermission.TICKET_UNBAN_VIEW,
-            DiscordPermission.TICKET_REPORT_VIEW,
             DiscordPermission.COMMAND_FAQ,
             DiscordPermission.WHITELIST_VIEW,
             DiscordPermission.WHITELIST_BYPASS,
@@ -137,6 +135,7 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_WHITELIST_CONFIRM,
             DiscordPermission.TICKET_SUPPORT_SURVIVAL_VIEW,
             DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
+            DiscordPermission.TICKET_REPORT_VIEW,
             DiscordPermission.COMMAND_FAQ,
             DiscordPermission.WHITELIST_VIEW
         ),
