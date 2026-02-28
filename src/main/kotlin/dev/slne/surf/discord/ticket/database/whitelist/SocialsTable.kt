@@ -4,7 +4,7 @@ import dev.slne.surf.discord.ticket.database.column.nativeUuid
 import dev.slne.surf.discord.ticket.database.column.offsetDateTime
 import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
 
-object SocialsTable : LongIdTable("social_entries") {
+object SocialsTable : LongIdTable("social_connections") {
     val discordUserId = long("discord_user_id").uniqueIndex()
     val minecraftUuid = nativeUuid("minecraft_uuid").uniqueIndex()
     val twitchId = long("twitch_id").uniqueIndex().nullable()
