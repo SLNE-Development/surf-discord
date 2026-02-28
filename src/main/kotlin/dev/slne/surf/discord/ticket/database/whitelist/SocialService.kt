@@ -4,28 +4,28 @@ import dev.slne.surf.discord.util.PlayerLookupService
 import org.springframework.stereotype.Service
 
 @Service
-class WhitelistService(
-    private val whitelistRepository: WhitelistRepository,
+class SocialService(
+    private val socialRepository: SocialRepository,
     private val playerLookupService: PlayerLookupService
 ) {
-    suspend fun isWhitelisted(discordId: Long) = whitelistRepository.isWhitelisted(discordId)
+    suspend fun isWhitelisted(discordId: Long) = socialRepository.isWhitelisted(discordId)
     suspend fun isWhitelisted(minecraftName: String) =
         playerLookupService.getUuid(minecraftName)?.let {
-            whitelistRepository.isWhitelisted(it)
+            socialRepository.isWhitelisted(it)
         } ?: false
 
     suspend fun whitelist(discordId: Long, minecraftName: String) =
         playerLookupService.getUuid(minecraftName)?.let {
-            whitelistRepository.whitelist(discordId, it)
+            socialRepository.whitelist(discordId, it)
         }
 
-    suspend fun blockWhitelist(discordId: Long) = whitelistRepository.blockWhitelist(discordId)
-    suspend fun unblockWhitelist(discordId: Long) = whitelistRepository.unblockWhitelist(discordId)
+    suspend fun blockWhitelist(discordId: Long) = socialRepository.blockWhitelist(discordId)
+    suspend fun unblockWhitelist(discordId: Long) = socialRepository.unblockWhitelist(discordId)
 
-    suspend fun getWhitelist(discordId: Long) = whitelistRepository.getWhitelist(discordId)
+    suspend fun getWhitelist(discordId: Long) = socialRepository.getWhitelist(discordId)
     suspend fun getWhitelist(minecraftName: String) =
         playerLookupService.getUuid(minecraftName)?.let {
-            whitelistRepository.getWhitelist(it)
+            socialRepository.getWhitelist(it)
         }
 
     suspend fun updateWhitelist(
@@ -34,9 +34,9 @@ class WhitelistService(
         blocked: Boolean
     ) {
         playerLookupService.getUuid(minecraftName)?.let {
-            whitelistRepository.editWhitelist(discordId, it, blocked)
+            socialRepository.editWhitelist(discordId, it, blocked)
         }
     }
 
-    suspend fun deleteWhitelist(discordId: Long) = whitelistRepository.deleteWhitelist(discordId)
+    suspend fun deleteWhitelist(discordId: Long) = socialRepository.deleteWhitelist(discordId)
 }

@@ -8,7 +8,7 @@ import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
-import dev.slne.surf.discord.ticket.database.whitelist.WhitelistService
+import dev.slne.surf.discord.ticket.database.whitelist.SocialService
 import dev.slne.surf.discord.util.Colors
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
@@ -31,7 +31,7 @@ import java.time.format.DateTimeFormatter
 )
 @Component
 class ViewWhitelistCommand(
-    private val whitelistService: WhitelistService
+    private val socialService: SocialService
 ) : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.WHITELIST_VIEW)) {
@@ -50,7 +50,7 @@ class ViewWhitelistCommand(
         }
 
         if (userId != null) {
-            val whitelist = whitelistService.getWhitelist(userId) ?: run {
+            val whitelist = socialService.getWhitelist(userId) ?: run {
                 event.reply(translatable("whitelist.embed.information.no_whitelist"))
                     .setEphemeral(true)
                     .queue()
@@ -94,7 +94,7 @@ class ViewWhitelistCommand(
         }
 
         if (minecraftNameOption != null) {
-            val whitelist = whitelistService.getWhitelist(minecraftNameOption) ?: run {
+            val whitelist = socialService.getWhitelist(minecraftNameOption) ?: run {
                 event.reply(translatable("whitelist.embed.information.no_whitelist"))
                     .setEphemeral(true)
                     .queue()

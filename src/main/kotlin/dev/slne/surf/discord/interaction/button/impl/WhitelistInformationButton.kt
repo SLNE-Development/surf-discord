@@ -5,7 +5,7 @@ import dev.slne.surf.discord.interaction.button.DiscordButton
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
-import dev.slne.surf.discord.ticket.database.whitelist.WhitelistService
+import dev.slne.surf.discord.ticket.database.whitelist.SocialService
 import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.Emojis
 import dev.slne.surf.discord.util.asTicketOrNull
@@ -18,7 +18,7 @@ import java.time.format.DateTimeFormatter
 @Component
 class WhitelistInformationButton(
     private val emojis: Emojis,
-    private val whitelistService: WhitelistService
+    private val socialService: SocialService
 ) : DiscordButton {
     override val id = "whitelist:button:information"
     override val button by lazy {
@@ -41,7 +41,7 @@ class WhitelistInformationButton(
             return
         }
 
-        val whitelist = whitelistService.getWhitelist(ticket.authorId) ?: run {
+        val whitelist = socialService.getWhitelist(ticket.authorId) ?: run {
             event.reply(translatable("whitelist.embed.information.no_whitelist"))
                 .setEphemeral(true)
                 .queue()

@@ -4,14 +4,14 @@ import dev.slne.surf.discord.config.botConfig
 import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.messages.translatable
-import dev.slne.surf.discord.ticket.database.whitelist.WhitelistService
+import dev.slne.surf.discord.ticket.database.whitelist.SocialService
 import net.dv8tion.jda.api.components.textinput.TextInputStyle
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import org.springframework.stereotype.Component
 
 @Component
 class SurvivalWhitelistCreateModal(
-    private val whitelistService: WhitelistService
+    private val socialService: SocialService
 ) : DiscordModal {
     override val id = "whitelist:modal:create-survival"
 
@@ -31,13 +31,13 @@ class SurvivalWhitelistCreateModal(
 
         event.reply(translatable("whitelist.survival.modal.processing")).setEphemeral(true).queue()
 
-        if (whitelistService.isWhitelisted(minecraftUsername)) {
+        if (socialService.isWhitelisted(minecraftUsername)) {
             event.hook.editOriginal(translatable("whitelist.survival.modal.username_taken"))
                 .queue()
             return
         }
 
-        if (whitelistService.whitelist(discordId, minecraftUsername) == null) {
+        if (socialService.whitelist(discordId, minecraftUsername) == null) {
             event.hook.editOriginal(translatable("whitelist.survival.modal.user-not-found"))
                 .queue()
             return

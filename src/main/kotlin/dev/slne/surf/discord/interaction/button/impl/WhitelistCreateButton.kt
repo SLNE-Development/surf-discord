@@ -7,7 +7,7 @@ import dev.slne.surf.discord.interaction.modal.ModalRegistry
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
-import dev.slne.surf.discord.ticket.database.whitelist.WhitelistService
+import dev.slne.surf.discord.ticket.database.whitelist.SocialService
 import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.Emojis
 import net.dv8tion.jda.api.components.buttons.Button
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component
 @Component
 class WhitelistCreateButton(
     private val emojis: Emojis,
-    private val whitelistService: WhitelistService
+    private val socialService: SocialService
 ) : DiscordButton {
     override val id = "whitelist:create"
     override val button by lazy {
@@ -45,7 +45,7 @@ class WhitelistCreateButton(
             return
         }
 
-        if (whitelistService.isWhitelisted(event.user.idLong)) {
+        if (socialService.isWhitelisted(event.user.idLong)) {
             event.reply(translatable("whitelist.survival.modal.already_whitelisted"))
                 .setEphemeral(true)
                 .queue()

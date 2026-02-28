@@ -13,25 +13,25 @@ import java.time.OffsetDateTime
 import java.util.*
 
 @Repository
-class WhitelistRepository {
+class SocialRepository {
     suspend fun isWhitelisted(discordId: Long) = suspendTransaction {
-        WhitelistTable.selectAll().where(WhitelistTable.discordUserId eq discordId).count() > 0
+        SocialsTable.selectAll().where(SocialsTable.discordUserId eq discordId).count() > 0
     }
 
     suspend fun isWhitelisted(minecraftUuid: UUID) = suspendTransaction {
-        WhitelistTable.selectAll().where(WhitelistTable.minecraftUuid eq minecraftUuid)
+        SocialsTable.selectAll().where(SocialsTable.minecraftUuid eq minecraftUuid)
             .count() > 0
     }
 
-    suspend fun whitelist(discordId: Long, minecraftUuid: UUID): WhitelistEntry =
+    suspend fun whitelist(discordId: Long, minecraftUuid: UUID): SocialEntry =
         suspendTransaction {
-            val entry = WhitelistEntry(
+            val entry = SocialEntry(
                 discordId = discordId,
                 minecraftUuid = minecraftUuid,
                 createdAt = OffsetDateTime.now(),
                 updatedAt = OffsetDateTime.now()
             )
-            WhitelistTable.insert {
+            SocialsTable.insert {
                 it[this.discordUserId] = discordId
                 it[this.minecraftUuid] = minecraftUuid
                 it[this.createdAt] = entry.createdAt
@@ -42,39 +42,39 @@ class WhitelistRepository {
         }
 
     suspend fun blockWhitelist(discordId: Long) = suspendTransaction {
-        WhitelistTable.update(where = { WhitelistTable.discordUserId eq discordId }) {
+        SocialsTable.update(where = { SocialsTable.discordUserId eq discordId }) {
             it[this.blocked] = true
             it[this.updatedAt] = OffsetDateTime.now()
         } > 0
     }
 
     suspend fun unblockWhitelist(discordId: Long) = suspendTransaction {
-        WhitelistTable.update(where = { WhitelistTable.discordUserId eq discordId }) {
+        SocialsTable.update(where = { SocialsTable.discordUserId eq discordId }) {
             it[this.blocked] = false
             it[this.updatedAt] = OffsetDateTime.now()
         } > 0
     }
 
     suspend fun getWhitelist(discordId: Long) = suspendTransaction {
-        WhitelistTable.selectAll().where(WhitelistTable.discordUserId eq discordId).map {
-            WhitelistEntry(
-                discordId = it[WhitelistTable.discordUserId],
-                minecraftUuid = it[WhitelistTable.minecraftUuid],
-                blocked = it[WhitelistTable.blocked],
-                createdAt = it[WhitelistTable.createdAt],
-                updatedAt = it[WhitelistTable.updatedAt]
+        SocialsTable.selectAll().where(SocialsTable.discordUserId eq discordId).map {
+            SocialEntry(
+                discordId = it[SocialsTable.discordUserId],
+                minecraftUuid = it[SocialsTable.minecraftUuid],
+                blocked = it[SocialsTable.blocked],
+                createdAt = it[SocialsTable.createdAt],
+                updatedAt = it[SocialsTable.updatedAt]
             )
         }.firstOrNull()
     }
 
     suspend fun getWhitelist(minecraftUuid: UUID) = suspendTransaction {
-        WhitelistTable.selectAll().where(WhitelistTable.minecraftUuid eq minecraftUuid).map {
-            WhitelistEntry(
-                discordId = it[WhitelistTable.discordUserId],
-                minecraftUuid = it[WhitelistTable.minecraftUuid],
-                blocked = it[WhitelistTable.blocked],
-                createdAt = it[WhitelistTable.createdAt],
-                updatedAt = it[WhitelistTable.updatedAt]
+        SocialsTable.selectAll().where(SocialsTable.minecraftUuid eq minecraftUuid).map {
+            SocialEntry(
+                discordId = it[SocialsTable.discordUserId],
+                minecraftUuid = it[SocialsTable.minecraftUuid],
+                blocked = it[SocialsTable.blocked],
+                createdAt = it[SocialsTable.createdAt],
+                updatedAt = it[SocialsTable.updatedAt]
             )
         }.firstOrNull()
     }
@@ -84,7 +84,7 @@ class WhitelistRepository {
         minecraftUuid: UUID,
         blocked: Boolean
     ) = suspendTransaction {
-        WhitelistTable.update(where = { WhitelistTable.discordUserId eq discordId }) {
+        SocialsTable.update(where = { SocialsTable.discordUserId eq discordId }) {
             it[this.minecraftUuid] = minecraftUuid
             it[this.blocked] = blocked
             it[this.updatedAt] = OffsetDateTime.now()
@@ -92,6 +92,6 @@ class WhitelistRepository {
     }
 
     suspend fun deleteWhitelist(discordId: Long) = suspendTransaction {
-        WhitelistTable.deleteWhere { WhitelistTable.discordUserId eq discordId } > 0
+        SocialsTable.deleteWhere { SocialsTable.discordUserId eq discordId } > 0
     }
 }
