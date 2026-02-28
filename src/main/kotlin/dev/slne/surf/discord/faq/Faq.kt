@@ -53,6 +53,11 @@ enum class Faq(val id: String, val question: String, val answer: String) {
         translatable("faq.command.questions.maintenance.question"),
         translatable("faq.command.questions.maintenance.answer")
     ),
+    MISSING_INFORMATION(
+        "missing-information",
+        translatable("faq.command.questions.missing-information.question"),
+        translatable("faq.command.questions.missing-information.answer")
+    ),
     HOW_TO_SHARE_LOG(
         "how-to-share-log",
         translatable("faq.command.questions.how-to-share-log.question"),

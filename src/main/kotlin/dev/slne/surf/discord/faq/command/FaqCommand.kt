@@ -32,6 +32,7 @@ import kotlin.time.toJavaDuration
                 CommandChoice("problem-connection", "problem-connection"),
                 CommandChoice("read-the-docs", "read-the-docs"),
                 CommandChoice("maintenance", "maintenance"),
+                CommandChoice("missing-information", "missing-information"),
                 CommandChoice("how-to-share-log", "how-to-share-log"),
                 CommandChoice("clan-info", "clan-info"),
                 CommandChoice("take-part-in-event", "take-part-in-event"),
