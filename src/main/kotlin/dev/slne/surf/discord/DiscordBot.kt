@@ -56,7 +56,7 @@ class DiscordBot {
 
     companion object {
         val SURVIVAL_ENABLED = true
-        val EVENT_ENABLED = false
+        val EVENT_ENABLED = true
         val SUPPORT_APPLICATION_ENABLED = false
         val TWITCH_APPLICATION_ENABLED = false
     }
