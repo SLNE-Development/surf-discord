@@ -55,7 +55,7 @@ class TwitchSupportTicketModal(
                 TicketType.TWITCH_SUPPORT,
                 mapOf("issue" to issue, "twitchName" to twitchName)
             ) ?: run {
-                if (ticketService.hasOpenTicket(user.idLong, TicketType.DISCORD_SUPPORT)) {
+                if (ticketService.hasOpenTicket(user.idLong, TicketType.TWITCH_SUPPORT)) {
                     interaction.hook.editOriginal(translatable("ticket.support.twitch.already_open"))
                         .queue()
                 } else {
