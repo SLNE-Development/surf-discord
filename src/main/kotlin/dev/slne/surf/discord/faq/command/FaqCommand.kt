@@ -39,6 +39,7 @@ import kotlin.time.toJavaDuration
                 CommandChoice("one-block-event", "one-block-event"),
                 CommandChoice("how-to-join", "how-to-join"),
                 CommandChoice("ask", "ask"),
+                CommandChoice("missing-information", "missing-information"),
             ]
         ),
         CommandOption(

@@ -56,6 +56,15 @@ enum class TicketType(
         closeReasons = defaultReasons,
         modal = modalRegistry.get("ticket:support:discord").create()
     ),
+    TWITCH_SUPPORT(
+        id = "twitch",
+        displayName = "Twitch Support Ticket",
+        description = "Erstelle ein Ticket, um Support für den Twitch Kanal zu erhalten.",
+        emoji = "💬",
+        viewPermission = DiscordPermission.TICKET_SUPPORT_TWITCH_VIEW,
+        closeReasons = defaultReasons,
+        modal = modalRegistry.get("ticket:support:twitch").create()
+    ),
     SURVIVAL_SUPPORT(
         id = "survival",
         displayName = "Survival Support Ticket",
