@@ -37,7 +37,7 @@ class CreateWhitelistCommand(
             return
         }
 
-        val userId = event.getOption("user")?.asUser?.idLong ?: return
+        val userId = event.getOption("discord-user")?.asUser?.idLong ?: return
         val minecraftName = event.getOption("minecraft-name")?.asString ?: return
 
         if (socialService.getWhitelist(userId) != null) {
