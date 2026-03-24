@@ -9,7 +9,7 @@ import dev.slne.surf.discord.interaction.modal.ModalRegistry
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
-import dev.slne.surf.discord.ticket.database.whitelist.WhitelistService
+import dev.slne.surf.discord.ticket.database.whitelist.SocialService
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
 
@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component
 )
 @Component
 class EditWhitelistCommand(
-    private val whitelistService: WhitelistService
+    private val socialService: SocialService
 ) : SlashCommand {
     private val modalRegistry by lazy {
         getBean<ModalRegistry>()
@@ -39,7 +39,7 @@ class EditWhitelistCommand(
 
         val userId = event.getOption("user")?.asUser?.idLong ?: return
 
-        val whitelist = whitelistService.getWhitelist(userId) ?: run {
+        val whitelist = socialService.getWhitelist(userId) ?: run {
             event.reply(translatable("whitelist.embed.information.no_whitelist"))
                 .setEphemeral(true)
                 .queue()

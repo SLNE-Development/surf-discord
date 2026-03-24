@@ -3,7 +3,7 @@ package dev.slne.surf.discord.interaction.modal.impl.ticket.whitelist
 import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.messages.translatable
-import dev.slne.surf.discord.ticket.database.whitelist.WhitelistService
+import dev.slne.surf.discord.ticket.database.whitelist.SocialService
 import net.dv8tion.jda.api.components.selections.SelectOption
 import net.dv8tion.jda.api.components.selections.StringSelectMenu
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class SurvivalWhitelistEditModal(
-    private val whitelistService: WhitelistService
+    private val socialService: SocialService
 ) : DiscordModal {
     override val id = "whitelist:modal:edit-survival"
 
@@ -58,7 +58,7 @@ class SurvivalWhitelistEditModal(
         val discordName = event.jda.getUserById(discordId)?.name ?: discordId.toString()
 
 
-        whitelistService.updateWhitelist(discordId, minecraftName, blocked)
+        socialService.updateWhitelist(discordId, minecraftName, blocked)
 
         event.reply(translatable("whitelist.embed.information.successfully-edited", discordName))
             .setEphemeral(true)

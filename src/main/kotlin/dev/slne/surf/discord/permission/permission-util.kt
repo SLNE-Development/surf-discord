@@ -26,6 +26,15 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
         // Server Admin
         949704206888079490 to setOf(*DiscordPermission.entries.toTypedArray()),
 
+        // Twitch Mod
+        651104534529179660 to setOf(
+            DiscordPermission.TICKET_REPLY_DEADLINE,
+            DiscordPermission.TICKET_CLOSE,
+            DiscordPermission.TICKET_CLAIM,
+            DiscordPermission.TICKET_SUPPORT_TWITCH_VIEW
+        ),
+
+
         // Discord Moderation
         156164562499010560 to setOf(
             DiscordPermission.COMMAND_TICKET_ADD,
@@ -44,6 +53,7 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_REPORT_VIEW,
             DiscordPermission.TICKET_UNBAN_VIEW,
             DiscordPermission.TICKET_BUG_VIEW,
+            DiscordPermission.TICKET_SUPPORT_TWITCH_VIEW,
             DiscordPermission.TICKET_REPLY_DEADLINE,
             DiscordPermission.COMMAND_FAQ,
             DiscordPermission.WHITELIST_VIEW,

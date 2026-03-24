@@ -88,4 +88,9 @@ enum class Faq(val id: String, val question: String, val answer: String) {
         translatable("faq.command.questions.ask.question"),
         translatable("faq.command.questions.ask.answer")
     ),
+    MISSING_INFORMATION(
+        "missing-information",
+        translatable("faq.command.questions.missing-information.question"),
+        translatable("faq.command.questions.missing-information.answer")
+    ),
 }

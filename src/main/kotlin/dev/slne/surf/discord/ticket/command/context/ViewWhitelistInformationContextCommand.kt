@@ -7,7 +7,7 @@ import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
-import dev.slne.surf.discord.ticket.database.whitelist.WhitelistService
+import dev.slne.surf.discord.ticket.database.whitelist.SocialService
 import dev.slne.surf.discord.util.Colors
 import net.dv8tion.jda.api.events.interaction.command.UserContextInteractionEvent
 import org.springframework.stereotype.Component
@@ -19,7 +19,7 @@ import java.time.format.DateTimeFormatter
 )
 @Component
 class ViewWhitelistInformationContextCommand(
-    private val whitelistService: WhitelistService
+    private val socialService: SocialService
 ) : UserContextCommand {
     override suspend fun execute(event: UserContextInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.WHITELIST_VIEW)) {
@@ -27,7 +27,7 @@ class ViewWhitelistInformationContextCommand(
             return
         }
 
-        val whitelist = whitelistService.getWhitelist(event.target.idLong) ?: run {
+        val whitelist = socialService.getWhitelist(event.target.idLong) ?: run {
             event.reply(translatable("whitelist.embed.information.no_whitelist"))
                 .setEphemeral(true)
                 .queue()

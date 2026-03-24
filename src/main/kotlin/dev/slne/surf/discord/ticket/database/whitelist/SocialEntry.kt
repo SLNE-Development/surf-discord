@@ -5,7 +5,7 @@ import dev.slne.surf.discord.util.PlayerLookupService
 import java.time.OffsetDateTime
 import java.util.*
 
-data class WhitelistEntry(
+data class SocialEntry(
     val discordId: Long,
     val minecraftUuid: UUID,
     val createdAt: OffsetDateTime,
@@ -13,8 +13,8 @@ data class WhitelistEntry(
     val blocked: Boolean = false
 ) {
     companion object {
-        fun empty(): WhitelistEntry =
-            WhitelistEntry(
+        fun empty(): SocialEntry =
+            SocialEntry(
                 discordId = 0L,
                 minecraftUuid = UUID(0L, 0L),
                 createdAt = OffsetDateTime.MIN,
