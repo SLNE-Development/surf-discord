@@ -55,6 +55,7 @@ class CreateWhitelistCommand(
         }
 
         val whitelist = socialService.whitelist(userId, minecraftName)
+        
 
         event.reply(
             translatable(
