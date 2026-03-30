@@ -47,8 +47,14 @@ class TicketReplyDeadlineCommand : SlashCommand {
 
         val rawDeadline = event.getOption("until")?.asLong ?: 24
 
-        if (rawDeadline < 0L) {
+        if (rawDeadline <= 0L) {
             event.reply(translatable("ticket.command.until.not-positive"))
+                .setEphemeral(true).queue()
+            return
+        }
+
+        if (rawDeadline >= 8767L) {
+            event.reply(translatable("ticket.command.until.to-high"))
                 .setEphemeral(true).queue()
             return
         }
