@@ -22,7 +22,7 @@ import java.time.ZonedDateTime
         ),
         CommandOption(
             name = "until",
-            description = "Setze eine eigene Zeit",
+            description = "Setze eine eigene Zeit in Stunden",
             type = CommandOptionType.INTEGER,
             required = false
         ),
