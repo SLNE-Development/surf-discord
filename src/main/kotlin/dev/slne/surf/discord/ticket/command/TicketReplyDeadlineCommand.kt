@@ -45,7 +45,16 @@ class TicketReplyDeadlineCommand : SlashCommand {
             return
         }
 
-        val deadline = ZonedDateTime.now().plusHours(event.getOption("until")?.asLong ?: 24)
+        val rawDeadline = event.getOption("until")?.asLong ?: 24
+
+        if (rawDeadline < 0L) {
+            event.reply(translatable("ticket.command.until.not-positive"))
+                .setEphemeral(true).queue()
+            return
+        }
+
+
+        val deadline = ZonedDateTime.now().plusHours(rawDeadline)
         val deadlineUnix = deadline.toEpochSecond()
         val untilString = "<t:${deadlineUnix}:F>"
         val relativeString = "<t:${deadlineUnix}:R>"
