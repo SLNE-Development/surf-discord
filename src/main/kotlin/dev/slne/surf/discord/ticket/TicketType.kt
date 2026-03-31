@@ -139,6 +139,10 @@ enum class TicketType(
                 description = "Der Fehler konnte nicht reproduziert werden."
             ),
             TicketCloseReason.of(
+                displayName = "Externer Fehler",
+                description = "Der gemeldete Fehler liegt außerhalb unseres Einflussbereichs (z.B. bei einem Drittanbieter) und kann daher nicht direkt behoben werden. Das Problem wurde jedoch an die entsprechenden Stellen weitergeleitet."
+            ),
+            TicketCloseReason.of(
                 displayName = "Bug behoben",
                 description = "Der gemeldete Fehler wurde behoben. Danke für deinen Bugreport!"
             )

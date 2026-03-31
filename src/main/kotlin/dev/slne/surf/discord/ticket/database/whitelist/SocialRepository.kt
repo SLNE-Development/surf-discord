@@ -79,13 +79,31 @@ class SocialRepository {
         }.firstOrNull()
     }
 
-    suspend fun editWhitelist(
+    suspend fun editMinecraftName(
         discordId: Long,
-        minecraftUuid: UUID,
-        blocked: Boolean
+        minecraftUuid: UUID
     ) = suspendTransaction {
         SocialsTable.update(where = { SocialsTable.discordUserId eq discordId }) {
             it[this.minecraftUuid] = minecraftUuid
+            it[this.updatedAt] = OffsetDateTime.now()
+        }
+    }
+
+    suspend fun editDiscordId(
+        oldDiscordId: Long,
+        newDiscordId: Long
+    ) = suspendTransaction {
+        SocialsTable.update(where = { SocialsTable.discordUserId eq oldDiscordId }) {
+            it[this.discordUserId] = newDiscordId
+            it[this.updatedAt] = OffsetDateTime.now()
+        }
+    }
+
+    suspend fun editBlocked(
+        discordId: Long,
+        blocked: Boolean
+    ) = suspendTransaction {
+        SocialsTable.update(where = { SocialsTable.discordUserId eq discordId }) {
             it[this.blocked] = blocked
             it[this.updatedAt] = OffsetDateTime.now()
         }
