@@ -1,9 +1,12 @@
 package dev.slne.surf.discord.ticket.command.whitelist
 
+import dev.minn.jda.ktx.coroutines.await
 import dev.slne.surf.discord.command.CommandOption
 import dev.slne.surf.discord.command.CommandOptionType
 import dev.slne.surf.discord.command.DiscordCommand
 import dev.slne.surf.discord.command.SlashCommand
+import dev.slne.surf.discord.config.botConfig
+import dev.slne.surf.discord.jda
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
@@ -55,7 +58,13 @@ class CreateWhitelistCommand(
         }
 
         val whitelist = socialService.whitelist(userId, minecraftName)
-        
+
+        val discordUser = event.jda.retrieveUserById(userId).await()
+
+        jda.guilds.forEach {
+            val role = it.getRoleById(botConfig.whitelistedRoleId) ?: return@forEach
+            it.addRoleToMember(discordUser, role).queue()
+        }
 
         event.reply(
             translatable(
