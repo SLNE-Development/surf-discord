@@ -140,7 +140,7 @@ enum class TicketType(
             ),
             TicketCloseReason.of(
                 displayName = "Externer Fehler",
-                description = "Der gemeldete Fehler liegt außerhalb unseres Einflussbereichs (z.B. bei einem Drittanbieter) und kann daher nicht direkt behoben werden. Das Problem wurde jedoch an die entsprechenden Stellen weitergeleitet."
+                description = "Der Fehler liegt außerhalb unseres Einflusses und wurde an zuständige Stellen weitergeleitet."
             ),
             TicketCloseReason.of(
                 displayName = "Bug behoben",
