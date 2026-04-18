@@ -1,5 +1,6 @@
 package dev.slne.surf.discord.ticket.database.whitelist
 
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import org.jetbrains.exposed.v1.core.eq
@@ -14,76 +15,163 @@ import java.util.*
 
 @Repository
 class SocialRepository {
+    // Check if a discord id is whitelisted (exists in connections and whitelist table)
     suspend fun isWhitelisted(discordId: Long) = suspendTransaction {
-        SocialsTable.selectAll().where(SocialsTable.discordUserId eq discordId).count() > 0
+        val connectionId = SocialConnectionsTable.selectAll()
+            .where(SocialConnectionsTable.discordUserId eq discordId)
+            .map { it[SocialConnectionsTable.id].value }
+            .firstOrNull()
+
+        if (connectionId == null) return@suspendTransaction false
+
+        FreebuildWhitelistTable.selectAll()
+            .where(FreebuildWhitelistTable.socialConnectionId eq connectionId)
+            .map { it[FreebuildWhitelistTable.blocked] }
+            .firstOrNull()?.let { blocked -> !blocked } ?: false
     }
 
     suspend fun isWhitelisted(minecraftUuid: UUID) = suspendTransaction {
-        SocialsTable.selectAll().where(SocialsTable.minecraftUuid eq minecraftUuid)
-            .count() > 0
+        val connectionId = SocialConnectionsTable.selectAll()
+            .where(SocialConnectionsTable.minecraftUuid eq minecraftUuid)
+            .map { it[SocialConnectionsTable.id].value }
+            .firstOrNull()
+
+        if (connectionId == null) return@suspendTransaction false
+
+        FreebuildWhitelistTable.selectAll()
+            .where(FreebuildWhitelistTable.socialConnectionId eq connectionId)
+            .map { it[FreebuildWhitelistTable.blocked] }
+            .firstOrNull()?.let { blocked -> !blocked } ?: false
     }
 
     suspend fun whitelist(discordId: Long, minecraftUuid: UUID): SocialEntry =
         suspendTransaction {
-            val entry = SocialEntry(
-                discordId = discordId,
-                minecraftUuid = minecraftUuid,
-                createdAt = OffsetDateTime.now(),
-                updatedAt = OffsetDateTime.now()
-            )
-            SocialsTable.insert {
-                it[this.discordUserId] = discordId
-                it[this.minecraftUuid] = minecraftUuid
-                it[this.createdAt] = entry.createdAt
-                it[this.updatedAt] = entry.updatedAt
+            val now = OffsetDateTime.now()
+
+            // Ensure connection exists (insert if missing)
+            val existingConnectionId = SocialConnectionsTable.selectAll()
+                .where(SocialConnectionsTable.minecraftUuid eq minecraftUuid)
+                .map { it[SocialConnectionsTable.id].value }
+                .firstOrNull()
+
+            val connectionId = if (existingConnectionId == null) {
+                SocialConnectionsTable.insert {
+                    it[this.discordUserId] = discordId
+                    it[this.minecraftUuid] = minecraftUuid
+                    it[this.createdAt] = now
+                    it[this.updatedAt] = now
+                }
+
+                // read back id by unique minecraft uuid
+                SocialConnectionsTable.selectAll()
+                    .where(SocialConnectionsTable.minecraftUuid eq minecraftUuid)
+                    .map { it[SocialConnectionsTable.id].value }
+                    .first()
+            } else existingConnectionId
+
+            // Ensure whitelist entry exists
+            val existingWhitelist = FreebuildWhitelistTable.selectAll()
+                .where(FreebuildWhitelistTable.socialConnectionId eq connectionId)
+                .map { it[FreebuildWhitelistTable.blocked] }
+                .firstOrNull()
+
+            if (existingWhitelist == null) {
+                FreebuildWhitelistTable.insert {
+                    it[this.socialConnectionId] = connectionId
+                    it[this.blocked] = false
+                    it[this.createdAt] = now
+                    it[this.updatedAt] = now
+                }
+            } else {
+                FreebuildWhitelistTable.update(where = { FreebuildWhitelistTable.socialConnectionId eq connectionId }) {
+                    it[this.blocked] = false
+                    it[this.updatedAt] = now
+                }
             }
 
-            entry
+            SocialEntry(
+                discordId = discordId,
+                minecraftUuid = minecraftUuid,
+                blocked = false,
+                createdAt = now,
+                updatedAt = now
+            )
         }
 
     suspend fun blockWhitelist(discordId: Long) = suspendTransaction {
-        SocialsTable.update(where = { SocialsTable.discordUserId eq discordId }) {
+        val connectionId = SocialConnectionsTable.selectAll()
+            .where(SocialConnectionsTable.discordUserId eq discordId)
+            .map { it[SocialConnectionsTable.id].value }
+            .firstOrNull() ?: return@suspendTransaction false
+
+        FreebuildWhitelistTable.update(where = { FreebuildWhitelistTable.socialConnectionId eq connectionId }) {
             it[this.blocked] = true
             it[this.updatedAt] = OffsetDateTime.now()
         } > 0
     }
 
     suspend fun unblockWhitelist(discordId: Long) = suspendTransaction {
-        SocialsTable.update(where = { SocialsTable.discordUserId eq discordId }) {
+        val connectionId = SocialConnectionsTable.selectAll()
+            .where(SocialConnectionsTable.discordUserId eq discordId)
+            .map { it[SocialConnectionsTable.id].value }
+            .firstOrNull() ?: return@suspendTransaction false
+
+        FreebuildWhitelistTable.update(where = { FreebuildWhitelistTable.socialConnectionId eq connectionId }) {
             it[this.blocked] = false
             it[this.updatedAt] = OffsetDateTime.now()
         } > 0
     }
 
     suspend fun getWhitelist(discordId: Long) = suspendTransaction {
-        SocialsTable.selectAll().where(SocialsTable.discordUserId eq discordId).map {
-            SocialEntry(
-                discordId = it[SocialsTable.discordUserId],
-                minecraftUuid = it[SocialsTable.minecraftUuid],
-                blocked = it[SocialsTable.blocked],
-                createdAt = it[SocialsTable.createdAt],
-                updatedAt = it[SocialsTable.updatedAt]
-            )
-        }.firstOrNull()
+        val connectionRow = SocialConnectionsTable.selectAll()
+            .where(SocialConnectionsTable.discordUserId eq discordId)
+            .map { it }
+            .firstOrNull() ?: return@suspendTransaction null
+
+        val connectionId = connectionRow[SocialConnectionsTable.id].value
+
+        val blocked = FreebuildWhitelistTable.selectAll()
+            .where(FreebuildWhitelistTable.socialConnectionId eq connectionId)
+            .map { it[FreebuildWhitelistTable.blocked] }
+            .firstOrNull() ?: false
+
+        SocialEntry(
+            discordId = connectionRow[SocialConnectionsTable.discordUserId]!!,
+            minecraftUuid = connectionRow[SocialConnectionsTable.minecraftUuid],
+            blocked = blocked,
+            createdAt = connectionRow[SocialConnectionsTable.createdAt],
+            updatedAt = connectionRow[SocialConnectionsTable.updatedAt]
+        )
     }
 
     suspend fun getWhitelist(minecraftUuid: UUID) = suspendTransaction {
-        SocialsTable.selectAll().where(SocialsTable.minecraftUuid eq minecraftUuid).map {
-            SocialEntry(
-                discordId = it[SocialsTable.discordUserId],
-                minecraftUuid = it[SocialsTable.minecraftUuid],
-                blocked = it[SocialsTable.blocked],
-                createdAt = it[SocialsTable.createdAt],
-                updatedAt = it[SocialsTable.updatedAt]
-            )
-        }.firstOrNull()
+        val connectionRow = SocialConnectionsTable.selectAll()
+            .where(SocialConnectionsTable.minecraftUuid eq minecraftUuid)
+            .map { it }
+            .firstOrNull() ?: return@suspendTransaction null
+
+        val connectionId = connectionRow[SocialConnectionsTable.id].value
+
+        val blocked = FreebuildWhitelistTable.selectAll()
+            .where(FreebuildWhitelistTable.socialConnectionId eq connectionId)
+            .map { it[FreebuildWhitelistTable.blocked] }
+            .firstOrNull() ?: false
+
+        SocialEntry(
+            discordId = connectionRow[SocialConnectionsTable.discordUserId]
+                ?: return@suspendTransaction null,
+            minecraftUuid = connectionRow[SocialConnectionsTable.minecraftUuid],
+            blocked = blocked,
+            createdAt = connectionRow[SocialConnectionsTable.createdAt],
+            updatedAt = connectionRow[SocialConnectionsTable.updatedAt]
+        )
     }
 
     suspend fun editMinecraftName(
         discordId: Long,
         minecraftUuid: UUID
     ) = suspendTransaction {
-        SocialsTable.update(where = { SocialsTable.discordUserId eq discordId }) {
+        SocialConnectionsTable.update(where = { SocialConnectionsTable.discordUserId eq discordId }) {
             it[this.minecraftUuid] = minecraftUuid
             it[this.updatedAt] = OffsetDateTime.now()
         }
@@ -93,7 +181,7 @@ class SocialRepository {
         oldDiscordId: Long,
         newDiscordId: Long
     ) = suspendTransaction {
-        SocialsTable.update(where = { SocialsTable.discordUserId eq oldDiscordId }) {
+        SocialConnectionsTable.update(where = { SocialConnectionsTable.discordUserId eq oldDiscordId }) {
             it[this.discordUserId] = newDiscordId
             it[this.updatedAt] = OffsetDateTime.now()
         }
@@ -103,13 +191,23 @@ class SocialRepository {
         discordId: Long,
         blocked: Boolean
     ) = suspendTransaction {
-        SocialsTable.update(where = { SocialsTable.discordUserId eq discordId }) {
+        val connectionId = SocialConnectionsTable.selectAll()
+            .where(SocialConnectionsTable.discordUserId eq discordId)
+            .map { it[SocialConnectionsTable.id].value }
+            .firstOrNull() ?: return@suspendTransaction false
+
+        FreebuildWhitelistTable.update(where = { FreebuildWhitelistTable.socialConnectionId eq connectionId }) {
             it[this.blocked] = blocked
             it[this.updatedAt] = OffsetDateTime.now()
-        }
+        } > 0
     }
 
     suspend fun deleteWhitelist(discordId: Long) = suspendTransaction {
-        SocialsTable.deleteWhere { SocialsTable.discordUserId eq discordId } > 0
+        val connectionId = SocialConnectionsTable.selectAll()
+            .where(SocialConnectionsTable.discordUserId eq discordId)
+            .map { it[SocialConnectionsTable.id].value }
+            .firstOrNull() ?: return@suspendTransaction false
+
+        FreebuildWhitelistTable.deleteWhere { FreebuildWhitelistTable.socialConnectionId eq connectionId } > 0
     }
 }

@@ -32,7 +32,7 @@ class SocialService(
         }
 
     suspend fun updateBlocked(discordId: Long, blocked: Boolean): Boolean =
-        socialRepository.editBlocked(discordId, blocked) > 0
+        socialRepository.editBlocked(discordId, blocked)
 
     suspend fun updateMinecraftName(discordId: Long, minecraftName: String): Boolean {
         return playerLookupService.getUuid(minecraftName)?.let {
