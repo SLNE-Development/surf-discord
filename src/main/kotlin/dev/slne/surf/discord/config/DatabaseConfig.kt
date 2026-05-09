@@ -7,7 +7,8 @@ import dev.slne.surf.discord.ticket.database.messages.attachments.TicketAttachme
 import dev.slne.surf.discord.ticket.database.ticket.TicketTable
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataTable
 import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffTable
-import dev.slne.surf.discord.ticket.database.whitelist.SocialsTable
+import dev.slne.surf.discord.ticket.database.whitelist.FreebuildWhitelistTable
+import dev.slne.surf.discord.ticket.database.whitelist.SocialConnectionsTable
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import org.jetbrains.annotations.ApiStatus
@@ -44,7 +45,8 @@ class DatabaseConfiguration {
                     TicketStaffTable,
                     TicketMessagesTable,
                     TicketAttachmentsTable,
-                    SocialsTable
+                    SocialConnectionsTable,
+                    FreebuildWhitelistTable
                 )
             }
             logger.info("Connected to database ${botConfig.database.database} at ${botConfig.database.hostname}:${botConfig.database.port}")

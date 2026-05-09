@@ -4,6 +4,7 @@ import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.ticket.database.whitelist.SocialService
+import dev.slne.surf.discord.util.PlayerLookupService
 import net.dv8tion.jda.api.components.selections.SelectOption
 import net.dv8tion.jda.api.components.selections.StringSelectMenu
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
@@ -12,7 +13,8 @@ import org.springframework.stereotype.Component
 
 @Component
 class SurvivalWhitelistEditModal(
-    private val socialService: SocialService
+    private val socialService: SocialService,
+    private val playerLookupService: PlayerLookupService
 ) : DiscordModal {
     override val id = "whitelist:modal:edit-survival"
 
@@ -32,6 +34,13 @@ class SurvivalWhitelistEditModal(
                 required = true
             }
 
+            textInput {
+                id = "whitelist:modal:edit-survival:old-discord-id"
+                label = "Interne Verwaltungs-ID (nicht ändern!)"
+                value = data[2]
+                required = true
+            }
+
             selectMenu(
                 translatable("whitelist.survival.edit.modal.blocked.label"),
                 StringSelectMenu
@@ -46,6 +55,9 @@ class SurvivalWhitelistEditModal(
         }
 
     override suspend fun onSubmit(event: ModalInteractionEvent) {
+        val oldDiscordId =
+            event.getValue("whitelist:modal:edit-survival:old-discord-id")?.asString?.toLongOrNull()
+                ?: return
         val minecraftName =
             event.getValue("whitelist:modal:edit-survival:minecraft-name")?.asString ?: return
         val discordId =
@@ -56,11 +68,57 @@ class SurvivalWhitelistEditModal(
                 ?.toBooleanStrictOrNull() ?: return
 
         val discordName = event.jda.getUserById(discordId)?.name ?: discordId.toString()
+        val oldWhitelist = socialService.getWhitelist(oldDiscordId)
 
+        if (oldWhitelist == null) {
+            event.reply(translatable("whitelist.embed.information.no_whitelist"))
+                .setEphemeral(true)
+                .queue()
+            return
+        }
 
-        socialService.updateWhitelist(discordId, minecraftName, blocked)
+        val minecraftUuid = playerLookupService.getUuid(minecraftName)
 
-        event.reply(translatable("whitelist.embed.information.successfully-edited", discordName))
+        if (minecraftUuid == null) {
+            event.reply(translatable("whitelist.survival.edit.modal.invalid_minecraft_name"))
+                .setEphemeral(true)
+                .queue()
+            return
+        }
+
+        if (oldWhitelist.minecraftUuid != minecraftUuid) {
+            if (!socialService.updateMinecraftName(oldDiscordId, minecraftName)) {
+                event.reply(translatable("whitelist.survival.edit.modal.failed.minecraft"))
+                    .setEphemeral(true)
+                    .queue()
+                return
+            }
+        }
+
+        if (oldWhitelist.blocked != blocked) {
+            if (!socialService.updateBlocked(oldDiscordId, blocked)) {
+                event.reply(translatable("whitelist.survival.edit.modal.failed.blocked"))
+                    .setEphemeral(true)
+                    .queue()
+                return
+            }
+        }
+
+        if (oldWhitelist.discordId != discordId) {
+            if (!socialService.updateDiscordId(oldDiscordId, discordId)) {
+                event.reply(translatable("whitelist.survival.edit.modal.failed.discord"))
+                    .setEphemeral(true)
+                    .queue()
+                return
+            }
+        }
+
+        event.reply(
+            translatable(
+                "whitelist.embed.information.successfully-edited",
+                discordName
+            )
+        )
             .setEphemeral(true)
             .queue()
     }

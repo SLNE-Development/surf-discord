@@ -1,5 +1,8 @@
 package dev.slne.surf.discord.ticket.database.whitelist
 
+import dev.minn.jda.ktx.coroutines.await
+import dev.slne.surf.discord.config.botConfig
+import dev.slne.surf.discord.jda
 import dev.slne.surf.discord.util.PlayerLookupService
 import org.springframework.stereotype.Service
 
@@ -28,13 +31,32 @@ class SocialService(
             socialRepository.getWhitelist(it)
         }
 
-    suspend fun updateWhitelist(
-        discordId: Long,
-        minecraftName: String,
-        blocked: Boolean
-    ) {
-        playerLookupService.getUuid(minecraftName)?.let {
-            socialRepository.editWhitelist(discordId, it, blocked)
+    suspend fun updateBlocked(discordId: Long, blocked: Boolean): Boolean =
+        socialRepository.editBlocked(discordId, blocked)
+
+    suspend fun updateMinecraftName(discordId: Long, minecraftName: String): Boolean {
+        return playerLookupService.getUuid(minecraftName)?.let {
+            socialRepository.editMinecraftName(discordId, it)
+        } != null
+    }
+
+    suspend fun updateDiscordId(oldDiscordId: Long, discordId: Long): Boolean {
+        return runCatching {
+            val oldDiscordUser = jda.retrieveUserById(oldDiscordId).await()
+            val newDiscordUser = jda.retrieveUserById(discordId).await()
+
+            jda.guilds.forEach { guild ->
+                val role = guild.getRoleById(botConfig.whitelistedRoleId)
+                    ?: return@runCatching false
+
+                guild.removeRoleFromMember(oldDiscordUser, role).queue()
+                guild.addRoleToMember(newDiscordUser, role).queue()
+            }
+
+            socialRepository.editDiscordId(oldDiscordId, discordId)
+            true
+        }.getOrElse {
+            false
         }
     }
 

@@ -1,14 +1,17 @@
 package dev.slne.surf.discord.ticket.database.whitelist
 
 import dev.slne.surf.discord.ticket.database.column.nativeUuid
-import dev.slne.surf.discord.ticket.database.column.offsetDateTime
-import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
+import dev.slne.surf.discord.ticket.database.util.AuditableLongIdTable
 
-object SocialsTable : LongIdTable("social_connections") {
-    val discordUserId = long("discord_user_id").uniqueIndex()
+
+object SocialConnectionsTable : AuditableLongIdTable("social_connections_new") {
     val minecraftUuid = nativeUuid("minecraft_uuid").uniqueIndex()
+    val discordUserId = long("discord_user_id").uniqueIndex().nullable()
     val twitchId = long("twitch_id").uniqueIndex().nullable()
+}
+
+object FreebuildWhitelistTable : AuditableLongIdTable("freebuild_whitelists") {
+    val socialConnectionId =
+        long("social_connection_id").references(SocialConnectionsTable.id).uniqueIndex()
     val blocked = bool("blocked").default(false)
-    val createdAt = offsetDateTime("created_at")
-    val updatedAt = offsetDateTime("updated_at")
 }

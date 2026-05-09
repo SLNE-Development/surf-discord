@@ -26,15 +26,6 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
         // Server Admin
         949704206888079490 to setOf(*DiscordPermission.entries.toTypedArray()),
 
-        // Twitch Mod
-        651104534529179660 to setOf(
-            DiscordPermission.TICKET_REPLY_DEADLINE,
-            DiscordPermission.TICKET_CLOSE,
-            DiscordPermission.TICKET_CLAIM,
-            DiscordPermission.TICKET_SUPPORT_TWITCH_VIEW
-        ),
-
-
         // Discord Moderation
         156164562499010560 to setOf(
             DiscordPermission.COMMAND_TICKET_ADD,
@@ -61,7 +52,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.WHITELIST_EDIT,
             DiscordPermission.TICKET_APPLICATION_TWITCH_MODERATOR,
             DiscordPermission.WHITELIST_DELETE,
-            DiscordPermission.TICKET_COMPLAINT_VIEW
+            DiscordPermission.TICKET_COMPLAINT_VIEW,
+            DiscordPermission.WHITELIST_CREATE
         ),
 
         // Management
@@ -89,7 +81,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.WHITELIST_BYPASS,
             DiscordPermission.WHITELIST_EDIT,
             DiscordPermission.WHITELIST_DELETE,
-            DiscordPermission.TICKET_COMPLAINT_VIEW
+            DiscordPermission.TICKET_COMPLAINT_VIEW,
+            DiscordPermission.WHITELIST_CREATE
         ),
 
         // Developer
@@ -117,7 +110,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.WHITELIST_VIEW,
             DiscordPermission.WHITELIST_BYPASS,
             DiscordPermission.WHITELIST_EDIT,
-            DiscordPermission.WHITELIST_DELETE
+            DiscordPermission.WHITELIST_DELETE,
+            DiscordPermission.WHITELIST_CREATE
         ),
 
         // Moderator
@@ -152,6 +146,14 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_REPORT_VIEW,
             DiscordPermission.COMMAND_FAQ,
             DiscordPermission.WHITELIST_VIEW
+        ),
+
+        // Twitch Mod
+        651104534529179660 to setOf(
+            DiscordPermission.TICKET_REPLY_DEADLINE,
+            DiscordPermission.TICKET_CLOSE,
+            DiscordPermission.TICKET_CLAIM,
+            DiscordPermission.TICKET_SUPPORT_TWITCH_VIEW
         ),
 
         // Community Management
