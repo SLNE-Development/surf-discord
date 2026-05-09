@@ -9,7 +9,9 @@ import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.util.Colors
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.utils.FileUpload
 import org.springframework.stereotype.Component
+import java.io.File
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
@@ -40,6 +42,7 @@ import kotlin.time.toJavaDuration
                 CommandChoice("how-to-join", "how-to-join"),
                 CommandChoice("ask", "ask"),
                 CommandChoice("missing-information", "missing-information"),
+                CommandChoice("how-to-whitelist", "how-to-whitelist")
             ]
         ),
         CommandOption(
@@ -83,12 +86,22 @@ class FaqCommand : SlashCommand {
 
         faqCache.put(System.currentTimeMillis(), faq to event.messageChannel.idLong)
 
+        val file = faq.attachmentUrl?.let(::File)
+
         if (user != null) {
             event.reply(user.asMention).setEmbeds(embed {
                 title = faq.question
                 description = faq.answer
                 color = Colors.INFO
-            }).queue()
+
+                if (file != null) {
+                    image = "attachment://${file.name}"
+                }
+            }).apply {
+                if (file != null) {
+                    addFiles(FileUpload.fromData(file))
+                }
+            }.queue()
 
             return
         }
@@ -97,6 +110,14 @@ class FaqCommand : SlashCommand {
             title = faq.question
             description = faq.answer
             color = Colors.INFO
-        }).queue()
+
+            if (file != null) {
+                image = "attachment://${file.name}"
+            }
+        }).apply {
+            if (file != null) {
+                addFiles(FileUpload.fromData(file))
+            }
+        }.queue()
     }
 }
