@@ -86,7 +86,7 @@ class FaqCommand : SlashCommand {
 
         faqCache.put(System.currentTimeMillis(), faq to event.messageChannel.idLong)
 
-        val file = faq.attachmentUrl?.let(::File)
+        val file = faq.attachmentPath?.let(::File)
 
         if (user != null) {
             event.reply(user.asMention).setEmbeds(embed {
