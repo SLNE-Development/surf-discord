@@ -6,7 +6,7 @@ enum class Faq(
     val id: String,
     val question: String,
     val answer: String,
-    val attachmentUrl: String? = null
+    val attachmentPath: String? = null
 ) {
     CONNECT_TWITCH(
         "connect-twitch",
