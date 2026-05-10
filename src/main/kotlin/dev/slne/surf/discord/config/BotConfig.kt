@@ -14,6 +14,8 @@ data class BotConfig(
     val channels: ChannelConfig,
     val database: DatabaseConfig,
     val whitelistedRoleId: Long = 0L,
+    val luckpermsApi: LuckpermsApiConfig = LuckpermsApiConfig(),
+    val roles: RoleConfig = RoleConfig()
 )
 
 val botConfig by lazy {

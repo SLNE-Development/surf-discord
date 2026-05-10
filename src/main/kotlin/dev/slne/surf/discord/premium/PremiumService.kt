@@ -1,0 +1,102 @@
+package dev.slne.surf.discord.premium
+
+import dev.minn.jda.ktx.coroutines.await
+import dev.slne.surf.discord.api.LuckpermsApi
+import dev.slne.surf.discord.config.botConfig
+import dev.slne.surf.discord.ticket.database.whitelist.SocialRepository
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet
+import it.unimi.dsi.fastutil.objects.Object2LongMaps
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
+import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.entities.UserSnowflake
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger
+import org.springframework.scheduling.annotation.Scheduled
+import org.springframework.stereotype.Service
+import java.util.concurrent.TimeUnit
+
+@Service
+class PremiumService(private val jda: JDA, private val socialRepository: SocialRepository) {
+    private val logger = ComponentLogger.logger()
+
+    @Scheduled(fixedRate = 2, timeUnit = TimeUnit.MINUTES)
+    protected suspend fun syncPremium() {
+        val currentActivePremiumUuids = LuckpermsApi.findAllPremiumUuids()
+
+        jda.guilds.forEach { guild ->
+            val role = guild.getRoleById(botConfig.roles.premiumRoleId) ?: return@forEach
+            val premiumMembers = guild.findMembersWithRoles(role).await()
+            val premiumMemberIds = LongOpenHashSet(premiumMembers.size)
+            for (member in premiumMembers) {
+                premiumMemberIds.add(member.idLong)
+            }
+
+            val currentPremiumRoleUsersByUuid = if (premiumMemberIds.isEmpty()) {
+                Object2LongMaps.emptyMap()
+            } else {
+                socialRepository.findAllUuidsByDiscordIds(premiumMemberIds)
+            }
+            val currentPremiumRoleUuids = currentPremiumRoleUsersByUuid.keys
+
+            val toRemoveUuids = currentPremiumRoleUuids - currentActivePremiumUuids
+            val toAddUuids = currentActivePremiumUuids - currentPremiumRoleUuids
+
+            val semaphore = Semaphore(16)
+            supervisorScope {
+                for (uuid in toRemoveUuids) {
+                    launch {
+                        semaphore.withPermit {
+                            val discordId = currentPremiumRoleUsersByUuid.getLong(uuid)
+
+                            try {
+                                guild.removeRoleFromMember(UserSnowflake.fromId(discordId), role)
+                                    .reason("Premium expired")
+                                    .await()
+                            } catch (e: Exception) {
+                                logger.warn(
+                                    "Failed to remove premium role from user {} / uuid {} in guild {}",
+                                    discordId,
+                                    uuid,
+                                    guild.id,
+                                    e
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            val toAddUsersByUuid = if (toAddUuids.isEmpty()) {
+                Object2LongMaps.emptyMap()
+            } else {
+                socialRepository.findAllDiscordIdsByUuids(toAddUuids)
+            }
+
+            supervisorScope {
+                for (entry in toAddUsersByUuid.object2LongEntrySet()) {
+                    launch {
+                        semaphore.withPermit {
+                            val discordId = entry.longValue
+
+                            try {
+                                guild.addRoleToMember(UserSnowflake.fromId(discordId), role)
+                                    .reason("Premium active")
+                                    .await()
+                            } catch (e: Exception) {
+                                logger.warn(
+                                    "Failed to add premium role to user {} / uuid {} in guild {}",
+                                    discordId,
+                                    entry.key,
+                                    guild.id,
+                                    e
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

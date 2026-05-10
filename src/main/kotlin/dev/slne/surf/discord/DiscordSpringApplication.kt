@@ -3,11 +3,12 @@ package dev.slne.surf.discord
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.springframework.beans.factory.getBean
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
 import org.springframework.boot.builder.SpringApplicationBuilder
+import org.springframework.boot.r2dbc.autoconfigure.R2dbcAutoConfiguration
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.scheduling.annotation.EnableScheduling
 import kotlin.properties.Delegates
 
 var dataContext: ConfigurableApplicationContext by Delegates.notNull()
@@ -25,6 +26,7 @@ fun main(args: Array<String>) {
 
 @SpringBootApplication(exclude = [R2dbcAutoConfiguration::class])
 @EnableCaching
+@EnableScheduling
 class DiscordSpringApplication
 
 val logger = ComponentLogger.logger("surf-discord")
