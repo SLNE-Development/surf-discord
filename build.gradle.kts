@@ -17,6 +17,7 @@ repositories {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
+    implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("io.ktor:ktor-client-core:3.4.3")
     implementation("io.ktor:ktor-client-cio:3.4.3")
     implementation("io.ktor:ktor-client-content-negotiation:3.4.3")
@@ -35,7 +36,6 @@ dependencies {
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.4")
 
     runtimeOnly("org.mariadb:r2dbc-mariadb:1.4.0")
-    runtimeOnly("org.springframework.boot:spring-boot-properties-migrator")
 }
 
 kotlin { jvmToolchain(25) }
