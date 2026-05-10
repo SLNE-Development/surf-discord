@@ -45,7 +45,7 @@ object LuckpermsApi {
 
         if (response.status != HttpStatusCode.OK) {
             logger.error("Failed to fetch premium UUIDs: ${response.status}")
-            return emptySet()
+            throw RuntimeException("Failed to fetch premium UUIDs")
         }
 
         val users = response.body<List<UserSearchResult>>()
