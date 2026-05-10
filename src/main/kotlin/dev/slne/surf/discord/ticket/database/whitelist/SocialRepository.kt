@@ -1,14 +1,13 @@
 package dev.slne.surf.discord.ticket.database.whitelist
 
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
+import it.unimi.dsi.fastutil.longs.LongSet
+import it.unimi.dsi.fastutil.objects.Object2LongMap
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap
+import kotlinx.coroutines.flow.*
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.r2dbc.deleteWhere
-import org.jetbrains.exposed.v1.r2dbc.insert
-import org.jetbrains.exposed.v1.r2dbc.selectAll
+import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.r2dbc.*
 import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
-import org.jetbrains.exposed.v1.r2dbc.update
 import org.springframework.stereotype.Repository
 import java.time.OffsetDateTime
 import java.util.*
@@ -209,5 +208,43 @@ class SocialRepository {
             .firstOrNull() ?: return@suspendTransaction false
 
         FreebuildWhitelistTable.deleteWhere { FreebuildWhitelistTable.socialConnectionId eq connectionId } > 0
+    }
+
+    suspend fun findAllUuidsByDiscordIds(discordIds: LongSet): Object2LongMap<UUID> = suspendTransaction {
+        SocialConnectionsTable.select(SocialConnectionsTable.minecraftUuid, SocialConnectionsTable.discordUserId)
+            .where(SocialConnectionsTable.discordUserId inList discordIds)
+            .mapNotNull {
+                it[SocialConnectionsTable.discordUserId]?.let { value ->
+                    Object2LongMap.entry(
+                        it[SocialConnectionsTable.minecraftUuid],
+                        value
+                    )
+                }
+            }
+            .toList()
+            .let { results ->
+                Object2LongOpenHashMap<UUID>().apply {
+                    results.forEach { put(it.key, it.longValue) }
+                }
+            }
+    }
+
+    suspend fun findAllDiscordIdsByUuids(uuids: Collection<UUID>): Object2LongMap<UUID> = suspendTransaction {
+        SocialConnectionsTable.select(SocialConnectionsTable.minecraftUuid, SocialConnectionsTable.discordUserId)
+            .where(SocialConnectionsTable.minecraftUuid inList uuids)
+            .mapNotNull {
+                it[SocialConnectionsTable.discordUserId]?.let { value ->
+                    Object2LongMap.entry(
+                        it[SocialConnectionsTable.minecraftUuid],
+                        value
+                    )
+                }
+            }
+            .toList()
+            .let { results ->
+                Object2LongOpenHashMap<UUID>().apply {
+                    results.forEach { put(it.key, it.longValue) }
+                }
+            }
     }
 }

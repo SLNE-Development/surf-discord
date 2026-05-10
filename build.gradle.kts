@@ -15,18 +15,25 @@ repositories {
     mavenCentral()
 }
 
+extra["kotlin-coroutines.version"] = "1.11.0"
+
 dependencies {
+    implementation(platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.11.0"))
+
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("io.ktor:ktor-client-core:3.4.3")
     implementation("io.ktor:ktor-client-cio:3.4.3")
     implementation("io.ktor:ktor-client-content-negotiation:3.4.3")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.4.3")
     implementation("org.jetbrains.exposed:exposed-r2dbc:1.2.0")
     implementation("org.jetbrains.exposed:exposed-core:1.2.0")
     implementation("org.jetbrains.exposed:exposed-json:1.2.0")
     implementation("org.jetbrains.exposed:exposed-java-time:1.2.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive")
     implementation("it.unimi.dsi:fastutil:8.5.18")
     implementation("net.kyori:adventure-api:5.0.1")
     implementation("net.kyori:adventure-text-logger-slf4j:5.0.1")
