@@ -43,6 +43,11 @@ enum class Faq(
         translatable("faq.command.questions.problem-ressourcepack.question"),
         translatable("faq.command.questions.problem-ressourcepack.answer")
     ),
+    NRC_VOICE_CHAT_ISSUES(
+        "problem-nrc-voice-chat",
+        translatable("faq.command.questions.problem-nrc-voice-chat.question"),
+        translatable("faq.command.questions.problem-nrc-voice-chat.answer")
+    ),
     CONNECTION_ISSUES(
         "problem-connection",
         translatable("faq.command.questions.problem-connection.question"),
