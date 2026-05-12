@@ -139,6 +139,10 @@ enum class TicketType(
                 description = "Der Fehler konnte nicht reproduziert werden."
             ),
             TicketCloseReason.of(
+                displayName = "Externer Fehler",
+                description = "Der Fehler liegt außerhalb unseres Einflusses und wurde an zuständige Stellen weitergeleitet."
+            ),
+            TicketCloseReason.of(
                 displayName = "Bug behoben",
                 description = "Der gemeldete Fehler wurde behoben. Danke für deinen Bugreport!"
             )
@@ -175,5 +179,14 @@ enum class TicketType(
         viewPermission = DiscordPermission.TICKET_COMPLAINT_VIEW,
         closeReasons = defaultReasons,
         modal = modalRegistry.get("ticket:complaint").create()
+    ),
+    SHOP_PURCHASE(
+        id = "shop",
+        displayName = "Shop Support",
+        description = "Erstelle ein Ticket, wenn du Unterstützung zu In-Game-Käufen brauchst.",
+        emoji = "🛒",
+        viewPermission = DiscordPermission.TICKET_SHOP_VIEW,
+        closeReasons = defaultReasons,
+        modal = modalRegistry.get("ticket:shop:purchase").create()
     );
 }

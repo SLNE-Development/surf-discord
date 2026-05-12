@@ -2,7 +2,12 @@ package dev.slne.surf.discord.faq
 
 import dev.slne.surf.discord.messages.translatable
 
-enum class Faq(val id: String, val question: String, val answer: String) {
+enum class Faq(
+    val id: String,
+    val question: String,
+    val answer: String,
+    val attachmentPath: String? = null
+) {
     CONNECT_TWITCH(
         "connect-twitch",
         translatable("faq.command.questions.connect-twitch-with-discord.question"),
@@ -93,4 +98,10 @@ enum class Faq(val id: String, val question: String, val answer: String) {
         translatable("faq.command.questions.missing-information.question"),
         translatable("faq.command.questions.missing-information.answer")
     ),
+    HOW_TO_WHITELIST(
+        "how-to-whitelist",
+        translatable("faq.command.questions.how-to-whitelist.question"),
+        translatable("faq.command.questions.how-to-whitelist.answer"),
+        "gifs/wl-gif.gif"
+    )
 }

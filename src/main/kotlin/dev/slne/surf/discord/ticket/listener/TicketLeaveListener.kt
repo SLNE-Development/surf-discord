@@ -1,6 +1,6 @@
 package dev.slne.surf.discord.ticket.listener
 
-import dev.minn.jda.ktx.coroutines.await
+import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.ticket.TicketMemberService
 import dev.slne.surf.discord.ticket.TicketService
 import kotlinx.coroutines.CoroutineScope
@@ -19,12 +19,12 @@ class TicketLeaveListener(
         discordScope.launch {
             val ticket = ticketService.getTicketByThreadId(event.thread.idLong) ?: return@launch
 
-            if (ticketMemberService.isMember(ticket, event.threadMember.member.idLong)) {
-                val message =
-                    event.thread.sendMessage("Readding ${event.threadMember.member.nickname}")
-                        .await()
-                val edited = message.editMessage(event.threadMember.member.asMention).await()
-                edited.delete().queue()
+            if (ticketMemberService.isMember(ticket, event.threadMemberIdLong)) {
+                event.thread.sendMessage("<@${event.threadMemberIdLong}>").setEmbeds(embed {
+                    title = "Willkommen zurück!"
+                    description =
+                        "Du wolltest flüchten - zum Glück habe ich dich an der Leine und konnte dich im Ticket behalten. Bitte habe Geduld, damit wir das Problem gemeinsam lösen können."
+                }).queue()
             }
         }
     }
