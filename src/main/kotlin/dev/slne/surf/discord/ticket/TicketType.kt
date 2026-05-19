@@ -144,7 +144,7 @@ enum class TicketType(
             ),
             TicketCloseReason.of(
                 displayName = "Bug behoben",
-                description = "Der gemeldete Fehler wurde behoben. Danke für deinen Bugreport!"
+                description = "Der gemeldete Fehler wurde behoben und ist voraussichtlich mit dem nächsten Neustart verfügbar. Danke für deinen Bugreport!"
             )
         ).apply {
             addAll(defaultReasons)
