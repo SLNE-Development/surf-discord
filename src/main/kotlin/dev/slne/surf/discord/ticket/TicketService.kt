@@ -1,7 +1,9 @@
 package dev.slne.surf.discord.ticket
 
+import dev.minn.jda.ktx.coroutines.await
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.jda
+import dev.slne.surf.discord.logger
 import dev.slne.surf.discord.logging.TicketLogger
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
@@ -38,7 +40,7 @@ class TicketService(
         val threadChannel = ticketChannel
             ?.createThreadChannel("${type.id}-${hook.interaction.user.name}", true)
             ?.setInvitable(false)
-            ?.complete(true) ?: run {
+            ?.await() ?: run {
             hook.editOriginal(translatable("error")).queue()
             return null
         }
@@ -210,6 +212,8 @@ class TicketService(
         ticketLogger.logClosure(ticket)
         markAsClosed(ticket)
 
+        logger.info("Ticket ${ticket.ticketId} closed by ${closer.name} (type=${ticket.ticketType}, creator=${ticket.authorName})")
+
         jda.openPrivateChannelById(ticket.authorId).submit(true).thenAccept {
             it.sendMessageEmbeds(embed {
                 title = "Dein Ticket wurde geschlossen"
@@ -257,8 +261,8 @@ class TicketService(
             }
         }
 
-        thread.manager.setLocked(true).queue()
-        thread.manager.setArchived(true).queue()
+        thread.manager.setLocked(true).await()
+        thread.manager.setArchived(true).await()
     }
 
     suspend fun markAsClosed(ticket: Ticket) =

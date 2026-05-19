@@ -19,13 +19,27 @@ class TicketLeaveListener(
         discordScope.launch {
             val ticket = ticketService.getTicketByThreadId(event.thread.idLong) ?: return@launch
 
-            if (ticketMemberService.isMember(ticket, event.threadMemberIdLong)) {
-                event.thread.sendMessage("<@${event.threadMemberIdLong}>").setEmbeds(embed {
-                    title = "Willkommen zurück!"
-                    description =
-                        "Du wolltest flüchten - zum Glück habe ich dich an der Leine und konnte dich im Ticket behalten. Bitte habe Geduld, damit wir das Problem gemeinsam lösen können."
-                }).queue()
-            }
+            event.guild.retrieveMemberById(event.threadMemberIdLong).queue({
+                launch {
+                    if (ticketMemberService.isMember(ticket, event.threadMemberIdLong)) {
+                        event.thread.sendMessage("<@${event.threadMemberIdLong}>").setEmbeds(embed {
+                            title = "Willkommen zurück!"
+                            description =
+                                "Du wolltest flüchten - zum Glück habe ich dich an der Leine und konnte dich im Ticket behalten. Bitte habe Geduld, damit wir das Problem gemeinsam lösen können."
+                        }).queue()
+                    }
+                }
+            }, {
+                launch {
+                    if (ticketMemberService.isMember(ticket, event.threadMemberIdLong)) {
+                        event.thread.sendMessage("<@${event.threadMemberIdLong}>").setEmbeds(embed {
+                            title = "Discord verlassen!"
+                            description =
+                                "Der Benutzer <@${event.threadMemberIdLong}> hat den Discord-Server verlassen."
+                        }).queue()
+                    }
+                }
+            })
         }
     }
 }
