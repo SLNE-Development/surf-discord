@@ -14,7 +14,12 @@ import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.formattedEnumEntryName
 import dev.slne.surf.discord.util.replyError
 import net.dv8tion.jda.api.components.actionrow.ActionRow
+import net.dv8tion.jda.api.components.container.Container
+import net.dv8tion.jda.api.components.section.Section
+import net.dv8tion.jda.api.components.separator.Separator
+import net.dv8tion.jda.api.components.textdisplay.TextDisplay
 import net.dv8tion.jda.api.components.textinput.TextInputStyle
+import net.dv8tion.jda.api.components.thumbnail.Thumbnail
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import org.springframework.stereotype.Component
 
@@ -53,7 +58,7 @@ class ApplicationTicketModal(
             label = "Warum bewirbst du dich gerade bei uns?"
             style = TextInputStyle.PARAGRAPH
             required = true
-            lengthRange = 10..1024
+            lengthRange = 10..500
         }
 
         textInput {
@@ -61,7 +66,7 @@ class ApplicationTicketModal(
             label = "Hast du bereits Erfahrung in dem Bereich?"
             style = TextInputStyle.PARAGRAPH
             required = true
-            lengthRange = 10..1024
+            lengthRange = 10..750
         }
     }
 
@@ -117,44 +122,50 @@ class ApplicationTicketModal(
         interaction.hook.editOriginal(translatable("ticket.created", thread.asMention))
             .queue()
 
-        thread.sendMessage(user.asMention).queue()
-        thread.sendMessageEmbeds(
-            embed {
-                title = translatable("${applicationType.name.formattedEnumEntryName} Bewerbung")
-                description = translatable("ticket.support.application.embed.description")
-                color = Colors.SUCCESS
+        thread.sendMessageComponents(
+            Container.of(
+                Section.of(
+                    Thumbnail.fromUrl("https://castcrafter.de/favicon.png"),
+                    TextDisplay.of(
+                        translatable(
+                            "## ${applicationType.name.formattedEnumEntryName} Bewerbung"
+                        )
+                    ),
+                    TextDisplay.of(
+                        translatable("ticket.support.application.embed.description")
+                    )
+                ),
 
-                field {
-                    name = translatable("ticket.support.application.embed.field.content")
-                    value = content
-                    inline = false
-                }
+                Separator.createDivider(Separator.Spacing.LARGE),
 
-                field {
-                    name = translatable("ticket.support.application.embed.field.experience")
-                    value = experience
-                    inline = false
-                }
+                TextDisplay.of(
+                    translatable("ticket.support.application.embed.field.content")
+                ),
+                TextDisplay.of(content),
 
-                field {
-                    name = translatable("ticket.support.application.embed.field.motivation")
-                    value = motivation
-                    inline = true
-                }
+                Separator.createDivider(Separator.Spacing.LARGE),
 
-                field {
-                    name = translatable("ticket.support.application.embed.field.why")
-                    value = why
-                    inline = true
-                }
+                TextDisplay.of(translatable("ticket.support.application.embed.field.experience")),
+                TextDisplay.of(experience),
 
-            }
-        ).addComponents(
-            ActionRow.of(
-                buttonRegistry.get("ticket:claim").button,
-                buttonRegistry.get("ticket:close").button
+                Separator.createDivider(Separator.Spacing.LARGE),
+
+                TextDisplay.of(translatable("ticket.support.application.embed.field.motivation")),
+                TextDisplay.of(motivation),
+
+                Separator.createDivider(Separator.Spacing.LARGE),
+
+                TextDisplay.of(translatable("ticket.support.application.embed.field.why")),
+                TextDisplay.of(why),
+
+                Separator.createDivider(Separator.Spacing.LARGE),
+
+                ActionRow.of(
+                    buttonRegistry.get("ticket:claim").button,
+                    buttonRegistry.get("ticket:close").button
+                )
             )
-        ).submit(true).thenAccept {
+        ).useComponentsV2().submit().thenAccept {
             thread.pinMessageById(it.idLong).queue()
         }
     }

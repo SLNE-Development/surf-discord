@@ -1,16 +1,19 @@
 package dev.slne.surf.discord.interaction.modal.impl.ticket
 
-import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
-import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.replyError
 import net.dv8tion.jda.api.components.actionrow.ActionRow
+import net.dv8tion.jda.api.components.container.Container
+import net.dv8tion.jda.api.components.section.Section
+import net.dv8tion.jda.api.components.separator.Separator
+import net.dv8tion.jda.api.components.textdisplay.TextDisplay
 import net.dv8tion.jda.api.components.textinput.TextInputStyle
+import net.dv8tion.jda.api.components.thumbnail.Thumbnail
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import org.springframework.stereotype.Component
 
@@ -34,7 +37,7 @@ class ComplaintTicketModal(
             id = "issue"
             label = translatable("ticket.complaint.modal.field.issue.label")
             style = TextInputStyle.PARAGRAPH
-            lengthRange = 10..4000
+            lengthRange = 10..3000
             placeholder = translatable("ticket.complaint.modal.field.issue.placeholder")
             required = true
         }
@@ -72,33 +75,32 @@ class ComplaintTicketModal(
         interaction.hook.editOriginal(translatable("ticket.created", thread.asMention))
             .queue()
 
-        thread.sendMessage(user.asMention).queue()
-        thread.sendMessageEmbeds(
-            embed {
-                title = translatable("ticket.complaint.embed.title")
-                description = translatable("ticket.complaint.embed.description")
-                color = Colors.SUCCESS
-
-                field {
-                    name = translatable("ticket.complaint.embed.field.target")
-                    value = target
-                    inline = true
-                }
-
-                issue.chunked(1024).forEach { chunk ->
-                    field {
-                        name = translatable("ticket.complaint.embed.field.issue")
-                        value = chunk
-                        inline = true
-                    }
-                }
-            }
-        ).addComponents(
-            ActionRow.of(
-                buttonRegistry.get("ticket:claim").button,
-                buttonRegistry.get("ticket:close").button
+        thread.sendMessageComponents(
+            Container.of(
+                Section.of(
+                    Thumbnail.fromUrl("https://castcrafter.de/favicon.png"),
+                    TextDisplay.of(
+                        translatable(
+                            "ticket.complaint.embed.title",
+                            user.asMention
+                        )
+                    ),
+                    TextDisplay.of(translatable("ticket.complaint.embed.description"))
+                ),
+                Separator.createDivider(Separator.Spacing.LARGE),
+                TextDisplay.of(translatable("ticket.complaint.embed.field.target")),
+                TextDisplay.of(target),
+                Separator.createDivider(Separator.Spacing.LARGE),
+                TextDisplay.of(translatable("ticket.complaint.embed.field.issue")),
+                TextDisplay.of(issue),
+                Separator.createDivider(Separator.Spacing.LARGE),
+                ActionRow.of(
+                    buttonRegistry.get("ticket:claim").button,
+                    buttonRegistry.get("ticket:close").button
+                ),
+                TextDisplay.of("-# ${ticket.ticketId}"),
             )
-        ).submit(true).thenAccept {
+        ).useComponentsV2().submit().thenAccept {
             thread.pinMessageById(it.idLong).queue()
         }
     }
