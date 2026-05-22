@@ -13,12 +13,20 @@ import org.springframework.stereotype.Component
 import java.time.ZonedDateTime
 
 @DiscordCommand(
-    "reply-deadline", "Sende eine Reply-Deadline in ein Ticket.", options = [CommandOption(
-        name = "user",
-        description = "Der Nutzer, für den die Reply-Deadline gesetzt wird.",
-        type = CommandOptionType.USER,
-        required = true
-    )]
+    "reply-deadline", "Sende eine Reply-Deadline in ein Ticket.", options = [
+        CommandOption(
+            name = "user",
+            description = "Der Nutzer, für den die Reply-Deadline gesetzt wird.",
+            type = CommandOptionType.USER,
+            required = true
+        ),
+        CommandOption(
+            name = "until",
+            description = "Setze eine eigene Zeit in Stunden",
+            type = CommandOptionType.INTEGER,
+            required = false
+        ),
+    ]
 )
 @Component
 class TicketReplyDeadlineCommand : SlashCommand {
@@ -37,7 +45,22 @@ class TicketReplyDeadlineCommand : SlashCommand {
             return
         }
 
-        val deadline = ZonedDateTime.now().plusHours(36)
+        val rawDeadline = event.getOption("until")?.asLong ?: 24
+
+        if (rawDeadline <= 0L) {
+            event.reply(translatable("ticket.command.until.not-positive"))
+                .setEphemeral(true).queue()
+            return
+        }
+
+        if (rawDeadline >= 8767L) {
+            event.reply(translatable("ticket.command.until.to-high"))
+                .setEphemeral(true).queue()
+            return
+        }
+
+
+        val deadline = ZonedDateTime.now().plusHours(rawDeadline)
         val deadlineUnix = deadline.toEpochSecond()
         val untilString = "<t:${deadlineUnix}:F>"
         val relativeString = "<t:${deadlineUnix}:R>"
