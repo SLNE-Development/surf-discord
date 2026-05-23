@@ -10,6 +10,7 @@ import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.PlayerLookupService
+import dev.slne.surf.discord.util.escapeCodeBlock
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
 import java.time.OffsetDateTime
@@ -107,7 +108,7 @@ class RequestRefundCommand(
             minecraftName?.let {
                 field {
                     name = translatable("whitelist.embed.information.minecraft")
-                    value = "```\n$it\n```"
+                    value = "```\n${it.escapeCodeBlock()}\n```"
                     inline = false
                 }
             }
@@ -135,7 +136,7 @@ class RequestRefundCommand(
             }
             field {
                 name = translatable("refund.command.field.coordinates")
-                value = "```\n$coordinates\n```"
+                value = "```\n${coordinates.escapeCodeBlock()}\n```"
                 inline = false
             }
         }).queue()

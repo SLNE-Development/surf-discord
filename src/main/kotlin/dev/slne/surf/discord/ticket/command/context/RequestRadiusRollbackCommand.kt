@@ -10,6 +10,7 @@ import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.PlayerLookupService
+import dev.slne.surf.discord.util.escapeCodeBlock
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
 import java.time.OffsetDateTime
@@ -99,7 +100,7 @@ class RequestRadiusRollbackCommand(
             }
             field {
                 name = translatable("whitelist.embed.information.minecraft")
-                value = "```\n$minecraftName\n```"
+                value = "```\n${minecraftName.escapeCodeBlock()}\n```"
                 inline = false
             }
             field {
@@ -119,7 +120,7 @@ class RequestRadiusRollbackCommand(
             }
             field {
                 name = translatable("rollback.command.full.field.coordinates")
-                value = "```\n$coordinates\n```"
+                value = "```\n${coordinates.escapeCodeBlock()}\n```"
                 inline = false
             }
             field {
