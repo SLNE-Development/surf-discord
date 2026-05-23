@@ -12,6 +12,8 @@ val random = Random
 fun Long.relativeDiscordTimeStamp() = "<t:${this.div(1000)}:R>"
 fun Long.absoluteDiscordTimeStamp() = "<t:${this.div(1000)}:F>"
 
+fun String.escapeCodeBlock() = replace("`", "`" + Char(0x200B))
+
 suspend fun InteractionHook.asTicketOrNull() =
     getBean<TicketService>().getTicketByThreadId(this.interaction.channelIdLong)
 
