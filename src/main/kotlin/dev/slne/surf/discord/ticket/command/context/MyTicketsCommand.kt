@@ -2,10 +2,12 @@ package dev.slne.surf.discord.ticket.command.context
 
 import dev.slne.surf.discord.command.DiscordCommand
 import dev.slne.surf.discord.command.SlashCommand
+import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
+import dev.slne.surf.discord.util.Colors
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
 
@@ -29,16 +31,24 @@ class MyTicketsCommand(
             .filter { it.threadId != null }
             .sortedByDescending { it.createdAt }
 
-        val text = if (tickets.isEmpty()) {
-            translatable("ticket.command.mytickets.empty")
-        } else {
-            tickets.mapIndexed { index, ticket ->
-                val threadUrl = "https://discord.com/channels/${ticket.guildId}/${ticket.threadId}"
-                val panelUrl = "$PANEL_BASE_URL/${ticket.ticketId}"
-                "#${index + 1} <$threadUrl> |--| <$panelUrl>"
-            }.joinToString("\n")
+        if (tickets.isEmpty()) {
+            event.replyEmbeds(embed {
+                title = translatable("ticket.command.mytickets.title")
+                description = translatable("ticket.command.mytickets.empty")
+                color = Colors.INFO
+            }).setEphemeral(true).queue()
+            return
         }
 
-        event.reply(text).setEphemeral(true).queue()
+        event.replyEmbeds(embed {
+            title = translatable("ticket.command.mytickets.title")
+            color = Colors.PRIMARY
+            footer = translatable("ticket.command.mytickets.footer", tickets.size.toString())
+
+            description = tickets.mapIndexed { index, ticket ->
+                val panelUrl = "$PANEL_BASE_URL/${ticket.ticketId}"
+                "`#${index + 1}` <#${ticket.threadId}> → [Im Panel ansehen]($panelUrl)"
+            }.joinToString("\n")
+        }).setEphemeral(true).queue()
     }
 }
