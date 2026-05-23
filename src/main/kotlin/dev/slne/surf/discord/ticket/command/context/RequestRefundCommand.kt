@@ -10,7 +10,6 @@ import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.PlayerLookupService
-import dev.slne.surf.discord.util.escapeCodeBlock
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
 import java.time.OffsetDateTime
@@ -136,7 +135,7 @@ class RequestRefundCommand(
             }
             field {
                 name = translatable("refund.command.field.coordinates")
-                value = "```\n${coordinates.escapeCodeBlock()}\n```"
+                value = "```\n$coordinates\n```"
                 inline = false
             }
         }).queue()
