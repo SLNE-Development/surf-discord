@@ -19,8 +19,11 @@ class ModalBuilder(val id: String, var title: String) {
         rows.add(Label.of(input.label, input.build()))
     }
 
-    fun selectMenu(label: String, selectMenu: SelectMenu) {
-        rows.add(Label.of(label, selectMenu))
+    fun selectMenu(label: String, selectMenu: SelectMenu, description: String? = null) {
+        rows.add(
+            if (description != null) Label.of(label, description, selectMenu)
+            else Label.of(label, selectMenu)
+        )
     }
 
     fun build(): Modal = Modal.create(id, title)

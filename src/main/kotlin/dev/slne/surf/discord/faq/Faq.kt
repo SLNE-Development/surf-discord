@@ -78,16 +78,6 @@ enum class Faq(
         translatable("faq.command.questions.take-part-in-event.question"),
         translatable("faq.command.questions.take-part-in-event.answer")
     ),
-    SURVIVAL_DOWNTIME(
-        "survival-downtime",
-        translatable("faq.command.questions.survival-downtime.question"),
-        translatable("faq.command.questions.survival-downtime.answer")
-    ),
-    ONE_BLOCK_EVENT_STATUS(
-        "one-block-event",
-        translatable("faq.command.questions.one-block-event.question"),
-        translatable("faq.command.questions.one-block-event.answer")
-    ),
     HOW_TO_JOIN(
         "how-to-join",
         translatable("faq.command.questions.how-to-join.question"),

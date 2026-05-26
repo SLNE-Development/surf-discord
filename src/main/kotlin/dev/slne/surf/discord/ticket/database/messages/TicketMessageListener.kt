@@ -2,6 +2,7 @@ package dev.slne.surf.discord.ticket.database.messages
 
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.database.messages.attachments.TicketAttachmentsRepository
+import dev.slne.surf.discord.ticket.deadline.ReplyDeadlineService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent
@@ -16,12 +17,17 @@ class TicketMessageListener(
     private val discordScope: CoroutineScope,
     private val ticketService: TicketService,
     private val ticketMessageRepository: TicketMessageRepository,
-    private val ticketAttachmentsRepository: TicketAttachmentsRepository
+    private val ticketAttachmentsRepository: TicketAttachmentsRepository,
+    private val replyDeadlineService: ReplyDeadlineService
 ) : ListenerAdapter() {
     override fun onMessageReceived(event: MessageReceivedEvent) {
         discordScope.launch {
             val ticket = ticketService.getTicketByThreadId(event.channel.idLong)
                 ?: return@launch
+
+            if (!event.author.isBot) {
+                replyDeadlineService.onUserReplied(event.channel.idLong, event.author.idLong)
+            }
 
             val dbMessageId = ticketMessageRepository.logMessage(ticket, event.message)
 

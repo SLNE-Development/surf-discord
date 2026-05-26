@@ -4,6 +4,13 @@ import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
 
 private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> = mapOf(
+
+    // Test Discord (Timonso)
+    1372675800083730464 to mapOf(
+        // Admin
+        1377631246297075733 to setOf(*DiscordPermission.entries.toTypedArray()),
+        1508070571764744342 to setOf(*DiscordPermission.entries.toTypedArray()),
+    ),
     // Arty Development Discord (Red)
     1410944184231137332 to mapOf(
         // Admin

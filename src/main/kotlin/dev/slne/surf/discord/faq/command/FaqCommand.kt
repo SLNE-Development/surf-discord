@@ -38,8 +38,6 @@ import kotlin.time.toJavaDuration
                 CommandChoice("how-to-share-log", "how-to-share-log"),
                 CommandChoice("clan-info", "clan-info"),
                 CommandChoice("take-part-in-event", "take-part-in-event"),
-                CommandChoice("survival-downtime", "survival-downtime"),
-                CommandChoice("one-block-event", "one-block-event"),
                 CommandChoice("how-to-join", "how-to-join"),
                 CommandChoice("ask", "ask"),
                 CommandChoice("missing-information", "missing-information"),
