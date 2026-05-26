@@ -3,9 +3,11 @@ package dev.slne.surf.discord.ticket.database.ticket
 import dev.slne.surf.discord.ticket.Ticket
 import dev.slne.surf.discord.ticket.TicketType
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataRepository
+import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffTable
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
@@ -85,6 +87,18 @@ class TicketRepository(
                 .where((TicketTable.authorId eq authorId) and (TicketTable.ticketType eq type))
                 .filterNotNull().map { it.toTicket() }.firstOrNull()
         }
+
+    suspend fun getOpenTicketsClaimedBy(userId: Long): List<Ticket> = suspendTransaction {
+        (TicketTable innerJoin TicketStaffTable)
+            .selectAll()
+            .where(
+                (TicketStaffTable.claimedBy eq userId) and
+                        (TicketTable.closedAt.isNull())
+            )
+            .filterNotNull()
+            .map { it.toTicket() }
+            .toList()
+    }
 
     private suspend fun ResultRow.toTicket(): Ticket {
         val id = this[TicketTable.ticketId]
