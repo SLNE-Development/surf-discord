@@ -13,13 +13,15 @@ import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataRepository
 import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffRepository
 import dev.slne.surf.discord.util.Colors
-import kotlinx.coroutines.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import net.dv8tion.jda.api.components.container.Container
 import net.dv8tion.jda.api.components.separator.Separator
 import net.dv8tion.jda.api.components.textdisplay.TextDisplay
 import net.dv8tion.jda.api.components.thumbnail.Thumbnail
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.interactions.InteractionHook
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
@@ -44,49 +46,26 @@ class TicketService(
             return null
         }
 
-        val threadChannel = ticketChannel
-            ?.createThreadChannel("${type.id}-${hook.interaction.user.name}", true)
-            ?.setInvitable(false)
-            ?.await() ?: run {
+        val threadChannel = runCatching {
+            ticketChannel
+                ?.createThreadChannel("${type.id}-${hook.interaction.user.name}", true)
+                ?.setInvitable(false)
+                ?.await()
+        }.getOrNull() ?: run {
             hook.editOriginal(translatable("error")).queue()
             return null
         }
 
         if (type != TicketType.APPLICATION) {
-            CoroutineScope(Dispatchers.IO).launch {
-                type.viewPermission
-                    .getRolesWithPermission(threadChannel.guild.idLong)
-                    .map { role ->
-                        async {
-                            val message = threadChannel
-                                .sendMessage("Granting access for $role...")
-                                .submit(true)
-                                .get()
-
-                            message
-                                .editMessage("<@&$role>")
-                                .submit(true)
-                                .get()
-
-                            message.delete().queue()
-                        }
-                    }
-                    .awaitAll()
-            }
+            val roles = type.viewPermission.getRolesWithPermission(threadChannel.guild.idLong)
+            addRoles(threadChannel, roles)
         } else {
             val applicationType = TicketApplicationType.valueOf(
                 data["application_type"] ?: error("Missing application type")
             )
 
-            applicationType.viewPermission.getRolesWithPermission(threadChannel.guild.idLong)
-                .forEach { role ->
-                    threadChannel.sendMessage("Granting access for $role...").submit(true)
-                        .thenAccept { message ->
-                            message.editMessage("<@&$role>").submit(true).thenAccept {
-                                message.delete().queue()
-                            }
-                        }
-                }
+            val viewingRoles = applicationType.viewPermission.getRolesWithPermission(threadChannel.guild.idLong)
+            addRoles(threadChannel, viewingRoles)
         }
 
         threadChannel.addThreadMember(user).queue()
@@ -117,6 +96,22 @@ class TicketService(
         ticketLogger.logCreation(ticket)
 
         return ticket
+    }
+
+    private suspend fun addRoles(threadChannel: ThreadChannel, roles: Collection<Long>) = supervisorScope {
+        for (roleId in roles) {
+            launch {
+                val message = threadChannel
+                    .sendMessage("Granting access for $roleId...")
+                    .await()
+
+                message
+                    .editMessage("<@&$roleId>")
+                    .await()
+
+                message.delete().await()
+            }
+        }
     }
 
     suspend fun claim(ticket: Ticket, user: User) {
@@ -184,9 +179,7 @@ class TicketService(
 
         thread.sendMessageComponents(
             Container.of(
-                TextDisplay.of(
-                    translatable("## Ticket Geschlossen")
-                ),
+                TextDisplay.of("## Ticket Geschlossen"),
                 TextDisplay.of("Das Ticket wurde von ${closer.asMention} geschlossen. \n \n**Grund**: $reason"),
                 Separator.createDivider(Separator.Spacing.LARGE),
                 TextDisplay.of("**Ticket Typ**: \n${ticket.ticketType.displayName}"),
