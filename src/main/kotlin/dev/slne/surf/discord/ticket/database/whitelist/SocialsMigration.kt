@@ -83,7 +83,7 @@ object SocialsMigration {
     }
 
     private suspend fun syncWhitelistEntry(
-        connectionId: Long,
+        connectionId: ULong,
         blocked: Boolean,
         createdAt: OffsetDateTime,
         updatedAt: OffsetDateTime

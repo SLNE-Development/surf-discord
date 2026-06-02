@@ -1,6 +1,8 @@
 package dev.slne.surf.discord.config
 
 import dev.slne.surf.discord.logger
+import dev.slne.surf.discord.ticket.database.deadline.DeadlineNotifyTable
+import dev.slne.surf.discord.ticket.database.deadline.ReplyDeadlineTable
 import dev.slne.surf.discord.ticket.database.members.TicketMemberTable
 import dev.slne.surf.discord.ticket.database.messages.TicketMessagesTable
 import dev.slne.surf.discord.ticket.database.messages.attachments.TicketAttachmentsTable
@@ -46,7 +48,9 @@ class DatabaseConfiguration {
                     TicketMessagesTable,
                     TicketAttachmentsTable,
                     SocialConnectionsTable,
-                    FreebuildWhitelistTable
+                    FreebuildWhitelistTable,
+                    ReplyDeadlineTable,
+                    DeadlineNotifyTable
                 )
             }
             logger.info("Connected to database ${botConfig.database.database} at ${botConfig.database.hostname}:${botConfig.database.port}")

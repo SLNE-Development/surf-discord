@@ -11,7 +11,6 @@ object SocialConnectionsTable : AuditableLongIdTable("social_connections_new") {
 }
 
 object FreebuildWhitelistTable : AuditableLongIdTable("freebuild_whitelists") {
-    val socialConnectionId =
-        long("social_connection_id").references(SocialConnectionsTable.id).uniqueIndex()
+    val socialConnectionId = reference("social_connection_id", SocialConnectionsTable).uniqueIndex()
     val blocked = bool("blocked").default(false)
 }
