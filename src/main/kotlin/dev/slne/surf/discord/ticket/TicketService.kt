@@ -1,7 +1,9 @@
 package dev.slne.surf.discord.ticket
 
+import dev.minn.jda.ktx.coroutines.await
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.jda
+import dev.slne.surf.discord.logger
 import dev.slne.surf.discord.logging.TicketLogger
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
@@ -11,8 +13,15 @@ import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataRepository
 import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffRepository
 import dev.slne.surf.discord.util.Colors
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
+import net.dv8tion.jda.api.components.container.Container
+import net.dv8tion.jda.api.components.separator.Separator
+import net.dv8tion.jda.api.components.textdisplay.TextDisplay
+import net.dv8tion.jda.api.components.thumbnail.Thumbnail
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.interactions.InteractionHook
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
@@ -27,6 +36,8 @@ class TicketService(
     private val ticketChannel: TextChannel?,
     private val ticketLogger: TicketLogger
 ) {
+    private val closeThumbnail = Thumbnail.fromUrl("https://cdn3.emoji.gg/emojis/4569-ok.png")
+
     suspend fun createTicket(hook: InteractionHook, type: TicketType, data: TicketData): Ticket? {
         val userId = hook.interaction.user.idLong
         val user = hook.interaction.user
@@ -35,37 +46,26 @@ class TicketService(
             return null
         }
 
-        val threadChannel = ticketChannel
-            ?.createThreadChannel("${type.id}-${hook.interaction.user.name}", true)
-            ?.setInvitable(false)
-            ?.complete(true) ?: run {
+        val threadChannel = runCatching {
+            ticketChannel
+                ?.createThreadChannel("${type.id}-${hook.interaction.user.name}", true)
+                ?.setInvitable(false)
+                ?.await()
+        }.getOrNull() ?: run {
             hook.editOriginal(translatable("error")).queue()
             return null
         }
 
         if (type != TicketType.APPLICATION) {
-            type.viewPermission.getRolesWithPermission(threadChannel.guild.idLong).forEach { role ->
-                threadChannel.sendMessage("Granting access for $role...").submit(true)
-                    .thenAccept { message ->
-                        message.editMessage("<@&$role>").submit(true).thenAccept {
-                            message.delete().queue()
-                        }
-                    }
-            }
+            val roles = type.viewPermission.getRolesWithPermission(threadChannel.guild.idLong)
+            addRoles(threadChannel, roles)
         } else {
             val applicationType = TicketApplicationType.valueOf(
                 data["application_type"] ?: error("Missing application type")
             )
 
-            applicationType.viewPermission.getRolesWithPermission(threadChannel.guild.idLong)
-                .forEach { role ->
-                    threadChannel.sendMessage("Granting access for $role...").submit(true)
-                        .thenAccept { message ->
-                            message.editMessage("<@&$role>").submit(true).thenAccept {
-                                message.delete().queue()
-                            }
-                        }
-                }
+            val viewingRoles = applicationType.viewPermission.getRolesWithPermission(threadChannel.guild.idLong)
+            addRoles(threadChannel, viewingRoles)
         }
 
         threadChannel.addThreadMember(user).queue()
@@ -96,6 +96,22 @@ class TicketService(
         ticketLogger.logCreation(ticket)
 
         return ticket
+    }
+
+    private suspend fun addRoles(threadChannel: ThreadChannel, roles: Collection<Long>) = supervisorScope {
+        for (roleId in roles) {
+            launch {
+                val message = threadChannel
+                    .sendMessage("Granting access for $roleId...")
+                    .await()
+
+                message
+                    .editMessage("<@&$roleId>")
+                    .await()
+
+                message.delete().await()
+            }
+        }
     }
 
     suspend fun claim(ticket: Ticket, user: User) {
@@ -161,45 +177,23 @@ class TicketService(
             }
         }
 
-        thread.sendMessageEmbeds(
-            embed {
-                title = "Ticket Geschlossen"
-                description =
-                    "Das Ticket wurde von ${closer.asMention} geschlossen. \n \nGrund: $reason"
-                color = Colors.ERROR
-
-                field {
-                    name = "Ticket Typ"
-                    value = ticket.ticketType.displayName
-                    inline = true
-                }
-
-                field {
-                    name = "Ticket Id"
-                    value = ticket.ticketId.toString()
-                    inline = true
-                }
-
-                field {
-                    name = "Ticket Author"
-                    value = "<@${ticket.authorId}>"
-                    inline = true
-
-                }
-
-                field {
-                    name = "Ticket Erstellungsdatum"
-                    value = "<t:${ticket.createdAt.toInstant().toEpochMilli() / 1000}:F>"
-                    inline = true
-                }
-
-                field {
-                    name = "Ticket Schließungsdatum"
-                    value = "<t:${System.currentTimeMillis() / 1000}:F>"
-                    inline = true
-                }
-            }
-        ).queue()
+        thread.sendMessageComponents(
+            Container.of(
+                TextDisplay.of("## Ticket Geschlossen"),
+                TextDisplay.of("Das Ticket wurde von ${closer.asMention} geschlossen. \n \n**Grund**: $reason"),
+                Separator.createDivider(Separator.Spacing.LARGE),
+                TextDisplay.of("**Ticket Typ**: \n${ticket.ticketType.displayName}"),
+                TextDisplay.of("**Ticket Id**: \n${ticket.ticketId}"),
+                TextDisplay.of("**Ticket Author**: \n<@${ticket.authorId}>"),
+                TextDisplay.of(
+                    "**Ticket Erstellungsdatum**: \n<t:${
+                        ticket.createdAt.toEpochSecond()
+                    }:F>"
+                ),
+                TextDisplay.of("**Ticket Schließungsdatum**: \n<t:${System.currentTimeMillis() / 1000}:F>"),
+            ),
+            Separator.createDivider(Separator.Spacing.LARGE),
+        ).useComponentsV2().setAllowedMentions(listOf()).queue()
 
         ticket.closedAt = ZonedDateTime.now()
         ticket.closedById = closer.idLong
@@ -209,6 +203,8 @@ class TicketService(
 
         ticketLogger.logClosure(ticket)
         markAsClosed(ticket)
+
+        logger.info("Ticket ${ticket.ticketId} closed by ${closer.name} (type=${ticket.ticketType}, creator=${ticket.authorName})")
 
         jda.openPrivateChannelById(ticket.authorId).submit(true).thenAccept {
             it.sendMessageEmbeds(embed {
@@ -257,8 +253,8 @@ class TicketService(
             }
         }
 
-        thread.manager.setLocked(true).queue()
-        thread.manager.setArchived(true).queue()
+        thread.manager.setLocked(true).await()
+        thread.manager.setArchived(true).await()
     }
 
     suspend fun markAsClosed(ticket: Ticket) =

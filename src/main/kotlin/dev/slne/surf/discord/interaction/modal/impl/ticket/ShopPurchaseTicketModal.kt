@@ -1,16 +1,19 @@
 package dev.slne.surf.discord.interaction.modal.impl.ticket
 
-import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.dsl.modal
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.interaction.modal.DiscordModal
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.ticket.TicketService
 import dev.slne.surf.discord.ticket.TicketType
-import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.replyError
 import net.dv8tion.jda.api.components.actionrow.ActionRow
+import net.dv8tion.jda.api.components.container.Container
+import net.dv8tion.jda.api.components.section.Section
+import net.dv8tion.jda.api.components.separator.Separator
+import net.dv8tion.jda.api.components.textdisplay.TextDisplay
 import net.dv8tion.jda.api.components.textinput.TextInputStyle
+import net.dv8tion.jda.api.components.thumbnail.Thumbnail
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import org.springframework.stereotype.Component
 
@@ -27,7 +30,8 @@ class ShopPurchaseTicketModal(
             label = translatable("ticket.shop.purchase.modal.field.minecraft_name.label")
             style = TextInputStyle.SHORT
             lengthRange = 3..16
-            placeholder = translatable("ticket.shop.purchase.modal.field.minecraft_name.placeholder")
+            placeholder =
+                translatable("ticket.shop.purchase.modal.field.minecraft_name.placeholder")
             required = true
         }
 
@@ -44,7 +48,7 @@ class ShopPurchaseTicketModal(
             id = "issue"
             label = translatable("ticket.shop.purchase.modal.field.issue.label")
             style = TextInputStyle.PARAGRAPH
-            lengthRange = 10..4000
+            lengthRange = 10..3500
             placeholder = translatable("ticket.shop.purchase.modal.field.issue.placeholder")
             required = true
         }
@@ -87,41 +91,35 @@ class ShopPurchaseTicketModal(
         interaction.hook.editOriginal(translatable("ticket.created", thread.asMention))
             .queue()
 
-        thread.sendMessage(user.asMention).queue()
-        thread.sendMessageEmbeds(
-            embed {
-                title = translatable("ticket.shop.purchase.embed.title")
-                description = translatable("ticket.shop.purchase.embed.description")
-                color = Colors.SUCCESS
-
-                field {
-                    name = translatable("ticket.shop.purchase.embed.field.minecraft_name")
-                    value = minecraftName
-                    inline = true
-                }
-
-                orderId?.let {
-                    field {
-                        name = translatable("ticket.shop.purchase.embed.field.order_id")
-                        value = it
-                        inline = true
-                    }
-                }
-
-                issue.chunked(1024).forEach { chunk ->
-                    field {
-                        name = translatable("ticket.shop.purchase.embed.field.issue")
-                        value = chunk
-                        inline = false
-                    }
-                }
-            }
-        ).addComponents(
-            ActionRow.of(
-                buttonRegistry.get("ticket:claim").button,
-                buttonRegistry.get("ticket:close").button
+        thread.sendMessageComponents(
+            Container.of(
+                Section.of(
+                    Thumbnail.fromUrl("https://castcrafter.de/favicon.png"),
+                    TextDisplay.of(
+                        translatable(
+                            "ticket.shop.purchase.embed.title",
+                            user.asMention
+                        )
+                    ),
+                    TextDisplay.of(translatable("ticket.shop.purchase.embed.description"))
+                ),
+                Separator.createDivider(Separator.Spacing.LARGE),
+                TextDisplay.of(translatable("ticket.shop.purchase.embed.field.minecraft_name")),
+                TextDisplay.of(minecraftName),
+                Separator.createDivider(Separator.Spacing.LARGE),
+                TextDisplay.of(translatable("ticket.shop.purchase.embed.field.order_id")),
+                TextDisplay.of(orderId ?: "/"),
+                Separator.createDivider(Separator.Spacing.LARGE),
+                TextDisplay.of(translatable("ticket.shop.purchase.embed.field.issue")),
+                TextDisplay.of(issue),
+                Separator.createDivider(Separator.Spacing.LARGE),
+                ActionRow.of(
+                    buttonRegistry.get("ticket:claim").button,
+                    buttonRegistry.get("ticket:close").button,
+                ),
+                TextDisplay.of("-# ${ticket.ticketId}"),
             )
-        ).submit(true).thenAccept {
+        ).useComponentsV2().submit().thenAccept {
             thread.pinMessageById(it.idLong).queue()
         }
     }

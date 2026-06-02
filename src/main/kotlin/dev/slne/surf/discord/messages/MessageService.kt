@@ -5,10 +5,16 @@ import dev.slne.surf.discord.logger
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import jakarta.annotation.PostConstruct
+import org.jetbrains.annotations.Nls
+import org.jetbrains.annotations.NonNls
+import org.jetbrains.annotations.PropertyKey
 import org.springframework.stereotype.Service
 import java.io.InputStreamReader
 import java.text.MessageFormat
 import java.util.*
+
+@NonNls
+private const val BUNDLE = "messages"
 
 @Service
 class MessageService {
@@ -34,12 +40,17 @@ class MessageService {
     }
 
 
-    fun translatable(key: String, vararg args: Any?): String {
+    fun translatable(
+        key: @PropertyKey(resourceBundle = BUNDLE) String,
+        vararg args: Any?
+    ): @Nls String {
         val template = messages[key] ?: return key
-        
+
         return MessageFormat.format(template, *args)
     }
 }
 
-fun translatable(key: String, vararg args: String): String =
-    getBean<MessageService>().translatable(key, *args)
+fun translatable(
+    key: @PropertyKey(resourceBundle = BUNDLE) String,
+    vararg args: String
+): @Nls String = getBean<MessageService>().translatable(key, *args)
