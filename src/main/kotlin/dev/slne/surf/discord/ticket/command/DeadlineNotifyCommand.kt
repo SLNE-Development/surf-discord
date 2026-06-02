@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component
 
 @DiscordCommand(
     name = "deadline-notify",
-    description = "Lege fest, ob du benachrichtigt wirst per  DM, wenn eine Reply-Deadline abläuft."
+    description = "Lege fest, ob du benachrichtigt wirst per DM, wenn eine Reply-Deadline abläuft."
 )
 @Component
 class DeadlineNotifyCommand(

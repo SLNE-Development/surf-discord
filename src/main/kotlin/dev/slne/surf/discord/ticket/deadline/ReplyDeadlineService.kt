@@ -46,6 +46,8 @@ class ReplyDeadlineService(
         val expired = replyDeadlineRepository.findExpired(ZonedDateTime.now())
 
         for (deadline in expired) {
+            if (replyDeadlineRepository.delete(deadline.id) == 0) continue
+
             try {
                 if (deadlineNotifyRepository.isEnabled(deadline.setById)) {
                     notify(deadline)
@@ -57,8 +59,6 @@ class ReplyDeadlineService(
                     deadline.setById,
                     exception
                 )
-            } finally {
-                replyDeadlineRepository.delete(deadline.id)
             }
         }
     }
