@@ -39,6 +39,11 @@ object LuckpermsApi {
     }
 
     suspend fun findAllPremiumUuids(): Set<UUID> {
+        if (botConfig.luckpermsApi.token.isBlank()) {
+            logger.warn("LuckPerms API token is not set, skipping premium UUID fetch")
+            return emptySet()
+        }
+
         val response = client.get("/user/search") {
             parameter("group", "premium")
         }

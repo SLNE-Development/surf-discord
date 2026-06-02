@@ -13,7 +13,12 @@ import dev.slne.surf.discord.ticket.TicketType
 import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.replyError
 import net.dv8tion.jda.api.components.actionrow.ActionRow
+import net.dv8tion.jda.api.components.container.Container
+import net.dv8tion.jda.api.components.section.Section
+import net.dv8tion.jda.api.components.separator.Separator
+import net.dv8tion.jda.api.components.textdisplay.TextDisplay
 import net.dv8tion.jda.api.components.textinput.TextInputStyle
+import net.dv8tion.jda.api.components.thumbnail.Thumbnail
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import org.springframework.stereotype.Component
 
@@ -29,7 +34,7 @@ class EventSupportTicketModal(
             id = "issue"
             label = translatable("ticket.support.event.modal.field.issue.label")
             style = TextInputStyle.PARAGRAPH
-            lengthRange = 10..4000
+            lengthRange = 10..3500
             placeholder =
                 translatable("ticket.support.event.modal.field.issue.placeholder")
             required = true
@@ -77,29 +82,30 @@ class EventSupportTicketModal(
         interaction.hook.editOriginal(translatable("ticket.created", thread.asMention))
             .queue()
 
-        thread.sendMessage(user.asMention).queue()
-        thread.sendMessageEmbeds(
-            embed {
-                title = translatable("ticket.support.event.embed.title")
-                description = translatable("ticket.support.event.embed.description")
-                color = Colors.SUCCESS
-
-                issue.chunked(1024).forEach { chunk ->
-                    field {
-                        name = translatable("ticket.support.event.embed.field.issue.name")
-                        value = chunk
-                        inline = true
-                    }
-                }
-
-            }
-        ).addComponents(
-            ActionRow.of(
-                buttonRegistry.get("ticket:claim").button,
-                buttonRegistry.get("ticket:close").button,
-                buttonRegistry.get("whitelist:button:information").button
+        thread.sendMessageComponents(
+            Container.of(
+                Section.of(
+                    Thumbnail.fromUrl("https://castcrafter.de/favicon.png"),
+                    TextDisplay.of(
+                        translatable(
+                            "ticket.support.event.embed.title",
+                            user.asMention
+                        )
+                    ),
+                    TextDisplay.of(translatable("ticket.support.event.embed.description"))
+                ),
+                Separator.createDivider(Separator.Spacing.LARGE),
+                TextDisplay.of(translatable("ticket.support.event.embed.field.issue.name")),
+                TextDisplay.of(issue),
+                Separator.createDivider(Separator.Spacing.LARGE),
+                ActionRow.of(
+                    buttonRegistry.get("ticket:claim").button,
+                    buttonRegistry.get("ticket:close").button,
+                    buttonRegistry.get("whitelist:button:information").button
+                ),
+                TextDisplay.of("-# ${ticket.ticketId}"),
             )
-        ).submit(true).thenAccept {
+        ).useComponentsV2().submit().thenAccept {
             thread.pinMessageById(it.idLong).queue()
         }
     }
