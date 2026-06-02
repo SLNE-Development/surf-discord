@@ -25,12 +25,10 @@ class TicketArchivingListener(
             }
 
             if (ticket.isClosed()) {
-                logger.info("Ticket ${ticket.ticketId} is closed, allowing archiving of thread channel ${channel.name}.")
                 return@launch
             }
-            event.channel.asThreadChannel().manager.setArchived(false).queue()
 
-            logger.info("Prevented archiving of ticket thread channel ${channel.name} because the ticket is not closed.")
+            event.channel.asThreadChannel().manager.setArchived(false).queue()
         }
     }
 }
