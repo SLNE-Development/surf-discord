@@ -11,7 +11,7 @@ import dev.slne.surf.discord.ticket.deadline.ReplyDeadlineService
 import dev.slne.surf.discord.util.asTicketOrNull
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
-import java.time.ZonedDateTime
+import java.time.OffsetDateTime
 
 @DiscordCommand(
     "reply-deadline", "Sende eine Reply-Deadline in ein Ticket.", options = [
@@ -63,7 +63,7 @@ class TicketReplyDeadlineCommand(
         }
 
 
-        val deadline = ZonedDateTime.now().plusHours(rawDeadline)
+        val deadline = OffsetDateTime.now().plusHours(rawDeadline)
         val deadlineUnix = deadline.toEpochSecond()
         val untilString = "<t:${deadlineUnix}:F>"
         val relativeString = "<t:${deadlineUnix}:R>"

@@ -1,7 +1,7 @@
 package dev.slne.surf.discord.ticket.database.column
 
-import org.jetbrains.exposed.v1.core.ColumnType
-import org.jetbrains.exposed.v1.core.IDateColumnType
+import org.jetbrains.exposed.v1.core.*
+import org.jetbrains.exposed.v1.core.Function
 import org.jetbrains.exposed.v1.core.statements.api.RowApi
 import org.jetbrains.exposed.v1.core.vendors.*
 import java.sql.Timestamp
@@ -158,6 +158,21 @@ abstract class UtcInstantDateTimeColumnType<T : Any> :
 
             else ->
                 super.nonNullValueAsDefaultString(value)
+        }
+    }
+}
+
+open class CurrentTimestampBase<T>(
+    columnType: IColumnType<T & Any>,
+    private val includeUpdate: Boolean = false
+) : Function<T>(columnType) {
+    override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
+        +when {
+            (currentDialect as? MysqlDialect)?.isFractionDateTimeSupported() == true -> "CURRENT_TIMESTAMP(6) ${
+                if (includeUpdate) "ON UPDATE CURRENT_TIMESTAMP(6)" else ""
+            }"
+
+            else -> "CURRENT_TIMESTAMP ${if (includeUpdate) "ON UPDATE CURRENT_TIMESTAMP" else ""}"
         }
     }
 }

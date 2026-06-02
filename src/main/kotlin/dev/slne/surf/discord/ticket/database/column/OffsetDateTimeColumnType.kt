@@ -22,3 +22,6 @@ class OffsetDateTimeColumnType :
 
 fun Table.offsetDateTime(name: String): Column<OffsetDateTime> =
     registerColumn(name, OffsetDateTimeColumnType())
+
+class CurrentOffsetDateTime(includeUpdate: Boolean = false) :
+    CurrentTimestampBase<OffsetDateTime>(OffsetDateTimeColumnType.INSTANCE, includeUpdate)

@@ -11,18 +11,18 @@ import org.jetbrains.exposed.v1.r2dbc.insert
 import org.jetbrains.exposed.v1.r2dbc.selectAll
 import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import org.springframework.stereotype.Repository
-import java.time.ZonedDateTime
+import java.time.OffsetDateTime
 import java.util.*
 
 data class ReplyDeadline(
-    val id: Long,
+    val id: ULong,
     val ticketId: UUID,
     val threadId: Long,
     val targetUserId: Long,
     val targetUserName: String,
     val setById: Long,
     val setByName: String,
-    val deadline: ZonedDateTime,
+    val deadline: OffsetDateTime,
 )
 
 @Repository
@@ -35,7 +35,7 @@ class ReplyDeadlineRepository {
         targetUserName: String,
         setById: Long,
         setByName: String,
-        deadline: ZonedDateTime,
+        deadline: OffsetDateTime,
     ) = suspendTransaction {
         ReplyDeadlineTable.insert {
             it[ReplyDeadlineTable.ticketId] = ticketId
@@ -45,8 +45,6 @@ class ReplyDeadlineRepository {
             it[ReplyDeadlineTable.setById] = setById
             it[ReplyDeadlineTable.setByName] = setByName
             it[ReplyDeadlineTable.deadline] = deadline
-            it[createdAt] = ZonedDateTime.now()
-            it[updatedAt] = ZonedDateTime.now()
         }
     }
 
@@ -57,15 +55,16 @@ class ReplyDeadlineRepository {
         }
     }
 
-    suspend fun findExpired(now: ZonedDateTime): List<ReplyDeadline> = suspendTransaction {
+    suspend fun findExpired(now: OffsetDateTime): List<ReplyDeadline> = suspendTransaction {
         ReplyDeadlineTable.selectAll()
             .where(ReplyDeadlineTable.deadline lessEq now)
             .map { it.toReplyDeadline() }
             .toList()
     }
 
-    suspend fun delete(id: Long) = suspendTransaction {
-        ReplyDeadlineTable.deleteWhere { ReplyDeadlineTable.id eq id }
+    suspend fun delete(deadlineId: ULong): Boolean = suspendTransaction {
+        val deletedCount = ReplyDeadlineTable.deleteWhere { ReplyDeadlineTable.id eq deadlineId }
+        deletedCount > 0
     }
 
     private fun ResultRow.toReplyDeadline() = ReplyDeadline(

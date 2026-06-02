@@ -9,11 +9,16 @@ import dev.slne.surf.discord.ticket.database.deadline.DeadlineNotifyRepository
 import dev.slne.surf.discord.ticket.database.deadline.ReplyDeadline
 import dev.slne.surf.discord.ticket.database.deadline.ReplyDeadlineRepository
 import dev.slne.surf.discord.util.Colors
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.User
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import java.time.ZonedDateTime
+import java.time.OffsetDateTime
 import java.util.concurrent.TimeUnit
 
 @Service
@@ -23,7 +28,7 @@ class ReplyDeadlineService(
     private val deadlineNotifyRepository: DeadlineNotifyRepository,
 ) {
 
-    suspend fun createDeadline(ticket: Ticket, target: User, setBy: User, deadline: ZonedDateTime) {
+    suspend fun createDeadline(ticket: Ticket, target: User, setBy: User, deadline: OffsetDateTime) {
         val threadId = ticket.threadId ?: return
 
         replyDeadlineRepository.create(
@@ -41,29 +46,45 @@ class ReplyDeadlineService(
         replyDeadlineRepository.deleteForUserInThread(threadId, userId)
     }
 
-    @Scheduled(fixedRate = 10, timeUnit = TimeUnit.SECONDS)
+    @Scheduled(fixedRate = 1, timeUnit = TimeUnit.MINUTES)
     protected suspend fun checkExpiredDeadlines() {
-        val expired = replyDeadlineRepository.findExpired(ZonedDateTime.now())
+        val expired = replyDeadlineRepository.findExpired(OffsetDateTime.now())
+        if (expired.isEmpty()) return
 
-        for (deadline in expired) {
-            if (replyDeadlineRepository.delete(deadline.id) == 0) continue
+        val semaphore = Semaphore(64)
 
-            try {
-                if (deadlineNotifyRepository.isEnabled(deadline.setById)) {
-                    notify(deadline)
+        supervisorScope {
+            for (deadline in expired) {
+                launch {
+                    semaphore.withPermit {
+                        handleExpiredDeadline(deadline)
+                    }
                 }
-            } catch (exception: Exception) {
-                logger.warn(
-                    "Failed to send reply-deadline notification for deadline {} to user {}",
-                    deadline.id,
-                    deadline.setById,
-                    exception
-                )
             }
         }
     }
 
-    private suspend fun notify(deadline: ReplyDeadline) {
+    private suspend fun handleExpiredDeadline(deadline: ReplyDeadline) {
+        val deleted = replyDeadlineRepository.delete(deadline.id)
+        if (!deleted) return
+
+        try {
+            if (deadlineNotifyRepository.isEnabled(deadline.setById)) {
+                notifyDeadlineCreator(deadline)
+            }
+        } catch (exception: Exception) {
+            if (exception is CancellationException) throw exception
+
+            logger.warn(
+                "Failed to send reply-deadline notification for deadline {} to user {}",
+                deadline.id,
+                deadline.setById,
+                exception
+            )
+        }
+    }
+
+    private suspend fun notifyDeadlineCreator(deadline: ReplyDeadline) {
         val privateChannel = jda.openPrivateChannelById(deadline.setById).await()
 
         privateChannel.sendMessageEmbeds(embed {
