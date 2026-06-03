@@ -89,7 +89,7 @@ class ComplaintTicketModal(
                 ),
                 Separator.createDivider(Separator.Spacing.LARGE),
                 TextDisplay.of(translatable("ticket.complaint.embed.field.target")),
-                TextDisplay.of(target),
+                TextDisplay.of(target.ifBlank { "/" }),
                 Separator.createDivider(Separator.Spacing.LARGE),
                 TextDisplay.of(translatable("ticket.complaint.embed.field.issue")),
                 TextDisplay.of(issue),

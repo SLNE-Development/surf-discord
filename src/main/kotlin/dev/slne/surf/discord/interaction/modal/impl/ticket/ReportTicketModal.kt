@@ -89,7 +89,7 @@ class ReportTicketModal(
                 ),
                 Separator.createDivider(Separator.Spacing.LARGE),
                 TextDisplay.of(translatable("ticket.report.embed.field.target")),
-                TextDisplay.of(target),
+                TextDisplay.of(target.ifBlank { "/" }),
                 Separator.createDivider(Separator.Spacing.LARGE),
                 TextDisplay.of(translatable("ticket.report.embed.field.issue")),
                 TextDisplay.of(issue),
