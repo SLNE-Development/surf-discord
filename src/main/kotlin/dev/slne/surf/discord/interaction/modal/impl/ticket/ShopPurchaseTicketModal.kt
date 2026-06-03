@@ -108,7 +108,7 @@ class ShopPurchaseTicketModal(
                 TextDisplay.of(minecraftName),
                 Separator.createDivider(Separator.Spacing.LARGE),
                 TextDisplay.of(translatable("ticket.shop.purchase.embed.field.order_id")),
-                TextDisplay.of(orderId?.ifBlank { "/" } ?: "/"),
+                TextDisplay.of(orderId ?: "/"),
                 Separator.createDivider(Separator.Spacing.LARGE),
                 TextDisplay.of(translatable("ticket.shop.purchase.embed.field.issue")),
                 TextDisplay.of(issue),
