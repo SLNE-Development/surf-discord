@@ -81,9 +81,14 @@ class PremiumService(private val jda: JDA, private val socialRepository: SocialR
                             val discordId = entry.longValue
 
                             try {
-                                guild.addRoleToMember(UserSnowflake.fromId(discordId), role)
-                                    .reason("Premium active")
-                                    .await()
+                                guild.retrieveMemberById(discordId).queue {
+                                    launch {
+                                        guild.addRoleToMember(it, role)
+                                            .reason("Premium active")
+                                            .await()
+                                    }
+                                }
+
                             } catch (e: Exception) {
                                 logger.warn(
                                     "Failed to add premium role to user {} / uuid {} in guild {}",
