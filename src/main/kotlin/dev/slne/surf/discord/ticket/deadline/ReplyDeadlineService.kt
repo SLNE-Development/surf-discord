@@ -8,6 +8,7 @@ import dev.slne.surf.discord.ticket.Ticket
 import dev.slne.surf.discord.ticket.database.deadline.DeadlineNotifyRepository
 import dev.slne.surf.discord.ticket.database.deadline.ReplyDeadline
 import dev.slne.surf.discord.ticket.database.deadline.ReplyDeadlineRepository
+import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
 import dev.slne.surf.discord.util.Colors
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -26,6 +27,7 @@ class ReplyDeadlineService(
     private val jda: JDA,
     private val replyDeadlineRepository: ReplyDeadlineRepository,
     private val deadlineNotifyRepository: DeadlineNotifyRepository,
+    private val ticketRepository: TicketRepository,
 ) {
 
     suspend fun createDeadline(ticket: Ticket, target: User, setBy: User, deadline: OffsetDateTime) {
@@ -67,6 +69,9 @@ class ReplyDeadlineService(
     private suspend fun handleExpiredDeadline(deadline: ReplyDeadline) {
         val deleted = replyDeadlineRepository.delete(deadline.id)
         if (!deleted) return
+
+        val ticket = ticketRepository.getTicketById(deadline.ticketId)
+        if (ticket == null || ticket.isClosed()) return
 
         try {
             if (deadlineNotifyRepository.isEnabled(deadline.setById)) {
