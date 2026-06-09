@@ -17,6 +17,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.OffsetDateTime
@@ -90,16 +91,32 @@ class ReplyDeadlineService(
     }
 
     private suspend fun notifyDeadlineCreator(deadline: ReplyDeadline) {
-        val privateChannel = jda.openPrivateChannelById(deadline.setById).await()
+        try {
+            val privateChannel = jda.openPrivateChannelById(deadline.setById).await()
+            privateChannel.sendMessageEmbeds(embed {
+                title = translatable("ticket.reply-deadline.notify.title")
+                description = translatable(
+                    "ticket.reply-deadline.notify.description",
+                    "<@${deadline.targetUserId}>",
+                    "<#${deadline.threadId}>"
+                )
+                color = Colors.WARNING
+            }).await()
+        } catch (e: ErrorResponseException) {
+            when (e.errorCode) {
+                50007, 50278 -> {
+                    logger.info(
+                        "Cannot DM reply-deadline notification to user {} for deadline {}. " +
+                                "The user likely disabled server DMs, blocked the bot, or Discord rejected the DM. code={}",
+                        deadline.setById,
+                        deadline.id,
+                        e.errorCode
+                    )
+                    return
+                }
 
-        privateChannel.sendMessageEmbeds(embed {
-            title = translatable("ticket.reply-deadline.notify.title")
-            description = translatable(
-                "ticket.reply-deadline.notify.description",
-                "<@${deadline.targetUserId}>",
-                "<#${deadline.threadId}>"
-            )
-            color = Colors.WARNING
-        }).await()
+                else -> throw e
+            }
+        }
     }
 }
