@@ -127,7 +127,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.COMMAND_TICKET_ADD,
             DiscordPermission.COMMAND_TICKET_REMOVE,
             DiscordPermission.WHITELIST_VIEW,
-            DiscordPermission.TICKET_BUG_VIEW
+            DiscordPermission.TICKET_BUG_VIEW,
+            DiscordPermission.COMMAND_FAQ
         ),
 
         // Moderator
