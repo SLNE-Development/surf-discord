@@ -121,6 +121,15 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.WHITELIST_CREATE
         ),
 
+        // Development Azubi (Jr. Developer)
+
+        1515760926853300404 to setOf(
+            DiscordPermission.COMMAND_TICKET_ADD,
+            DiscordPermission.COMMAND_TICKET_REMOVE,
+            DiscordPermission.WHITELIST_VIEW,
+            DiscordPermission.TICKET_BUG_VIEW
+        ),
+
         // Moderator
         1242929223593758811L to setOf(
             DiscordPermission.COMMAND_TICKET_ADD,
