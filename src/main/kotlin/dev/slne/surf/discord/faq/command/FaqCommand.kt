@@ -49,6 +49,12 @@ import kotlin.time.toJavaDuration
             "Der Benutzer, für den die Frage angezeigt wird",
             CommandOptionType.USER,
             false
+        ),
+        CommandOption(
+            "info",
+            "Zeigt das FAQ nur dir selbst an",
+            CommandOptionType.BOOLEAN,
+            false
         )
     ]
 )
@@ -61,6 +67,7 @@ class FaqCommand : SlashCommand {
         val interaction = event.interaction
         val question = interaction.getOption("question")?.asString ?: return
         val user = interaction.getOption("user")?.asUser
+        val info = interaction.getOption("info")?.asBoolean ?: false
         val faq = Faq.entries.find { it.id == question }
 
         if (!event.member.hasPermission(DiscordPermission.COMMAND_FAQ)) {
@@ -72,6 +79,26 @@ class FaqCommand : SlashCommand {
         if (faq == null) {
             event.reply(translatable("faq.not-found", question))
                 .setEphemeral(true).queue()
+
+            return
+        }
+
+        if (info) {
+            val file = faq.attachmentPath?.let(::File)
+
+            event.replyEmbeds(embed {
+                title = faq.question
+                description = faq.answer
+                color = Colors.INFO
+
+                if (file != null) {
+                    image = "attachment://${file.name}"
+                }
+            }).setEphemeral(true).apply {
+                if (file != null) {
+                    addFiles(FileUpload.fromData(file))
+                }
+            }.queue()
 
             return
         }
