@@ -41,7 +41,8 @@ import kotlin.time.toJavaDuration
                 CommandChoice("how-to-join", "how-to-join"),
                 CommandChoice("ask", "ask"),
                 CommandChoice("missing-information", "missing-information"),
-                CommandChoice("how-to-whitelist", "how-to-whitelist")
+                CommandChoice("how-to-whitelist", "how-to-whitelist"),
+                CommandChoice("ping-pong", "ping-pong")
             ]
         ),
         CommandOption(
