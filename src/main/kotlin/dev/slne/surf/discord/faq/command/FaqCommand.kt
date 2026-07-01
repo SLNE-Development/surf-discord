@@ -2,12 +2,17 @@ package dev.slne.surf.discord.faq.command
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import dev.slne.surf.discord.command.*
-import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.faq.Faq
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.util.Colors
+import net.dv8tion.jda.api.components.container.Container
+import net.dv8tion.jda.api.components.container.ContainerChildComponent
+import net.dv8tion.jda.api.components.mediagallery.MediaGallery
+import net.dv8tion.jda.api.components.mediagallery.MediaGalleryItem
+import net.dv8tion.jda.api.components.separator.Separator
+import net.dv8tion.jda.api.components.textdisplay.TextDisplay
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.utils.FileUpload
 import org.springframework.stereotype.Component
@@ -64,6 +69,25 @@ class FaqCommand : SlashCommand {
         .expireAfterWrite(30.seconds.toJavaDuration())
         .build<Long, Pair<Faq, Long>>()
 
+    private fun faqComponent(faq: Faq, userMention: String? = null): Container {
+        val components = mutableListOf<ContainerChildComponent>()
+
+        if (userMention != null) {
+            components += TextDisplay.of(userMention)
+            components += Separator.createDivider(Separator.Spacing.SMALL)
+        }
+
+        components += TextDisplay.of("## ${faq.question}")
+        components += TextDisplay.of(faq.answer)
+
+        faq.attachmentPath?.let(::File)?.let { file ->
+            components += Separator.createDivider(Separator.Spacing.LARGE)
+            components += MediaGallery.of(MediaGalleryItem.fromFile(FileUpload.fromData(file)))
+        }
+
+        return Container.of(components).withAccentColor(Colors.INFO)
+    }
+
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         val interaction = event.interaction
         val question = interaction.getOption("question")?.asString ?: return
@@ -85,21 +109,10 @@ class FaqCommand : SlashCommand {
         }
 
         if (info) {
-            val file = faq.attachmentPath?.let(::File)
-
-            event.replyEmbeds(embed {
-                title = faq.question
-                description = faq.answer
-                color = Colors.INFO
-
-                if (file != null) {
-                    image = "attachment://${file.name}"
-                }
-            }).setEphemeral(true).apply {
-                if (file != null) {
-                    addFiles(FileUpload.fromData(file))
-                }
-            }.queue()
+            event.replyComponents(faqComponent(faq))
+                .useComponentsV2()
+                .setEphemeral(true)
+                .queue()
 
             return
         }
@@ -113,38 +126,17 @@ class FaqCommand : SlashCommand {
 
         faqCache.put(System.currentTimeMillis(), faq to event.messageChannel.idLong)
 
-        val file = faq.attachmentPath?.let(::File)
-
         if (user != null) {
-            event.reply(user.asMention).setEmbeds(embed {
-                title = faq.question
-                description = faq.answer
-                color = Colors.INFO
-
-                if (file != null) {
-                    image = "attachment://${file.name}"
-                }
-            }).apply {
-                if (file != null) {
-                    addFiles(FileUpload.fromData(file))
-                }
-            }.queue()
+            event.replyComponents(faqComponent(faq, user.asMention))
+                .useComponentsV2()
+                .mention(user)
+                .queue()
 
             return
         }
 
-        event.replyEmbeds(embed {
-            title = faq.question
-            description = faq.answer
-            color = Colors.INFO
-
-            if (file != null) {
-                image = "attachment://${file.name}"
-            }
-        }).apply {
-            if (file != null) {
-                addFiles(FileUpload.fromData(file))
-            }
-        }.queue()
+        event.replyComponents(faqComponent(faq))
+            .useComponentsV2()
+            .queue()
     }
 }
