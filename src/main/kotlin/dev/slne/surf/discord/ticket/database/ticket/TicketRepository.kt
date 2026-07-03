@@ -39,6 +39,14 @@ class TicketRepository(
         }
     }
 
+    suspend fun getOpenTickets() = suspendTransaction {
+        TicketTable.selectAll()
+            .where(TicketTable.closedAt.isNull())
+            .filterNotNull()
+            .map { it.toTicket() }
+            .toList()
+    }
+
     suspend fun getInternalId(ticketId: UUID) = suspendTransaction {
         TicketTable.selectAll().where(TicketTable.ticketId eq ticketId)
             .map { it[TicketTable.id].value }
