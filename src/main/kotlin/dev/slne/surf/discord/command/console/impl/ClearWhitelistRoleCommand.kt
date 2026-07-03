@@ -7,10 +7,9 @@ import dev.slne.surf.discord.jda
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.entities.Member
-import org.springframework.stereotype.Component
 import java.util.concurrent.atomic.AtomicInteger
 
-@Component
+//@Component
 class ClearWhitelistRoleCommand(
     private val discordScope: CoroutineScope
 ) : ConsoleCommand {

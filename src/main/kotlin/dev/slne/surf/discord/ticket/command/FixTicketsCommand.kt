@@ -7,6 +7,8 @@ import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
 
@@ -24,21 +26,24 @@ class FixTicketsCommand(
             return
         }
 
+        val rest = event.deferReply(true).await()
+
         val openTickets = ticketRepository.getOpenTickets()
         var fixedAmount = 0
 
-        openTickets.forEach { ticket ->
-            val channel = ticket.getThreadChannel() ?: return@forEach
-            if (!channel.isArchived) return@forEach
+        coroutineScope {
+            openTickets.forEach { ticket ->
+                async {
+                    val channel = ticket.retrieveThreadChannel() ?: return@async
 
-            val rest = channel.sendMessage(".").await()
-            rest.delete().await()
+                    val rest = channel.sendMessage(".").await()
+                    rest.delete().await()
 
-            fixedAmount++
+                    fixedAmount++
+                }
+            }
         }
 
-        event.reply(translatable("ticket.fix.done", fixedAmount.toString()))
-            .setEphemeral(true)
-            .queue()
+        rest.editOriginal(translatable("ticket.fix.done", fixedAmount.toString())).await()
     }
 }
