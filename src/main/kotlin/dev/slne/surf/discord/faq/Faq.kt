@@ -98,5 +98,10 @@ enum class Faq(
         translatable("faq.command.questions.how-to-whitelist.question"),
         translatable("faq.command.questions.how-to-whitelist.answer"),
         "gifs/wl-gif.gif"
-    )
+    ),
+    PING_PONG(
+        "ping-pong",
+        translatable("faq.command.questions.ping-pong.question"),
+        translatable("faq.command.questions.ping-pong.answer")
+    ),
 }
