@@ -32,6 +32,8 @@ data class Ticket(
     fun getThreadChannel() = threadId?.let { jda.getThreadChannelById(it) }
 
     suspend fun retrieveThreadChannel(): ThreadChannel? = withContext(Dispatchers.IO) {
+        val tid = threadId ?: return@withContext null
+
         val cached = getThreadChannel()
         if (cached != null) return@withContext cached
 
@@ -42,8 +44,7 @@ data class Ticket(
             .limit(100)
             .await()
 
-        return@withContext threads.firstOrNull { it.idLong == threadId }
-    }
+        return@withContext threads.firstOrNull { it.idLong == tid }
 
     fun isClosed() = closedAt != null
 }
