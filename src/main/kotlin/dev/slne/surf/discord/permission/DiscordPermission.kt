@@ -21,6 +21,7 @@ enum class DiscordPermission {
     TICKET_CLOSE,
     TICKET_CLOSE_BYPASS_CLAIM,
     TICKET_CLAIM,
+    TICKET_FIX,
 
     TICKET_REPLY_DEADLINE,
 
