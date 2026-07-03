@@ -1,6 +1,11 @@
 package dev.slne.surf.discord.ticket
 
+import dev.minn.jda.ktx.coroutines.await
+import dev.slne.surf.discord.config.botConfig
 import dev.slne.surf.discord.jda
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -25,5 +30,20 @@ data class Ticket(
     var internalTicketId: ULong? = null
 
     fun getThreadChannel() = threadId?.let { jda.getThreadChannelById(it) }
+
+    suspend fun retrieveThreadChannel(): ThreadChannel? = withContext(Dispatchers.IO) {
+        val cached = getThreadChannel()
+        if (cached != null) return@withContext cached
+
+        val ticketChannel = jda.getTextChannelById(botConfig.channels.ticketChannel)
+            ?: return@withContext null
+
+        val threads = ticketChannel.retrieveArchivedPrivateThreadChannels()
+            .limit(100)
+            .await()
+
+        return@withContext threads.firstOrNull { it.idLong == threadId }
+    }
+
     fun isClosed() = closedAt != null
 }

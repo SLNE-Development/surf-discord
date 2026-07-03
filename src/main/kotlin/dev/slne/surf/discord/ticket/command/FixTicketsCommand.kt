@@ -28,7 +28,7 @@ class FixTicketsCommand(
         var fixedAmount = 0
 
         openTickets.forEach { ticket ->
-            val channel = ticket.getThreadChannel() ?: return@forEach
+            val channel = ticket.retrieveThreadChannel() ?: return@forEach
             if (!channel.isArchived) return@forEach
 
             val rest = channel.sendMessage(".").await()
