@@ -11,7 +11,6 @@ import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.entities.UserSnowflake
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -51,9 +50,14 @@ class PremiumService(private val jda: JDA, private val socialRepository: SocialR
                             val discordId = currentPremiumRoleUsersByUuid.getLong(uuid)
 
                             try {
-                                guild.removeRoleFromMember(UserSnowflake.fromId(discordId), role)
-                                    .reason("Premium expired")
-                                    .await()
+                                val member = runCatching {
+                                    guild.retrieveMemberById(discordId).await()
+                                }.getOrNull()
+
+                                if (member != null) {
+                                    guild.removeRoleFromMember(member, role)
+                                        .reason("Premium expired").await()
+                                }
                             } catch (e: Exception) {
                                 logger.warn(
                                     "Failed to remove premium role from user {} / uuid {} in guild {}",
@@ -81,9 +85,15 @@ class PremiumService(private val jda: JDA, private val socialRepository: SocialR
                             val discordId = entry.longValue
 
                             try {
-                                guild.addRoleToMember(UserSnowflake.fromId(discordId), role)
-                                    .reason("Premium active")
-                                    .await()
+                                val member = runCatching {
+                                    guild.retrieveMemberById(discordId).await()
+                                }.getOrNull()
+
+                                if (member != null) {
+                                    guild.addRoleToMember(member, role)
+                                        .reason("Premium active")
+                                        .await()
+                                }
                             } catch (e: Exception) {
                                 logger.warn(
                                     "Failed to add premium role to user {} / uuid {} in guild {}",

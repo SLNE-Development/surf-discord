@@ -2,12 +2,17 @@ package dev.slne.surf.discord.faq.command
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import dev.slne.surf.discord.command.*
-import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.faq.Faq
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.util.Colors
+import net.dv8tion.jda.api.components.container.Container
+import net.dv8tion.jda.api.components.container.ContainerChildComponent
+import net.dv8tion.jda.api.components.mediagallery.MediaGallery
+import net.dv8tion.jda.api.components.mediagallery.MediaGalleryItem
+import net.dv8tion.jda.api.components.separator.Separator
+import net.dv8tion.jda.api.components.textdisplay.TextDisplay
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.utils.FileUpload
 import org.springframework.stereotype.Component
@@ -41,13 +46,20 @@ import kotlin.time.toJavaDuration
                 CommandChoice("how-to-join", "how-to-join"),
                 CommandChoice("ask", "ask"),
                 CommandChoice("missing-information", "missing-information"),
-                CommandChoice("how-to-whitelist", "how-to-whitelist")
+                CommandChoice("how-to-whitelist", "how-to-whitelist"),
+                CommandChoice("ping-pong", "ping-pong")
             ]
         ),
         CommandOption(
             "user",
             "Der Benutzer, für den die Frage angezeigt wird",
             CommandOptionType.USER,
+            false
+        ),
+        CommandOption(
+            "info",
+            "Zeigt das FAQ nur dir selbst an",
+            CommandOptionType.BOOLEAN,
             false
         )
     ]
@@ -57,10 +69,30 @@ class FaqCommand : SlashCommand {
         .expireAfterWrite(30.seconds.toJavaDuration())
         .build<Long, Pair<Faq, Long>>()
 
+    private fun faqComponent(faq: Faq, userMention: String? = null): Container {
+        val components = mutableListOf<ContainerChildComponent>()
+
+        if (userMention != null) {
+            components += TextDisplay.of(userMention)
+            components += Separator.createDivider(Separator.Spacing.SMALL)
+        }
+
+        components += TextDisplay.of("## ${faq.question}")
+        components += TextDisplay.of(faq.answer)
+
+        faq.attachmentPath?.let(::File)?.let { file ->
+            components += Separator.createDivider(Separator.Spacing.LARGE)
+            components += MediaGallery.of(MediaGalleryItem.fromFile(FileUpload.fromData(file)))
+        }
+
+        return Container.of(components).withAccentColor(Colors.INFO)
+    }
+
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         val interaction = event.interaction
         val question = interaction.getOption("question")?.asString ?: return
         val user = interaction.getOption("user")?.asUser
+        val info = interaction.getOption("info")?.asBoolean ?: false
         val faq = Faq.entries.find { it.id == question }
 
         if (!event.member.hasPermission(DiscordPermission.COMMAND_FAQ)) {
@@ -76,6 +108,15 @@ class FaqCommand : SlashCommand {
             return
         }
 
+        if (info) {
+            event.replyComponents(faqComponent(faq))
+                .useComponentsV2()
+                .setEphemeral(true)
+                .queue()
+
+            return
+        }
+
         if (faqCache.asMap()
                 .any { it.value.first == faq && it.value.second == event.messageChannel.idLong }
         ) {
@@ -85,38 +126,17 @@ class FaqCommand : SlashCommand {
 
         faqCache.put(System.currentTimeMillis(), faq to event.messageChannel.idLong)
 
-        val file = faq.attachmentPath?.let(::File)
-
         if (user != null) {
-            event.reply(user.asMention).setEmbeds(embed {
-                title = faq.question
-                description = faq.answer
-                color = Colors.INFO
-
-                if (file != null) {
-                    image = "attachment://${file.name}"
-                }
-            }).apply {
-                if (file != null) {
-                    addFiles(FileUpload.fromData(file))
-                }
-            }.queue()
+            event.replyComponents(faqComponent(faq, user.asMention))
+                .useComponentsV2()
+                .mention(user)
+                .queue()
 
             return
         }
 
-        event.replyEmbeds(embed {
-            title = faq.question
-            description = faq.answer
-            color = Colors.INFO
-
-            if (file != null) {
-                image = "attachment://${file.name}"
-            }
-        }).apply {
-            if (file != null) {
-                addFiles(FileUpload.fromData(file))
-            }
-        }.queue()
+        event.replyComponents(faqComponent(faq))
+            .useComponentsV2()
+            .queue()
     }
 }
