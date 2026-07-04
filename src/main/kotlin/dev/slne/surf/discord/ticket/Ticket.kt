@@ -45,6 +45,7 @@ data class Ticket(
             .await()
 
         return@withContext threads.firstOrNull { it.idLong == tid }
+    }
 
-    fun isClosed() = closedAt != null
+    fun isClosed(): Boolean = closedAt != null
 }
