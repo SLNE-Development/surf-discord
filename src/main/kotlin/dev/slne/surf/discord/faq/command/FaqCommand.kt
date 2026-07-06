@@ -72,13 +72,12 @@ class FaqCommand : SlashCommand {
     private fun faqComponent(faq: Faq, userMention: String? = null): Container {
         val components = mutableListOf<ContainerChildComponent>()
 
-        if (userMention != null) {
-            components += TextDisplay.of(userMention)
-            components += Separator.createDivider(Separator.Spacing.SMALL)
-        }
-
         components += TextDisplay.of("## ${faq.question}")
         components += TextDisplay.of(faq.answer)
+
+        if (userMention != null) {
+            components += TextDisplay.of("-# $userMention")
+        }
 
         faq.attachmentPath?.let(::File)?.let { file ->
             components += Separator.createDivider(Separator.Spacing.LARGE)
