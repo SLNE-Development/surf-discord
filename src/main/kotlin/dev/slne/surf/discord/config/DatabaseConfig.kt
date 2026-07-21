@@ -1,5 +1,8 @@
 package dev.slne.surf.discord.config
 
+import dev.slne.surf.database.DatabaseApi
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.SchemaUtils
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import dev.slne.surf.discord.logger
 import dev.slne.surf.discord.ticket.database.deadline.DeadlineNotifyTable
 import dev.slne.surf.discord.ticket.database.deadline.ReplyDeadlineTable
@@ -9,17 +12,14 @@ import dev.slne.surf.discord.ticket.database.messages.attachments.TicketAttachme
 import dev.slne.surf.discord.ticket.database.ticket.TicketTable
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataTable
 import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffTable
-import dev.slne.surf.discord.ticket.database.util.DiscordSchema
 import dev.slne.surf.discord.ticket.database.whitelist.FreebuildWhitelistTable
 import dev.slne.surf.discord.ticket.database.whitelist.SocialConnectionsTable
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
-import org.jetbrains.exposed.v1.r2dbc.SchemaUtils
-import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Service
+import kotlin.io.path.Path
 
 @ApiStatus.Internal
 @Serializable
@@ -34,14 +34,9 @@ data class DatabaseConfig(
 @Service
 class DatabaseConfiguration {
     @Bean
-    fun setupDatabase(): R2dbcDatabase = R2dbcDatabase.connect(
-        url = "r2dbc:postgresql://${botConfig.database.hostname}:${botConfig.database.port}/${botConfig.database.database}",
-        user = botConfig.database.username,
-        password = botConfig.database.password,
-    ).also {
+    fun setupDatabase() = DatabaseApi.create(Path("."), "database.yml").also {
         runBlocking {
             suspendTransaction {
-                SchemaUtils.createSchema(DiscordSchema)
                 SchemaUtils.create(
                     TicketTable,
                     TicketMemberTable,
