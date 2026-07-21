@@ -1,8 +1,8 @@
 package dev.slne.surf.discord.ticket.database.deadline
 
-import dev.slne.surf.discord.ticket.database.column.nativeUuid
-import dev.slne.surf.discord.ticket.database.column.offsetDateTime
-import dev.slne.surf.discord.ticket.database.util.AuditableLongIdTable
+import dev.slne.surf.database.columns.nativeUuid
+import dev.slne.surf.database.columns.time.offsetDateTime
+import dev.slne.surf.database.table.AuditableLongIdTable
 
 object ReplyDeadlineTable : AuditableLongIdTable("ticket_reply_deadlines") {
     val ticketId = nativeUuid("ticket_id")

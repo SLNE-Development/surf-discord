@@ -13,6 +13,7 @@ version = findProperty("version") as String
 
 repositories {
     mavenCentral()
+    maven("https://reposilite.slne.dev/releases")
 }
 
 extra["kotlin-coroutines.version"] = "1.11.0"
@@ -26,10 +27,6 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:3.5.0")
     implementation("io.ktor:ktor-client-content-negotiation:3.5.0")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.5.0")
-    implementation("org.jetbrains.exposed:exposed-r2dbc:1.3.0")
-    implementation("org.jetbrains.exposed:exposed-core:1.3.0")
-    implementation("org.jetbrains.exposed:exposed-json:1.3.0")
-    implementation("org.jetbrains.exposed:exposed-java-time:1.3.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
@@ -42,7 +39,7 @@ dependencies {
     implementation("club.minnced:jda-ktx:0.14.2")
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.4")
 
-    runtimeOnly("org.mariadb:r2dbc-mariadb:1.4.0")
+    implementation("dev.slne.surf:surf-database-r2dbc:2.3.1")
 }
 
 kotlin { jvmToolchain(25) }

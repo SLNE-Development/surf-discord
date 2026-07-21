@@ -1,8 +1,8 @@
 package dev.slne.surf.discord.ticket.database.ticket
 
+import dev.slne.surf.database.columns.time.zonedDateTime
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.dao.id.ULongIdTable
 import dev.slne.surf.discord.ticket.TicketType
-import dev.slne.surf.discord.ticket.database.column.zonedDateTime
-import org.jetbrains.exposed.v1.core.dao.id.ULongIdTable
 import java.util.*
 
 object TicketTable : ULongIdTable("ticket_tickets") {

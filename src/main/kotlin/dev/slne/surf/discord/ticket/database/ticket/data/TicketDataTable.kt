@@ -1,7 +1,7 @@
 package dev.slne.surf.discord.ticket.database.ticket.data
 
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.dao.id.LongIdTable
 import dev.slne.surf.discord.ticket.database.ticket.TicketTable
-import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
 
 object TicketDataTable : LongIdTable("ticket_data") {
     val ticketId = ulong("ticket_id").references(TicketTable.id)
