@@ -1,7 +1,6 @@
 package dev.slne.surf.discord.command.console.impl
 
 import dev.slne.surf.discord.command.console.ConsoleCommand
-import dev.slne.surf.discord.ticket.database.whitelist.SocialsMigration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.springframework.stereotype.Component

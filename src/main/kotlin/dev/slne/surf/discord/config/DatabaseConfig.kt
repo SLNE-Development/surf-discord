@@ -9,6 +9,7 @@ import dev.slne.surf.discord.ticket.database.messages.attachments.TicketAttachme
 import dev.slne.surf.discord.ticket.database.ticket.TicketTable
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataTable
 import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffTable
+import dev.slne.surf.discord.ticket.database.util.DiscordSchema
 import dev.slne.surf.discord.ticket.database.whitelist.FreebuildWhitelistTable
 import dev.slne.surf.discord.ticket.database.whitelist.SocialConnectionsTable
 import kotlinx.coroutines.runBlocking
@@ -34,12 +35,13 @@ data class DatabaseConfig(
 class DatabaseConfiguration {
     @Bean
     fun setupDatabase(): R2dbcDatabase = R2dbcDatabase.connect(
-        url = "r2dbc:mariadb://${botConfig.database.hostname}:${botConfig.database.port}/${botConfig.database.database}",
+        url = "r2dbc:postgresql://${botConfig.database.hostname}:${botConfig.database.port}/${botConfig.database.database}",
         user = botConfig.database.username,
         password = botConfig.database.password,
     ).also {
         runBlocking {
             suspendTransaction {
+                SchemaUtils.createSchema(DiscordSchema)
                 SchemaUtils.create(
                     TicketTable,
                     TicketMemberTable,
@@ -53,7 +55,7 @@ class DatabaseConfiguration {
                     DeadlineNotifyTable
                 )
             }
-            logger.info("Connected to database ${botConfig.database.database} at ${botConfig.database.hostname}:${botConfig.database.port}")
+            logger.info("Connected to database (PostgreSQL) ${botConfig.database.database} at ${botConfig.database.hostname}:${botConfig.database.port}")
         }
     }
 }

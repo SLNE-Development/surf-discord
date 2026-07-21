@@ -1,9 +1,10 @@
 package dev.slne.surf.discord.ticket.database.ticket.data
 
 import dev.slne.surf.discord.ticket.database.ticket.TicketTable
+import dev.slne.surf.discord.ticket.database.util.schemedName
 import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
 
-object TicketDataTable : LongIdTable("ticket_data") {
+object TicketDataTable : LongIdTable(schemedName("ticket_data")) {
     val ticketId = ulong("ticket_id").references(TicketTable.id)
     val dataKey = varchar("data_key", 100)
     val dataValue = largeText("data_value")

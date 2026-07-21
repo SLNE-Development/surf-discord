@@ -42,7 +42,7 @@ dependencies {
     implementation("club.minnced:jda-ktx:0.14.2")
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.4")
 
-    runtimeOnly("org.mariadb:r2dbc-mariadb:1.4.0")
+    runtimeOnly("org.postgresql:r2dbc-postgresql")
 }
 
 kotlin { jvmToolchain(25) }

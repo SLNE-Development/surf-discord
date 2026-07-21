@@ -1,10 +1,11 @@
 package dev.slne.surf.discord.ticket.database.members
 
 import dev.slne.surf.discord.ticket.database.column.zonedDateTime
+import dev.slne.surf.discord.ticket.database.util.schemedName
 import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
 import java.util.*
 
-object TicketMemberTable : LongIdTable("ticket_members") {
+object TicketMemberTable : LongIdTable(schemedName("ticket_members")) {
     val ticketId = varchar("ticket_id", 50).transform({ UUID.fromString(it) }, { it.toString() })
     val memberId = varchar("member_id", 255).transform({ it.toLong() }, { it.toString() })
     val memberName = varchar("member_name", 255)
