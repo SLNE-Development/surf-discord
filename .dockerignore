@@ -1,0 +1,14 @@
+.git
+.github
+.gradle
+.idea
+.kotlin
+build
+data
+messages
+*.iml
+*.log
+.env
+.env.*
+!.env.example
+config.yml
