@@ -1,8 +1,21 @@
 bot-token: 'YOUR_BOT_TOKEN'
 
+channels:
+  ticket-channel: 123456789012345678
+  ticket-log-channel: 123456789012345678
+
 database:
   hostname: 'localhost'
   port: 3306
   username: 'root'
   password: 'password'
   database: 'discord_bot'
+
+whitelisted-role-id: 123456789012345678
+
+luckperms-api:
+  url: 'http://localhost:8080'
+  token: ''
+
+roles:
+  premium-role-id: ''
