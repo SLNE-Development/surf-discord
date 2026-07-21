@@ -31,6 +31,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive")
+    implementation(kotlin("reflect"))
     implementation("it.unimi.dsi:fastutil:8.5.18")
     implementation("net.kyori:adventure-api:5.1.1")
     implementation("net.kyori:adventure-text-logger-slf4j:5.1.1")
