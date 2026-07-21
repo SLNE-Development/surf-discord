@@ -48,16 +48,15 @@ class TicketMemberRepository {
         removedById: Long,
         removedByName: String,
         removedByAvatarUrl: String?
-    ) =
-        suspendTransaction {
-            TicketMemberTable.update({ (TicketMemberTable.ticketId eq ticket.ticketId) and (TicketMemberTable.memberId eq removedById) and (TicketMemberTable.removedAt.isNull()) }) {
-                it[removedAt] = ZonedDateTime.now()
-                it[this.removedById] = removedById
-                it[this.removedByName] = removedByName
-                it[this.removedByAvatarUrl] = removedByAvatarUrl
-                it[updatedAt] = ZonedDateTime.now()
-            }
+    ) = suspendTransaction {
+        TicketMemberTable.update({ (TicketMemberTable.ticketId eq ticket.ticketId) and (TicketMemberTable.memberId eq removedById) and (TicketMemberTable.removedAt.isNull()) }) {
+            it[removedAt] = ZonedDateTime.now()
+            it[this.removedById] = removedById
+            it[this.removedByName] = removedByName
+            it[this.removedByAvatarUrl] = removedByAvatarUrl
+            it[updatedAt] = ZonedDateTime.now()
         }
+    }
 
     suspend fun getMembers(ticket: Ticket): List<Long> = suspendTransaction {
         TicketMemberTable.selectAll()
@@ -65,10 +64,9 @@ class TicketMemberRepository {
             .map { it[TicketMemberTable.memberId] }.toList()
     }
 
-    suspend fun isMember(ticket: Ticket, userId: Long): Boolean =
-        suspendTransaction {
-            TicketMemberTable.selectAll()
-                .where((TicketMemberTable.ticketId eq ticket.ticketId) and (TicketMemberTable.memberId eq userId) and (TicketMemberTable.removedAt.isNull()))
-                .count() > 0
-        }
+    suspend fun isMember(ticket: Ticket, userId: Long): Boolean = suspendTransaction {
+        TicketMemberTable.selectAll()
+            .where((TicketMemberTable.ticketId eq ticket.ticketId) and (TicketMemberTable.memberId eq userId) and (TicketMemberTable.removedAt.isNull()))
+            .count() > 0
+    }
 }
