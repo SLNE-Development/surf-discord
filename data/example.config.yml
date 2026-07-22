@@ -10,7 +10,6 @@ database:
   username: 'postgres'
   password: 'password'
   database: 'discord_bot'
-  schema: 'public'
 
 whitelisted-role-id: 123456789012345678
 

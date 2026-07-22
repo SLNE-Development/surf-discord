@@ -35,11 +35,10 @@ internal fun loadBotConfig(environment: Map<String, String> = System.getenv()): 
         ),
         database = DatabaseConfig(
             hostname = environment.require("DATABASE_HOST"),
-            port = environment.optionalInt("DATABASE_PORT") ?: 5432,
+            port = environment.optionalInt("DATABASE_PORT") ?: 3306,
             database = environment.require("DATABASE_NAME"),
             username = environment.require("DATABASE_USERNAME"),
-            password = environment.require("DATABASE_PASSWORD"),
-            schema = environment.optional("DATABASE_SCHEMA") ?: "public"
+            password = environment.require("DATABASE_PASSWORD")
         ),
         whitelistedRoleId = environment.optionalLong("WHITELISTED_ROLE_ID") ?: 0L,
         luckpermsApi = LuckpermsApiConfig(
