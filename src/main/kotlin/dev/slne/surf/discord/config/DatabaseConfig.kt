@@ -15,9 +15,7 @@ import dev.slne.surf.discord.ticket.database.whitelist.SocialConnectionsTable
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.exposed.v1.core.StdOutSqlLogger
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
-import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabaseConfig
 import org.jetbrains.exposed.v1.r2dbc.SchemaUtils
 import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import org.springframework.context.annotation.Bean
@@ -39,10 +37,7 @@ class DatabaseConfiguration {
     fun setupDatabase(): R2dbcDatabase = R2dbcDatabase.connect(
         url = "r2dbc:postgresql://${botConfig.database.hostname}:${botConfig.database.port}/${botConfig.database.database}",
         user = botConfig.database.username,
-        password = botConfig.database.password,
-        databaseConfig = R2dbcDatabaseConfig {
-            sqlLogger = StdOutSqlLogger
-        }
+        password = botConfig.database.password
     ).also {
         runBlocking {
             suspendTransaction {
