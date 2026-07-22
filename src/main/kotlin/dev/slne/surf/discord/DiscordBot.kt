@@ -39,7 +39,6 @@ class DiscordBot {
     private val gatewayIntents = listOf(
         // Guild
         GatewayIntent.GUILD_MEMBERS,
-        GatewayIntent.GUILD_PRESENCES,
         GatewayIntent.SCHEDULED_EVENTS,
 
         // Guild Messages
