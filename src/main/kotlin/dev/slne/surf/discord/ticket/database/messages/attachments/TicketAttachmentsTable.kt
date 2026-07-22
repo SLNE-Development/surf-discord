@@ -5,7 +5,7 @@ import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.dao.id.LongIdTa
 
 object TicketAttachmentsTable : LongIdTable("ticket_message_attachments") {
     val attachmentId =
-        varchar("attachment_id", 20).uniqueIndex().transform({ it.toLong() }, { it.toString() })
+        char("attachment_id", 20).uniqueIndex().transform({ it.toLong() }, { it.toString() })
 
     val fileName = largeText("filename")
     val url = largeText("url")

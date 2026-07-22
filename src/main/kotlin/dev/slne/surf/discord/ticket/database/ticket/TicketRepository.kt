@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Repository
-import java.time.ZonedDateTime
 import java.util.*
 
 @Repository
@@ -34,8 +33,6 @@ class TicketRepository(
             ticket.threadId?.let { id -> it[threadId] = id }
             it[ticketType] = ticket.ticketType
             it[openedAt] = ticket.createdAt
-            it[createdAt] = ZonedDateTime.now()
-            it[updatedAt] = ZonedDateTime.now()
         }
     }
 
@@ -67,6 +64,7 @@ class TicketRepository(
 
     suspend fun getTicketByThreadId(threadId: Long): Ticket? =
         suspendTransaction {
+            println("Fetching ticket by threadId: $threadId")
             TicketTable.selectAll().where(TicketTable.threadId eq threadId).filterNotNull()
                 .map { it.toTicket() }.firstOrNull()
         }
@@ -80,7 +78,6 @@ class TicketRepository(
             it[TicketTable.closedByName] = ticket.closedByName
             it[TicketTable.closedByAvatarUrl] = ticket.closedByAvatar
             it[TicketTable.closedReason] = ticket.closedReason
-            it[updatedAt] = ZonedDateTime.now()
         }
     }
 

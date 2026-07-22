@@ -37,7 +37,7 @@ class DatabaseConfiguration {
             .build()
 
         val connectionFactory = PostgresqlConnectionFactory(connectionConfig)
-        
+
         databaseApi = DatabaseApi.create(connectionFactory, PostgreSQLDialect()).also {
             runBlocking {
                 suspendTransaction {
@@ -54,7 +54,7 @@ class DatabaseConfiguration {
                         DeadlineNotifyTable
                     )
                 }
-                logger.info("Connected to database (PostgreSQL)")
+                logger.info("Connected to database ${EnvConfig.DB_NAME} on ${EnvConfig.DB_HOST}:${EnvConfig.DB_PORT} as ${EnvConfig.DB_USERNAME}")
             }
         }
 
