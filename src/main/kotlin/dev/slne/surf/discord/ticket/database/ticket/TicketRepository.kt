@@ -43,8 +43,8 @@ class TicketRepository(
         TicketTable.selectAll()
             .where(TicketTable.closedAt.isNull())
             .filterNotNull()
-            .map { it.toTicket() }
             .toList()
+            .map { it.toTicket() }
     }
 
     suspend fun getInternalId(ticketId: UUID) = suspendTransaction {
@@ -65,11 +65,11 @@ class TicketRepository(
         }
 
 
-    suspend fun getTicketByThreadId(threadId: Long): Ticket? =
-        suspendTransaction {
-            TicketTable.selectAll().where(TicketTable.threadId eq threadId).filterNotNull()
-                .map { it.toTicket() }.firstOrNull()
-        }
+    suspend fun getTicketByThreadId(threadId: Long): Ticket? = suspendTransaction {
+        TicketTable.selectAll().where(TicketTable.threadId eq threadId)
+            .firstOrNull()
+            ?.toTicket()
+    }
 
     suspend fun markAsClosed(
         ticket: Ticket
@@ -86,14 +86,14 @@ class TicketRepository(
 
     suspend fun getTicketById(ticketId: UUID): Ticket? = suspendTransaction {
         TicketTable.selectAll().where(TicketTable.ticketId eq ticketId)
-            .filterNotNull().map { it.toTicket() }.firstOrNull()
+            .firstOrNull()?.toTicket()
     }
 
     suspend fun getTicket(authorId: Long, type: TicketType) =
         suspendTransaction {
             TicketTable.selectAll()
                 .where((TicketTable.authorId eq authorId) and (TicketTable.ticketType eq type))
-                .filterNotNull().map { it.toTicket() }.firstOrNull()
+                .firstOrNull()?.toTicket()
         }
 
     suspend fun getOpenTicketsClaimedBy(userId: Long): List<Ticket> = suspendTransaction {
@@ -104,8 +104,8 @@ class TicketRepository(
                         (TicketTable.closedAt.isNull())
             )
             .filterNotNull()
-            .map { it.toTicket() }
             .toList()
+            .map { it.toTicket() }
     }
 
     private suspend fun ResultRow.toTicket(): Ticket {

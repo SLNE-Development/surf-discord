@@ -64,7 +64,8 @@ class TicketService(
                 data["application_type"] ?: error("Missing application type")
             )
 
-            val viewingRoles = applicationType.viewPermission.getRolesWithPermission(threadChannel.guild.idLong)
+            val viewingRoles =
+                applicationType.viewPermission.getRolesWithPermission(threadChannel.guild.idLong)
             addRoles(threadChannel, viewingRoles)
         }
 
@@ -98,21 +99,22 @@ class TicketService(
         return ticket
     }
 
-    private suspend fun addRoles(threadChannel: ThreadChannel, roles: Collection<Long>) = supervisorScope {
-        for (roleId in roles) {
-            launch {
-                val message = threadChannel
-                    .sendMessage("Granting access for $roleId...")
-                    .await()
+    private suspend fun addRoles(threadChannel: ThreadChannel, roles: Collection<Long>) =
+        supervisorScope {
+            for (roleId in roles) {
+                launch {
+                    val message = threadChannel
+                        .sendMessage("Granting access for $roleId...")
+                        .await()
 
-                message
-                    .editMessage("<@&$roleId>")
-                    .await()
+                    message
+                        .editMessage("<@&$roleId>")
+                        .await()
 
-                message.delete().await()
+                    message.delete().await()
+                }
             }
         }
-    }
 
     suspend fun claim(ticket: Ticket, user: User) {
         ticketStaffRepository.claim(ticket, user)

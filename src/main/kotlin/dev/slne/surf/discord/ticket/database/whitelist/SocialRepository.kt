@@ -122,47 +122,34 @@ class SocialRepository {
     }
 
     suspend fun getWhitelist(discordId: Long) = suspendTransaction {
-        val connectionRow = SocialConnectionsTable.selectAll()
+        val row = (SocialConnectionsTable innerJoin FreebuildWhitelistTable)
+            .selectAll()
             .where(SocialConnectionsTable.discordUserId eq discordId)
-            .map { it }
             .firstOrNull() ?: return@suspendTransaction null
 
-        val connectionId = connectionRow[SocialConnectionsTable.id].value
-
-        val blocked = FreebuildWhitelistTable.selectAll()
-            .where(FreebuildWhitelistTable.socialConnectionId eq connectionId)
-            .map { it[FreebuildWhitelistTable.blocked] }
-            .firstOrNull() ?: false
-
         SocialEntry(
-            discordId = connectionRow[SocialConnectionsTable.discordUserId]!!,
-            minecraftUuid = connectionRow[SocialConnectionsTable.minecraftUuid],
-            blocked = blocked,
-            createdAt = connectionRow[SocialConnectionsTable.createdAt],
-            updatedAt = connectionRow[SocialConnectionsTable.updatedAt]
+            discordId = row[SocialConnectionsTable.discordUserId]
+                ?: return@suspendTransaction null,
+            minecraftUuid = row[SocialConnectionsTable.minecraftUuid],
+            blocked = row[FreebuildWhitelistTable.blocked],
+            createdAt = row[SocialConnectionsTable.createdAt],
+            updatedAt = row[SocialConnectionsTable.updatedAt]
         )
     }
 
     suspend fun getWhitelist(minecraftUuid: UUID) = suspendTransaction {
-        val connectionRow = SocialConnectionsTable.selectAll()
+        val row = (SocialConnectionsTable innerJoin FreebuildWhitelistTable)
+            .selectAll()
             .where(SocialConnectionsTable.minecraftUuid eq minecraftUuid)
-            .map { it }
             .firstOrNull() ?: return@suspendTransaction null
 
-        val connectionId = connectionRow[SocialConnectionsTable.id].value
-
-        val blocked = FreebuildWhitelistTable.selectAll()
-            .where(FreebuildWhitelistTable.socialConnectionId eq connectionId)
-            .map { it[FreebuildWhitelistTable.blocked] }
-            .firstOrNull() ?: false
-
         SocialEntry(
-            discordId = connectionRow[SocialConnectionsTable.discordUserId]
+            discordId = row[SocialConnectionsTable.discordUserId]
                 ?: return@suspendTransaction null,
-            minecraftUuid = connectionRow[SocialConnectionsTable.minecraftUuid],
-            blocked = blocked,
-            createdAt = connectionRow[SocialConnectionsTable.createdAt],
-            updatedAt = connectionRow[SocialConnectionsTable.updatedAt]
+            minecraftUuid = row[SocialConnectionsTable.minecraftUuid],
+            blocked = row[FreebuildWhitelistTable.blocked],
+            createdAt = row[SocialConnectionsTable.createdAt],
+            updatedAt = row[SocialConnectionsTable.updatedAt]
         )
     }
 

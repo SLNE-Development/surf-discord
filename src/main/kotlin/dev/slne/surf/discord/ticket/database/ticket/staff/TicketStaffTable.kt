@@ -9,7 +9,7 @@ object TicketStaffTable : LongIdTable(schemedName("ticket_staff")) {
     val ticketId = ulong("ticket_id").references(TicketTable.id)
     val claimedAt = zonedDateTime("claimed_at").nullable()
     val claimedBy =
-        char("claimed_by", 20).transform({ it.toLong() }, { it.toString() }).nullable()
+        varchar("claimed_by", 20).transform({ it.toLong() }, { it.toString() }).nullable()
     val claimedByName = varchar("claimed_by_name", 100).nullable()
     val claimedByAvatar = varchar("claimed_by_avatar", 200).nullable()
 }

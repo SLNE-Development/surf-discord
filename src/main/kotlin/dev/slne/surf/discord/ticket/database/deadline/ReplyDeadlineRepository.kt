@@ -1,6 +1,5 @@
 package dev.slne.surf.discord.ticket.database.deadline
 
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
@@ -58,8 +57,8 @@ class ReplyDeadlineRepository {
     suspend fun findExpired(now: OffsetDateTime): List<ReplyDeadline> = suspendTransaction {
         ReplyDeadlineTable.selectAll()
             .where(ReplyDeadlineTable.deadline lessEq now)
-            .map { it.toReplyDeadline() }
             .toList()
+            .map { it.toReplyDeadline() }
     }
 
     suspend fun delete(deadlineId: ULong): Boolean = suspendTransaction {

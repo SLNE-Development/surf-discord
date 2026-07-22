@@ -7,7 +7,7 @@ import org.jetbrains.exposed.v1.core.dao.id.ULongIdTable
 import java.util.*
 
 object TicketTable : ULongIdTable(schemedName("ticket_tickets")) {
-    val ticketId = varchar("ticket_id", 36).transform({ UUID.fromString(it) }, { it.toString() })
+    val ticketId = char("ticket_id", 36).transform({ UUID.fromString(it) }, { it.toString() })
     val authorId =
         varchar("ticket_author_id", 20).transform({ it.toLong() }, { it.toString() })
     val authorName = varchar("ticket_author_name", 64)

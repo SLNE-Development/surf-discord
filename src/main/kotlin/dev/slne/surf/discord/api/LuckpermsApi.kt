@@ -24,10 +24,18 @@ import java.util.*
 object LuckpermsApi {
     private val logger = ComponentLogger.logger()
 
+    fun isAvailable() =
+        !botConfig.luckpermsApi.url.isNullOrBlank() && !botConfig.luckpermsApi.token.isNullOrBlank()
+
     private val client = HttpClient(CIO) {
         defaultRequest {
+
+            if (!isAvailable()) {
+                return@defaultRequest
+            }
+
             url(botConfig.luckpermsApi.url)
-            bearerAuth(botConfig.luckpermsApi.token)
+            bearerAuth(botConfig.luckpermsApi.token ?: error("LuckPerms API token is not set"))
         }
 
         install(ContentNegotiation) {
@@ -39,8 +47,7 @@ object LuckpermsApi {
     }
 
     suspend fun findAllPremiumUuids(): Set<UUID> {
-        if (botConfig.luckpermsApi.token.isBlank()) {
-            logger.warn("LuckPerms API token is not set, skipping premium UUID fetch")
+        if (!isAvailable()) {
             return emptySet()
         }
 
@@ -73,7 +80,8 @@ object LuckpermsApi {
     )
 
     private object StringUuidSerializer : KSerializer<UUID> {
-        override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("UUID", PrimitiveKind.STRING)
+        override val descriptor: SerialDescriptor =
+            PrimitiveSerialDescriptor("UUID", PrimitiveKind.STRING)
 
         override fun serialize(encoder: Encoder, value: UUID) {
             encoder.encodeString(value.toString())
