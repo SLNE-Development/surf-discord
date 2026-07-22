@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE configuration>
-<configuration scan="true">
+<configuration>
   <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"/>
   <import class="ch.qos.logback.core.ConsoleAppender"/>
   <import class="ch.qos.logback.core.rolling.RollingFileAppender"/>
@@ -33,9 +33,9 @@
   </root>
 
   <logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
-    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="STDOUT"/>
   </logger>
   <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE" additivity="false">
-    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="STDOUT"/>
   </logger>
 </configuration>
