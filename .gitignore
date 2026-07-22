@@ -133,6 +133,3 @@ messages/**
 
 .kotlin/**/**
 config.yml
-.env
-.env.*
-!.env.example
