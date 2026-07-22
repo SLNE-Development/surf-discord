@@ -166,13 +166,29 @@ open class CurrentTimestampBase<T>(
     columnType: IColumnType<T & Any>,
     private val includeUpdate: Boolean = false
 ) : Function<T>(columnType) {
-    override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
-        +when {
-            (currentDialect as? MysqlDialect)?.isFractionDateTimeSupported() == true -> "CURRENT_TIMESTAMP(6) ${
-                if (includeUpdate) "ON UPDATE CURRENT_TIMESTAMP(6)" else ""
-            }"
 
-            else -> "CURRENT_TIMESTAMP ${if (includeUpdate) "ON UPDATE CURRENT_TIMESTAMP" else ""}"
+    override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
+        +when (val dialect = currentDialect) {
+            is PostgreSQLDialect ->
+                "(CURRENT_TIMESTAMP AT TIME ZONE 'UTC')"
+
+            is MysqlDialect -> {
+                val currentTimestamp =
+                    if (dialect.isFractionDateTimeSupported()) {
+                        "CURRENT_TIMESTAMP(6)"
+                    } else {
+                        "CURRENT_TIMESTAMP"
+                    }
+
+                if (includeUpdate) {
+                    "$currentTimestamp ON UPDATE $currentTimestamp"
+                } else {
+                    currentTimestamp
+                }
+            }
+
+            else ->
+                "CURRENT_TIMESTAMP"
         }
     }
 }
