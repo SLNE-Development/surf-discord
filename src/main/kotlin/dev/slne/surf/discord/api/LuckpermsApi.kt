@@ -26,8 +26,16 @@ object LuckpermsApi {
 
     private val client = HttpClient(CIO) {
         defaultRequest {
-            url(botConfig.luckpermsApi.url)
-            bearerAuth(botConfig.luckpermsApi.token)
+            val url = botConfig.luckpermsApi.url
+            val token = botConfig.luckpermsApi.token
+
+            if (url == null || token == null) {
+                logger.atWarn().log("LuckPerms API Token or URL not set.")
+                return@defaultRequest
+            }
+
+            url(url)
+            bearerAuth(token)
         }
 
         install(ContentNegotiation) {
@@ -38,9 +46,12 @@ object LuckpermsApi {
         }
     }
 
+    fun isAvailable() =
+        !botConfig.luckpermsApi.token.isNullOrBlank() && !botConfig.luckpermsApi.url.isNullOrBlank()
+
     suspend fun findAllPremiumUuids(): Set<UUID> {
-        if (botConfig.luckpermsApi.token.isBlank()) {
-            logger.warn("LuckPerms API token is not set, skipping premium UUID fetch")
+        if (!isAvailable()) {
+            logger.warn("LuckPerms API is not available, skipping premium UUID fetch")
             return emptySet()
         }
 
@@ -73,7 +84,8 @@ object LuckpermsApi {
     )
 
     private object StringUuidSerializer : KSerializer<UUID> {
-        override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("UUID", PrimitiveKind.STRING)
+        override val descriptor: SerialDescriptor =
+            PrimitiveSerialDescriptor("UUID", PrimitiveKind.STRING)
 
         override fun serialize(encoder: Encoder, value: UUID) {
             encoder.encodeString(value.toString())

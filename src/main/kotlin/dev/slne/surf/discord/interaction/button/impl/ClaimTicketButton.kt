@@ -28,17 +28,24 @@ class ClaimTicketButton(
     }
 
     override suspend fun onClick(event: ButtonInteractionEvent) {
+        println("ClaimTicketButton clicked by ${event.user.id} in guild ${event.guild?.id}")
         if (!event.member.hasPermission(DiscordPermission.TICKET_CLAIM)) {
             event.reply(translatable("no-permission")).setEphemeral(true).queue()
             return
         }
 
+        println("User ${event.user.id} has permission to claim tickets.")
+
         val ticket = event.hook.asTicketOrThrow()
 
+        println("Ticket found: ${ticket.ticketId} of type ${ticket.ticketType}")
+
         if (ticketService.isClaimedByUser(ticket, event.user)) {
+            println("Ticket is already claimed by user ${event.user.id}, unclaiming.")
             ticketService.unclaim(ticket, event.user)
             event.reply(translatable("claim.unclaimed")).setEphemeral(true).queue()
         } else {
+            println("Ticket is not claimed by user ${event.user.id}, claiming.")
             if (ticketService.isClaimed(ticket)) {
                 event.reply(translatable("claim.already-claimed"))
                     .setEphemeral(true).queue()

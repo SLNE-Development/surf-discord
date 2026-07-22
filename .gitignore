@@ -135,3 +135,6 @@ messages/**
 
 .kotlin/**/**
 config.yml
+
+# Environment variables
+.env

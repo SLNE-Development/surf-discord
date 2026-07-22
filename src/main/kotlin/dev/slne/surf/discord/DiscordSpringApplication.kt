@@ -4,7 +4,6 @@ import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.springframework.beans.factory.getBean
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.builder.SpringApplicationBuilder
-import org.springframework.boot.r2dbc.autoconfigure.R2dbcAutoConfiguration
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
@@ -24,7 +23,7 @@ fun main(args: Array<String>) {
         .run(*args)
 }
 
-@SpringBootApplication(exclude = [R2dbcAutoConfiguration::class])
+@SpringBootApplication
 @EnableCaching
 @EnableScheduling
 class DiscordSpringApplication
