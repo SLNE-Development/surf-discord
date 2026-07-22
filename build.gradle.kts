@@ -8,7 +8,6 @@ group = "dev.slne.surf.discord"
 version = findProperty("version") as String
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("io.ktor:ktor-client-cio:3.5.0")
     implementation("io.ktor:ktor-client-content-negotiation:3.5.0")
