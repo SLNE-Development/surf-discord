@@ -1,6 +1,9 @@
 package dev.slne.surf.discord.config
 
 import dev.slne.surf.database.DatabaseApi
+import dev.slne.surf.database.libs.io.r2dbc.postgresql.PostgresqlConnectionConfiguration
+import dev.slne.surf.database.libs.io.r2dbc.postgresql.PostgresqlConnectionFactory
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.vendors.PostgreSQLDialect
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.SchemaUtils
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import dev.slne.surf.discord.logger
@@ -15,42 +18,46 @@ import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffTable
 import dev.slne.surf.discord.ticket.database.whitelist.FreebuildWhitelistTable
 import dev.slne.surf.discord.ticket.database.whitelist.SocialConnectionsTable
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.Serializable
-import org.jetbrains.annotations.ApiStatus
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Service
-import kotlin.io.path.Path
-
-@ApiStatus.Internal
-@Serializable
-data class DatabaseConfig(
-    val hostname: String,
-    val port: Int,
-    val database: String,
-    val username: String,
-    val password: String
-)
 
 @Service
 class DatabaseConfiguration {
+    lateinit var databaseApi: DatabaseApi
+
     @Bean
-    fun setupDatabase() = DatabaseApi.create(Path("."), "database.yml").also {
-        runBlocking {
-            suspendTransaction {
-                SchemaUtils.create(
-                    TicketTable,
-                    TicketMemberTable,
-                    TicketDataTable,
-                    TicketStaffTable,
-                    TicketMessagesTable,
-                    TicketAttachmentsTable,
-                    SocialConnectionsTable,
-                    FreebuildWhitelistTable,
-                    ReplyDeadlineTable,
-                    DeadlineNotifyTable
-                )
+    fun setupDatabase(): Boolean {
+        val connectionConfig = PostgresqlConnectionConfiguration.builder()
+            .host(EnvConfig.DB_HOST)
+            .port(EnvConfig.DB_PORT)
+            .database(EnvConfig.DB_NAME)
+            .username(EnvConfig.DB_USERNAME)
+            .password(EnvConfig.DB_PASSWORD)
+            .apply { EnvConfig.DB_SCHEMA?.let { schema(it) } }
+            .build()
+
+        val connectionFactory = PostgresqlConnectionFactory(connectionConfig)
+        
+        databaseApi = DatabaseApi.create(connectionFactory, PostgreSQLDialect()).also {
+            runBlocking {
+                suspendTransaction {
+                    SchemaUtils.create(
+                        TicketTable,
+                        TicketMemberTable,
+                        TicketDataTable,
+                        TicketStaffTable,
+                        TicketMessagesTable,
+                        TicketAttachmentsTable,
+                        SocialConnectionsTable,
+                        FreebuildWhitelistTable,
+                        ReplyDeadlineTable,
+                        DeadlineNotifyTable
+                    )
+                }
+                logger.info("Connected to database (PostgreSQL)")
             }
-            logger.info("Connected to database (PostgreSQL) ${botConfig.database.database} at ${botConfig.database.hostname}:${botConfig.database.port}")
         }
+
+        return true
     }
 }

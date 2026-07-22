@@ -1,7 +1,7 @@
 plugins {
     id("org.springframework.boot") version "4.0.6"
     id("io.spring.dependency-management") version "1.1.7"
-    id("dev.slne.surf.api.gradle.core")
+    id("dev.slne.surf.api.gradle.standalone")
 }
 
 group = "dev.slne.surf.discord"
@@ -15,8 +15,20 @@ dependencies {
     implementation("com.charleskorn.kaml:kaml-jvm:0.104.0")
     implementation("net.dv8tion:JDA:6.4.1")
     implementation("club.minnced:jda-ktx:0.14.2")
+}
 
-    implementation("dev.slne.surf:surf-database-r2dbc:2.3.1")
+surfStandaloneApi {
+    withSurfDatabaseR2dbc("2.3.1", "dev.slne.surf.discord.libs.database")
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.jetbrains.kotlinx" &&
+            requested.name.startsWith("kotlinx-coroutines")
+        ) {
+            useVersion("1.11.0")
+        }
+    }
 }
 
 kotlin { jvmToolchain(25) }

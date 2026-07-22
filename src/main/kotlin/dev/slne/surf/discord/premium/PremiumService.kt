@@ -22,6 +22,11 @@ class PremiumService(private val jda: JDA, private val socialRepository: SocialR
 
     @Scheduled(fixedRate = 2, timeUnit = TimeUnit.MINUTES)
     protected suspend fun syncPremium() {
+        if (!LuckpermsApi.isAvailable()) {
+            logger.warn("LuckPerms API is not available, skipping premium sync")
+            return
+        }
+
         val currentActivePremiumUuids = LuckpermsApi.findAllPremiumUuids()
 
         jda.guilds.forEach { guild ->
