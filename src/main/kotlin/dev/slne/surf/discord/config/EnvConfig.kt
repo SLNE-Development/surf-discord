@@ -8,7 +8,7 @@ object EnvConfig {
     val BOT_TOKEN get() = env.require("BOT_TOKEN")
 
     val TICKET_CHANNEL get() = env.requireLong("TICKET_CHANNEL")
-    val TICKET_LOG_CHANNEL get() = env.requireLong("TICKET_LOG_CHANNEL")
+    val TICKET_LOG_CHANNEL get() = env.optionalLong("TICKET_LOG_CHANNEL")
 
     val DB_HOST get() = env.require("DATABASE_HOST")
     val DB_PORT get() = env.requireInt("DATABASE_PORT")
