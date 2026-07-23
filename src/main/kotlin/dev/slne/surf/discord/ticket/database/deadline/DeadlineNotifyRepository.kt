@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository
 class DeadlineNotifyRepository {
 
     suspend fun setEnabled(userId: Long, enabled: Boolean) = suspendTransaction {
-        DeadlineNotifyTable.upsert {
+        DeadlineNotifyTable.upsert(DeadlineNotifyTable.userId) {
             it[DeadlineNotifyTable.userId] = userId
             it[DeadlineNotifyTable.enabled] = enabled
         }
