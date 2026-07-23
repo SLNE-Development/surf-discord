@@ -6,6 +6,7 @@ import dev.slne.surf.discord.ticket.database.deadline.ReplyDeadlineTable
 import dev.slne.surf.discord.ticket.database.members.TicketMemberTable
 import dev.slne.surf.discord.ticket.database.messages.TicketMessagesTable
 import dev.slne.surf.discord.ticket.database.messages.attachments.TicketAttachmentsTable
+import dev.slne.surf.discord.ticket.database.migration.migratePostgreSqlUpsertConstraints
 import dev.slne.surf.discord.ticket.database.ticket.TicketTable
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataTable
 import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffTable
@@ -54,6 +55,7 @@ class DatabaseConfiguration {
                     ReplyDeadlineTable,
                     DeadlineNotifyTable
                 )
+                migratePostgreSqlUpsertConstraints()
             }
             logger.info("Connected to database (PostgreSQL) ${botConfig.database.database} at ${botConfig.database.hostname}:${botConfig.database.port}")
         }
