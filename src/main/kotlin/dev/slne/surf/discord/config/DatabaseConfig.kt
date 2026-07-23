@@ -11,8 +11,7 @@ import dev.slne.surf.discord.ticket.database.ticket.TicketTable
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataTable
 import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffTable
 import dev.slne.surf.discord.ticket.database.util.DiscordSchema
-import dev.slne.surf.discord.ticket.database.whitelist.FreebuildWhitelistTable
-import dev.slne.surf.discord.ticket.database.whitelist.SocialConnectionsTable
+import org.jetbrains.exposed.v1.core.Table
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import org.jetbrains.annotations.ApiStatus
@@ -32,6 +31,17 @@ data class DatabaseConfig(
     val password: String
 )
 
+internal val discordOwnedTables = arrayOf<Table>(
+    TicketTable,
+    TicketMemberTable,
+    TicketDataTable,
+    TicketStaffTable,
+    TicketMessagesTable,
+    TicketAttachmentsTable,
+    ReplyDeadlineTable,
+    DeadlineNotifyTable
+)
+
 @Service
 class DatabaseConfiguration {
     @Bean
@@ -43,18 +53,7 @@ class DatabaseConfiguration {
         runBlocking {
             suspendTransaction {
                 SchemaUtils.createSchema(DiscordSchema)
-                SchemaUtils.create(
-                    TicketTable,
-                    TicketMemberTable,
-                    TicketDataTable,
-                    TicketStaffTable,
-                    TicketMessagesTable,
-                    TicketAttachmentsTable,
-                    SocialConnectionsTable,
-                    FreebuildWhitelistTable,
-                    ReplyDeadlineTable,
-                    DeadlineNotifyTable
-                )
+                SchemaUtils.create(*discordOwnedTables)
                 migratePostgreSqlUpsertConstraints()
             }
             logger.info("Connected to database (PostgreSQL) ${botConfig.database.database} at ${botConfig.database.hostname}:${botConfig.database.port}")
