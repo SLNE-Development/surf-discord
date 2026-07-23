@@ -14,7 +14,6 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
@@ -22,27 +21,49 @@ import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import java.util.*
 
 object LuckpermsApi {
+    private const val PREMIUM_GROUP = "premium"
+
     private val logger = ComponentLogger.logger()
 
-    fun isAvailable() =
-        !botConfig.luckpermsApi.url.isNullOrBlank() && !botConfig.luckpermsApi.token.isNullOrBlank()
+    fun isAvailable(): Boolean {
+        val config = botConfig.luckpermsApi
+
+        return !config.url.isNullOrBlank() && !config.token.isNullOrBlank()
+    }
 
     private val client = HttpClient(CIO) {
+        expectSuccess = true
+
         defaultRequest {
+            val config = botConfig.luckpermsApi
 
-            if (!isAvailable()) {
-                return@defaultRequest
-            }
+            val baseUrl = config.url
+                ?.trim()
+                ?.takeIf(String::isNotEmpty)
+                ?: return@defaultRequest
 
-            url(botConfig.luckpermsApi.url)
-            bearerAuth(botConfig.luckpermsApi.token ?: error("LuckPerms API token is not set"))
+            val token = config.token
+                ?.trim()
+                ?.takeIf(String::isNotEmpty)
+                ?: return@defaultRequest
+
+
+            url.takeFrom(baseUrl.trimEnd('/') + '/')
+
+            bearerAuth(token)
+            accept(ContentType.Application.Json)
         }
 
         install(ContentNegotiation) {
             json(Json {
-                isLenient = true
                 ignoreUnknownKeys = true
             })
+        }
+
+        install(HttpTimeout) {
+            connectTimeoutMillis = 5_000
+            requestTimeoutMillis = 10_000
+            socketTimeoutMillis = 10_000
         }
     }
 
@@ -51,37 +72,33 @@ object LuckpermsApi {
             return emptySet()
         }
 
-        val response = client.get("/user/search") {
-            parameter("group", "premium")
+        val users = try {
+            client.get("user/search") {
+                parameter("group", PREMIUM_GROUP)
+            }.body<List<UserSearchResult>>()
+        } catch (exception: ResponseException) {
+            logger.error(
+                "Failed to fetch premium users from the LuckPerms API: {}",
+                exception.response.status,
+                exception
+            )
+
+            throw exception
         }
 
-        if (response.status != HttpStatusCode.OK) {
-            logger.error("Failed to fetch premium UUIDs: ${response.status}")
-            throw RuntimeException("Failed to fetch premium UUIDs")
+        return users.mapTo(ObjectOpenHashSet(users.size)) {
+            it.uniqueId
         }
-
-        val users = response.body<List<UserSearchResult>>()
-        return users.mapTo(ObjectOpenHashSet(users.size)) { it.uniqueId }
     }
 
     @Serializable
     private data class UserSearchResult(
-        val uniqueId: @Serializable(with = StringUuidSerializer::class) UUID,
-        val results: List<Result>
-    )
-
-    @Serializable
-    private data class Result(
-        val key: String,
-        val type: String,
-        val value: Boolean,
-        val context: List<String> = emptyList(),
-        val expiry: Long? = null
+        @Serializable(with = StringUuidSerializer::class)
+        val uniqueId: UUID,
     )
 
     private object StringUuidSerializer : KSerializer<UUID> {
-        override val descriptor: SerialDescriptor =
-            PrimitiveSerialDescriptor("UUID", PrimitiveKind.STRING)
+        override val descriptor = PrimitiveSerialDescriptor("UUID", PrimitiveKind.STRING)
 
         override fun serialize(encoder: Encoder, value: UUID) {
             encoder.encodeString(value.toString())
