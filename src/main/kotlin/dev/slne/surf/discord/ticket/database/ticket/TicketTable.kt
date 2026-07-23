@@ -1,13 +1,13 @@
 package dev.slne.surf.discord.ticket.database.ticket
 
 import dev.slne.surf.discord.ticket.TicketType
+import dev.slne.surf.discord.ticket.database.column.nativeUuid
 import dev.slne.surf.discord.ticket.database.column.zonedDateTime
 import dev.slne.surf.discord.ticket.database.util.schemedName
 import org.jetbrains.exposed.v1.core.dao.id.ULongIdTable
-import java.util.*
 
 object TicketTable : ULongIdTable(schemedName("ticket_tickets")) {
-    val ticketId = char("ticket_id", 36).transform({ UUID.fromString(it) }, { it.toString() })
+    val ticketId = nativeUuid("ticket_id")
     val authorId =
         varchar("ticket_author_id", 20).transform({ it.toLong() }, { it.toString() })
     val authorName = varchar("ticket_author_name", 64)
