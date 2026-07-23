@@ -24,7 +24,7 @@ class TicketMemberRepository {
         addedByName: String,
         addedByAvatarUrl: String?
     ) = suspendTransaction {
-        TicketMemberTable.upsert {
+        TicketMemberTable.upsert(TicketMemberTable.ticketId, TicketMemberTable.memberId) {
             it[ticketId] = ticket.ticketId
             it[memberId] = userId
             it[memberName] = userName
