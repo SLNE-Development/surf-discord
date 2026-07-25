@@ -43,12 +43,6 @@ dependencies {
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.4")
 
     runtimeOnly("org.postgresql:r2dbc-postgresql")
-
-    testImplementation(kotlin("test"))
-}
-
-tasks.test {
-    useJUnitPlatform()
 }
 
 kotlin { jvmToolchain(25) }
