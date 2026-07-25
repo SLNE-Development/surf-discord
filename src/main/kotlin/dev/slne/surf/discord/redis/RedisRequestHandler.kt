@@ -14,10 +14,10 @@ object RedisRequestHandler {
     private val memberResultCache = Caffeine.newBuilder().build<Long, Boolean>()
 
     @HandleRedisRequest
-    fun handleDiscordMembershipRequest(context: RequestContext<DiscordMemberShipRequest>) {
-        val discordUserId = context.request.discordUserId
-
+    fun handleDiscordMembershipRequest(context: RequestContext<DiscordMemberShipRequest>) =
         context.launch(Dispatchers.IO) {
+            val discordUserId = context.request.discordUserId
+
             context.respond(
                 DiscordMemberShipResponse(
                     memberResultCache.getIfPresent(discordUserId) ?: jda.guilds.any {
@@ -27,5 +27,4 @@ object RedisRequestHandler {
                     })
             )
         }
-    }
 }
