@@ -1,8 +1,7 @@
 package dev.slne.surf.discord.interaction.button.impl
 
-import dev.slne.surf.discord.getBean
+import dev.slne.surf.discord.config.botConfig
 import dev.slne.surf.discord.interaction.button.DiscordButton
-import dev.slne.surf.discord.interaction.modal.ModalRegistry
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.ticket.database.whitelist.SocialService
 import dev.slne.surf.discord.util.Emojis
@@ -26,18 +25,35 @@ class WhitelistCreateButton(
         )
     }
 
-    private val modalRegistry by lazy {
-        getBean<ModalRegistry>()
-    }
-
     override suspend fun onClick(event: ButtonInteractionEvent) {
-        if (socialService.isWhitelisted(event.user.idLong)) {
-            event.reply(translatable("whitelist.survival.modal.already_whitelisted"))
+        val discordId = event.user.idLong
+
+        val link = socialService.findLink(discordId) ?: run {
+            event.reply(translatable("whitelist.survival.not-linked"))
                 .setEphemeral(true)
                 .queue()
             return
         }
 
-        event.replyModal(modalRegistry.get("whitelist:modal:create-survival").create()).queue()
+        if (socialService.isWhitelisted(discordId)) {
+            event.reply(translatable("whitelist.survival.already_whitelisted"))
+                .setEphemeral(true)
+                .queue()
+            return
+        }
+
+        socialService.whitelist(link)
+
+        event.member?.let { member ->
+            event.guild?.addRoleToMember(
+                member,
+                event.guild?.getRoleById(botConfig.whitelistedRoleId)
+                    ?: error("Whitelisted role not found")
+            )?.queue()
+        }
+
+        event.reply(translatable("whitelist.survival.success"))
+            .setEphemeral(true)
+            .queue()
     }
 }

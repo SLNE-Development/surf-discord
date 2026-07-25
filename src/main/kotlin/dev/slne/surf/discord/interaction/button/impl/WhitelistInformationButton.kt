@@ -13,7 +13,6 @@ import net.dv8tion.jda.api.components.buttons.Button
 import net.dv8tion.jda.api.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import org.springframework.stereotype.Component
-import java.time.format.DateTimeFormatter
 
 @Component
 class WhitelistInformationButton(
@@ -63,16 +62,6 @@ class WhitelistInformationButton(
                 inline = true
             }
             field {
-                name = translatable("whitelist.embed.information.created")
-                value = whitelist.createdAt.format(dateTimeFormatter)
-                inline = true
-            }
-            field {
-                name = translatable("whitelist.embed.information.updated")
-                value = whitelist.updatedAt.format(dateTimeFormatter)
-                inline = true
-            }
-            field {
                 name = translatable("whitelist.embed.information.blocked")
                 value = whitelist.blocked.let {
                     if (it) "Ja" else "Nein"
@@ -82,6 +71,4 @@ class WhitelistInformationButton(
             color = Colors.SUCCESS
         }).setEphemeral(true).queue()
     }
-
-    private val dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
 }
