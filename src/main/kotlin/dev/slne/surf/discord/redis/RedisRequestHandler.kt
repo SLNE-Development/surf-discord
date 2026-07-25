@@ -7,6 +7,7 @@ import dev.slne.surf.freebuild.whitelist.redis.request.DiscordMemberShipRequest
 import dev.slne.surf.freebuild.whitelist.redis.request.DiscordMemberShipResponse
 import dev.slne.surf.redis.request.HandleRedisRequest
 import dev.slne.surf.redis.request.RequestContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 object RedisRequestHandler {
@@ -16,7 +17,7 @@ object RedisRequestHandler {
     fun handleDiscordMembershipRequest(context: RequestContext<DiscordMemberShipRequest>) {
         val discordUserId = context.request.discordUserId
 
-        context.launch {
+        context.launch(Dispatchers.IO) {
             context.respond(
                 DiscordMemberShipResponse(
                     memberResultCache.getIfPresent(discordUserId) ?: jda.guilds.any {
