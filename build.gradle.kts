@@ -13,6 +13,7 @@ version = findProperty("version") as String
 
 repositories {
     mavenCentral()
+    maven("https://reposilite.slne.dev/releases")
 }
 
 extra["kotlin-coroutines.version"] = "1.11.0"
@@ -41,6 +42,7 @@ dependencies {
     implementation("net.dv8tion:JDA:6.4.1")
     implementation("club.minnced:jda-ktx:0.14.2")
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.4")
+    implementation("dev.slne.surf.redis:surf-redis-standalone:1.10.0")
 
     runtimeOnly("org.postgresql:r2dbc-postgresql")
 }
