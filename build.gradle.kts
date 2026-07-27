@@ -43,7 +43,9 @@ dependencies {
     implementation("club.minnced:jda-ktx:0.14.2")
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.4")
     implementation("dev.slne.surf.redis:surf-redis-standalone:1.10.0")
-
+    implementation("com.google.flogger:flogger:0.9")
+    
+    runtimeOnly("com.google.flogger:flogger-system-backend:0.9")
     runtimeOnly("org.postgresql:r2dbc-postgresql")
 }
 

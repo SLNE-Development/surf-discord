@@ -1,19 +1,20 @@
 package dev.slne.surf.discord.interaction.button.impl
 
-import dev.slne.surf.discord.config.botConfig
 import dev.slne.surf.discord.interaction.button.DiscordButton
 import dev.slne.surf.discord.messages.translatable
-import dev.slne.surf.discord.ticket.database.whitelist.SocialService
+import dev.slne.surf.discord.ticket.database.whitelist.SocialRepository
 import dev.slne.surf.discord.util.Emojis
 import net.dv8tion.jda.api.components.buttons.Button
 import net.dv8tion.jda.api.components.buttons.ButtonStyle
+import net.dv8tion.jda.api.components.container.Container
+import net.dv8tion.jda.api.components.textdisplay.TextDisplay
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import org.springframework.stereotype.Component
 
 @Component
 class WhitelistCreateButton(
     private val emojis: Emojis,
-    private val socialService: SocialService
+    private val socialRepository: SocialRepository
 ) : DiscordButton {
     override val id = "whitelist:create"
     override val button by lazy {
@@ -27,33 +28,33 @@ class WhitelistCreateButton(
 
     override suspend fun onClick(event: ButtonInteractionEvent) {
         val discordId = event.user.idLong
+        val shouldPlay = socialRepository.shouldBeAbleToPlayIfMember(discordId)
 
-        val link = socialService.findLink(discordId) ?: run {
-            event.reply(translatable("whitelist.survival.not-linked"))
-                .setEphemeral(true)
-                .queue()
-            return
+        if (shouldPlay) {
+            event.replyComponents(
+                Container.of(
+                    TextDisplay.of(translatable("whitelist.survival.shouldPlay"))
+                )
+            ).setEphemeral(true).queue()
+        } else {
+            val discordToWebExists = socialRepository.hasWebUser(discordId)
+            val linkExists = socialRepository.findLinkByDiscordId(discordId) != null
+
+            val discordIcon = if (discordToWebExists) emojis.checkMark else emojis.crossMark
+            val linkIcon = if (linkExists) emojis.checkMark else emojis.crossMark
+
+
+            event.replyComponents(
+                Container.of(
+                    TextDisplay.of(
+                        translatable(
+                            "whitelist.survival.missingLink",
+                            discordIcon.name,
+                            linkIcon.name
+                        )
+                    )
+                )
+            ).setEphemeral(true).queue()
         }
-
-        if (socialService.isWhitelisted(discordId)) {
-            event.reply(translatable("whitelist.survival.already_whitelisted"))
-                .setEphemeral(true)
-                .queue()
-            return
-        }
-
-        socialService.whitelist(link)
-
-        event.member?.let { member ->
-            event.guild?.addRoleToMember(
-                member,
-                event.guild?.getRoleById(botConfig.whitelistedRoleId)
-                    ?: error("Whitelisted role not found")
-            )?.queue()
-        }
-
-        event.reply(translatable("whitelist.survival.success"))
-            .setEphemeral(true)
-            .queue()
     }
 }

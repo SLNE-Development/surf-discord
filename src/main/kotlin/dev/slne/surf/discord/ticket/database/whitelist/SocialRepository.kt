@@ -1,20 +1,15 @@
 package dev.slne.surf.discord.ticket.database.whitelist
 
+import dev.slne.surf.discord.util.PlayerLookupService
 import it.unimi.dsi.fastutil.longs.LongSet
 import it.unimi.dsi.fastutil.objects.Object2LongMap
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap
 import kotlinx.coroutines.flow.*
-import org.jetbrains.exposed.v1.core.JoinType
-import org.jetbrains.exposed.v1.core.Op
-import org.jetbrains.exposed.v1.core.ResultRow
-import org.jetbrains.exposed.v1.core.alias
-import org.jetbrains.exposed.v1.core.and
-import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.inList
-import org.jetbrains.exposed.v1.r2dbc.*
+import org.jetbrains.exposed.v1.core.*
+import org.jetbrains.exposed.v1.r2dbc.select
+import org.jetbrains.exposed.v1.r2dbc.selectAll
 import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import org.springframework.stereotype.Repository
-import java.time.OffsetDateTime
 import java.util.*
 
 /**
@@ -27,7 +22,9 @@ import java.util.*
  * a parameter.
  */
 @Repository
-class SocialRepository {
+class SocialRepository(
+    private val playerLookupService: PlayerLookupService
+) {
     private val discordAccounts = WebAccountsTable.alias("discord_accounts")
     private val minecraftAccounts = WebAccountsTable.alias("minecraft_accounts")
 
@@ -47,62 +44,20 @@ class SocialRepository {
         }
     )
 
+    suspend fun shouldBeAbleToPlayIfMember(discordProviderId: Long) =
+        findLinkByDiscordId(discordProviderId) != null
+
     suspend fun findLinkByDiscordId(discordId: Long): AccountLink? = suspendTransaction {
         findLink(byDiscordId(discordId))
     }
 
-    suspend fun isWhitelisted(discordId: Long) = suspendTransaction {
-        isWhitelisted(byDiscordId(discordId))
+    suspend fun findLinkByMinecraftName(minecraftName: String): AccountLink? {
+        val minecraftUuid = playerLookupService.getUuid(minecraftName) ?: return null
+        return findLink(byMinecraftUuid(minecraftUuid))
     }
 
-    suspend fun isWhitelisted(minecraftUuid: UUID) = suspendTransaction {
-        isWhitelisted(byMinecraftUuid(minecraftUuid))
-    }
-
-    /** Creates or unblocks the whitelist entry for an already linked pair of accounts. */
-    suspend fun whitelist(link: AccountLink): SocialEntry = suspendTransaction {
-        val now = OffsetDateTime.now()
-
-        if (findBlocked(link.webUserId) == null) {
-            FreebuildWhitelistTable.insert {
-                it[this.userId] = link.webUserId
-                it[this.blocked] = false
-                it[this.createdAt] = now
-                it[this.updatedAt] = now
-            }
-        } else {
-            FreebuildWhitelistTable.update(where = { FreebuildWhitelistTable.userId eq link.webUserId }) {
-                it[this.blocked] = false
-                it[this.updatedAt] = now
-            }
-        }
-
-        link.toSocialEntry(blocked = false)
-    }
-
-    suspend fun blockWhitelist(discordId: Long) = editBlocked(discordId, true)
-
-    suspend fun unblockWhitelist(discordId: Long) = editBlocked(discordId, false)
-
-    suspend fun getWhitelist(discordId: Long) = suspendTransaction {
-        getWhitelist(byDiscordId(discordId))
-    }
-
-    suspend fun getWhitelist(minecraftUuid: UUID) = suspendTransaction {
-        getWhitelist(byMinecraftUuid(minecraftUuid))
-    }
-
-    private suspend fun editBlocked(
-        discordId: Long,
-        blocked: Boolean
-    ) = suspendTransaction {
-        val webUserId = findWebUserId(WebAccountProviders.DISCORD, discordId.toString())
-            ?: return@suspendTransaction false
-
-        FreebuildWhitelistTable.update(where = { FreebuildWhitelistTable.userId eq webUserId }) {
-            it[this.blocked] = blocked
-            it[this.updatedAt] = OffsetDateTime.now()
-        } > 0
+    suspend fun hasWebUser(discordProviderId: Long) = suspendTransaction {
+        findWebUserId(WebAccountProviders.DISCORD, discordProviderId.toString()) != null
     }
 
     suspend fun findAllUuidsByDiscordIds(discordIds: LongSet): Object2LongMap<UUID> =
@@ -123,32 +78,13 @@ class SocialRepository {
 
     private fun byDiscordId(discordId: Long) = discordIdColumn eq discordId.toString()
 
-    private fun byMinecraftUuid(minecraftUuid: UUID) = minecraftUuidColumn eq minecraftUuid.toString()
+    private fun byMinecraftUuid(minecraftUuid: UUID) =
+        minecraftUuidColumn eq minecraftUuid.toString()
 
     private suspend fun findLink(constraint: Op<Boolean>): AccountLink? =
         linkedAccounts.selectAll()
             .where(constraint)
             .mapNotNull { it.toAccountLink() }
-            .firstOrNull()
-
-    private suspend fun isWhitelisted(constraint: Op<Boolean>): Boolean {
-        val link = findLink(constraint) ?: return false
-
-        return findBlocked(link.webUserId)?.not() ?: false
-    }
-
-    private suspend fun getWhitelist(constraint: Op<Boolean>): SocialEntry? {
-        val link = findLink(constraint) ?: return null
-        val blocked = findBlocked(link.webUserId) ?: return null
-
-        return link.toSocialEntry(blocked)
-    }
-
-    /** The blocked flag of the whitelist entry, or `null` if the web user has no entry. */
-    private suspend fun findBlocked(webUserId: UUID): Boolean? =
-        FreebuildWhitelistTable.select(FreebuildWhitelistTable.blocked)
-            .where(FreebuildWhitelistTable.userId eq webUserId)
-            .map { it[FreebuildWhitelistTable.blocked] }
             .firstOrNull()
 
     private suspend fun findWebUserId(provider: String, providerAccountId: String): UUID? =

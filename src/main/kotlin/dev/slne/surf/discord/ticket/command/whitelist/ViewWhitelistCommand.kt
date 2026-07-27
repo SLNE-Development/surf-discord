@@ -1,16 +1,19 @@
 package dev.slne.surf.discord.ticket.command.whitelist
 
+import dev.minn.jda.ktx.coroutines.await
 import dev.slne.surf.discord.command.CommandOption
 import dev.slne.surf.discord.command.CommandOptionType
 import dev.slne.surf.discord.command.DiscordCommand
 import dev.slne.surf.discord.command.SlashCommand
 import dev.slne.surf.discord.dsl.embed
+import dev.slne.surf.discord.jda
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
-import dev.slne.surf.discord.ticket.database.whitelist.SocialEntry
-import dev.slne.surf.discord.ticket.database.whitelist.SocialService
+import dev.slne.surf.discord.ticket.database.whitelist.AccountLink
+import dev.slne.surf.discord.ticket.database.whitelist.SocialRepository
 import dev.slne.surf.discord.util.Colors
+import dev.slne.surf.discord.util.PlayerLookupService
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import org.springframework.stereotype.Component
@@ -32,7 +35,8 @@ import org.springframework.stereotype.Component
 )
 @Component
 class ViewWhitelistCommand(
-    private val socialService: SocialService
+    private val socialRepository: SocialRepository,
+    private val playerLookupService: PlayerLookupService
 ) : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.WHITELIST_VIEW)) {
@@ -44,8 +48,11 @@ class ViewWhitelistCommand(
         val minecraftNameOption = event.getOption("minecraft-name")?.asString
 
         val whitelist = when {
-            userId != null -> socialService.getWhitelist(userId)
-            minecraftNameOption != null -> socialService.getWhitelist(minecraftNameOption)
+            userId != null -> socialRepository.findLinkByDiscordId(userId)
+            minecraftNameOption != null -> socialRepository.findLinkByMinecraftName(
+                minecraftNameOption
+            )
+
             else -> {
                 event.reply(translatable("whitelist.command.view.missing-parameters"))
                     .setEphemeral(true)
@@ -55,7 +62,7 @@ class ViewWhitelistCommand(
         }
 
         if (whitelist == null) {
-            event.reply(translatable("whitelist.embed.information.no_whitelist"))
+            event.reply(translatable("whitelist.embed.information.no_link"))
                 .setEphemeral(true)
                 .queue()
             return
@@ -64,8 +71,10 @@ class ViewWhitelistCommand(
         event.replyEmbeds(whitelist.toInformationEmbed()).setEphemeral(true).queue()
     }
 
-    private suspend fun SocialEntry.toInformationEmbed(): MessageEmbed {
-        val minecraftName = getMinecraftName() ?: minecraftUuid.toString()
+    private suspend fun AccountLink.toInformationEmbed(): MessageEmbed {
+        val minecraftName =
+            playerLookupService.getUsername(minecraftUuid) ?: minecraftUuid.toString()
+        val isDiscordMember = jda.guilds.any { it.retrieveMemberById(discordId).await() != null }
 
         return embed {
             title = translatable("whitelist.embed.information.title")
@@ -81,7 +90,7 @@ class ViewWhitelistCommand(
             }
             field {
                 name = translatable("whitelist.embed.information.blocked")
-                value = if (blocked) "Ja" else "Nein"
+                value = if (isDiscordMember) "Nein" else "Ja"
                 inline = true
             }
             color = Colors.SUCCESS

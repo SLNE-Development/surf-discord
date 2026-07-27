@@ -19,7 +19,6 @@ object EnvConfig {
     val LUCKPERMS_URL get() = env.optional("LUCKPERMS_URL")
     val LUCKPERMS_TOKEN get() = env.optional("LUCKPERMS_TOKEN")
 
-    val WHITELIST_ROLE_ID get() = env.requireLong("WHITELIST_ROLE_ID")
     val PREMIUM_ROLE_ID get() = env.requireLong("PREMIUM_ROLE_ID")
 
     private fun Map<String, String>.optional(name: String) =
