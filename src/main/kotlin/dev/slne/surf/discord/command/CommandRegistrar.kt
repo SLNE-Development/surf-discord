@@ -1,35 +1,37 @@
 package dev.slne.surf.discord.command
 
+import dev.slne.surf.discord.DiscordBot.jda
+import dev.slne.surf.discord.discordScope
+import dev.slne.surf.discord.faq.command.FaqCommand
 import dev.slne.surf.discord.logger
-import jakarta.annotation.PostConstruct
-import kotlinx.coroutines.CoroutineScope
+import dev.slne.surf.discord.ticket.command.*
+import dev.slne.surf.discord.ticket.command.context.*
+import dev.slne.surf.discord.ticket.command.whitelist.ViewWhitelistCommand
 import kotlinx.coroutines.launch
-import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.commands.build.Commands
-import org.springframework.beans.factory.ObjectProvider
-import org.springframework.stereotype.Component
 
-@Component
-class CommandRegistrar(
-    private val jda: JDA,
-    private val commandScope: CoroutineScope,
-    commandProvider: ObjectProvider<SlashCommand>
-) {
-    private val commands = commandProvider.map {
+object CommandRegistrar {
+    private val discordCommands = listOf(
+        CloseTicketCommand, DeadlineNotifyCommand,
+        FixTicketsCommand, PrintTicketButtonsCommand, TicketAddEntityCommand,
+        TicketRemoveUserCommand, TicketReplyDeadlineCommand, FaqCommand, MyTicketsCommand,
+        RequestRefundCommand, RequestFullRollbackCommand, RequestTimedRollbackCommand,
+        RequestRadiusRollbackCommand, ViewWhitelistCommand
+    )
+    private val commandNames = discordCommands.map {
         it.javaClass.getAnnotation(DiscordCommand::class.java) to it
     }.associateBy { it.first.name }
 
-    @PostConstruct
     fun init() {
         registerAllCommands()
 
         jda.addEventListener(object : ListenerAdapter() {
             override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
-                commands[event.name]?.let { (_, command) ->
-                    commandScope.launch { command.execute(event) }
+                commandNames[event.name]?.let { (_, command) ->
+                    discordScope.launch { command.execute(event) }
                     logger.info("${event.user.name} executed discord command '${event.commandString}'")
                 }
             }
@@ -38,15 +40,15 @@ class CommandRegistrar(
 
     fun registerAllCommands() {
         jda.guilds.forEach { guild ->
-            commands.forEach { _, (annotation, _) ->
+            commandNames.forEach { _, (annotation, _) ->
                 registerCommand(annotation.name, annotation.description, guild, annotation.options)
             }
         }
 
-        if (commands.isEmpty()) {
+        if (commandNames.isEmpty()) {
             logger.warn("No Discord commands were found to register.")
         } else {
-            logger.info("Registered ${commands.size} Discord commands.")
+            logger.info("Registered ${commandNames.size} Discord commands.")
         }
     }
 

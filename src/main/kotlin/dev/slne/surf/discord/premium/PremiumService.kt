@@ -3,6 +3,7 @@ package dev.slne.surf.discord.premium
 import dev.minn.jda.ktx.coroutines.await
 import dev.slne.surf.discord.api.LuckpermsApi
 import dev.slne.surf.discord.config.botConfig
+import dev.slne.surf.discord.jda
 import dev.slne.surf.discord.ticket.database.whitelist.SocialRepository
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import it.unimi.dsi.fastutil.objects.Object2LongMaps
@@ -10,18 +11,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
-import net.dv8tion.jda.api.JDA
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
-import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.stereotype.Service
-import java.util.concurrent.TimeUnit
 
-@Service
-class PremiumService(private val jda: JDA, private val socialRepository: SocialRepository) {
+object PremiumService {
     private val logger = ComponentLogger.logger()
 
-    @Scheduled(fixedRate = 2, timeUnit = TimeUnit.MINUTES)
-    protected suspend fun syncPremium() {
+    suspend fun syncPremium() {
         if (!LuckpermsApi.isAvailable()) {
             logger.warn("LuckPerms API token is not set, skipping premium UUID fetch")
             return
@@ -40,7 +35,7 @@ class PremiumService(private val jda: JDA, private val socialRepository: SocialR
             val currentPremiumRoleUsersByUuid = if (premiumMemberIds.isEmpty()) {
                 Object2LongMaps.emptyMap()
             } else {
-                socialRepository.findAllUuidsByDiscordIds(premiumMemberIds)
+                SocialRepository.findAllUuidsByDiscordIds(premiumMemberIds)
             }
             val currentPremiumRoleUuids = currentPremiumRoleUsersByUuid.keys
 
@@ -80,7 +75,7 @@ class PremiumService(private val jda: JDA, private val socialRepository: SocialR
             val toAddUsersByUuid = if (toAddUuids.isEmpty()) {
                 Object2LongMaps.emptyMap()
             } else {
-                socialRepository.findAllDiscordIdsByUuids(toAddUuids)
+                SocialRepository.findAllDiscordIdsByUuids(toAddUuids)
             }
 
             supervisorScope {

@@ -1,17 +1,15 @@
 package dev.slne.surf.discord.command.console
 
-import jakarta.annotation.PostConstruct
-import org.springframework.context.ApplicationContext
-import org.springframework.stereotype.Component
+import dev.slne.surf.discord.command.console.impl.*
 
-@Component
-class ConsoleRunner(
-    private val context: ApplicationContext
-) {
-    @PostConstruct
+object ConsoleRunner {
+    private val consoleCommands = listOf(
+        EmojiCreateCommand, HelpCommand, InfoCommand,
+        RegisterCommand, UnregisterCommandsCommand
+    )
+
     fun init() {
-        val commands = context.getBeansOfType(ConsoleCommand::class.java)
-            .values
+        val commands = consoleCommands
             .associateBy { it.name }
 
         Thread {

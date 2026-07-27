@@ -1,8 +1,8 @@
 package dev.slne.surf.discord.ticket.database.deadline
 
-import dev.slne.surf.discord.ticket.database.column.nativeUuid
-import dev.slne.surf.discord.ticket.database.column.offsetDateTime
-import dev.slne.surf.discord.ticket.database.util.AuditableLongIdTable
+import dev.slne.surf.database.columns.nativeUuid
+import dev.slne.surf.database.columns.time.offsetDateTime
+import dev.slne.surf.database.table.AuditableLongIdTable
 import dev.slne.surf.discord.ticket.database.util.schemedName
 
 object ReplyDeadlineTable : AuditableLongIdTable(schemedName("ticket_reply_deadlines")) {

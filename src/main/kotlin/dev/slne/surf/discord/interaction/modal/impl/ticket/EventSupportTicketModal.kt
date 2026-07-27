@@ -20,13 +20,8 @@ import net.dv8tion.jda.api.components.textdisplay.TextDisplay
 import net.dv8tion.jda.api.components.textinput.TextInputStyle
 import net.dv8tion.jda.api.components.thumbnail.Thumbnail
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
-import org.springframework.stereotype.Component
 
-@Component
-class EventSupportTicketModal(
-    private val ticketService: TicketService,
-    private val buttonRegistry: ButtonRegistry,
-) : DiscordModal {
+object EventSupportTicketModal : DiscordModal {
     override val id = "ticket:support:event"
 
     override fun create() = modal(id, translatable("ticket.support.event.modal.title")) {
@@ -60,12 +55,12 @@ class EventSupportTicketModal(
         interaction.reply(translatable("ticket.creating")).setEphemeral(true).queue()
 
         val ticket =
-            ticketService.createTicket(
+            TicketService.createTicket(
                 interaction.hook,
                 TicketType.EVENT_SUPPORT,
                 mapOf("issue" to issue)
             ) ?: run {
-                if (ticketService.hasOpenTicket(user.idLong, TicketType.EVENT_SUPPORT)) {
+                if (TicketService.hasOpenTicket(user.idLong, TicketType.EVENT_SUPPORT)) {
                     interaction.hook.editOriginal(translatable("ticket.support.event.already_open"))
                         .queue()
                 } else {
@@ -99,9 +94,9 @@ class EventSupportTicketModal(
                 TextDisplay.of(issue),
                 Separator.createDivider(Separator.Spacing.LARGE),
                 ActionRow.of(
-                    buttonRegistry.get("ticket:claim").button,
-                    buttonRegistry.get("ticket:close").button,
-                    buttonRegistry.get("whitelist:button:information").button
+                    ButtonRegistry.get("ticket:claim").button,
+                    ButtonRegistry.get("ticket:close").button,
+                    ButtonRegistry.get("whitelist:button:information").button
                 ),
                 TextDisplay.of("-# ${ticket.ticketId}"),
             )

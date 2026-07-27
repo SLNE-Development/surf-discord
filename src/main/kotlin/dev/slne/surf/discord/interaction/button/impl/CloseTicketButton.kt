@@ -10,20 +10,15 @@ import net.dv8tion.jda.api.components.actionrow.ActionRow
 import net.dv8tion.jda.api.components.buttons.Button
 import net.dv8tion.jda.api.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
-import org.springframework.stereotype.Component
 
-@Component
-class CloseTicketButton(
-    private val selectMenuRegistry: SelectMenuRegistry,
-    private val emojis: Emojis
-) : DiscordButton {
+object CloseTicketButton : DiscordButton {
     override val id = "ticket:close"
     override val button by lazy {
         Button.of(
             ButtonStyle.SECONDARY,
             id,
             translatable("button.ticket.close"),
-            emojis.crossMark
+            Emojis.crossMark
         )
     }
 
@@ -34,7 +29,7 @@ class CloseTicketButton(
         }
 
 
-        val selectMenu = selectMenuRegistry.get("ticket:close:reason").create(event.hook)
+        val selectMenu = SelectMenuRegistry.get("ticket:close:reason").create(event.hook)
 
         event.reply(translatable("ticket.close.selectreason")).setEphemeral(true).addComponents(
             ActionRow.of(selectMenu)

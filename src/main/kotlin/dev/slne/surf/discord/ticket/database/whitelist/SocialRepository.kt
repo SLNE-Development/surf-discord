@@ -1,30 +1,17 @@
 package dev.slne.surf.discord.ticket.database.whitelist
 
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.*
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.select
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.selectAll
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import dev.slne.surf.discord.util.PlayerLookupService
 import it.unimi.dsi.fastutil.longs.LongSet
 import it.unimi.dsi.fastutil.objects.Object2LongMap
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap
 import kotlinx.coroutines.flow.*
-import org.jetbrains.exposed.v1.core.*
-import org.jetbrains.exposed.v1.r2dbc.select
-import org.jetbrains.exposed.v1.r2dbc.selectAll
-import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
-import org.springframework.stereotype.Repository
 import java.util.*
 
-/**
- * Reads account links from the website owned [WebAccountsTable] and manages the freebuild
- * whitelist entries derived from them. Never writes to [WebAccountsTable] - linking a minecraft
- * account to a discord account happens on the website.
- *
- * [WebAccountsTable.userId] is a text column while [FreebuildWhitelistTable.userId] is a native
- * uuid, so the two are never joined in SQL - the web user id is resolved first and then passed as
- * a parameter.
- */
-@Repository
-class SocialRepository(
-    private val playerLookupService: PlayerLookupService
-) {
+object SocialRepository {
     private val discordAccounts = WebAccountsTable.alias("discord_accounts")
     private val minecraftAccounts = WebAccountsTable.alias("minecraft_accounts")
 
@@ -52,7 +39,7 @@ class SocialRepository(
     }
 
     suspend fun findLinkByMinecraftName(minecraftName: String): AccountLink? {
-        val minecraftUuid = playerLookupService.getUuid(minecraftName) ?: return null
+        val minecraftUuid = PlayerLookupService.getUuid(minecraftName) ?: return null
         return findLink(byMinecraftUuid(minecraftUuid))
     }
 

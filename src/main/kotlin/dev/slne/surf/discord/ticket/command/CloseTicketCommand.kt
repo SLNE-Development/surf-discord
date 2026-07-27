@@ -9,13 +9,9 @@ import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.util.asTicketOrNull
 import net.dv8tion.jda.api.components.actionrow.ActionRow
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import org.springframework.stereotype.Component
 
-@Component
 @DiscordCommand("close", "Ticket schließen")
-class CloseTicketCommand(
-    private val selectMenuRegistry: SelectMenuRegistry
-) : SlashCommand {
+object CloseTicketCommand : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.TICKET_CLOSE)) {
             event.reply(translatable("no-permission")).setEphemeral(true).queue()
@@ -28,7 +24,7 @@ class CloseTicketCommand(
             return
         }
 
-        val selectMenu = selectMenuRegistry.get("ticket:close:reason").create(event.hook)
+        val selectMenu = SelectMenuRegistry.get("ticket:close:reason").create(event.hook)
 
         event.reply(translatable("ticket.close.selectreason")).setEphemeral(true).addComponents(
             ActionRow.of(selectMenu)

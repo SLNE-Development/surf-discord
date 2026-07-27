@@ -16,7 +16,7 @@ RUN --mount=type=cache,target=/root/.gradle \
 COPY src ./src
 
 RUN --mount=type=cache,target=/root/.gradle \
-    ./gradlew --no-daemon bootJar --parallel --no-scan \
+    ./gradlew --no-daemon shadowJar --parallel --no-scan \
     && cp build/libs/*.jar /workspace/app.jar
 
 # ---- Runtime stage ----
@@ -26,6 +26,8 @@ RUN useradd --system --create-home --shell /usr/sbin/nologin bot
 WORKDIR /app
 
 COPY --from=builder /workspace/app.jar ./app.jar
+COPY .env .env
+
 RUN mkdir -p /app/log && chown -R bot:bot /app
 
 USER bot

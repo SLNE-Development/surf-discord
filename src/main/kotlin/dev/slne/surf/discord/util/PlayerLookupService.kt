@@ -9,7 +9,6 @@ import io.ktor.http.*
 import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import org.springframework.stereotype.Service
 import java.time.Duration
 import java.util.*
 
@@ -24,8 +23,7 @@ data class MinecraftServicesProfile(val id: String, val name: String)
 @Serializable
 data class MinetoolsResponse(val status: String, val id: String? = null, val name: String? = null)
 
-@Service
-class PlayerLookupService {
+object PlayerLookupService {
     private val client = HttpClient(CIO) {
         expectSuccess = false
     }

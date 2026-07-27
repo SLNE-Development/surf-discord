@@ -10,13 +10,8 @@ import net.dv8tion.jda.api.components.selections.SelectMenu
 import net.dv8tion.jda.api.components.selections.StringSelectMenu
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
 import net.dv8tion.jda.api.interactions.InteractionHook
-import org.springframework.stereotype.Component
 
-@Component
-class TicketCloseReasonSelectMenu(
-    private val ticketService: TicketService,
-    private val modalRegistry: ModalRegistry,
-) : DiscordSelectMenu {
+object TicketCloseReasonSelectMenu : DiscordSelectMenu {
     override val id = "ticket:close:reason"
     override suspend fun create(hook: InteractionHook): SelectMenu {
         val ticket = hook.asTicketOrThrow()
@@ -37,19 +32,19 @@ class TicketCloseReasonSelectMenu(
             return
         }
 
-        val ticket = ticketService.getTicketByThreadId(event.channel.idLong) ?: run {
+        val ticket = TicketService.getTicketByThreadId(event.channel.idLong) ?: run {
             event.hook.editOriginal(translatable("error")).queue()
             return
         }
 
         if (selected.value == "custom") {
             event.replyModal(
-                modalRegistry.get("ticket:close:reason:custom").create()
+                ModalRegistry.get("ticket:close:reason:custom").create()
             ).queue()
         } else {
             event.reply(translatable("ticket.closing")).setEphemeral(true).submit(true).await()
 
-            ticketService.closeTicket(
+            TicketService.closeTicket(
                 selected.value,
                 event.hook
             )

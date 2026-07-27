@@ -1,27 +1,23 @@
 package dev.slne.surf.discord.ticket.database.ticket.staff
 
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.eq
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.insert
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.selectAll
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.update
 import dev.slne.surf.discord.ticket.Ticket
 import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
 import kotlinx.coroutines.flow.firstOrNull
 import net.dv8tion.jda.api.entities.User
-import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.r2dbc.insert
-import org.jetbrains.exposed.v1.r2dbc.selectAll
-import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
-import org.jetbrains.exposed.v1.r2dbc.update
-import org.springframework.stereotype.Repository
 import java.time.ZonedDateTime
 
-@Repository
-class TicketStaffRepository(
-    private val ticketRepository: TicketRepository
-) {
+object TicketStaffRepository {
     suspend fun claim(
         ticket: Ticket,
         claimer: User
     ) = suspendTransaction {
         val internalTicketId =
-            ticketRepository.getInternalId(ticket.ticketId) ?: return@suspendTransaction
+            TicketRepository.getInternalId(ticket.ticketId) ?: return@suspendTransaction
         val existing = TicketStaffTable.selectAll()
             .where(TicketStaffTable.ticketId eq internalTicketId)
             .firstOrNull()
@@ -50,7 +46,7 @@ class TicketStaffRepository(
         user: User
     ) = suspendTransaction {
         val internalTicketId =
-            ticketRepository.getInternalId(ticket.ticketId) ?: return@suspendTransaction false
+            TicketRepository.getInternalId(ticket.ticketId) ?: return@suspendTransaction false
         val staffEntry = TicketStaffTable.selectAll()
             .where(TicketStaffTable.ticketId eq internalTicketId)
             .firstOrNull()
@@ -62,7 +58,7 @@ class TicketStaffRepository(
         ticket: Ticket
     ) = suspendTransaction {
         val internalTicketId =
-            ticketRepository.getInternalId(ticket.ticketId) ?: return@suspendTransaction false
+            TicketRepository.getInternalId(ticket.ticketId) ?: return@suspendTransaction false
         val staffEntry = TicketStaffTable.selectAll()
             .where(TicketStaffTable.ticketId eq internalTicketId)
             .firstOrNull()
@@ -74,7 +70,7 @@ class TicketStaffRepository(
         ticket: Ticket
     ) = suspendTransaction {
         val internalTicketId =
-            ticketRepository.getInternalId(ticket.ticketId) ?: return@suspendTransaction
+            TicketRepository.getInternalId(ticket.ticketId) ?: return@suspendTransaction
         TicketStaffTable.update(where = { TicketStaffTable.ticketId eq internalTicketId }) {
             it[claimedAt] = null
             it[claimedBy] = null

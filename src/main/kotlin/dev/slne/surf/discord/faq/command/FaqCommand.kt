@@ -15,12 +15,10 @@ import net.dv8tion.jda.api.components.separator.Separator
 import net.dv8tion.jda.api.components.textdisplay.TextDisplay
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.utils.FileUpload
-import org.springframework.stereotype.Component
 import java.io.File
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
-@Component
 @DiscordCommand(
     "faq", "Häufig gestellte Fragen anzeigen", options = [
         CommandOption(
@@ -64,7 +62,7 @@ import kotlin.time.toJavaDuration
         )
     ]
 )
-class FaqCommand : SlashCommand {
+object FaqCommand : SlashCommand {
     private val faqCache = Caffeine.newBuilder()
         .expireAfterWrite(30.seconds.toJavaDuration())
         .build<Long, Pair<Faq, Long>>()

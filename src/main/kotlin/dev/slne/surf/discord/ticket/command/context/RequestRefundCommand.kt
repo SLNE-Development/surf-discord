@@ -12,7 +12,6 @@ import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.PlayerLookupService
 import dev.slne.surf.discord.util.escapeCodeBlock
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import org.springframework.stereotype.Component
 import java.time.OffsetDateTime
 
 private const val PLAYER_PANEL_BASE_URL = "https://support.castcrafter.de/core/surf-players"
@@ -58,10 +57,7 @@ private const val PLAYER_HEAD_BASE_URL = "https://mc-heads.net/avatar"
         required = false
     )]
 )
-@Component
-class RequestRefundCommand(
-    private val playerLookupService: PlayerLookupService
-) : SlashCommand {
+object RequestRefundCommand : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.WHITELIST_VIEW)) {
             event.reply(translatable("no-permission")).setEphemeral(true).queue()
@@ -77,7 +73,7 @@ class RequestRefundCommand(
         val coordinates = event.getOption("koordinaten")!!.asString
 
         val minecraftUuid = if (minecraftName != null) {
-            playerLookupService.getUuid(minecraftName) ?: run {
+            PlayerLookupService.getUuid(minecraftName) ?: run {
                 event.reply(translatable("whitelist.survival.modal.user-not-found"))
                     .setEphemeral(true)
                     .queue()
@@ -89,7 +85,10 @@ class RequestRefundCommand(
             author = event.user.effectiveName
             authorIconUrl = event.user.effectiveAvatarUrl
 
-            title = translatable("refund.command.title", minecraftName ?: translatable("refund.command.no-player"))
+            title = translatable(
+                "refund.command.title",
+                minecraftName ?: translatable("refund.command.no-player")
+            )
             minecraftUuid?.let { titleUrl = "$PLAYER_PANEL_BASE_URL/$it" }
             minecraftUuid?.let { thumbnail = "$PLAYER_HEAD_BASE_URL/$it" }
             color = Colors.INFO

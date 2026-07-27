@@ -1,14 +1,12 @@
 package dev.slne.surf.discord.ticket.database.messages.attachments
 
-import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.r2dbc.deleteWhere
-import org.jetbrains.exposed.v1.r2dbc.insert
-import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
-import org.springframework.stereotype.Repository
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.eq
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.deleteWhere
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.insert
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import java.time.ZonedDateTime
 
-@Repository
-class TicketAttachmentsRepository {
+object TicketAttachmentsRepository {
     suspend fun addAttachment(
         attachmentId: Long,
         fileName: String,

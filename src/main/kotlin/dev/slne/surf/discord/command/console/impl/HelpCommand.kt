@@ -1,10 +1,8 @@
 package dev.slne.surf.discord.command.console.impl
 
 import dev.slne.surf.discord.command.console.ConsoleCommand
-import org.springframework.stereotype.Component
 
-@Component
-class HelpCommand : ConsoleCommand {
+object HelpCommand : ConsoleCommand {
     override val name = "help"
 
     override fun execute(args: List<String>) {

@@ -16,7 +16,6 @@ import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.PlayerLookupService
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import org.springframework.stereotype.Component
 
 @DiscordCommand(
     name = "wl-view",
@@ -33,11 +32,7 @@ import org.springframework.stereotype.Component
         required = false
     )]
 )
-@Component
-class ViewWhitelistCommand(
-    private val socialRepository: SocialRepository,
-    private val playerLookupService: PlayerLookupService
-) : SlashCommand {
+object ViewWhitelistCommand : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.WHITELIST_VIEW)) {
             event.reply(translatable("no-permission")).setEphemeral(true).queue()
@@ -48,8 +43,8 @@ class ViewWhitelistCommand(
         val minecraftNameOption = event.getOption("minecraft-name")?.asString
 
         val whitelist = when {
-            userId != null -> socialRepository.findLinkByDiscordId(userId)
-            minecraftNameOption != null -> socialRepository.findLinkByMinecraftName(
+            userId != null -> SocialRepository.findLinkByDiscordId(userId)
+            minecraftNameOption != null -> SocialRepository.findLinkByMinecraftName(
                 minecraftNameOption
             )
 
@@ -73,7 +68,7 @@ class ViewWhitelistCommand(
 
     private suspend fun AccountLink.toInformationEmbed(): MessageEmbed {
         val minecraftName =
-            playerLookupService.getUsername(minecraftUuid) ?: minecraftUuid.toString()
+            PlayerLookupService.getUsername(minecraftUuid) ?: minecraftUuid.toString()
         val isDiscordMember = jda.guilds.any { it.retrieveMemberById(discordId).await() != null }
 
         return embed {

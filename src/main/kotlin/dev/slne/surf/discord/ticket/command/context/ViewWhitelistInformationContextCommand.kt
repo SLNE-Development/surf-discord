@@ -12,24 +12,19 @@ import dev.slne.surf.discord.ticket.database.whitelist.SocialRepository
 import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.PlayerLookupService
 import net.dv8tion.jda.api.events.interaction.command.UserContextInteractionEvent
-import org.springframework.stereotype.Component
 
 @DiscordContextCommand(
     "Whitelist Ansehen",
     ContextCommandType.USER
 )
-@Component
-class ViewWhitelistInformationContextCommand(
-    private val socialRepository: SocialRepository,
-    private val playerLookupService: PlayerLookupService
-) : UserContextCommand {
+object ViewWhitelistInformationContextCommand : UserContextCommand {
     override suspend fun execute(event: UserContextInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.WHITELIST_VIEW)) {
             event.reply(translatable("no-permission")).setEphemeral(true).queue()
             return
         }
 
-        val link = socialRepository.findLinkByDiscordId(event.target.idLong) ?: run {
+        val link = SocialRepository.findLinkByDiscordId(event.target.idLong) ?: run {
             event.reply(translatable("whitelist.embed.information.no_link"))
                 .setEphemeral(true)
                 .queue()
@@ -37,7 +32,7 @@ class ViewWhitelistInformationContextCommand(
         }
 
         val minecraftName =
-            playerLookupService.getUsername(link.minecraftUuid) ?: link.minecraftUuid.toString()
+            PlayerLookupService.getUsername(link.minecraftUuid) ?: link.minecraftUuid.toString()
         val isDiscordMember = event.guild?.retrieveMemberById(link.discordId)?.await() != null
 
         event.replyEmbeds(embed {

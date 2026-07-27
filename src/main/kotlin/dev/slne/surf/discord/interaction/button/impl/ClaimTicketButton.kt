@@ -10,20 +10,15 @@ import dev.slne.surf.discord.util.asTicketOrThrow
 import net.dv8tion.jda.api.components.buttons.Button
 import net.dv8tion.jda.api.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
-import org.springframework.stereotype.Component
 
-@Component
-class ClaimTicketButton(
-    private val ticketService: TicketService,
-    private val emojis: Emojis
-) : DiscordButton {
+object ClaimTicketButton : DiscordButton {
     override val id = "ticket:claim"
     override val button by lazy {
         Button.of(
             ButtonStyle.SECONDARY,
             id,
             translatable("button.ticket.claim"),
-            emojis.information
+            Emojis.information
         )
     }
 
@@ -35,15 +30,15 @@ class ClaimTicketButton(
 
         val ticket = event.hook.asTicketOrThrow()
 
-        if (ticketService.isClaimedByUser(ticket, event.user)) {
-            ticketService.unclaim(ticket, event.user)
+        if (TicketService.isClaimedByUser(ticket, event.user)) {
+            TicketService.unclaim(ticket, event.user)
             event.reply(translatable("claim.unclaimed")).setEphemeral(true).queue()
         } else {
-            if (ticketService.isClaimed(ticket)) {
+            if (TicketService.isClaimed(ticket)) {
                 event.reply(translatable("claim.already-claimed"))
                     .setEphemeral(true).queue()
             } else {
-                ticketService.claim(ticket, event.user)
+                TicketService.claim(ticket, event.user)
                 event.reply(translatable("claim.claimed")).setEphemeral(true).queue()
             }
         }

@@ -1,0 +1,14 @@
+# surf-database-r2dbc's own shaded jar ships this descriptor with only the
+# r2dbc-pool provider -- its shading overwrote the driver entries instead of
+# merging them, so without this file no driver is discoverable and r2dbc fails
+# with "Available drivers: [ None ]".
+#
+# This file shares its path with the one from that jar, so it replaces it rather
+# than merging with it: list every provider, r2dbc-pool included.
+#
+# These names are deliberately un-shaded: shadowJar's mergeServiceFiles() rewrites
+# them (and this file's name) to the relocated packages, so they stay correct if
+# the relocation prefix changes.
+io.r2dbc.postgresql.PostgresqlConnectionFactoryProvider
+org.mariadb.r2dbc.MariadbConnectionFactoryProvider
+io.r2dbc.pool.PoolingConnectionFactoryProvider

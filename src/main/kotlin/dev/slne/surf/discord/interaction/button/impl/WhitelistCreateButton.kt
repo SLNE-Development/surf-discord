@@ -9,26 +9,21 @@ import net.dv8tion.jda.api.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.components.container.Container
 import net.dv8tion.jda.api.components.textdisplay.TextDisplay
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
-import org.springframework.stereotype.Component
 
-@Component
-class WhitelistCreateButton(
-    private val emojis: Emojis,
-    private val socialRepository: SocialRepository
-) : DiscordButton {
+object WhitelistCreateButton : DiscordButton {
     override val id = "whitelist:create"
     override val button by lazy {
         Button.of(
             ButtonStyle.SECONDARY,
             id,
             translatable("button.ticket.whitelist"),
-            emojis.checkMark
+            Emojis.checkMark
         )
     }
 
     override suspend fun onClick(event: ButtonInteractionEvent) {
         val discordId = event.user.idLong
-        val shouldPlay = socialRepository.shouldBeAbleToPlayIfMember(discordId)
+        val shouldPlay = SocialRepository.shouldBeAbleToPlayIfMember(discordId)
 
         if (shouldPlay) {
             event.replyComponents(
@@ -37,11 +32,11 @@ class WhitelistCreateButton(
                 )
             ).setEphemeral(true).queue()
         } else {
-            val discordToWebExists = socialRepository.hasWebUser(discordId)
-            val linkExists = socialRepository.findLinkByDiscordId(discordId) != null
+            val discordToWebExists = SocialRepository.hasWebUser(discordId)
+            val linkExists = SocialRepository.findLinkByDiscordId(discordId) != null
 
-            val discordIcon = if (discordToWebExists) emojis.checkMark else emojis.crossMark
-            val linkIcon = if (linkExists) emojis.checkMark else emojis.crossMark
+            val discordIcon = if (discordToWebExists) Emojis.checkMark else Emojis.crossMark
+            val linkIcon = if (linkExists) Emojis.checkMark else Emojis.crossMark
 
 
             event.replyComponents(

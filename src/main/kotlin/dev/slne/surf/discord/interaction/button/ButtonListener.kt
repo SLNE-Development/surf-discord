@@ -1,20 +1,13 @@
 package dev.slne.surf.discord.interaction.button
 
-import kotlinx.coroutines.CoroutineScope
+import dev.slne.surf.discord.discordScope
 import kotlinx.coroutines.launch
-import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import org.springframework.stereotype.Component
 
-@Component
-class ButtonListener(
-    private val jda: JDA,
-    private val registry: ButtonRegistry,
-    private val discordScope: CoroutineScope
-) : ListenerAdapter() {
+object ButtonListener : ListenerAdapter() {
     override fun onButtonInteraction(event: ButtonInteractionEvent) {
-        val button = registry.getOrNull(event.componentId) ?: return
+        val button = ButtonRegistry.getOrNull(event.componentId) ?: return
         discordScope.launch {
             button.onClick(event)
         }

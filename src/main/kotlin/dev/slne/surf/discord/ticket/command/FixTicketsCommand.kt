@@ -10,16 +10,12 @@ import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import org.springframework.stereotype.Component
 
 @DiscordCommand(
     name = "ticket-fix",
     description = "Öffne archivierte Tickets, welche in der Datenbank noch offen sind."
 )
-@Component
-class FixTicketsCommand(
-    private val ticketRepository: TicketRepository,
-) : SlashCommand {
+object FixTicketsCommand : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.TICKET_FIX)) {
             event.reply(translatable("no-permission")).setEphemeral(true).queue()
@@ -28,7 +24,7 @@ class FixTicketsCommand(
 
         val rest = event.deferReply(true).await()
 
-        val openTickets = ticketRepository.getOpenTickets()
+        val openTickets = TicketRepository.getOpenTickets()
         var fixedAmount = 0
 
         coroutineScope {

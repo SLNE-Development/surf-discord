@@ -14,21 +14,15 @@ import dev.slne.surf.discord.util.asTicketOrNull
 import net.dv8tion.jda.api.components.buttons.Button
 import net.dv8tion.jda.api.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
-import org.springframework.stereotype.Component
 
-@Component
-class WhitelistInformationButton(
-    private val emojis: Emojis,
-    private val socialRepository: SocialRepository,
-    private val playerLookupService: PlayerLookupService
-) : DiscordButton {
+object WhitelistInformationButton : DiscordButton {
     override val id = "whitelist:button:information"
     override val button by lazy {
         Button.of(
             ButtonStyle.SECONDARY,
             id,
             translatable("button.ticket.whitelist.view"),
-            emojis.checkMark
+            Emojis.checkMark
         )
     }
 
@@ -43,7 +37,7 @@ class WhitelistInformationButton(
             return
         }
 
-        val link = socialRepository.findLinkByDiscordId(ticket.authorId) ?: run {
+        val link = SocialRepository.findLinkByDiscordId(ticket.authorId) ?: run {
             event.reply(translatable("whitelist.embed.information.no_link"))
                 .setEphemeral(true)
                 .queue()
@@ -51,7 +45,7 @@ class WhitelistInformationButton(
         }
 
         val minecraftName =
-            playerLookupService.getUsername(link.minecraftUuid) ?: link.minecraftUuid.toString()
+            PlayerLookupService.getUsername(link.minecraftUuid) ?: link.minecraftUuid.toString()
         val isDiscordMember = event.guild?.retrieveMemberById(link.discordId)?.await() != null
 
         event.replyEmbeds(embed {

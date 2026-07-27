@@ -12,7 +12,6 @@ import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.PlayerLookupService
 import dev.slne.surf.discord.util.escapeCodeBlock
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import org.springframework.stereotype.Component
 import java.time.OffsetDateTime
 
 private const val PLAYER_PANEL_BASE_URL = "https://support.castcrafter.de/core/surf-players"
@@ -48,10 +47,7 @@ private const val PLAYER_HEAD_BASE_URL = "https://mc-heads.net/avatar"
         required = false
     )]
 )
-@Component
-class RequestFullRollbackCommand(
-    private val playerLookupService: PlayerLookupService
-) : SlashCommand {
+object RequestFullRollbackCommand : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.WHITELIST_VIEW)) {
             event.reply(translatable("no-permission")).setEphemeral(true).queue()
@@ -64,7 +60,7 @@ class RequestFullRollbackCommand(
         val coordinates = event.getOption("koordinaten")?.asString
         val world = event.getOption("welt")?.asString
 
-        val minecraftUuid = playerLookupService.getUuid(minecraftName) ?: run {
+        val minecraftUuid = PlayerLookupService.getUuid(minecraftName) ?: run {
             event.reply(translatable("whitelist.survival.modal.user-not-found"))
                 .setEphemeral(true)
                 .queue()

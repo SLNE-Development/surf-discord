@@ -1,6 +1,6 @@
 package dev.slne.surf.discord.ticket.database.whitelist
 
-import org.jetbrains.exposed.v1.core.Table
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.Table
 import java.util.*
 
 object WebUsersTable : Table("user") {

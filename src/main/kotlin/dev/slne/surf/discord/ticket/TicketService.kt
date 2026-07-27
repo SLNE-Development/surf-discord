@@ -12,32 +12,20 @@ import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataRepository
 import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffRepository
+import dev.slne.surf.discord.ticketChannel
 import dev.slne.surf.discord.util.Colors
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import net.dv8tion.jda.api.components.container.Container
 import net.dv8tion.jda.api.components.separator.Separator
 import net.dv8tion.jda.api.components.textdisplay.TextDisplay
-import net.dv8tion.jda.api.components.thumbnail.Thumbnail
 import net.dv8tion.jda.api.entities.User
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel
 import net.dv8tion.jda.api.interactions.InteractionHook
-import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
 import java.util.*
 
-@Service
-class TicketService(
-    private val ticketRepository: TicketRepository,
-    private val ticketDataRepository: TicketDataRepository,
-    private val ticketStaffRepository: TicketStaffRepository,
-    private val ticketMemberService: TicketMemberService,
-    private val ticketChannel: TextChannel?,
-    private val ticketLogger: TicketLogger
-) {
-    private val closeThumbnail = Thumbnail.fromUrl("https://cdn3.emoji.gg/emojis/4569-ok.png")
-
+object TicketService {
     suspend fun createTicket(hook: InteractionHook, type: TicketType, data: TicketData): Ticket? {
         val userId = hook.interaction.user.idLong
         val user = hook.interaction.user
@@ -88,13 +76,13 @@ class TicketService(
             closedReason = null
         )
 
-        ticketRepository.createTicket(ticket)
-        ticketRepository.getInternalId(ticket.ticketId)?.let {
-            ticketDataRepository.setData(it, data)
+        TicketRepository.createTicket(ticket)
+        TicketRepository.getInternalId(ticket.ticketId)?.let {
+            TicketDataRepository.setData(it, data)
         }
 
-        ticketMemberService.addMember(ticket, user, jda.selfUser, false)
-        ticketLogger.logCreation(ticket)
+        TicketMemberService.addMember(ticket, user, jda.selfUser, false)
+        TicketLogger.logCreation(ticket)
 
         return ticket
     }
@@ -117,9 +105,9 @@ class TicketService(
         }
 
     suspend fun claim(ticket: Ticket, user: User) {
-        ticketStaffRepository.claim(ticket, user)
+        TicketStaffRepository.claim(ticket, user)
 
-        ticketLogger.logNewClaimant(ticket, user.name)
+        TicketLogger.logNewClaimant(ticket, user.name)
 
         ticket.getThreadChannel()?.sendMessageEmbeds(embed {
             title = translatable("ticket.claimed.title")
@@ -129,33 +117,33 @@ class TicketService(
     }
 
     suspend fun unclaim(ticket: Ticket, user: User) {
-        ticketStaffRepository.unclaim(ticket)
-        ticketLogger.logNewUnClaimant(ticket, user.name)
+        TicketStaffRepository.unclaim(ticket)
+        TicketLogger.logNewUnClaimant(ticket, user.name)
     }
 
     suspend fun isClaimed(ticket: Ticket) =
-        ticketStaffRepository.isClaimed(ticket)
+        TicketStaffRepository.isClaimed(ticket)
 
     suspend fun isClaimedByUser(ticket: Ticket, user: User) =
-        ticketStaffRepository.isClaimedByUser(ticket, user)
+        TicketStaffRepository.isClaimedByUser(ticket, user)
 
     suspend fun updateData(ticket: Ticket, ticketData: TicketData) =
-        ticketRepository.getInternalId(ticket.ticketId)?.let {
-            ticketDataRepository.setData(it, ticketData)
+        TicketRepository.getInternalId(ticket.ticketId)?.let {
+            TicketDataRepository.setData(it, ticketData)
         }
 
 
     suspend fun getTicketByThreadId(threadId: Long) =
-        ticketRepository.getTicketByThreadId(threadId)
+        TicketRepository.getTicketByThreadId(threadId)
 
     suspend fun isTicketExisting(threadId: Long) =
-        ticketRepository.getTicketByThreadId(threadId) != null
+        TicketRepository.getTicketByThreadId(threadId) != null
 
     suspend fun hasOpenTicket(userId: Long, ticketType: TicketType) =
-        ticketRepository.hasOpenTicket(userId, ticketType)
+        TicketRepository.hasOpenTicket(userId, ticketType)
 
     suspend fun getTicketByUserAndType(userId: Long, ticketType: TicketType) =
-        ticketRepository.getTicket(userId, ticketType)
+        TicketRepository.getTicket(userId, ticketType)
 
     suspend fun closeTicket(reason: String, hook: InteractionHook) {
         val ticket =
@@ -164,8 +152,8 @@ class TicketService(
         val closer = hook.interaction.user
         val closerMember = hook.interaction.member ?: error("Member is null")
 
-        if (ticketStaffRepository.isClaimed(ticket)) {
-            if (!ticketStaffRepository.isClaimedByUser(
+        if (TicketStaffRepository.isClaimed(ticket)) {
+            if (!TicketStaffRepository.isClaimedByUser(
                     ticket,
                     closer
                 ) && !closerMember.hasPermission(DiscordPermission.TICKET_CLOSE_BYPASS_CLAIM)
@@ -203,7 +191,7 @@ class TicketService(
         ticket.closedByAvatar = closer.avatarUrl
         ticket.closedReason = reason
 
-        ticketLogger.logClosure(ticket)
+        TicketLogger.logClosure(ticket)
         markAsClosed(ticket)
 
         logger.info("Ticket ${ticket.ticketId} closed by ${closer.name} (type=${ticket.ticketType}, creator=${ticket.authorName})")
@@ -260,5 +248,5 @@ class TicketService(
     }
 
     suspend fun markAsClosed(ticket: Ticket) =
-        ticketRepository.markAsClosed(ticket)
+        TicketRepository.markAsClosed(ticket)
 }
