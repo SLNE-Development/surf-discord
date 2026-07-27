@@ -69,7 +69,9 @@ object ViewWhitelistCommand : SlashCommand {
     private suspend fun AccountLink.toInformationEmbed(): MessageEmbed {
         val minecraftName =
             PlayerLookupService.getUsername(minecraftUuid) ?: minecraftUuid.toString()
-        val isDiscordMember = jda.guilds.any { it.retrieveMemberById(discordId).await() != null }
+        val isDiscordMember = jda.guilds.any { guild ->
+            runCatching { guild.retrieveMemberById(discordId).await() }.getOrNull() != null
+        }
 
         return embed {
             title = translatable("whitelist.embed.information.title")
