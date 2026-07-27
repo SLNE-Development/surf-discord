@@ -21,9 +21,12 @@ object RedisRequestHandler {
             context.respond(
                 DiscordMemberShipResponse(
                     memberResultCache.getIfPresent(discordUserId) ?: jda.guilds.any {
-                        runCatching {
+                        val member = runCatching {
                             it.retrieveMemberById(discordUserId).await()
-                        }.getOrNull() != null
+                        }.getOrNull()
+
+                        member?.let { memberResultCache.put(discordUserId, true) }
+                        member != null
                     })
             )
         }
