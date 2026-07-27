@@ -9,7 +9,6 @@ import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.ticket.database.ticket.TicketRepository
 import dev.slne.surf.discord.util.Colors
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import org.springframework.stereotype.Component
 
 private const val PANEL_BASE_URL = "https://support.castcrafter.de/discord/tickets"
 
@@ -17,17 +16,14 @@ private const val PANEL_BASE_URL = "https://support.castcrafter.de/discord/ticke
     name = "mytickets",
     description = "Zeigt alle offenen Tickets, die du selbst übernommen hast."
 )
-@Component
-class MyTicketsCommand(
-    private val ticketRepository: TicketRepository
-) : SlashCommand {
+object MyTicketsCommand : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.TICKET_CLAIM)) {
             event.reply(translatable("no-permission")).setEphemeral(true).queue()
             return
         }
 
-        val tickets = ticketRepository.getOpenTicketsClaimedBy(event.user.idLong)
+        val tickets = TicketRepository.getOpenTicketsClaimedBy(event.user.idLong)
             .filter { it.threadId != null }
             .sortedByDescending { it.createdAt }
 

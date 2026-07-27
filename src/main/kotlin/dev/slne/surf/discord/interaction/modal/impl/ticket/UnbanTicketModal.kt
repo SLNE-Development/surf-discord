@@ -15,13 +15,8 @@ import net.dv8tion.jda.api.components.textdisplay.TextDisplay
 import net.dv8tion.jda.api.components.textinput.TextInputStyle
 import net.dv8tion.jda.api.components.thumbnail.Thumbnail
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
-import org.springframework.stereotype.Component
 
-@Component
-class UnbanTicketModal(
-    private val ticketService: TicketService,
-    private val buttonRegistry: ButtonRegistry,
-) : DiscordModal {
+object UnbanTicketModal : DiscordModal {
     override val id = "ticket:unban"
 
     override fun create() = modal(id, translatable("ticket.unban.modal.title")) {
@@ -64,12 +59,12 @@ class UnbanTicketModal(
         interaction.reply(translatable("ticket.creating")).setEphemeral(true).queue()
 
         val ticket =
-            ticketService.createTicket(
+            TicketService.createTicket(
                 interaction.hook,
                 TicketType.UNBAN,
                 mapOf("issue" to issue, "reason" to reason, "punish-id" to punishId),
             ) ?: run {
-                if (ticketService.hasOpenTicket(user.idLong, TicketType.UNBAN)) {
+                if (TicketService.hasOpenTicket(user.idLong, TicketType.UNBAN)) {
                     interaction.hook.editOriginal(translatable("ticket.unban.already_open"))
                         .queue()
                 } else {
@@ -109,9 +104,9 @@ class UnbanTicketModal(
                 TextDisplay.of(reason),
                 Separator.createDivider(Separator.Spacing.LARGE),
                 ActionRow.of(
-                    buttonRegistry.get("ticket:claim").button,
-                    buttonRegistry.get("ticket:close").button,
-                    buttonRegistry.get("whitelist:button:information").button
+                    ButtonRegistry.get("ticket:claim").button,
+                    ButtonRegistry.get("ticket:close").button,
+                    ButtonRegistry.get("whitelist:button:information").button
                 ),
                 TextDisplay.of("-# ${ticket.ticketId}"),
             )

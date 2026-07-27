@@ -10,12 +10,8 @@ import net.dv8tion.jda.api.components.selections.SelectOption
 import net.dv8tion.jda.api.components.selections.StringSelectMenu
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.modals.Modal
-import org.springframework.stereotype.Component
 
-@Component
-class DeadlineNotifyModal(
-    private val deadlineNotifyRepository: DeadlineNotifyRepository
-) : DiscordModal {
+object DeadlineNotifyModal : DiscordModal {
     override val id = "deadline-notify"
 
     private val choiceId = "deadline-notify:choice"
@@ -47,7 +43,7 @@ class DeadlineNotifyModal(
         val choice = event.getValue(choiceId)?.asStringList?.firstOrNull() ?: return
         val enabled = choice == valueYes
 
-        deadlineNotifyRepository.setEnabled(event.user.idLong, enabled)
+        DeadlineNotifyRepository.setEnabled(event.user.idLong, enabled)
 
         event.replyEmbeds(embed {
             title = translatable("ticket.reply-deadline.notify.modal.title")

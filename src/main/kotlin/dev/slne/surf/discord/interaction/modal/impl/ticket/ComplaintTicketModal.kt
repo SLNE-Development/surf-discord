@@ -15,13 +15,8 @@ import net.dv8tion.jda.api.components.textdisplay.TextDisplay
 import net.dv8tion.jda.api.components.textinput.TextInputStyle
 import net.dv8tion.jda.api.components.thumbnail.Thumbnail
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
-import org.springframework.stereotype.Component
 
-@Component
-class ComplaintTicketModal(
-    private val ticketService: TicketService,
-    private val buttonRegistry: ButtonRegistry,
-) : DiscordModal {
+object ComplaintTicketModal : DiscordModal {
     override val id = "ticket:complaint"
 
     override fun create() = modal(id, translatable("ticket.complaint.modal.title")) {
@@ -53,12 +48,12 @@ class ComplaintTicketModal(
         interaction.reply(translatable("ticket.creating")).setEphemeral(true).queue()
 
         val ticket =
-            ticketService.createTicket(
+            TicketService.createTicket(
                 interaction.hook,
                 TicketType.COMPLAINT,
                 mapOf("issue" to issue, "target" to target),
             ) ?: run {
-                if (ticketService.hasOpenTicket(user.idLong, TicketType.COMPLAINT)) {
+                if (TicketService.hasOpenTicket(user.idLong, TicketType.COMPLAINT)) {
                     interaction.hook.editOriginal(translatable("ticket.complaint.already_open"))
                         .queue()
                 } else {
@@ -95,8 +90,8 @@ class ComplaintTicketModal(
                 TextDisplay.of(issue),
                 Separator.createDivider(Separator.Spacing.LARGE),
                 ActionRow.of(
-                    buttonRegistry.get("ticket:claim").button,
-                    buttonRegistry.get("ticket:close").button
+                    ButtonRegistry.get("ticket:claim").button,
+                    ButtonRegistry.get("ticket:close").button
                 ),
                 TextDisplay.of("-# ${ticket.ticketId}"),
             )

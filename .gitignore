@@ -135,3 +135,4 @@ messages/**
 
 .kotlin/**/**
 config.yml
+.env

@@ -1,5 +1,13 @@
 package dev.slne.surf.discord.ticket.database.ticket
 
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.ResultRow
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.and
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.eq
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.isNull
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.insert
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.selectAll
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.update
 import dev.slne.surf.discord.ticket.Ticket
 import dev.slne.surf.discord.ticket.TicketType
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataRepository
@@ -8,22 +16,10 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import org.jetbrains.exposed.v1.core.ResultRow
-import org.jetbrains.exposed.v1.core.and
-import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.isNull
-import org.jetbrains.exposed.v1.r2dbc.insert
-import org.jetbrains.exposed.v1.r2dbc.selectAll
-import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
-import org.jetbrains.exposed.v1.r2dbc.update
-import org.springframework.stereotype.Repository
 import java.time.ZonedDateTime
 import java.util.*
 
-@Repository
-class TicketRepository(
-    private val ticketDataRepository: TicketDataRepository
-) {
+object TicketRepository {
     suspend fun createTicket(ticket: Ticket) = suspendTransaction {
         TicketTable.insert {
             it[ticketId] = ticket.ticketId
@@ -111,7 +107,7 @@ class TicketRepository(
     private suspend fun ResultRow.toTicket(): Ticket {
         val id = this[TicketTable.ticketId]
         val internalId = this[TicketTable.id].value
-        val data = ticketDataRepository.getData(internalId)
+        val data = TicketDataRepository.getData(internalId)
 
         return Ticket(
             ticketId = id,

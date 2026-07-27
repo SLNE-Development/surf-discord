@@ -6,23 +6,19 @@ import dev.slne.surf.discord.ticket.database.members.TicketMemberRepository
 import dev.slne.surf.discord.util.Colors
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.User
-import org.springframework.stereotype.Service
 
-@Service
-class TicketMemberService(
-    private val ticketMemberRepository: TicketMemberRepository
-) {
+object TicketMemberService {
     suspend fun addMember(
         ticket: Ticket,
         user: User,
         addedBy: User,
         welcome: Boolean = true
     ): Boolean {
-        if (ticketMemberRepository.isMember(ticket, user.idLong)) {
+        if (TicketMemberRepository.isMember(ticket, user.idLong)) {
             return false
         }
 
-        ticketMemberRepository.addMember(
+        TicketMemberRepository.addMember(
             ticket = ticket,
             userId = user.idLong,
             userName = user.name,
@@ -63,11 +59,11 @@ class TicketMemberService(
     }
 
     suspend fun removeMember(ticket: Ticket, user: User, removedBy: User): Boolean {
-        if (!ticketMemberRepository.isMember(ticket, user.idLong)) {
+        if (!TicketMemberRepository.isMember(ticket, user.idLong)) {
             return false
         }
 
-        ticketMemberRepository.removeMember(
+        TicketMemberRepository.removeMember(
             ticket = ticket,
             removedById = user.idLong,
             removedByName = removedBy.name,
@@ -80,5 +76,5 @@ class TicketMemberService(
     }
 
     suspend fun isMember(ticket: Ticket, userId: Long) =
-        ticketMemberRepository.isMember(ticket, userId)
+        TicketMemberRepository.isMember(ticket, userId)
 }

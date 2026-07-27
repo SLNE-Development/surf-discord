@@ -1,15 +1,12 @@
 package dev.slne.surf.discord.ticket.database.deadline
 
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.eq
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.select
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.upsert
 import kotlinx.coroutines.flow.singleOrNull
-import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.r2dbc.select
-import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
-import org.jetbrains.exposed.v1.r2dbc.upsert
-import org.springframework.stereotype.Repository
 
-@Repository
-class DeadlineNotifyRepository {
-
+object DeadlineNotifyRepository {
     suspend fun setEnabled(userId: Long, enabled: Boolean) = suspendTransaction {
         DeadlineNotifyTable.upsert(DeadlineNotifyTable.userId) {
             it[DeadlineNotifyTable.userId] = userId

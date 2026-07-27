@@ -19,7 +19,6 @@ import net.dv8tion.jda.api.components.separator.Separator
 import net.dv8tion.jda.api.components.textdisplay.TextDisplay
 import net.dv8tion.jda.api.components.thumbnail.Thumbnail
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import org.springframework.stereotype.Component
 
 @DiscordCommand(
     name = "ticketbuttons",
@@ -31,10 +30,7 @@ import org.springframework.stereotype.Component
         required = false,
     )]
 )
-@Component
-class PrintTicketButtonsCommand(
-    private val buttonRegistry: ButtonRegistry
-) : SlashCommand {
+object PrintTicketButtonsCommand : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.COMMAND_TICKET_BUTTONS)) {
             event.reply(translatable("no-permission")).setEphemeral(true).queue()
@@ -67,8 +63,8 @@ class PrintTicketButtonsCommand(
                     TextDisplay.of(translatable("ticket.command.ticketbuttons.whitelist")),
                     Separator.createDivider(Separator.Spacing.LARGE),
                     ActionRow.of(
-                        buttonRegistry.get("ticket:open").button,
-                        buttonRegistry.get("whitelist:create").button
+                        ButtonRegistry.get("ticket:open").button,
+                        ButtonRegistry.get("whitelist:create").button
                     )
                 )
             ).useComponentsV2().queue {
@@ -87,8 +83,8 @@ class PrintTicketButtonsCommand(
                 }
             ).addComponents(
                 ActionRow.of(
-                    buttonRegistry.get("ticket:open").button,
-                    buttonRegistry.get("whitelist:create").button
+                    ButtonRegistry.get("ticket:open").button,
+                    ButtonRegistry.get("whitelist:create").button
                 )
             ).queue {
                 event.reply(translatable("ticket.command.ticketbuttons.success")).setEphemeral(true)

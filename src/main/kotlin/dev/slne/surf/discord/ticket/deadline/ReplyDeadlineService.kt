@@ -2,6 +2,7 @@ package dev.slne.surf.discord.ticket.deadline
 
 import dev.minn.jda.ktx.coroutines.await
 import dev.slne.surf.discord.dsl.embed
+import dev.slne.surf.discord.jda
 import dev.slne.surf.discord.logger
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.ticket.Ticket
@@ -15,26 +16,21 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
-import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
-import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.stereotype.Service
 import java.time.OffsetDateTime
-import java.util.concurrent.TimeUnit
 
-@Service
-class ReplyDeadlineService(
-    private val jda: JDA,
-    private val replyDeadlineRepository: ReplyDeadlineRepository,
-    private val deadlineNotifyRepository: DeadlineNotifyRepository,
-    private val ticketRepository: TicketRepository,
-) {
+object ReplyDeadlineService {
 
-    suspend fun createDeadline(ticket: Ticket, target: User, setBy: User, deadline: OffsetDateTime) {
+    suspend fun createDeadline(
+        ticket: Ticket,
+        target: User,
+        setBy: User,
+        deadline: OffsetDateTime
+    ) {
         val threadId = ticket.threadId ?: return
 
-        replyDeadlineRepository.create(
+        ReplyDeadlineRepository.create(
             ticketId = ticket.ticketId,
             threadId = threadId,
             targetUserId = target.idLong,
@@ -46,12 +42,11 @@ class ReplyDeadlineService(
     }
 
     suspend fun onUserReplied(threadId: Long, userId: Long) {
-        replyDeadlineRepository.deleteForUserInThread(threadId, userId)
+        ReplyDeadlineRepository.deleteForUserInThread(threadId, userId)
     }
 
-    @Scheduled(fixedRate = 1, timeUnit = TimeUnit.MINUTES)
-    protected suspend fun checkExpiredDeadlines() {
-        val expired = replyDeadlineRepository.findExpired(OffsetDateTime.now())
+    suspend fun checkExpiredDeadlines() {
+        val expired = ReplyDeadlineRepository.findExpired(OffsetDateTime.now())
         if (expired.isEmpty()) return
 
         val semaphore = Semaphore(64)
@@ -68,14 +63,14 @@ class ReplyDeadlineService(
     }
 
     private suspend fun handleExpiredDeadline(deadline: ReplyDeadline) {
-        val deleted = replyDeadlineRepository.delete(deadline.id)
+        val deleted = ReplyDeadlineRepository.delete(deadline.id)
         if (!deleted) return
 
-        val ticket = ticketRepository.getTicketById(deadline.ticketId)
+        val ticket = TicketRepository.getTicketById(deadline.ticketId)
         if (ticket == null || ticket.isClosed()) return
 
         try {
-            if (deadlineNotifyRepository.isEnabled(deadline.setById)) {
+            if (DeadlineNotifyRepository.isEnabled(deadline.setById)) {
                 notifyDeadlineCreator(deadline)
             }
         } catch (exception: Exception) {

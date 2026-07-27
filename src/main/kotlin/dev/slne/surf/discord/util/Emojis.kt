@@ -1,23 +1,19 @@
 package dev.slne.surf.discord.util
 
+import dev.slne.surf.discord.jda
 import dev.slne.surf.discord.logger
-import jakarta.annotation.PostConstruct
-import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Icon
 import net.dv8tion.jda.api.entities.emoji.Emoji
-import org.springframework.stereotype.Component
 import java.io.File
 
-@Component
-class Emojis(
-    private val jda: JDA
-) {
+object Emojis {
     lateinit var checkMark: Emoji
     lateinit var crossMark: Emoji
     lateinit var information: Emoji
 
-    @PostConstruct
     fun updateEmojis() {
+        logger.info("Updating emojis...")
+        
         var check = jda.getEmojisByName("checkmark", true).firstOrNull()
         var cross = jda.getEmojisByName("crossmark", true).firstOrNull()
         var info = jda.getEmojisByName("information", true).firstOrNull()

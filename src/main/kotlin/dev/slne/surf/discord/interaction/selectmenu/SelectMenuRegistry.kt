@@ -1,9 +1,14 @@
 package dev.slne.surf.discord.interaction.selectmenu
 
-import org.springframework.stereotype.Component
+import dev.slne.surf.discord.interaction.selectmenu.impl.TicketCloseReasonSelectMenu
+import dev.slne.surf.discord.interaction.selectmenu.impl.TicketTypeSelectMenu
+import dev.slne.surf.discord.interaction.selectmenu.impl.application.ApplicationTypeSelectMenu
 
-@Component
-class SelectMenuRegistry(menus: List<DiscordSelectMenu>) {
+object SelectMenuRegistry {
+    private val menus = listOf(
+        ApplicationTypeSelectMenu, TicketCloseReasonSelectMenu, TicketTypeSelectMenu
+    )
+
     private val menuMap = menus.associateBy { it.id }
 
     fun getOrNull(id: String) = menuMap[id]

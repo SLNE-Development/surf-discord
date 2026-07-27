@@ -1,9 +1,13 @@
 package dev.slne.surf.discord.interaction.button
 
-import org.springframework.stereotype.Component
+import dev.slne.surf.discord.interaction.button.impl.*
 
-@Component
-class ButtonRegistry(buttons: List<DiscordButton>) {
+object ButtonRegistry {
+    private val buttons = listOf(
+        WhitelistCreateButton, ClaimTicketButton, OpenTicketButton, WhitelistInformationButton,
+        CloseTicketButton
+    )
+
     private val buttonMap = buttons.associateBy { it.id }
 
     fun getOrNull(id: String) = buttonMap[id]

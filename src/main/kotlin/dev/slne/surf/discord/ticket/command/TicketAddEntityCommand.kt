@@ -11,7 +11,6 @@ import dev.slne.surf.discord.ticket.TicketMemberService
 import dev.slne.surf.discord.util.asTicketOrNull
 import kotlinx.coroutines.future.await
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import org.springframework.stereotype.Component
 
 @DiscordCommand(
     name = "add",
@@ -37,11 +36,7 @@ import org.springframework.stereotype.Component
         )
     ]
 )
-@Component
-class TicketAddEntityCommand(
-    private val ticketMemberService: TicketMemberService
-) : SlashCommand {
-
+object TicketAddEntityCommand : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.COMMAND_TICKET_ADD)) {
             event.reply(translatable("no-permission")).setEphemeral(true).queue()
@@ -88,14 +83,14 @@ class TicketAddEntityCommand(
         }
 
         val success = if (user != null) {
-            ticketMemberService.addMember(ticket, user, event.user)
+            TicketMemberService.addMember(ticket, user, event.user)
         } else {
             if (!event.member.hasPermission(DiscordPermission.COMMAND_TICKET_ADD_ROLE)) {
                 event.reply(translatable("no-permission")).setEphemeral(true).queue()
                 return
             }
 
-            ticketMemberService.addRole(
+            TicketMemberService.addRole(
                 ticket,
                 targetRole ?: error("Target user and role are both null"),
                 event.user

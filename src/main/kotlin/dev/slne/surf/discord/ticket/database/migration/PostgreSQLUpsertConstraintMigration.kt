@@ -1,8 +1,8 @@
 package dev.slne.surf.discord.ticket.database.migration
 
-import org.jetbrains.exposed.v1.core.vendors.PostgreSQLDialect
-import org.jetbrains.exposed.v1.core.vendors.currentDialect
-import org.jetbrains.exposed.v1.r2dbc.transactions.TransactionManager
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.vendors.PostgreSQLDialect
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.vendors.currentDialect
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.transactions.TransactionManager
 
 /**
  * Repairs business-key constraints required by PostgreSQL upserts on databases created before the

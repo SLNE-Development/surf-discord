@@ -1,10 +1,17 @@
 package dev.slne.surf.discord.interaction.modal
 
-import org.springframework.beans.factory.ObjectProvider
-import org.springframework.stereotype.Component
+import dev.slne.surf.discord.interaction.modal.impl.CustomCloseReasonModal
+import dev.slne.surf.discord.interaction.modal.impl.DeadlineNotifyModal
+import dev.slne.surf.discord.interaction.modal.impl.ticket.*
 
-@Component
-class ModalRegistry(modals: ObjectProvider<DiscordModal>) {
+object ModalRegistry {
+    private val modals = listOf(
+        ApplicationTicketModal, CustomCloseReasonModal, DeadlineNotifyModal,
+        BugreportTicketModal, ComplaintTicketModal, DiscordSupportTicketModal,
+        EventSupportTicketModal, ShopPurchaseTicketModal, SurvivalSupportTicketModal,
+        TwitchSupportTicketModal, UnbanTicketModal, ReportTicketModal
+    )
+
     private val modalMap by lazy { modals.associateBy { it.id } }
 
     fun getOrNull(id: String) = modalMap[id]

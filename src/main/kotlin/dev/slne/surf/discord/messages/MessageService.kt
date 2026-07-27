@@ -1,14 +1,11 @@
 package dev.slne.surf.discord.messages
 
-import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.logger
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
-import jakarta.annotation.PostConstruct
 import org.jetbrains.annotations.Nls
 import org.jetbrains.annotations.NonNls
 import org.jetbrains.annotations.PropertyKey
-import org.springframework.stereotype.Service
 import java.io.InputStreamReader
 import java.text.MessageFormat
 import java.util.*
@@ -16,11 +13,9 @@ import java.util.*
 @NonNls
 private const val BUNDLE = "messages"
 
-@Service
-class MessageService {
+object MessageService {
     private val messages: Object2ObjectMap<String, String> = Object2ObjectOpenHashMap()
 
-    @PostConstruct
     fun loadMessages() {
         val resource = javaClass.classLoader.getResourceAsStream("messages.properties")
             ?: error("messages.properties resource not found")
@@ -53,4 +48,4 @@ class MessageService {
 fun translatable(
     key: @PropertyKey(resourceBundle = BUNDLE) String,
     vararg args: String
-): @Nls String = getBean<MessageService>().translatable(key, *args)
+): @Nls String = MessageService.translatable(key, *args)

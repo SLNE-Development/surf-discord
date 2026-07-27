@@ -10,7 +10,6 @@ import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.ticket.TicketMemberService
 import dev.slne.surf.discord.util.asTicketOrNull
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import org.springframework.stereotype.Component
 
 @DiscordCommand(
     name = "remove",
@@ -24,10 +23,7 @@ import org.springframework.stereotype.Component
         )
     ]
 )
-@Component
-class TicketRemoveUserCommand(
-    private val ticketMemberService: TicketMemberService
-) : SlashCommand {
+object TicketRemoveUserCommand : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         if (!event.member.hasPermission(DiscordPermission.COMMAND_TICKET_REMOVE)) {
             event.reply(translatable("no-permission")).setEphemeral(true).queue()
@@ -43,7 +39,7 @@ class TicketRemoveUserCommand(
             return
         }
 
-        val success = ticketMemberService.removeMember(ticket, user, event.user)
+        val success = TicketMemberService.removeMember(ticket, user, event.user)
 
         if (success) {
             event.reply(translatable("ticket.command.remove.success", user.asMention))

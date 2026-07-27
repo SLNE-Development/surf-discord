@@ -1,9 +1,9 @@
 package dev.slne.surf.discord.ticket.database.ticket.staff
 
-import dev.slne.surf.discord.ticket.database.column.zonedDateTime
+import dev.slne.surf.database.columns.time.zonedDateTime
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.dao.id.LongIdTable
 import dev.slne.surf.discord.ticket.database.ticket.TicketTable
 import dev.slne.surf.discord.ticket.database.util.schemedName
-import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
 
 object TicketStaffTable : LongIdTable(schemedName("ticket_staff")) {
     val ticketId = ulong("ticket_id").references(TicketTable.id)

@@ -9,7 +9,7 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
     1372675800083730464 to mapOf(
         // Admin
         1377631246297075733 to setOf(*DiscordPermission.entries.toTypedArray()),
-        1508070571764744342 to setOf(*DiscordPermission.entries.toTypedArray()),
+        1508070571764744342 to setOf(*DiscordPermission.entries.toTypedArray())
     ),
     // Arty Development Discord (Red)
     1410944184231137332 to mapOf(
@@ -56,12 +56,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_REPLY_DEADLINE,
             DiscordPermission.COMMAND_FAQ,
             DiscordPermission.WHITELIST_VIEW,
-            DiscordPermission.WHITELIST_BYPASS,
-            DiscordPermission.WHITELIST_EDIT,
             DiscordPermission.TICKET_APPLICATION_TWITCH_MODERATOR,
-            DiscordPermission.WHITELIST_DELETE,
-            DiscordPermission.TICKET_COMPLAINT_VIEW,
-            DiscordPermission.WHITELIST_CREATE
+            DiscordPermission.TICKET_COMPLAINT_VIEW
         ),
 
         // Management
@@ -87,11 +83,7 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_APPLICATION_DEVELOPER,
             DiscordPermission.COMMAND_FAQ,
             DiscordPermission.WHITELIST_VIEW,
-            DiscordPermission.WHITELIST_BYPASS,
-            DiscordPermission.WHITELIST_EDIT,
-            DiscordPermission.WHITELIST_DELETE,
-            DiscordPermission.TICKET_COMPLAINT_VIEW,
-            DiscordPermission.WHITELIST_CREATE
+            DiscordPermission.TICKET_COMPLAINT_VIEW
         ),
 
         // Developer
@@ -117,11 +109,7 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_REPORT_VIEW,
             DiscordPermission.TICKET_UNBAN_VIEW,
             DiscordPermission.COMMAND_FAQ,
-            DiscordPermission.WHITELIST_VIEW,
-            DiscordPermission.WHITELIST_BYPASS,
-            DiscordPermission.WHITELIST_EDIT,
-            DiscordPermission.WHITELIST_DELETE,
-            DiscordPermission.WHITELIST_CREATE
+            DiscordPermission.WHITELIST_VIEW
         ),
 
         // Development Azubi (Jr. Developer)
@@ -148,8 +136,7 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_REPORT_VIEW,
             DiscordPermission.TICKET_UNBAN_VIEW,
             DiscordPermission.COMMAND_FAQ,
-            DiscordPermission.WHITELIST_VIEW,
-            DiscordPermission.WHITELIST_EDIT
+            DiscordPermission.WHITELIST_VIEW
         ),
 
         // Supporter

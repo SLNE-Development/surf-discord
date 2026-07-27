@@ -1,6 +1,5 @@
 package dev.slne.surf.discord.ticket
 
-import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.interaction.modal.ModalRegistry
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.util.mutableObjectListOf
@@ -34,10 +33,6 @@ private val defaultReasons = mutableObjectListOf(
     )
 )
 
-private val modalRegistry by lazy {
-    getBean<ModalRegistry>()
-}
-
 enum class TicketType(
     val id: String,
     val displayName: String,
@@ -54,7 +49,7 @@ enum class TicketType(
         emoji = "💬",
         viewPermission = DiscordPermission.TICKET_SUPPORT_DISCORD_VIEW,
         closeReasons = defaultReasons,
-        modal = modalRegistry.get("ticket:support:discord").create()
+        modal = ModalRegistry.get("ticket:support:discord").create()
     ),
     TWITCH_SUPPORT(
         id = "twitch",
@@ -63,7 +58,7 @@ enum class TicketType(
         emoji = "💬",
         viewPermission = DiscordPermission.TICKET_SUPPORT_TWITCH_VIEW,
         closeReasons = defaultReasons,
-        modal = modalRegistry.get("ticket:support:twitch").create()
+        modal = ModalRegistry.get("ticket:support:twitch").create()
     ),
     SURVIVAL_SUPPORT(
         id = "survival",
@@ -72,7 +67,7 @@ enum class TicketType(
         emoji = "🛠️",
         viewPermission = DiscordPermission.TICKET_SUPPORT_SURVIVAL_VIEW,
         closeReasons = defaultReasons,
-        modal = modalRegistry.get("ticket:support:survival").create()
+        modal = ModalRegistry.get("ticket:support:survival").create()
     ),
     EVENT_SUPPORT(
         id = "event",
@@ -81,7 +76,7 @@ enum class TicketType(
         emoji = "🎉",
         viewPermission = DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
         closeReasons = defaultReasons,
-        modal = modalRegistry.get("ticket:support:event").create()
+        modal = ModalRegistry.get("ticket:support:event").create()
     ),
     REPORT(
         id = "report",
@@ -97,7 +92,7 @@ enum class TicketType(
         ).apply {
             addAll(defaultReasons)
         },
-        modal = modalRegistry.get("ticket:report").create()
+        modal = ModalRegistry.get("ticket:report").create()
     ),
     UNBAN(
         id = "unban",
@@ -121,7 +116,7 @@ enum class TicketType(
         ).apply {
             addAll(defaultReasons)
         },
-        modal = modalRegistry.get("ticket:unban").create()
+        modal = ModalRegistry.get("ticket:unban").create()
     ),
     BUGREPORT(
         id = "bugreport",
@@ -149,7 +144,7 @@ enum class TicketType(
         ).apply {
             addAll(defaultReasons)
         },
-        modal = modalRegistry.get("ticket:bugreport").create()
+        modal = ModalRegistry.get("ticket:bugreport").create()
     ),
     APPLICATION(
         id = "application",
@@ -169,7 +164,7 @@ enum class TicketType(
         ).apply {
             addAll(defaultReasons)
         },
-        modal = modalRegistry.get("ticket:application").create()
+        modal = ModalRegistry.get("ticket:application").create()
     ),
     COMPLAINT(
         id = "complaint",
@@ -178,7 +173,7 @@ enum class TicketType(
         emoji = "⚠️",
         viewPermission = DiscordPermission.TICKET_COMPLAINT_VIEW,
         closeReasons = defaultReasons,
-        modal = modalRegistry.get("ticket:complaint").create()
+        modal = ModalRegistry.get("ticket:complaint").create()
     ),
     SHOP_PURCHASE(
         id = "shop",
@@ -187,6 +182,6 @@ enum class TicketType(
         emoji = "🛒",
         viewPermission = DiscordPermission.TICKET_SHOP_VIEW,
         closeReasons = defaultReasons,
-        modal = modalRegistry.get("ticket:shop:purchase").create()
+        modal = ModalRegistry.get("ticket:shop:purchase").create()
     );
 }

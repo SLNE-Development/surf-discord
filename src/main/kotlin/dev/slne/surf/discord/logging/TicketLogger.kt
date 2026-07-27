@@ -5,10 +5,8 @@ import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.ticket.Ticket
 import dev.slne.surf.discord.util.Colors
 import net.dv8tion.jda.api.entities.User
-import org.springframework.stereotype.Service
 
-@Service
-class TicketLogger {
+object TicketLogger {
     fun logCreation(ticket: Ticket) {
         val channel =
             ticket.getThreadChannel()?.guild?.getTextChannelById(

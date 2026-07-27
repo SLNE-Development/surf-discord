@@ -1,27 +1,13 @@
 package dev.slne.surf.discord.ticket.database.whitelist
 
-import dev.slne.surf.discord.getBean
-import dev.slne.surf.discord.util.PlayerLookupService
-import java.time.OffsetDateTime
+import dev.slne.surf.api.core.service.PlayerLookupService
 import java.util.*
 
 data class SocialEntry(
+    val webUserId: UUID,
     val discordId: Long,
     val minecraftUuid: UUID,
-    val createdAt: OffsetDateTime,
-    val updatedAt: OffsetDateTime,
     val blocked: Boolean = false
 ) {
-    companion object {
-        fun empty(): SocialEntry =
-            SocialEntry(
-                discordId = 0L,
-                minecraftUuid = UUID(0L, 0L),
-                createdAt = OffsetDateTime.MIN,
-                updatedAt = OffsetDateTime.MIN
-            )
-    }
-
-    private val playerLookupService by lazy { getBean<PlayerLookupService>() }
-    suspend fun getMinecraftName() = playerLookupService.getUsername(minecraftUuid)
+    suspend fun getMinecraftName() = PlayerLookupService.getUsername(minecraftUuid)
 }

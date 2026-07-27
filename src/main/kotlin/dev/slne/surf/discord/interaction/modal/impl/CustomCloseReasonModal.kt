@@ -6,12 +6,8 @@ import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.ticket.TicketService
 import net.dv8tion.jda.api.components.textinput.TextInputStyle
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
-import org.springframework.stereotype.Component
 
-@Component
-class CustomCloseReasonModal(
-    private val ticketService: TicketService
-) : DiscordModal {
+object CustomCloseReasonModal : DiscordModal {
     override val id = "ticket:close:reason:custom"
     override fun create() = modal(id, translatable("ticket.close.reason.custom.modal.title")) {
         textInput {
@@ -30,6 +26,6 @@ class CustomCloseReasonModal(
         interaction.hook.deleteOriginal()
         interaction.reply(translatable("ticket.closing")).setEphemeral(true).queue()
 
-        ticketService.closeTicket(customReason, event.hook)
+        TicketService.closeTicket(customReason, event.hook)
     }
 }

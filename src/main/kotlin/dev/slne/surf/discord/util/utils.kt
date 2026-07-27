@@ -1,6 +1,5 @@
 package dev.slne.surf.discord.util
 
-import dev.slne.surf.discord.getBean
 import dev.slne.surf.discord.ticket.TicketService
 import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet
@@ -15,10 +14,10 @@ fun Long.absoluteDiscordTimeStamp() = "<t:${this.div(1000)}:F>"
 fun String.escapeCodeBlock() = replace("`", "`" + Char(0x200B))
 
 suspend fun InteractionHook.asTicketOrNull() =
-    getBean<TicketService>().getTicketByThreadId(this.interaction.channelIdLong)
+    TicketService.getTicketByThreadId(this.interaction.channelIdLong)
 
 suspend fun InteractionHook.asTicketOrThrow() =
-    getBean<TicketService>().getTicketByThreadId(this.interaction.channelIdLong)
+    TicketService.getTicketByThreadId(this.interaction.channelIdLong)
         ?: error("Ticket not found for thread ID ${this.interaction.channelIdLong}")
 
 fun InteractionHook.replyError() = this.editOriginal("Ein Fehler ist aufgetreten.").queue()

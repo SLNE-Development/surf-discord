@@ -1,9 +1,9 @@
 package dev.slne.surf.discord.ticket.database.members
 
-import dev.slne.surf.discord.ticket.database.column.nativeUuid
-import dev.slne.surf.discord.ticket.database.column.zonedDateTime
+import dev.slne.surf.database.columns.nativeUuid
+import dev.slne.surf.database.columns.time.zonedDateTime
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.dao.id.LongIdTable
 import dev.slne.surf.discord.ticket.database.util.schemedName
-import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
 
 object TicketMemberTable : LongIdTable(schemedName("ticket_members")) {
     val ticketId = nativeUuid("ticket_id")
