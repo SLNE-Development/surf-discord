@@ -1,10 +1,11 @@
 package dev.slne.surf.discord.interaction.button
 
-import dev.slne.surf.discord.interaction.button.impl.WhitelistCreateButton
+import dev.slne.surf.discord.interaction.button.impl.*
 
 object ButtonRegistry {
     private val buttons = listOf(
-        WhitelistCreateButton
+        WhitelistCreateButton, ClaimTicketButton, OpenTicketButton, WhitelistInformationButton,
+        CloseTicketButton
     )
 
     private val buttonMap = buttons.associateBy { it.id }

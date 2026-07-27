@@ -3,7 +3,7 @@ package dev.slne.surf.discord.ticket.database.whitelist
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.Table
 import java.util.*
 
-object WebUsersTable : Table("user") {
+object WebUsersTable : Table("public.user") {
     val id = text("id").transform(
         wrap = { UUID.fromString(it) },
         unwrap = UUID::toString
@@ -12,7 +12,7 @@ object WebUsersTable : Table("user") {
     override val primaryKey = PrimaryKey(id)
 }
 
-object WebAccountsTable : Table("account") {
+object WebAccountsTable : Table("public.account") {
     val userId = reference("userId", WebUsersTable.id)
     val provider = text("provider")
     val providerAccountId = text("providerAccountId")

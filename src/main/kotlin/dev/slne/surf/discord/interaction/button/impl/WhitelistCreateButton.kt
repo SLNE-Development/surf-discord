@@ -30,13 +30,17 @@ object WhitelistCreateButton : DiscordButton {
                 Container.of(
                     TextDisplay.of(translatable("whitelist.survival.shouldPlay"))
                 )
-            ).setEphemeral(true).queue()
+            ).setEphemeral(true).useComponentsV2().queue()
         } else {
             val discordToWebExists = SocialRepository.hasWebUser(discordId)
             val linkExists = SocialRepository.findLinkByDiscordId(discordId) != null
 
-            val discordIcon = if (discordToWebExists) Emojis.checkMark else Emojis.crossMark
-            val linkIcon = if (linkExists) Emojis.checkMark else Emojis.crossMark
+            val discordIcon = if (discordToWebExists) "✔ Erfüllt" else "✘ Nicht erfüllt"
+            val linkIcon = when {
+                !discordToWebExists -> "✘ ???"
+                linkExists -> "✔ Erfüllt"
+                else -> "✘ Nicht erfüllt"
+            }
 
 
             event.replyComponents(
@@ -44,12 +48,12 @@ object WhitelistCreateButton : DiscordButton {
                     TextDisplay.of(
                         translatable(
                             "whitelist.survival.missingLink",
-                            discordIcon.name,
-                            linkIcon.name
+                            discordIcon,
+                            linkIcon
                         )
                     )
                 )
-            ).setEphemeral(true).queue()
+            ).setEphemeral(true).useComponentsV2().queue()
         }
     }
 }

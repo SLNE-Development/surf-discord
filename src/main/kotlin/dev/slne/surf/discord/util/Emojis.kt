@@ -12,6 +12,8 @@ object Emojis {
     lateinit var information: Emoji
 
     fun updateEmojis() {
+        logger.info("Updating emojis...")
+        
         var check = jda.getEmojisByName("checkmark", true).firstOrNull()
         var cross = jda.getEmojisByName("crossmark", true).firstOrNull()
         var info = jda.getEmojisByName("information", true).firstOrNull()

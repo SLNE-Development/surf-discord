@@ -16,7 +16,7 @@ import net.dv8tion.jda.api.components.textinput.TextInputStyle
 import net.dv8tion.jda.api.components.thumbnail.Thumbnail
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 
-class ShopPurchaseTicketModal : DiscordModal {
+object ShopPurchaseTicketModal : DiscordModal {
     override val id = "ticket:shop:purchase"
 
     override fun create() = modal(id, translatable("ticket.shop.purchase.modal.title")) {

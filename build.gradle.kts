@@ -21,6 +21,7 @@ dependencies {
     implementation("club.minnced:jda-ktx:0.14.2")
     implementation("dev.slne.surf.redis:surf-redis-standalone:+")
     implementation("com.squareup.okio:okio:3.18.0")
+    implementation("ch.qos.logback:logback-classic:1.5.38")
 }
 
 tasks.jar {

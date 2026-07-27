@@ -17,6 +17,7 @@ import dev.slne.surf.discord.ticket.database.messages.TicketMessageListener
 import dev.slne.surf.discord.ticket.deadline.ReplyDeadlineService
 import dev.slne.surf.discord.ticket.listener.TicketArchivingListener
 import dev.slne.surf.discord.ticket.listener.TicketLeaveListener
+import dev.slne.surf.discord.util.Emojis
 import kotlinx.coroutines.runBlocking
 import kotlin.time.Duration.Companion.minutes
 
@@ -32,6 +33,7 @@ object DiscordBootstrap {
         CommandRegistrar.init()
         ContextCommandRegistrar.registerAll()
         MessageService.loadMessages()
+        Emojis.updateEmojis()
 
         jda.addEventListener(
             TicketArchivingListener,

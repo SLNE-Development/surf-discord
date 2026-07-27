@@ -1,10 +1,12 @@
 package dev.slne.surf.discord.interaction.selectmenu
 
+import dev.slne.surf.discord.interaction.selectmenu.impl.TicketCloseReasonSelectMenu
+import dev.slne.surf.discord.interaction.selectmenu.impl.TicketTypeSelectMenu
 import dev.slne.surf.discord.interaction.selectmenu.impl.application.ApplicationTypeSelectMenu
 
 object SelectMenuRegistry {
     private val menus = listOf(
-        ApplicationTypeSelectMenu
+        ApplicationTypeSelectMenu, TicketCloseReasonSelectMenu, TicketTypeSelectMenu
     )
 
     private val menuMap = menus.associateBy { it.id }

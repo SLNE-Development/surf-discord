@@ -1,6 +1,7 @@
 package dev.slne.surf.discord.config
 
 import dev.slne.surf.database.DatabaseApi
+import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.Schema
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.Table
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.SchemaUtils
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
@@ -44,6 +45,7 @@ object DatabaseConfiguration {
 
     suspend fun setupDatabase() {
         suspendTransaction {
+            SchemaUtils.setSchema(Schema("surf-discord"))
             SchemaUtils.create(*discordOwnedTables)
             migratePostgreSqlUpsertConstraints()
         }

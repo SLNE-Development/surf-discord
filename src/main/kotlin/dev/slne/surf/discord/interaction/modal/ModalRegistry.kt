@@ -1,9 +1,16 @@
 package dev.slne.surf.discord.interaction.modal
 
-import dev.slne.surf.discord.interaction.modal.impl.ticket.ApplicationTicketModal
+import dev.slne.surf.discord.interaction.modal.impl.CustomCloseReasonModal
+import dev.slne.surf.discord.interaction.modal.impl.DeadlineNotifyModal
+import dev.slne.surf.discord.interaction.modal.impl.ticket.*
 
 object ModalRegistry {
-    private val modals = listOf(ApplicationTicketModal)
+    private val modals = listOf(
+        ApplicationTicketModal, CustomCloseReasonModal, DeadlineNotifyModal,
+        BugreportTicketModal, ComplaintTicketModal, DiscordSupportTicketModal,
+        EventSupportTicketModal, ShopPurchaseTicketModal, SurvivalSupportTicketModal,
+        TwitchSupportTicketModal, UnbanTicketModal, ReportTicketModal
+    )
 
     private val modalMap by lazy { modals.associateBy { it.id } }
 
