@@ -26,7 +26,6 @@ RUN useradd --system --create-home --shell /usr/sbin/nologin bot
 WORKDIR /app
 
 COPY --from=builder /workspace/app.jar ./app.jar
-COPY .env .env
 
 RUN mkdir -p /app/log && chown -R bot:bot /app
 
