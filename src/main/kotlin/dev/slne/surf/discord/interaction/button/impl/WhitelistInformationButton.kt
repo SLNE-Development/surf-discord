@@ -1,6 +1,7 @@
 package dev.slne.surf.discord.interaction.button.impl
 
 import dev.minn.jda.ktx.coroutines.await
+import dev.slne.surf.api.core.service.PlayerLookupService
 import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.interaction.button.DiscordButton
 import dev.slne.surf.discord.messages.translatable
@@ -9,7 +10,6 @@ import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.ticket.database.whitelist.SocialRepository
 import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.Emojis
-import dev.slne.surf.discord.util.PlayerLookupService
 import dev.slne.surf.discord.util.asTicketOrNull
 import net.dv8tion.jda.api.components.buttons.Button
 import net.dv8tion.jda.api.components.buttons.ButtonStyle
@@ -44,8 +44,8 @@ object WhitelistInformationButton : DiscordButton {
             return
         }
 
-        val minecraftName =
-            PlayerLookupService.getUsername(link.minecraftUuid) ?: link.minecraftUuid.toString()
+        val minecraftName = PlayerLookupService.getUsername(link.minecraftUuid)
+                ?: link.minecraftUuid.toString()
         val isDiscordMember = runCatching {
             event.guild?.retrieveMemberById(link.discordId)?.await()
         }.getOrNull() != null

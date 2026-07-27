@@ -1,5 +1,6 @@
 package dev.slne.surf.discord.ticket.command.context
 
+import dev.slne.surf.api.core.service.PlayerLookupService
 import dev.slne.surf.discord.command.CommandOption
 import dev.slne.surf.discord.command.CommandOptionType
 import dev.slne.surf.discord.command.DiscordCommand
@@ -9,7 +10,6 @@ import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.util.Colors
-import dev.slne.surf.discord.util.PlayerLookupService
 import dev.slne.surf.discord.util.escapeCodeBlock
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import java.time.OffsetDateTime

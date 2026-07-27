@@ -1,17 +1,12 @@
 package dev.slne.surf.discord.command.console.impl
 
-import dev.slne.surf.microservice.api.microservice.command.MicroserviceCommand
-import dev.slne.surf.microservice.api.microservice.command.MicroserviceCommandContext
+import dev.slne.surf.microservice.api.microservice.command.microserviceCommand
 
-object HelpCommand : MicroserviceCommand("help") {
-    override suspend fun MicroserviceCommandContext.execute(
-        args: List<String>
-    ) {
-        println("Verfügbare Console Commands:")
-        println("   - help: Zeigt alle verfügbaren Console Commands an")
-        println("   - registercommands: Registriert alle Discord-Commands")
-        println("   - unregistercommands: Entfernt alle Discord-Commands")
-        println("   - createartyemojis: Erstellt die Arty Emojis neu")
-        println("   - clear-whitelist-role: Entfernt alle Nutzer von der Whitelisted Rolle")
-    }
+fun helpCommand() = microserviceCommand("help") {
+    sendLine("Verfügbare Console Commands:")
+    sendLine("  — help: Zeigt alle verfügbaren Console Commands an")
+    sendLine("  — registercommands: Registriert alle Discord-Commands")
+    sendLine("  — unregistercommands: Entfernt alle Discord-Commands")
+    sendLine("  — createartyemojis: Erstellt die Arty Emojis neu")
+    sendLine("  — clear-whitelist-role: Entfernt alle Nutzer von der Whitelisted Rolle")
 }

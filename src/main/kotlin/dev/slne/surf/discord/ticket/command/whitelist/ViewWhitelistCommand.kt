@@ -1,6 +1,7 @@
 package dev.slne.surf.discord.ticket.command.whitelist
 
 import dev.minn.jda.ktx.coroutines.await
+import dev.slne.surf.api.core.service.PlayerLookupService
 import dev.slne.surf.discord.command.CommandOption
 import dev.slne.surf.discord.command.CommandOptionType
 import dev.slne.surf.discord.command.DiscordCommand
@@ -13,7 +14,6 @@ import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.ticket.database.whitelist.AccountLink
 import dev.slne.surf.discord.ticket.database.whitelist.SocialRepository
 import dev.slne.surf.discord.util.Colors
-import dev.slne.surf.discord.util.PlayerLookupService
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 

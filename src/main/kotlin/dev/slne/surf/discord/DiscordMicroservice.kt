@@ -30,6 +30,8 @@ import dev.slne.surf.discord.ticket.listener.TicketArchivingListener
 import dev.slne.surf.discord.ticket.listener.TicketLeaveListener
 import dev.slne.surf.discord.util.Emojis
 import dev.slne.surf.microservice.api.microservice.Microservice
+import dev.slne.surf.microservice.api.microservice.getMicroservice
+import kotlinx.coroutines.cancel
 import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
 
@@ -45,7 +47,7 @@ private val discordOwnedTables = arrayOf<Table>(
 )
 
 @AutoService(Microservice::class)
-class DiscordBootstrap : Microservice() {
+class DiscordMicroservice : Microservice() {
     override val dataPath = Path("config")
     private val databaseApi = DatabaseApi.create(dataPath)
 
@@ -66,11 +68,11 @@ class DiscordBootstrap : Microservice() {
         MessageService.loadMessages()
         Emojis.updateEmojis()
 
-        EmojiCreateCommand.register()
-        HelpCommand.register()
-        InfoCommand.register()
-        RegisterCommand.register()
-        UnregisterCommandsCommand.register()
+        emojiCreateCommand()
+        helpCommand()
+        infoCommand()
+        registerCommand()
+        unregisterCommandsCommand()
 
         jda.addEventListener(
             TicketArchivingListener,
@@ -95,6 +97,8 @@ class DiscordBootstrap : Microservice() {
 
     override suspend fun onDisable() {
         logger.info("Stopping Discord Bot...")
+        jda.shutdown()
+        discordScope.cancel("Discord Microservice is shutting down.")
         RedisService.disconnect()
 
         databaseApi.shutdown()
@@ -102,3 +106,5 @@ class DiscordBootstrap : Microservice() {
         logger.info("Shutdown complete. Byeeee!")
     }
 }
+
+val discordMicroservice get() = getMicroservice<DiscordMicroservice>()

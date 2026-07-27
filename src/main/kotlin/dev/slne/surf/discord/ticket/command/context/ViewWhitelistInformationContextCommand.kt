@@ -1,6 +1,7 @@
 package dev.slne.surf.discord.ticket.command.context
 
 import dev.minn.jda.ktx.coroutines.await
+import dev.slne.surf.api.core.service.PlayerLookupService
 import dev.slne.surf.discord.contextmenu.ContextCommandType
 import dev.slne.surf.discord.contextmenu.DiscordContextCommand
 import dev.slne.surf.discord.contextmenu.UserContextCommand
@@ -10,7 +11,6 @@ import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
 import dev.slne.surf.discord.ticket.database.whitelist.SocialRepository
 import dev.slne.surf.discord.util.Colors
-import dev.slne.surf.discord.util.PlayerLookupService
 import net.dv8tion.jda.api.events.interaction.command.UserContextInteractionEvent
 
 @DiscordContextCommand(

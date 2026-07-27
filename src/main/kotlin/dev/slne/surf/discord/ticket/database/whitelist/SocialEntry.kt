@@ -1,6 +1,6 @@
 package dev.slne.surf.discord.ticket.database.whitelist
 
-import dev.slne.surf.discord.util.PlayerLookupService
+import dev.slne.surf.api.core.service.PlayerLookupService
 import java.util.*
 
 data class SocialEntry(

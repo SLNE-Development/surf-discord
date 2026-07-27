@@ -1,13 +1,9 @@
 package dev.slne.surf.discord.command.console.impl
 
 import dev.slne.surf.discord.command.CommandRegistrar
-import dev.slne.surf.microservice.api.microservice.command.MicroserviceCommand
-import dev.slne.surf.microservice.api.microservice.command.MicroserviceCommandContext
+import dev.slne.surf.microservice.api.microservice.command.microserviceCommand
 
-object UnregisterCommandsCommand : MicroserviceCommand("unregistercommands") {
-    override suspend fun MicroserviceCommandContext.execute(
-        args: List<String>
-    ) {
-        CommandRegistrar.unregisterAllCommands()
-    }
+fun unregisterCommandsCommand() = microserviceCommand("unregistercommands") {
+    sendLine("Unregistering all Discord commands...")
+    CommandRegistrar.unregisterAllCommands()
 }
