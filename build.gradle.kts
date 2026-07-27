@@ -21,7 +21,6 @@ dependencies {
     implementation("club.minnced:jda-ktx:0.14.2")
     implementation("dev.slne.surf.redis:surf-redis-standalone:+")
     implementation("com.squareup.okio:okio:3.18.0")
-    implementation("io.github.cdimascio:dotenv-kotlin:6.5.1")
 }
 
 tasks.jar {
