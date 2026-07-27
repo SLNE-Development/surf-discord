@@ -33,7 +33,9 @@ object ViewWhitelistInformationContextCommand : UserContextCommand {
 
         val minecraftName =
             PlayerLookupService.getUsername(link.minecraftUuid) ?: link.minecraftUuid.toString()
-        val isDiscordMember = event.guild?.retrieveMemberById(link.discordId)?.await() != null
+        val isDiscordMember = runCatching {
+            event.guild?.retrieveMemberById(link.discordId)?.await()
+        }.getOrNull() != null
 
         event.replyEmbeds(embed {
             title = translatable("whitelist.embed.information.title")
