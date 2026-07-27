@@ -13,12 +13,6 @@ object EnvConfig {
     val TICKET_CHANNEL get() = env.requireLong("TICKET_CHANNEL")
     val TICKET_LOG_CHANNEL get() = env.optionalLong("TICKET_LOG_CHANNEL")
 
-    val DB_HOST get() = env.require("DATABASE_HOST")
-    val DB_PORT get() = env.requireInt("DATABASE_PORT")
-    val DB_NAME get() = env.require("DATABASE_NAME")
-    val DB_USERNAME get() = env.require("DATABASE_USERNAME")
-    val DB_PASSWORD get() = env.require("DATABASE_PASSWORD")
-
     val LUCKPERMS_URL get() = env.optional("LUCKPERMS_URL")
     val LUCKPERMS_TOKEN get() = env.optional("LUCKPERMS_TOKEN")
 

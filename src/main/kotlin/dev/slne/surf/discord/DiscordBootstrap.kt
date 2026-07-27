@@ -2,6 +2,7 @@ package dev.slne.surf.discord
 
 import dev.slne.surf.api.core.util.runAtFixedRate
 import dev.slne.surf.api.standalone.SurfApiStandaloneBootstrap
+import dev.slne.surf.discord.DiscordBootstrap.enable
 import dev.slne.surf.discord.command.CommandRegistrar
 import dev.slne.surf.discord.command.console.ConsoleRunner
 import dev.slne.surf.discord.config.DatabaseConfiguration
@@ -19,7 +20,7 @@ import dev.slne.surf.discord.ticket.listener.TicketLeaveListener
 import kotlinx.coroutines.runBlocking
 import kotlin.time.Duration.Companion.minutes
 
-class DiscordBootstrap {
+object DiscordBootstrap {
     suspend fun enable() {
         logger.info("Loading Discord Bot...")
         DiscordBot.createJda()
@@ -54,18 +55,17 @@ class DiscordBootstrap {
     suspend fun shutdown() {
         logger.info("Stopping Discord Bot...")
         RedisService.disconnect()
+        DatabaseConfiguration.shutdown()
     }
+}
 
-    fun main(args: Array<String>) {
-        Runtime.getRuntime().addShutdownHook(Thread {
-            runBlocking {
-                shutdown()
-                SurfApiStandaloneBootstrap.shutdown()
-            }
-        })
-
+suspend fun main() {
+    Runtime.getRuntime().addShutdownHook(Thread {
         runBlocking {
-            enable()
+            DiscordBootstrap.shutdown()
+            SurfApiStandaloneBootstrap.shutdown()
         }
-    }
+    })
+
+    enable()
 }

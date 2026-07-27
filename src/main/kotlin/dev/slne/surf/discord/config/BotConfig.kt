@@ -8,7 +8,6 @@ import org.jetbrains.annotations.ApiStatus
 data class BotConfig(
     val botToken: String,
     val channels: ChannelConfig,
-    val database: DatabaseConfig,
     val luckpermsApi: LuckpermsApiConfig = LuckpermsApiConfig(),
     val roles: RoleConfig = RoleConfig()
 )
@@ -19,13 +18,6 @@ val botConfig by lazy {
         ChannelConfig(
             EnvConfig.TICKET_CHANNEL,
             EnvConfig.TICKET_LOG_CHANNEL,
-        ),
-        DatabaseConfig(
-            EnvConfig.DB_HOST,
-            EnvConfig.DB_PORT,
-            EnvConfig.DB_NAME,
-            EnvConfig.DB_USERNAME,
-            EnvConfig.DB_PASSWORD
         ),
         LuckpermsApiConfig(
             EnvConfig.LUCKPERMS_URL,

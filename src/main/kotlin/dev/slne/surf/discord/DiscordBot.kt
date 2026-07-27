@@ -12,9 +12,12 @@ import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.internal.utils.JDALogger
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
+import kotlin.io.path.Path
 import kotlin.system.exitProcess
 
 object DiscordBot {
+    val dataPath = Path("config")
+
     lateinit var jda: JDA
 
     const val SURVIVAL_ENABLED = true
