@@ -31,7 +31,9 @@ import dev.slne.surf.discord.ticket.listener.TicketLeaveListener
 import dev.slne.surf.discord.util.Emojis
 import dev.slne.surf.microservice.api.microservice.Microservice
 import dev.slne.surf.microservice.api.microservice.getMicroservice
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.withContext
 import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
 
@@ -97,7 +99,11 @@ class DiscordMicroservice : Microservice() {
 
     override suspend fun onDisable() {
         logger.info("Stopping Discord Bot...")
-        jda.shutdown()
+
+        withContext(Dispatchers.IO) {
+            DiscordBot.shutdown()
+        }
+
         discordScope.cancel("Discord Microservice is shutting down.")
         RedisService.disconnect()
 
