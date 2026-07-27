@@ -1,15 +1,16 @@
 package dev.slne.surf.discord.command.console.impl
 
-import dev.slne.surf.discord.command.console.ConsoleCommand
 import dev.slne.surf.discord.jda
 import dev.slne.surf.discord.logger
+import dev.slne.surf.microservice.api.microservice.command.MicroserviceCommand
+import dev.slne.surf.microservice.api.microservice.command.MicroserviceCommandContext
 import net.dv8tion.jda.api.entities.Icon
 import java.io.File
 
-object EmojiCreateCommand : ConsoleCommand {
-    override val name = "createartyemojis"
-
-    override fun execute(args: List<String>) {
+object EmojiCreateCommand : MicroserviceCommand("createartyemojis") {
+    override suspend fun MicroserviceCommandContext.execute(
+        args: List<String>
+    ) {
         val checkmarkFile = File("emojis/checkmark.png")
         val informationFile = File("emojis/information.png")
         val crossMarkFile = File("emojis/crossmark.png")

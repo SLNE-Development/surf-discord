@@ -8,7 +8,7 @@ import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.Table
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.SchemaUtils
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import dev.slne.surf.discord.command.CommandRegistrar
-import dev.slne.surf.discord.command.console.ConsoleRunner
+import dev.slne.surf.discord.command.console.impl.*
 import dev.slne.surf.discord.contextmenu.ContextCommandRegistrar
 import dev.slne.surf.discord.interaction.button.ButtonListener
 import dev.slne.surf.discord.interaction.modal.ModalListener
@@ -61,14 +61,16 @@ class DiscordBootstrap : Microservice() {
         logger.info("Connected to database (PostgreSQL)")
 
         RedisService.connect()
-
-        ConsoleRunner.init()
         CommandRegistrar.init()
         ContextCommandRegistrar.registerAll()
         MessageService.loadMessages()
         Emojis.updateEmojis()
 
-        logger.info("Successfully loaded Discord Bot. Starting event listeners and scheduled tasks...")
+        EmojiCreateCommand.register()
+        HelpCommand.register()
+        InfoCommand.register()
+        RegisterCommand.register()
+        UnregisterCommandsCommand.register()
 
         jda.addEventListener(
             TicketArchivingListener,
