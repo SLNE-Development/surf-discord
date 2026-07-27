@@ -1,5 +1,6 @@
 package dev.slne.surf.discord.redis
 
+import dev.slne.surf.discord.logger
 import dev.slne.surf.redis.RedisApi
 import dev.slne.surf.redis.StandaloneRedisInstance
 import kotlin.io.path.Path
@@ -16,6 +17,8 @@ object RedisService {
 
         redisApi.registerRequestHandler(RedisRequestHandler)
         redisApi.freezeAndConnect()
+
+        logger.info("Connected to redis")
     }
 
     fun disconnect() {

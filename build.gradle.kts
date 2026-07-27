@@ -1,5 +1,6 @@
 plugins {
     id("dev.slne.surf.api.gradle.standalone")
+    id("dev.slne.surf.microservice")
 }
 
 group = "dev.slne.surf.discord"
@@ -14,6 +15,10 @@ surfStandaloneApi {
     withSurfDatabaseR2dbc("2.3.2", "dev.slne.surf.discord.libs")
 }
 
+surfMicroservice {
+    withMicroserviceApi()
+}
+
 dependencies {
     implementation("io.ktor:ktor-client-cio:3.5.0")
     implementation("io.ktor:ktor-client-content-negotiation:3.5.0")
@@ -22,13 +27,6 @@ dependencies {
     implementation("dev.slne.surf.redis:surf-redis-standalone:+")
     implementation("com.squareup.okio:okio:3.18.0")
     implementation("ch.qos.logback:logback-classic:1.5.38")
-}
-
-tasks.jar {
-    manifest {
-        attributes["Main-Class"] = "dev.slne.surf.discord.DiscordBootstrapKt"
-        attributes["Implementation-Version"] = project.version
-    }
 }
 
 tasks.shadowJar {
