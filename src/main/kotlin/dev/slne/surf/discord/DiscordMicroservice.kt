@@ -13,6 +13,7 @@ import dev.slne.surf.discord.contextmenu.ContextCommandRegistrar
 import dev.slne.surf.discord.interaction.button.ButtonListener
 import dev.slne.surf.discord.interaction.modal.ModalListener
 import dev.slne.surf.discord.interaction.selectmenu.SelectMenuListener
+import dev.slne.surf.discord.listener.LinkCommandListener
 import dev.slne.surf.discord.messages.MessageService
 import dev.slne.surf.discord.premium.PremiumService
 import dev.slne.surf.discord.redis.RedisService
@@ -83,7 +84,8 @@ class DiscordMicroservice : Microservice() {
             SelectMenuListener,
             ButtonListener,
             ModalListener,
-            ContextCommandRegistrar
+            ContextCommandRegistrar,
+            LinkCommandListener
         )
 
         discordScope.runAtFixedRate(1.minutes) {
