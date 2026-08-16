@@ -35,6 +35,7 @@ import kotlin.time.toJavaDuration
                 CommandChoice("server-modpack", "server-modpack"),
                 CommandChoice("problem-resourcepack", "problem-resourcepack"),
                 CommandChoice("problem-connection", "problem-connection"),
+                CommandChoice("problem-chat", "problem-chat"),
                 CommandChoice("problem-nrc-voice-chat", "problem-nrc-voice-chat"),
                 CommandChoice("read-the-docs", "read-the-docs"),
                 CommandChoice("maintenance", "maintenance"),
