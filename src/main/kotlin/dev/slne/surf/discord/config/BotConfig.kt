@@ -24,7 +24,8 @@ val botConfig by lazy {
             EnvConfig.LUCKPERMS_TOKEN
         ),
         RoleConfig(
-            EnvConfig.PREMIUM_ROLE_ID
+            EnvConfig.PREMIUM_ROLE_ID,
+            EnvConfig.WHITELISTED_ROLE_ID
         )
     )
 }

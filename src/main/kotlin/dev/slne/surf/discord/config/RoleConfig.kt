@@ -3,4 +3,7 @@ package dev.slne.surf.discord.config
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class RoleConfig(val premiumRoleId: Long = 0L)
+data class RoleConfig(
+    val premiumRoleId: Long = 0L,
+    val whitelistedRoleId: Long = 0L
+)

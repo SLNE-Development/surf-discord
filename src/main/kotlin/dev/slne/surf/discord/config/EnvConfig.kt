@@ -11,4 +11,5 @@ object EnvConfig {
     val LUCKPERMS_TOKEN by env.optional(sensitive = true)
 
     val PREMIUM_ROLE_ID by env.long()
+    val WHITELISTED_ROLE_ID by env.long()
 }
