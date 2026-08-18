@@ -10,6 +10,8 @@ import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent
+import net.dv8tion.jda.api.utils.ChunkingFilter
+import net.dv8tion.jda.api.utils.MemberCachePolicy
 import net.dv8tion.jda.internal.utils.JDALogger
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import org.jetbrains.annotations.Blocking
@@ -34,6 +36,8 @@ object DiscordBot {
         val builder = JDABuilder.createDefault(botToken)
 
         builder.enableIntents(gatewayIntents)
+        builder.setMemberCachePolicy(MemberCachePolicy.ALL)
+        builder.setChunkingFilter(ChunkingFilter.ALL)
         builder.setStatus(OnlineStatus.ONLINE)
         builder.setActivity(Activity.playing("castcrafter.de"))
 

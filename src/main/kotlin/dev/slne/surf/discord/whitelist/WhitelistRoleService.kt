@@ -49,9 +49,9 @@ object WhitelistRoleService {
         role: Role,
         whitelistedDiscordIds: LongSet
     ) {
-        val relevantMembers = guild.findMembers { member ->
+        val relevantMembers = cachedMembersForWhitelistSync(guild).filter { member ->
             whitelistedDiscordIds.contains(member.idLong) || role in member.roles
-        }.await()
+        }
         val membersById = relevantMembers.associateBy(Member::getIdLong)
 
         val changes = calculateWhitelistRoleChanges(
@@ -105,4 +105,9 @@ object WhitelistRoleService {
             )
         }
     }
+}
+
+internal fun cachedMembersForWhitelistSync(guild: Guild): List<Member> {
+    check(guild.isLoaded) { "Members of guild ${guild.id} have not finished loading" }
+    return guild.members
 }
