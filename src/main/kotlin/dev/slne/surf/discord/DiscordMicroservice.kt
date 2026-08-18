@@ -30,6 +30,7 @@ import dev.slne.surf.discord.ticket.deadline.ReplyDeadlineService
 import dev.slne.surf.discord.ticket.listener.TicketArchivingListener
 import dev.slne.surf.discord.ticket.listener.TicketLeaveListener
 import dev.slne.surf.discord.util.Emojis
+import dev.slne.surf.discord.whitelist.WhitelistRoleService
 import dev.slne.surf.microservice.api.microservice.Microservice
 import dev.slne.surf.microservice.api.microservice.getMicroservice
 import kotlinx.coroutines.Dispatchers
@@ -94,6 +95,10 @@ class DiscordMicroservice : Microservice() {
 
         discordScope.runAtFixedRate(2.minutes) {
             PremiumService.syncPremium()
+        }
+
+        discordScope.runAtFixedRate(5.minutes, taskName = "whitelist-role-sync") {
+            WhitelistRoleService.syncWhitelistRole()
         }
 
         logger.info("Done!")

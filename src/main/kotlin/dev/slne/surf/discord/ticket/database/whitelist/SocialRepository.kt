@@ -5,6 +5,7 @@ import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.core.*
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.select
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.selectAll
 import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import it.unimi.dsi.fastutil.longs.LongSet
 import it.unimi.dsi.fastutil.objects.Object2LongMap
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap
@@ -45,6 +46,16 @@ object SocialRepository {
 
     suspend fun hasWebUser(discordProviderId: Long) = suspendTransaction {
         findWebUserId(WebAccountProviders.DISCORD, discordProviderId.toString()) != null
+    }
+
+    suspend fun findAllWhitelistedDiscordIds(): LongSet = suspendTransaction {
+        val discordIds = LongOpenHashSet()
+
+        linkedAccounts.select(discordIdColumn)
+            .mapNotNull { it[discordIdColumn].toLongOrNull() }
+            .collect(discordIds::add)
+
+        discordIds
     }
 
     suspend fun findAllUuidsByDiscordIds(discordIds: LongSet): Object2LongMap<UUID> =
