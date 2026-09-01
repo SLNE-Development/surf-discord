@@ -41,7 +41,9 @@ object SocialRepository {
 
     suspend fun findLinkByMinecraftName(minecraftName: String): AccountLink? {
         val minecraftUuid = PlayerLookupService.getUuid(minecraftName) ?: return null
-        return findLink(byMinecraftUuid(minecraftUuid))
+        return suspendTransaction {
+            findLink(byMinecraftUuid(minecraftUuid))
+        }
     }
 
     suspend fun hasWebUser(discordProviderId: Long) = suspendTransaction {
