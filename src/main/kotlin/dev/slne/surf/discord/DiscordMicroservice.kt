@@ -74,6 +74,7 @@ class DiscordMicroservice : Microservice() {
         logger.info("Connected to database (PostgreSQL)")
 
         FaqService.seedIfEmpty()
+        FaqService.load()
 
         RedisService.connect()
         CommandRegistrar.init()
@@ -104,6 +105,10 @@ class DiscordMicroservice : Microservice() {
 
         discordScope.runAtFixedRate(FaqService.USAGE_FLUSH_INTERVAL, taskName = "faq-usage-flush") {
             FaqService.flushUsage()
+        }
+
+        discordScope.runAtFixedRate(FaqService.REFRESH_INTERVAL, taskName = "faq-refresh") {
+            FaqService.refresh()
         }
 
         discordScope.runAtFixedRate(2.minutes) {

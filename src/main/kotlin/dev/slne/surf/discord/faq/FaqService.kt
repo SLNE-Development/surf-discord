@@ -2,42 +2,32 @@ package dev.slne.surf.discord.faq
 
 import dev.slne.surf.discord.faq.database.FaqRepository
 import dev.slne.surf.discord.logger
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.TimeSource
 
 object FaqService {
     val USAGE_FLUSH_INTERVAL = 30.seconds
+    val REFRESH_INTERVAL = 1.minutes
 
-    private val cacheDuration = 5.minutes
-    private val cacheMutex = Mutex()
     private val flushMutex = Mutex()
     private val usageBuffer = FaqUsageBuffer()
 
     @Volatile
-    private var cachedEntries: List<FaqEntry>? = null
+    private var cachedEntries: List<FaqEntry> = emptyList()
 
-    @Volatile
-    private var cachedAt = TimeSource.Monotonic.markNow()
+    fun all(): List<FaqEntry> = cachedEntries
 
-    suspend fun all(): List<FaqEntry> {
-        cachedEntries?.takeIf { cachedAt.elapsedNow() < cacheDuration }?.let { return it }
+    fun get(key: String): FaqEntry? = all().find { it.key == key }
 
-        return cacheMutex.withLock {
-            cachedEntries?.takeIf { cachedAt.elapsedNow() < cacheDuration } ?: reload()
-        }
-    }
-
-    suspend fun get(key: String): FaqEntry? = all().find { it.key == key }
-
-    suspend fun getActive(key: String, platform: FaqPlatform): FaqEntry? =
+    fun getActive(key: String, platform: FaqPlatform): FaqEntry? =
         get(key)?.takeIf { it.isActive(platform) }
 
-    suspend fun search(input: String, platform: FaqPlatform): List<FaqEntry> =
+    fun search(input: String, platform: FaqPlatform): List<FaqEntry> =
         searchFaqEntries(all(), input, platform)
 
     fun recordUsage(entry: FaqEntry, platform: FaqPlatform) {
@@ -61,21 +51,21 @@ object FaqService {
 
         val entries = FaqSeed.load()
         entries.forEach { FaqRepository.create(it.key, it.translations) }
-        invalidate()
 
         logger.info("Seeded ${entries.size} FAQ entries.")
     }
 
-    private suspend fun reload(): List<FaqEntry> {
-        val entries = FaqRepository.findAll().sortedBy { it.key }
-
-        cachedEntries = entries
-        cachedAt = TimeSource.Monotonic.markNow()
-
-        return entries
+    suspend fun load() {
+        cachedEntries = FaqRepository.findAll().sortedBy { it.key }
     }
 
-    private fun invalidate() {
-        cachedEntries = null
+    suspend fun refresh() {
+        try {
+            load()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            logger.error("Failed to refresh FAQ entries, keeping the cached ones", e)
+        }
     }
 }
