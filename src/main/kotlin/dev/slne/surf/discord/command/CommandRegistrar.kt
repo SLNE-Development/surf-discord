@@ -9,6 +9,7 @@ import dev.slne.surf.discord.ticket.command.context.*
 import dev.slne.surf.discord.ticket.command.whitelist.ViewWhitelistCommand
 import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.commands.build.Commands
@@ -33,6 +34,12 @@ object CommandRegistrar {
                 commandNames[event.name]?.let { (_, command) ->
                     discordScope.launch { command.execute(event) }
                     logger.info("${event.user.name} executed discord command '${event.commandString}'")
+                }
+            }
+
+            override fun onCommandAutoCompleteInteraction(event: CommandAutoCompleteInteractionEvent) {
+                commandNames[event.name]?.let { (_, command) ->
+                    discordScope.launch { command.autocomplete(event) }
                 }
             }
         })

@@ -10,6 +10,10 @@ import dev.slne.surf.database.libs.org.jetbrains.exposed.v1.r2dbc.transactions.s
 import dev.slne.surf.discord.command.CommandRegistrar
 import dev.slne.surf.discord.command.console.impl.*
 import dev.slne.surf.discord.contextmenu.ContextCommandRegistrar
+import dev.slne.surf.discord.faq.FaqService
+import dev.slne.surf.discord.faq.database.FaqTable
+import dev.slne.surf.discord.faq.database.FaqTranslationTable
+import dev.slne.surf.discord.faq.database.FaqUsageTable
 import dev.slne.surf.discord.interaction.button.ButtonListener
 import dev.slne.surf.discord.interaction.modal.ModalListener
 import dev.slne.surf.discord.interaction.selectmenu.SelectMenuListener
@@ -47,7 +51,10 @@ private val discordOwnedTables = arrayOf<Table>(
     TicketMessagesTable,
     TicketAttachmentsTable,
     ReplyDeadlineTable,
-    DeadlineNotifyTable
+    DeadlineNotifyTable,
+    FaqTable,
+    FaqTranslationTable,
+    FaqUsageTable
 )
 
 @AutoService(Microservice::class)
@@ -65,6 +72,8 @@ class DiscordMicroservice : Microservice() {
         }
 
         logger.info("Connected to database (PostgreSQL)")
+
+        FaqService.seedIfEmpty()
 
         RedisService.connect()
         CommandRegistrar.init()
@@ -93,6 +102,10 @@ class DiscordMicroservice : Microservice() {
             ReplyDeadlineService.checkExpiredDeadlines()
         }
 
+        discordScope.runAtFixedRate(FaqService.USAGE_FLUSH_INTERVAL, taskName = "faq-usage-flush") {
+            FaqService.flushUsage()
+        }
+
         discordScope.runAtFixedRate(2.minutes) {
             PremiumService.syncPremium()
         }
@@ -112,6 +125,7 @@ class DiscordMicroservice : Microservice() {
         }
 
         discordScope.cancel("Discord Microservice is shutting down.")
+        FaqService.flushUsage()
         RedisService.disconnect()
 
         databaseApi.shutdown()
