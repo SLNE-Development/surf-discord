@@ -5,12 +5,10 @@ import dev.slne.surf.discord.command.CommandOption
 import dev.slne.surf.discord.command.CommandOptionType
 import dev.slne.surf.discord.command.DiscordCommand
 import dev.slne.surf.discord.command.SlashCommand
-import dev.slne.surf.discord.dsl.embed
 import dev.slne.surf.discord.interaction.button.ButtonRegistry
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
 import dev.slne.surf.discord.permission.hasPermission
-import dev.slne.surf.discord.util.Colors
 import kotlinx.coroutines.future.await
 import net.dv8tion.jda.api.components.actionrow.ActionRow
 import net.dv8tion.jda.api.components.container.Container
@@ -52,44 +50,32 @@ object PrintTicketButtonsCommand : SlashCommand {
 
             message.editMessageEmbeds().await()
 
-            message.editMessageComponents(
-                Container.of(
-                    Section.of(
-                        Thumbnail.fromUrl("https://castcrafter.de/favicon.png"),
-                        TextDisplay.of(translatable("ticket.command.ticketbuttons.title")),
-                        TextDisplay.of(translatable("ticket.command.ticketbuttons.description"))
-                    ),
-                    Separator.createDivider(Separator.Spacing.LARGE),
-                    TextDisplay.of(translatable("ticket.command.ticketbuttons.whitelist")),
-                    Separator.createDivider(Separator.Spacing.LARGE),
-                    ActionRow.of(
-                        ButtonRegistry.get("ticket:open").button,
-                        ButtonRegistry.get("whitelist:create").button
-                    )
-                )
-            ).useComponentsV2().queue {
+            message.editMessageComponents(buildPanel()).useComponentsV2().queue {
                 event.reply(translatable("ticket.command.ticketbuttons.edit.success"))
                     .setEphemeral(true)
                     .queue()
             }
             return
-        } else {
-            event.messageChannel.sendMessageEmbeds(
-                embed {
-                    title = translatable("ticket.command.ticketbuttons.title")
-                    description = translatable("ticket.command.ticketbuttons.description")
+        }
 
-                    color = Colors.INFO
-                }
-            ).addComponents(
-                ActionRow.of(
-                    ButtonRegistry.get("ticket:open").button,
-                    ButtonRegistry.get("whitelist:create").button
-                )
-            ).queue {
-                event.reply(translatable("ticket.command.ticketbuttons.success")).setEphemeral(true)
-                    .queue()
-            }
+        event.messageChannel.sendMessageComponents(buildPanel()).useComponentsV2().queue {
+            event.reply(translatable("ticket.command.ticketbuttons.success")).setEphemeral(true)
+                .queue()
         }
     }
+
+    private fun buildPanel() = Container.of(
+        Section.of(
+            Thumbnail.fromUrl("https://castcrafter.de/favicon.png"),
+            TextDisplay.of(translatable("ticket.command.ticketbuttons.title")),
+            TextDisplay.of(translatable("ticket.command.ticketbuttons.description"))
+        ),
+        Separator.createDivider(Separator.Spacing.LARGE),
+        TextDisplay.of(translatable("ticket.command.ticketbuttons.whitelist")),
+        Separator.createDivider(Separator.Spacing.LARGE),
+        ActionRow.of(
+            ButtonRegistry.get("ticket:open").button,
+            ButtonRegistry.get("whitelist:create").button
+        )
+    )
 }

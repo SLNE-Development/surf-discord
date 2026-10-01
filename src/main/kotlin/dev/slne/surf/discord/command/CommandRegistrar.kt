@@ -1,6 +1,7 @@
 package dev.slne.surf.discord.command
 
 import dev.slne.surf.discord.DiscordBot.jda
+import dev.slne.surf.discord.contextmenu.ContextCommandRegistrar
 import dev.slne.surf.discord.discordScope
 import dev.slne.surf.discord.faq.command.FaqCommand
 import dev.slne.surf.discord.logger
@@ -8,7 +9,7 @@ import dev.slne.surf.discord.ticket.command.*
 import dev.slne.surf.discord.ticket.command.context.*
 import dev.slne.surf.discord.ticket.command.whitelist.ViewWhitelistCommand
 import kotlinx.coroutines.launch
-import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.commands.build.Commands
@@ -35,14 +36,25 @@ object CommandRegistrar {
                     logger.info("${event.user.name} executed discord command '${event.commandString}'")
                 }
             }
+
+            override fun onCommandAutoCompleteInteraction(event: CommandAutoCompleteInteractionEvent) {
+                commandNames[event.name]?.let { (_, command) ->
+                    discordScope.launch { command.autocomplete(event) }
+                }
+            }
         })
     }
 
     fun registerAllCommands() {
+        val commands = commandNames.values.map { (annotation, _) ->
+            Commands.slash(annotation.name, annotation.description)
+                .addOptions(annotation.options.map { it.toOptionData() })
+        } + ContextCommandRegistrar.commandData()
+
         jda.guilds.forEach { guild ->
-            commandNames.forEach { _, (annotation, _) ->
-                registerCommand(annotation.name, annotation.description, guild, annotation.options)
-            }
+            guild.updateCommands().addCommands(commands).queue()
+
+            logger.info("Successfully registered ${commands.size} commands for guild '${guild.name}'")
         }
 
         if (commandNames.isEmpty()) {
@@ -58,20 +70,5 @@ object CommandRegistrar {
         }
 
         logger.info("Unregistered all Discord commands.")
-    }
-
-    fun registerCommand(
-        name: String,
-        description: String,
-        guild: Guild,
-        options: Array<CommandOption> = emptyArray()
-    ) {
-        val commandData = Commands.slash(name, description).addOptions(options.map {
-            it.toOptionData()
-        })
-
-        guild.upsertCommand(commandData).queue()
-
-        logger.info("Successfully registered command '$name' for guild '${guild.name}'")
     }
 }
