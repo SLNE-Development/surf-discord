@@ -117,9 +117,17 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
         1515760926853300404 to setOf(
             DiscordPermission.COMMAND_TICKET_ADD,
             DiscordPermission.COMMAND_TICKET_REMOVE,
-            DiscordPermission.WHITELIST_VIEW,
+            DiscordPermission.TICKET_CLOSE,
+            DiscordPermission.TICKET_CLAIM,
+            DiscordPermission.TICKET_WHITELIST_VIEW,
+            DiscordPermission.TICKET_REPLY_DEADLINE,
+            DiscordPermission.TICKET_WHITELIST_CONFIRM,
+            DiscordPermission.TICKET_SUPPORT_SURVIVAL_VIEW,
+            DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
             DiscordPermission.TICKET_BUG_VIEW,
-            DiscordPermission.COMMAND_FAQ
+            DiscordPermission.TICKET_REPORT_VIEW,
+            DiscordPermission.COMMAND_FAQ,
+            DiscordPermission.WHITELIST_VIEW
         ),
 
         // Moderator
