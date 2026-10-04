@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Caffeine
 import dev.slne.surf.discord.command.*
 import dev.slne.surf.discord.faq.FaqEntry
 import dev.slne.surf.discord.faq.FaqPlatform
+import dev.slne.surf.discord.faq.FaqSender
 import dev.slne.surf.discord.faq.FaqService
 import dev.slne.surf.discord.messages.translatable
 import dev.slne.surf.discord.permission.DiscordPermission
@@ -120,6 +121,6 @@ object FaqCommand : SlashCommand {
                 .queue()
         }
 
-        FaqService.recordUsage(faq, FaqPlatform.DISCORD)
+        FaqService.recordUsage(faq, FaqPlatform.DISCORD, FaqSender(event.user.id, event.user.name))
     }
 }

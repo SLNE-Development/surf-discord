@@ -11,6 +11,7 @@ import dev.slne.surf.discord.command.CommandRegistrar
 import dev.slne.surf.discord.command.console.impl.*
 import dev.slne.surf.discord.contextmenu.ContextCommandRegistrar
 import dev.slne.surf.discord.faq.FaqService
+import dev.slne.surf.discord.faq.database.FaqSendTable
 import dev.slne.surf.discord.faq.database.FaqTable
 import dev.slne.surf.discord.faq.database.FaqTranslationTable
 import dev.slne.surf.discord.faq.database.FaqUsageTable
@@ -55,7 +56,8 @@ private val discordOwnedTables = arrayOf<Table>(
     DeadlineNotifyTable,
     FaqTable,
     FaqTranslationTable,
-    FaqUsageTable
+    FaqUsageTable,
+    FaqSendTable
 )
 
 @AutoService(Microservice::class)

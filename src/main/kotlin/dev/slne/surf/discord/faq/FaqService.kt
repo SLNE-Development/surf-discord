@@ -18,6 +18,7 @@ object FaqService {
 
     private val flushMutex = Mutex()
     private val usageBuffer = FaqUsageBuffer()
+    private val sendBuffer = FaqSendBuffer()
 
     @Volatile
     private var cachedEntries: List<FaqEntry> = emptyList()
@@ -32,19 +33,39 @@ object FaqService {
     fun search(input: String, platform: FaqPlatform): List<FaqEntry> =
         searchFaqEntries(all(), input, platform)
 
-    fun recordUsage(entry: FaqEntry, platform: FaqPlatform) {
-        usageBuffer.record(FaqUsageKey(entry.id, platform), OffsetDateTime.now(ZoneOffset.UTC))
+    fun recordUsage(entry: FaqEntry, platform: FaqPlatform, sender: FaqSender) {
+        val now = OffsetDateTime.now(ZoneOffset.UTC)
+
+        usageBuffer.record(FaqUsageKey(entry.id, platform), now)
+        sendBuffer.record(FaqSend(entry.id, platform, sender, now))
     }
 
     suspend fun flushUsage() = flushMutex.withLock {
+        flushUsageDeltas()
+        flushSends()
+    }
+
+    private suspend fun flushUsageDeltas() {
         val deltas = usageBuffer.drain()
-        if (deltas.isEmpty()) return@withLock
+        if (deltas.isEmpty()) return
 
         try {
             FaqRepository.addUsage(deltas)
         } catch (e: Exception) {
             usageBuffer.restore(deltas)
             logger.error("Failed to flush FAQ usage, will retry", e)
+        }
+    }
+
+    private suspend fun flushSends() {
+        val sends = sendBuffer.drain()
+        if (sends.isEmpty()) return
+
+        try {
+            FaqRepository.addSends(sends)
+        } catch (e: Exception) {
+            sendBuffer.restore(sends)
+            logger.error("Failed to flush FAQ sends, will retry", e)
         }
     }
 
