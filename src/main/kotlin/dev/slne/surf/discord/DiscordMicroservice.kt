@@ -37,6 +37,7 @@ import dev.slne.surf.discord.util.Emojis
 import dev.slne.surf.discord.whitelist.WhitelistRoleService
 import dev.slne.surf.microservice.api.microservice.Microservice
 import dev.slne.surf.microservice.api.microservice.getMicroservice
+import dev.slne.surf.moderation.tools.faq.redis.FaqsChangedEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.withContext
@@ -77,6 +78,8 @@ class DiscordMicroservice : Microservice() {
         FaqService.load()
 
         RedisService.connect()
+        RedisService.publishEvent(FaqsChangedEvent())
+
         CommandRegistrar.init()
         ContextCommandRegistrar.registerAll()
         MessageService.loadMessages()

@@ -2,6 +2,8 @@ package dev.slne.surf.discord.faq
 
 import dev.slne.surf.discord.faq.database.FaqRepository
 import dev.slne.surf.discord.logger
+import dev.slne.surf.discord.redis.RedisService
+import dev.slne.surf.moderation.tools.faq.redis.FaqsChangedEvent
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -56,7 +58,13 @@ object FaqService {
     }
 
     suspend fun load() {
-        cachedEntries = FaqRepository.findAll().sortedBy { it.key }
+        val entries = FaqRepository.findAll().sortedBy { it.key }
+        val changed = entries != cachedEntries
+        cachedEntries = entries
+
+        if (changed) {
+            RedisService.publishEvent(FaqsChangedEvent())
+        }
     }
 
     suspend fun refresh() {

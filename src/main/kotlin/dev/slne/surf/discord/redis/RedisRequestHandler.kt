@@ -2,9 +2,14 @@ package dev.slne.surf.discord.redis
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import dev.minn.jda.ktx.coroutines.await
+import dev.slne.surf.discord.faq.FaqPlatform
+import dev.slne.surf.discord.faq.FaqService
 import dev.slne.surf.discord.jda
 import dev.slne.surf.freebuild.whitelist.redis.request.DiscordMemberShipRequest
 import dev.slne.surf.freebuild.whitelist.redis.request.DiscordMemberShipResponse
+import dev.slne.surf.moderation.tools.faq.redis.MinecraftFaqData
+import dev.slne.surf.moderation.tools.faq.redis.MinecraftFaqsRequest
+import dev.slne.surf.moderation.tools.faq.redis.MinecraftFaqsResponse
 import dev.slne.surf.redis.request.HandleRedisRequest
 import dev.slne.surf.redis.request.RequestContext
 import kotlinx.coroutines.Dispatchers
@@ -30,4 +35,18 @@ object RedisRequestHandler {
                     })
             )
         }
+
+    @HandleRedisRequest
+    fun handleMinecraftFaqsRequest(context: RequestContext<MinecraftFaqsRequest>) {
+        context.respond(
+            MinecraftFaqsResponse(
+                FaqService.all()
+                    .filter { it.isActive(FaqPlatform.MINECRAFT) }
+                    .map {
+                        val translation = it.translation()
+                        MinecraftFaqData(it.key, translation.question, translation.shortText)
+                    }
+            )
+        )
+    }
 }
