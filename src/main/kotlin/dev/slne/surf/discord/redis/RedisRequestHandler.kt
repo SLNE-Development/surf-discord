@@ -37,7 +37,11 @@ object RedisRequestHandler {
         }
 
     @HandleRedisRequest
-    fun handleMinecraftFaqsRequest(context: RequestContext<MinecraftFaqsRequest>) {
+    suspend fun handleMinecraftFaqsRequest(context: RequestContext<MinecraftFaqsRequest>) {
+        if (context.request.refresh) {
+            FaqService.refresh()
+        }
+
         context.respond(
             MinecraftFaqsResponse(
                 FaqService.all()
