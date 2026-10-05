@@ -11,6 +11,7 @@ import dev.slne.surf.discord.command.CommandRegistrar
 import dev.slne.surf.discord.command.console.impl.*
 import dev.slne.surf.discord.contextmenu.ContextCommandRegistrar
 import dev.slne.surf.discord.faq.FaqService
+import dev.slne.surf.discord.faq.database.FaqSendTable
 import dev.slne.surf.discord.faq.database.FaqTable
 import dev.slne.surf.discord.faq.database.FaqTranslationTable
 import dev.slne.surf.discord.faq.database.FaqUsageTable
@@ -37,6 +38,7 @@ import dev.slne.surf.discord.util.Emojis
 import dev.slne.surf.discord.whitelist.WhitelistRoleService
 import dev.slne.surf.microservice.api.microservice.Microservice
 import dev.slne.surf.microservice.api.microservice.getMicroservice
+import dev.slne.surf.moderation.tools.faq.redis.FaqsChangedEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.withContext
@@ -54,7 +56,8 @@ private val discordOwnedTables = arrayOf<Table>(
     DeadlineNotifyTable,
     FaqTable,
     FaqTranslationTable,
-    FaqUsageTable
+    FaqUsageTable,
+    FaqSendTable
 )
 
 @AutoService(Microservice::class)
@@ -77,6 +80,8 @@ class DiscordMicroservice : Microservice() {
         FaqService.load()
 
         RedisService.connect()
+        RedisService.publishEvent(FaqsChangedEvent())
+
         CommandRegistrar.init()
         ContextCommandRegistrar.registerAll()
         MessageService.loadMessages()

@@ -83,6 +83,24 @@ object FaqRepository {
         }
     }
 
+    suspend fun addSends(sends: List<FaqSend>) = suspendTransaction {
+        val existingIds = FaqTable.select(FaqTable.id)
+            .where { FaqTable.id inList sends.map { it.faqId }.distinct() }
+            .toList()
+            .map { it[FaqTable.id].value }
+            .toSet()
+
+        sends.filter { it.faqId in existingIds }.forEach { send ->
+            FaqSendTable.insert {
+                it[FaqSendTable.faqId] = send.faqId
+                it[FaqSendTable.platform] = send.platform
+                it[FaqSendTable.senderId] = send.sender.id.take(FaqSendTable.MAX_SENDER_ID_LENGTH)
+                it[FaqSendTable.senderName] = send.sender.name.take(FaqSendTable.MAX_SENDER_NAME_LENGTH)
+                it[FaqSendTable.sentAt] = send.sentAt
+            }
+        }
+    }
+
     private fun ResultRow.toLocaleAndTranslation() =
         FaqLocale.fromCode(this[FaqTranslationTable.locale]) to FaqTranslation(
             question = this[FaqTranslationTable.question],

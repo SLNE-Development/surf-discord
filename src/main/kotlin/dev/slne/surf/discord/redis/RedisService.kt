@@ -5,6 +5,7 @@ import dev.slne.surf.discord.logger
 import dev.slne.surf.discord.redis.roles.RedisDiscordRolesConsumer
 import dev.slne.surf.redis.RedisApi
 import dev.slne.surf.redis.StandaloneRedisInstance
+import dev.slne.surf.redis.event.RedisEvent
 
 object RedisService {
     lateinit var redisInstance: StandaloneRedisInstance
@@ -19,12 +20,19 @@ object RedisService {
         redisApi = RedisApi.create()
 
         redisApi.registerRequestHandler(RedisRequestHandler)
+        redisApi.subscribeToEvents(FaqRedisListener)
         redisApi.freezeAndConnect()
 
         discordRolesHandler = RedisDiscordRolesConsumer(redisApi)
         discordRolesHandler.startConsuming()
 
         logger.info("Connected to redis")
+    }
+
+    fun publishEvent(event: RedisEvent) {
+        if (::redisApi.isInitialized && redisApi.isConnected()) {
+            redisApi.publishEvent(event)
+        }
     }
 
     fun disconnect() {
