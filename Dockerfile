@@ -3,10 +3,17 @@
 # Manual changes are lost the next time this file is generated.
 
 # Stage 1: build the runnable application JAR with Gradle.
+# syntax=docker/dockerfile:1
+
 FROM eclipse-temurin:25-jdk AS build
 WORKDIR /workspace
+
 COPY . .
-RUN chmod +x gradlew && ./gradlew :prepareMicroserviceDockerArtifact --no-daemon
+
+RUN chmod +x gradlew
+
+RUN --mount=type=cache,target=/root/.gradle \
+    ./gradlew :prepareMicroserviceDockerArtifact --no-daemon
 
 # Stage 2: compile the native microservicectl command client.
 FROM golang:1.26-alpine AS command-client-build
