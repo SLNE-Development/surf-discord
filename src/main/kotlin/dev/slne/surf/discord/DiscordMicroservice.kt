@@ -28,6 +28,7 @@ import dev.slne.surf.discord.ticket.database.members.TicketMemberTable
 import dev.slne.surf.discord.ticket.database.messages.TicketMessageListener
 import dev.slne.surf.discord.ticket.database.messages.TicketMessagesTable
 import dev.slne.surf.discord.ticket.database.messages.attachments.TicketAttachmentsTable
+import dev.slne.surf.discord.ticket.database.notes.TicketNotesTable
 import dev.slne.surf.discord.ticket.database.ticket.TicketTable
 import dev.slne.surf.discord.ticket.database.ticket.data.TicketDataTable
 import dev.slne.surf.discord.ticket.database.ticket.staff.TicketStaffTable
@@ -50,6 +51,7 @@ private val discordOwnedTables = arrayOf<Table>(
     TicketMemberTable,
     TicketDataTable,
     TicketStaffTable,
+    TicketNotesTable,
     TicketMessagesTable,
     TicketAttachmentsTable,
     ReplyDeadlineTable,

@@ -1,0 +1,53 @@
+package dev.slne.surf.discord.ticket.command
+
+import dev.slne.surf.discord.command.CommandOption
+import dev.slne.surf.discord.command.CommandOptionType
+import dev.slne.surf.discord.command.DiscordCommand
+import dev.slne.surf.discord.command.SlashCommand
+import dev.slne.surf.discord.messages.translatable
+import dev.slne.surf.discord.permission.DiscordPermission
+import dev.slne.surf.discord.permission.hasPermission
+import dev.slne.surf.discord.ticket.database.notes.TicketNotesRepository
+import dev.slne.surf.discord.util.asTicketOrNull
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+
+@DiscordCommand(
+    name = "add-note",
+    description = "Add a note to a ticket",
+    options = [
+        CommandOption(
+            name = "content",
+            description = "The content of the note",
+            type = CommandOptionType.STRING,
+            required = true
+        ),
+    ]
+)
+object TicketAddNoteCommand : SlashCommand {
+    override suspend fun execute(event: SlashCommandInteractionEvent) {
+        if (!event.member.hasPermission(DiscordPermission.COMMAND_TICKET_ADD)) {
+            event.reply(translatable("no-permission")).setEphemeral(true).queue()
+            return
+        }
+
+        val content = event.getOption("content")?.asString ?: "Invalid Content (NO_CONTENT_PROVIDED)"
+        val ticket = event.hook.asTicketOrNull()
+
+        if (ticket == null) {
+            event.reply(translatable("ticket.command.not-a-ticket"))
+                .setEphemeral(true).queue()
+            return
+        }
+
+        val member = event.member ?: run {
+            event.reply(translatable("ticket.command.add-note.no-member"))
+                .setEphemeral(true).queue()
+            return
+        }
+
+        TicketNotesRepository.addNote(ticket, member, content)
+
+        event.reply(translatable("ticket.command.add-note.success"))
+            .setEphemeral(true).queue()
+    }
+}

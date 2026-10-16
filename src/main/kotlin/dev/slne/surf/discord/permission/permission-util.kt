@@ -57,7 +57,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.COMMAND_FAQ,
             DiscordPermission.WHITELIST_VIEW,
             DiscordPermission.TICKET_APPLICATION_TWITCH_MODERATOR,
-            DiscordPermission.TICKET_COMPLAINT_VIEW
+            DiscordPermission.TICKET_COMPLAINT_VIEW,
+            DiscordPermission.COMMAND_TICKET_NOTE
         ),
 
         // Management
@@ -83,7 +84,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_APPLICATION_DEVELOPER,
             DiscordPermission.COMMAND_FAQ,
             DiscordPermission.WHITELIST_VIEW,
-            DiscordPermission.TICKET_COMPLAINT_VIEW
+            DiscordPermission.TICKET_COMPLAINT_VIEW,
+            DiscordPermission.COMMAND_TICKET_NOTE
         ),
 
         // Developer
@@ -109,7 +111,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_REPORT_VIEW,
             DiscordPermission.TICKET_UNBAN_VIEW,
             DiscordPermission.COMMAND_FAQ,
-            DiscordPermission.WHITELIST_VIEW
+            DiscordPermission.WHITELIST_VIEW,
+            DiscordPermission.COMMAND_TICKET_NOTE
         ),
 
         // Development Azubi (Jr. Developer)
@@ -127,7 +130,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_BUG_VIEW,
             DiscordPermission.TICKET_REPORT_VIEW,
             DiscordPermission.COMMAND_FAQ,
-            DiscordPermission.WHITELIST_VIEW
+            DiscordPermission.WHITELIST_VIEW,
+            DiscordPermission.COMMAND_TICKET_NOTE
         ),
 
         // Moderator
@@ -144,7 +148,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_REPORT_VIEW,
             DiscordPermission.TICKET_UNBAN_VIEW,
             DiscordPermission.COMMAND_FAQ,
-            DiscordPermission.WHITELIST_VIEW
+            DiscordPermission.WHITELIST_VIEW,
+            DiscordPermission.COMMAND_TICKET_NOTE
         ),
 
         // Supporter
