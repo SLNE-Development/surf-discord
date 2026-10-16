@@ -3,7 +3,6 @@
 # Manual changes are lost the next time this file is generated.
 
 # Stage 1: build the runnable application JAR with Gradle.
-# syntax=docker/dockerfile:1
 
 FROM eclipse-temurin:25-jdk AS build
 WORKDIR /workspace
