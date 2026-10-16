@@ -12,7 +12,6 @@ import dev.slne.surf.discord.util.Colors
 import dev.slne.surf.discord.util.asTicketOrNull
 import net.dv8tion.jda.api.components.container.Container
 import net.dv8tion.jda.api.components.textdisplay.TextDisplay
-import net.dv8tion.jda.api.components.thumbnail.Thumbnail
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 
 @DiscordCommand(
@@ -65,7 +64,4 @@ object TicketAddNoteCommand : SlashCommand {
             ).withAccentColor(Colors.INFO)
         ).useComponentsV2().queue()
     }
-
-    private val thumbnail =
-        Thumbnail.fromUrl("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSizVdqJ6GdjpehVzRYkJt_XiihFI7li0DEDfgCwT3mVy0Xywbl3LYZAa8&s=10")
 }
