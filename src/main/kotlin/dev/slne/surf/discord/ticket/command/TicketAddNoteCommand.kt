@@ -29,7 +29,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 )
 object TicketAddNoteCommand : SlashCommand {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
-        if (!event.member.hasPermission(DiscordPermission.COMMAND_TICKET_ADD)) {
+        if (!event.member.hasPermission(DiscordPermission.COMMAND_TICKET_NOTE)) {
             event.reply(translatable("no-permission")).setEphemeral(true).queue()
             return
         }
