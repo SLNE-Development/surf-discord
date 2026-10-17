@@ -165,7 +165,8 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_SUPPORT_EVENT_VIEW,
             DiscordPermission.TICKET_REPORT_VIEW,
             DiscordPermission.COMMAND_FAQ,
-            DiscordPermission.WHITELIST_VIEW
+            DiscordPermission.WHITELIST_VIEW,
+            DiscordPermission.COMMAND_TICKET_NOTE
         ),
 
         // Twitch Mod
@@ -173,12 +174,14 @@ private val guildPermissionConfig: Map<Long, Map<Long, Set<DiscordPermission>>> 
             DiscordPermission.TICKET_REPLY_DEADLINE,
             DiscordPermission.TICKET_CLOSE,
             DiscordPermission.TICKET_CLAIM,
-            DiscordPermission.TICKET_SUPPORT_TWITCH_VIEW
+            DiscordPermission.TICKET_SUPPORT_TWITCH_VIEW,
+            DiscordPermission.COMMAND_TICKET_NOTE
         ),
 
         // Community Management
         1403107386415386736L to setOf(
-            DiscordPermission.COMMAND_FAQ
+            DiscordPermission.COMMAND_FAQ,
+            DiscordPermission.COMMAND_TICKET_NOTE
         ),
 
         // Builder
