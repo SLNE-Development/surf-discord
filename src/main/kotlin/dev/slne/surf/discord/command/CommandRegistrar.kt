@@ -20,7 +20,7 @@ object CommandRegistrar {
         FixTicketsCommand, PrintTicketButtonsCommand, TicketAddEntityCommand,
         TicketRemoveUserCommand, TicketReplyDeadlineCommand, FaqCommand, MyTicketsCommand,
         RequestRefundCommand, RequestFullRollbackCommand, RequestTimedRollbackCommand,
-        RequestRadiusRollbackCommand, ViewWhitelistCommand
+        RequestRadiusRollbackCommand, ViewWhitelistCommand, TicketAddNoteCommand
     )
     private val commandNames = discordCommands.map {
         it.javaClass.getAnnotation(DiscordCommand::class.java) to it
