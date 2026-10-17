@@ -1,8 +1,5 @@
 services:
   bot:
-    stdin_open: true
-    tty: true
-    build:
-      context: .
+    build: .
     env_file: .env
     restart: unless-stopped
