@@ -14,7 +14,7 @@ repositories {
 }
 
 surfStandaloneApi {
-    withSurfDatabaseR2dbc("2.3.4", "dev.slne.surf.discord.libs")
+    withSurfDatabaseR2dbc("2.3.5", "dev.slne.surf.discord.libs")
 }
 
 surfMicroservice {
