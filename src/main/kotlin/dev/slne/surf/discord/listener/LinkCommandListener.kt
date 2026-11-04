@@ -31,7 +31,9 @@ object LinkCommandListener : ListenerAdapter() {
         if (!LINK_COMMAND_REGEX.matches(event.message.contentRaw.trim())) return
 
         discordScope.launch {
-            event.message.replyComponents(linkComponent(event.author.asMention))
+            runCatching { event.message.delete().await() }
+
+            event.channel.sendMessageComponents(linkComponent(event.author.asMention))
                 .useComponentsV2()
                 .mention(event.author)
                 .await()
